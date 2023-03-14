@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToHex, u8aToU8a } from '@polkadot/util'
+import { u8aEq, u8aToHex, u8aToU8a } from '@polkadot/util'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
@@ -66,10 +66,13 @@ export async function check(
   if (
     decoded.owner !== credential.issuer ||
     onChainCType !== credential.credentialSchema.id ||
-    delegationId !== decoded.delegationId
+    !u8aEq(
+      delegationId ?? new Uint8Array(),
+      decoded.delegationId ?? new Uint8Array()
+    )
   ) {
     throw new SDKErrors.CredentialUnverifiableError(
-      `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
+      `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}", Delegation: "${decoded.delegationId}"`
     )
   }
   if (decoded.revoked !== false) {

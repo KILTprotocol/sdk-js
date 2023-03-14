@@ -15,27 +15,19 @@ import type { U8aLike } from '@polkadot/util/types'
 
 import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
-import type {
-  IAttestation,
-  ICType,
-  ICredentialPresentation,
-} from '@kiltprotocol/types'
+import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
-import type { VerifiableCredential } from './types'
 import { validateStructure as validateCredentialStructure } from './KiltCredentialV1'
 import { exportICredentialToVc } from './fromICredential'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
-import { verify } from './KiltAttestationProofV1'
-import { validateSubject } from './CredentialSchema'
-import { check as checkStatus } from './KiltRevocationStatusV1'
 import { credentialIdFromRootHash } from './common'
 
-const mockedApi = ApiMocks.createAugmentedApi()
+export const mockedApi = ApiMocks.createAugmentedApi()
 
-function makeEvent(idx: U8aLike, eventData: unknown[]) {
+export function makeEvent(idx: U8aLike, eventData: unknown[]) {
   const index = u8aToU8a(idx)
   return mockedApi.createType('Vec<FrameSystemEventRecord>', [
     {
@@ -50,7 +42,7 @@ function makeEvent(idx: U8aLike, eventData: unknown[]) {
   ])
 }
 
-const cType: ICType = {
+export const cType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'membership',
   properties: {
@@ -69,7 +61,7 @@ const cType: ICType = {
   $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-const credential: ICredentialPresentation = {
+export const credential: ICredential = {
   claim: {
     contents: {
       birthday: '1991-01-01',
@@ -97,29 +89,23 @@ const credential: ICredentialPresentation = {
       'adc7dc71-ab0a-45f9-a091-9f3ec1bb96c7',
   },
   legitimations: [],
-  delegationId: null,
-  rootHash:
-    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-  claimerSignature: {
-    signature:
-      '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
-    keyUri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
-  },
+  delegationId:
+    '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
+  rootHash: '0x',
 }
+credential.rootHash = Credential.calculateRootHash(credential)
 
-const attestation: IAttestation = {
-  claimHash:
-    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-  cTypeHash:
-    '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-  delegationId: null,
+export const attestation: IAttestation = {
+  claimHash: credential.rootHash,
+  cTypeHash: credential.claim.cTypeHash,
+  delegationId: credential.delegationId,
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   revoked: false,
 }
 
-const timestamp = 1234567
-const blockHash = randomAsU8a(32)
-const genesisHash = randomAsU8a(32)
+export const timestamp = 1234567
+export const blockHash = randomAsU8a(32)
+export const genesisHash = randomAsU8a(32)
 jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))
 jest
   .spyOn(mockedApi, 'queryMulti')
@@ -134,14 +120,10 @@ jest
 mockedApi.query.attestation = {
   attestations: jest.fn().mockResolvedValue(
     mockedApi.createType('Option<AttestationAttestationsAttestationDetails>', {
-      ctypeHash:
-        '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+      ctypeHash: attestation.cTypeHash,
       attester: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
       revoked: false,
-      deposit: {
-        owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-        amount: 0,
-      },
+      authorizationId: { Delegation: attestation.delegationId },
     })
   ),
 } as any
@@ -149,7 +131,7 @@ mockedApi.query.timestamp = {
   now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
 } as any
 
-const attestationCreatedIndex = [
+export const attestationCreatedIndex = [
   62,
   mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
 ]
@@ -159,9 +141,9 @@ mockedApi.query.system = {
     .mockResolvedValue(
       makeEvent(attestationCreatedIndex, [
         '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-        '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-        '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-        null,
+        attestation.claimHash,
+        attestation.cTypeHash,
+        { Delegation: attestation.delegationId },
       ])
     ),
 } as any
@@ -183,33 +165,10 @@ it('exports credential to VC', () => {
       name: 'Kurt',
       premium: true,
     },
-    id: credentialIdFromRootHash(
-      hexToU8a(
-        '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad'
-      )
-    ),
+    id: credentialIdFromRootHash(hexToU8a(credential.rootHash)),
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     nonTransferable: true,
-  })
-  expect(() => validateCredentialStructure(exported)).not.toThrow()
-})
-
-it('exports includes ctype as schema', () => {
-  const exported = exportICredentialToVc(credential, {
-    issuer: attestation.owner,
-    chainGenesisHash: mockedApi.genesisHash,
-    blockHash,
-    timestamp,
-    cType,
-  })
-  expect(exported).toMatchObject({
-    credentialSchema: {
-      id: cType.$id,
-      name: cType.title,
-      type: 'JsonSchemaValidator2018',
-      schema: cType,
-    },
   })
   expect(() => validateCredentialStructure(exported)).not.toThrow()
 })
@@ -268,217 +227,5 @@ it('VC has correct format (full example)', () => {
       salt: expect.any(Array),
       block: expect.any(String),
     },
-  })
-})
-
-describe('proofs', () => {
-  let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
-  beforeAll(() => {
-    VC = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-  })
-
-  it('it verifies proof', async () => {
-    // verify
-    const { proof, ...cred } = VC
-    await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
-  })
-
-  it('it verifies status', async () => {
-    // verify
-    await expect(checkStatus(VC, { api: mockedApi })).resolves.not.toThrow()
-  })
-
-  it('it verifies schema', () => {
-    const VCWithSchema = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-      cType,
-    })
-    expect(() => validateSubject(VCWithSchema)).not.toThrow()
-
-    VCWithSchema.credentialSubject.name = 5
-
-    expect(() => validateSubject(VCWithSchema)).toThrow()
-  })
-
-  it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof?.salt).toHaveLength(4)
-    const { proof, ...cred } = VC
-    await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
-  })
-
-  it('it verifies credential with selected properties revealed', async () => {
-    const reducedCredential = Credential.removeClaimProperties(credential, [
-      'name',
-      'birthday',
-    ])
-    const { proof, ...reducedVC } = exportICredentialToVc(reducedCredential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-
-    await expect(
-      verify(reducedVC, proof, { api: mockedApi })
-    ).resolves.not.toThrow()
-  })
-
-  // it('makes presentation', async () => {
-  //   const presentation = await presentationUtils.makePresentation(VC, ['name'])
-  //   const { contents, owner } = credential.claim
-  //   expect(presentation).toHaveProperty(
-  //     'verifiableCredential.credentialSubject',
-  //     {
-  //       '@context': expect.any(Object),
-  //       '@id': owner,
-  //       name: contents.name,
-  //     }
-  //   )
-  //   const VCfromPresentation =
-  //     presentation.verifiableCredential as VerifiableCredential
-  //   const result = await verificationUtils.verifyCredentialDigestProof(
-  //     VCfromPresentation,
-  //     VCfromPresentation.proof[2]
-  //   )
-  //   expect(result.errors).toEqual([])
-  //   expect(result).toStrictEqual({ verified: true, errors: [] })
-  //   expect(Object.entries(VCfromPresentation.proof[2].nonces)).toHaveLength(2)
-  // })
-
-  describe('negative tests', () => {
-    beforeEach(() => {
-      VC = exportICredentialToVc(credential, {
-        issuer: attestation.owner,
-        chainGenesisHash: mockedApi.genesisHash,
-        blockHash,
-        timestamp,
-      })
-    })
-
-    it('errors on proof mismatch', async () => {
-      // @ts-ignore
-      delete VC.proof
-      await expect(
-        verify(VC, { type: 'SomeOtherProof' } as any, { api: mockedApi })
-      ).rejects.toThrow()
-    })
-
-    // it('rejects selecting non-existent properties for presentation', async () => {
-    //   await expect(
-    //     presentationUtils.makePresentation(VC, ['name', 'age', 'profession'])
-    //   ).rejects.toThrow()
-
-    //   const presentation = await presentationUtils.makePresentation(VC, [
-    //     'name',
-    //   ])
-
-    //   await expect(
-    //     presentationUtils.makePresentation(
-    //       presentation.verifiableCredential as VerifiableCredential,
-    //       ['premium']
-    //     )
-    //   ).rejects.toThrow()
-    // })
-
-    it('it detects tampering with credential digest', async () => {
-      // @ts-ignore
-      VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-      const { proof, ...cred } = VC
-      await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
-    })
-
-    it('it detects tampering with credential fields', async () => {
-      VC.federatedTrustModel = [
-        {
-          type: 'KiltAttesterLegitimationV1',
-          id: credentialIdFromRootHash(randomAsU8a(32)),
-        },
-      ]
-      const { proof, ...cred } = VC
-      await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
-    })
-
-    it('it detects tampering on claimed properties', async () => {
-      VC.credentialSubject.name = 'Kort'
-      const { proof, ...cred } = VC
-      await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
-    })
-
-    // it('it detects schema violations', () => {
-    //   VC.credentialSubject.name = 42
-    //   const result = verificationUtils.validateSchema(VC)
-    //   expect(result).toMatchObject({
-    //     verified: false,
-    //   })
-    // })
-
-    it('it fails if attestation not on chain', async () => {
-      jest
-        .mocked(mockedApi.query.attestation.attestations)
-        .mockResolvedValueOnce(
-          mockedApi.createType(
-            'Option<AttestationAttestationsAttestationDetails>'
-          ) as any
-        )
-      jest
-        .mocked(mockedApi.query.system.events)
-        .mockResolvedValueOnce(
-          mockedApi.createType('Vec<FrameSystemEventRecord>', []) as any
-        )
-      const { proof, ...cred } = VC
-      await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
-      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
-    })
-
-    it('fails if attestation on chain not identical', async () => {
-      jest
-        .mocked(mockedApi.query.attestation.attestations)
-        .mockResolvedValueOnce(
-          mockedApi.createType(
-            'Option<AttestationAttestationsAttestationDetails>',
-            {}
-          ) as any
-        )
-      jest
-        .mocked(mockedApi.query.system.events)
-        .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
-      const { proof, ...cred } = VC
-      await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
-      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
-    })
-
-    it('verifies proof but not status if attestation revoked', async () => {
-      jest
-        .mocked(mockedApi.query.attestation.attestations)
-        .mockResolvedValueOnce(
-          mockedApi.createType(
-            'Option<AttestationAttestationsAttestationDetails>',
-            {
-              ctypeHash:
-                '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-              attester: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-              revoked: true,
-              deposit: {
-                owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-                amount: 0,
-              },
-            }
-          ) as any
-        )
-
-      const { proof, ...cred } = VC
-      await expect(
-        verify(cred, proof, { api: mockedApi })
-      ).resolves.not.toThrow()
-      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
-    })
   })
 })
