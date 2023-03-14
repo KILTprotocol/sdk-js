@@ -30,8 +30,13 @@ import type {
 } from '@polkadot/types/interfaces/types.js'
 import type { IEventData } from '@polkadot/types/types'
 
-import { CType, DelegationNode } from '@kiltprotocol/core'
-import { authorizeTx, getFullDidUri, validateUri } from '@kiltprotocol/did'
+import { CType } from '@kiltprotocol/core'
+import {
+  authorizeTx,
+  getFullDidUri,
+  validateUri,
+  fromChain as didFromChain,
+} from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
@@ -297,16 +302,22 @@ async function verifyAttestedAt(
 }
 
 async function verifyAuthoritiesInHierarchy(
-  nodeId: string,
+  api: ApiPromise,
+  nodeId: Uint8Array | string,
   delegators: Set<DidUri>
 ): Promise<void> {
-  const node = await DelegationNode.fetch(nodeId)
-  delegators.delete(node.account)
+  const node = (await api.query.delegation.delegationNodes(nodeId)).unwrapOr(
+    null
+  )
+  if (node === null) {
+    throw new SDKErrors.DelegationIdMissingError()
+  }
+  delegators.delete(didFromChain(node.details.owner))
   if (delegators.size === 0) {
     return
   }
-  if (node.parentId) {
-    await verifyAuthoritiesInHierarchy(node.parentId, delegators)
+  if (node.parent.isSome) {
+    await verifyAuthoritiesInHierarchy(api, node.parent.unwrap(), delegators)
     return
   }
   throw new SDKErrors.CredentialUnverifiableError(
@@ -459,6 +470,7 @@ export async function verify(
           // check for expected authorities in delegation hierarchy
           if (i.delegators && typeof delegationId === 'string') {
             await verifyAuthoritiesInHierarchy(
+              api,
               delegationId,
               new Set(i.delegators)
             )

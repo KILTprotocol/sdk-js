@@ -9,9 +9,12 @@
  * @group unit/vc-export
  */
 
-import { randomAsU8a } from '@polkadot/util-crypto'
+import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+import { u8aToHex, u8aToU8a } from '@polkadot/util'
 
 import { Credential } from '@kiltprotocol/core'
+import { parse } from '@kiltprotocol/did'
+import type { DidUri } from '@kiltprotocol/types'
 
 import {
   attestation,
@@ -23,7 +26,6 @@ import {
   timestamp,
 } from './exportToVerifiableCredential.spec'
 import { exportICredentialToVc } from './fromICredential'
-import { VerifiableCredential } from './types'
 import {
   finalizeProof,
   initializeProof,
@@ -33,6 +35,7 @@ import {
 import { check as checkStatus } from './KiltRevocationStatusV1'
 import { fromICredential } from './KiltCredentialV1'
 import { credentialIdFromRootHash } from './common'
+import type { VerifiableCredential } from './types'
 
 let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
 describe('proofs', () => {
@@ -90,6 +93,57 @@ describe('proofs', () => {
     expect(Object.entries(updated.proof.salt)).toHaveLength(2)
     await expect(
       verify(updated.credential, updated.proof, { api: mockedApi })
+    ).resolves.not.toThrow()
+  })
+
+  it('checks delegation node owners', async () => {
+    const delegator: DidUri = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
+    const credentialWithDelegators: VerifiableCredential = {
+      ...VC,
+      federatedTrustModel: VC.federatedTrustModel?.map((i) => {
+        if (i.type === 'KiltAttesterDelegationV1') {
+          return { ...i, delegators: [attestation.owner, delegator] }
+        }
+        return i
+      }),
+    }
+    const parentId = randomAsHex(32)
+
+    mockedApi.query.delegation = {
+      delegationNodes: jest.fn(async (nodeId: string | Uint8Array) => {
+        switch (u8aToHex(u8aToU8a(nodeId))) {
+          case credential.delegationId:
+            return mockedApi.createType(
+              'Option<DelegationDelegationHierarchyDelegationNode>',
+              {
+                parent: parentId,
+                details: {
+                  owner: parse(attestation.owner).address,
+                },
+              }
+            )
+          case parentId:
+            return mockedApi.createType(
+              'Option<DelegationDelegationHierarchyDelegationNode>',
+              {
+                parent: randomAsHex(32),
+                details: {
+                  owner: parse(delegator).address,
+                },
+              }
+            )
+          default:
+            return mockedApi.createType(
+              'Option<DelegationDelegationHierarchyDelegationNode>'
+            )
+        }
+      }),
+    } as any
+
+    await expect(
+      verify(credentialWithDelegators, credentialWithDelegators.proof!, {
+        api: mockedApi,
+      })
     ).resolves.not.toThrow()
   })
 })
