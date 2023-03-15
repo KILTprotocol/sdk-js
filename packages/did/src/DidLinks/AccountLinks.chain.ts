@@ -41,21 +41,13 @@ type EncodedMultiAddress =
   | { AccountId32: Uint8Array }
 
 /**
- * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
+ * Detects whether the spec version indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
  */
 function isEthereumEnabled(api: ApiPromise): boolean {
-  const removeType = api.createType(
-    api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-      'bool'
-  )
-  const associateType = api.createType(
-    api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
-  )
-
-  return 'isAccountId20' in removeType || 'isEthereum' in associateType
+  return api.runtimeVersion.specVersion.gten(11000)
 }
 
 /**
