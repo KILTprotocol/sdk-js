@@ -182,7 +182,6 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           did.uri,
-          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           didKey.getSignCallback(did),
           paymentAccount.address
@@ -221,7 +220,6 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           newDid.uri,
-          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           newDidKey.getSignCallback(newDid),
           paymentAccount.address
@@ -306,7 +304,6 @@ describe('When there is an on-chain DID', () => {
       )
       const signedTx = await Did.authorizeTx(
         did.uri,
-        // @ts-ignore
         api.tx.didLookup.associateAccount(...args),
         didKey.getSignCallback(did),
         paymentAccount.address
