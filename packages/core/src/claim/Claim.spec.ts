@@ -195,7 +195,7 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
-    // @ts-ignore
+    // @ts-expect-error
     const noCTypeHash = {
       cTypeHash: '',
       contents: claimContents,

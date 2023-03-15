@@ -155,7 +155,7 @@ describe('When there is an on-chain DID', () => {
       beforeAll(async () => {
         if (
           keyType === 'ethereum' &&
-          // @ts-ignore palletVersion exists but is not augmented
+          // @ts-expect-error palletVersion exists but is not augmented
           (await api.query.didLookup.palletVersion()) < 3
         ) {
           console.warn('skipping ethereum tests')
@@ -182,7 +182,7 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           did.uri,
-          // @ts-ignore
+          // @ts-expect-error
           api.tx.didLookup.associateAccount(...args),
           didKey.getSignCallback(did),
           paymentAccount.address
@@ -221,7 +221,7 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           newDid.uri,
-          // @ts-ignore
+          // @ts-expect-error
           api.tx.didLookup.associateAccount(...args),
           newDidKey.getSignCallback(newDid),
           paymentAccount.address
@@ -306,7 +306,7 @@ describe('When there is an on-chain DID', () => {
       )
       const signedTx = await Did.authorizeTx(
         did.uri,
-        // @ts-ignore
+        // @ts-expect-error
         api.tx.didLookup.associateAccount(...args),
         didKey.getSignCallback(did),
         paymentAccount.address

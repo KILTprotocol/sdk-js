@@ -73,7 +73,7 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
@@ -82,7 +82,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    // @ts-ignore
+    // @ts-expect-error
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',
@@ -91,7 +91,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    // @ts-ignore
+    // @ts-expect-error
     const malformedOwner = {
       claimHash,
       cTypeHash,

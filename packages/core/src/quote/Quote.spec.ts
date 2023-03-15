@@ -87,7 +87,7 @@ describe('Quote', () => {
     // build credential with legitimations
     credential = Credential.fromClaim(claim)
 
-    // @ts-ignore
+    // @ts-expect-error
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
       cost: invalidCost,

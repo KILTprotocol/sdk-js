@@ -27,7 +27,7 @@ let api: ApiPromise
 let hasBlockNumbers: boolean
 beforeAll(async () => {
   api = await initializeApi()
-  // @ts-ignore Not augmented for some reason
+  // @ts-expect-error Not augmented for some reason
   hasBlockNumbers = (await api.query.ctype.palletVersion()).toNumber() >= 2
   if (!hasBlockNumbers) {
     console.warn(

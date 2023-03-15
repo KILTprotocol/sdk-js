@@ -192,7 +192,7 @@ describe('When exporting a DID Document from a full DID', () => {
 
   it('fails to export to an unsupported mimetype', async () => {
     expect(() =>
-      // @ts-ignore
+      // @ts-expect-error
       exportToDidDocument(fullDid, 'random-mime-type')
     ).toThrow()
   })
@@ -317,7 +317,7 @@ describe('When exporting a DID Document from a light DID', () => {
 
   it('fails to export to an unsupported mimetype', async () => {
     expect(() =>
-      // @ts-ignore
+      // @ts-expect-error
       exportToDidDocument(lightDid, 'random-mime-type')
     ).toThrow()
   })

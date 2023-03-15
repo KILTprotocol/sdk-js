@@ -92,7 +92,6 @@ describe('Blockchain', () => {
     })
 
     it('throws if subscriptions not supported', async () => {
-      // @ts-ignore
       api.hasSubscriptions = false
       const tx = api.tx.balances.transfer('abcdef', 50)
       await expect(

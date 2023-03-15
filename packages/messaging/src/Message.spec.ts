@@ -1189,39 +1189,39 @@ describe('Error checking / Verification', () => {
     expect(() =>
       Message.verifyMessageEnvelope(messageRequestTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)
-    // @ts-ignore
+    // @ts-expect-error
     messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       Message.verifyMessageEnvelope(messageSubmitTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)
-    // @ts-ignore
+    // @ts-expect-error
     messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       Message.verifyMessageEnvelope(messageRejectTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)
-    // @ts-ignore
+    // @ts-expect-error
     messageRequestAttestationForClaim.messageId = 12
     expect(() =>
       Message.verifyMessageEnvelope(messageRequestAttestationForClaim)
     ).toThrowError(TypeError)
-    // @ts-ignore
+    // @ts-expect-error
     messageSubmitAttestationForClaim.createdAt = '123456'
     expect(() =>
       Message.verifyMessageEnvelope(messageSubmitAttestationForClaim)
     ).toThrowError(TypeError)
-    // @ts-ignore
+    // @ts-expect-error
     messageRejectAttestationForClaim.receivedAt = '123456'
     expect(() =>
       Message.verifyMessageEnvelope(messageRejectAttestationForClaim)
     ).toThrowError(TypeError)
-    // @ts-ignore
+    // @ts-expect-error
     messageRequestCredential.inReplyTo = 123
     expect(() =>
       Message.verifyMessageEnvelope(messageRequestCredential)
     ).toThrowError(TypeError)
   })
   it('message body verifier should throw errors on faulty bodies', () => {
-    // @ts-ignore
+    // @ts-expect-error
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() => Message.verifyMessageBody(requestTermsBody)).toThrowError(
       SDKErrors.HashMalformedError
@@ -1242,33 +1242,33 @@ describe('Error checking / Verification', () => {
     )
     submitCredentialBody.content[0].claimerSignature = {
       signature: 'this is not the claimers signature',
-      // @ts-ignore
+      // @ts-expect-error
       keyUri: 'this is not a key id',
     }
     expect(() => Message.verifyMessageBody(submitCredentialBody)).toThrowError()
-    // @ts-ignore
+    // @ts-expect-error
     submitAttestationBody.content.attestation.claimHash =
       'this is not the claim hash'
     expect(() => Message.verifyMessageBody(submitAttestationBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
-    // @ts-ignore
+    // @ts-expect-error
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       Message.verifyMessageBody(rejectAttestationForClaimBody)
     ).toThrowError(SDKErrors.HashMalformedError)
-    // @ts-ignore
+    // @ts-expect-error
     requestCredentialBody.content.cTypes[0].cTypeHash =
       'this is not a cTypeHash'
     expect(() => Message.verifyMessageBody(requestCredentialBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
-    // @ts-ignore
+    // @ts-expect-error
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() => Message.verifyMessageBody(acceptCredentialBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
-    // @ts-ignore
+    // @ts-expect-error
     rejectCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() => Message.verifyMessageBody(rejectCredentialBody)).toThrowError(
       SDKErrors.HashMalformedError
@@ -1282,7 +1282,7 @@ describe('Error checking / Verification', () => {
     expect(() =>
       Message.verifyMessageBody(requestAcceptDelegationBody)
     ).toThrowError(SDKErrors.SignatureMalformedError)
-    // @ts-ignore
+    // @ts-expect-error
     submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>

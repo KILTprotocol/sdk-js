@@ -190,7 +190,7 @@ describe('Credential', () => {
         []
       ),
     } as ICredential
-    // @ts-ignore
+    // @ts-expect-error
     builtCredentialMalformedRootHash.rootHash = [
       builtCredentialMalformedRootHash.rootHash.slice(0, 15),
       (
@@ -693,7 +693,7 @@ describe('Presentations', () => {
       Attestation.verifyAgainstCredential(attestation, credential)
     ).not.toThrow()
     const { cTypeHash } = attestation
-    // @ts-ignore
+    // @ts-expect-error
     attestation.cTypeHash = [
       cTypeHash.slice(0, 15),
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
