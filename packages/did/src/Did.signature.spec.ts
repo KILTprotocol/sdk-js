@@ -280,7 +280,7 @@ describe('full DID', () => {
       authentication: [
         {
           id: '#0x12345',
-          type: 'sr25519',
+          type: keypair.type,
           publicKey: keypair.publicKey,
         },
       ],
@@ -288,7 +288,7 @@ describe('full DID', () => {
     sign = async ({ data }) => ({
       signature: keypair.sign(data),
       keyUri: `${did.uri}#0x12345`,
-      keyType: 'sr25519',
+      keyType: keypair.type,
     })
   })
 

@@ -6,7 +6,11 @@
  */
 
 import { isHex, u8aToU8a } from '@polkadot/util'
-import { signatureVerify } from '@polkadot/util-crypto'
+import {
+  ed25519Verify,
+  secp256k1Verify,
+  sr25519Verify,
+} from '@polkadot/util-crypto'
 
 import {
   DidResolveKey,
@@ -62,12 +66,11 @@ function verifyDidSignatureDataStructure(
   validateUri(keyUri, 'ResourceUri')
 }
 
-const polkadotVerify: VerifierFunction = (message, signature, publicKey) =>
-  signatureVerify(message, signature, publicKey).isValid
 const polkadotVerifiers: Record<VerificationKeyType, VerifierFunction> = {
-  ecdsa: polkadotVerify,
-  ed25519: polkadotVerify,
-  sr25519: polkadotVerify,
+  ecdsa: (...args) =>
+    secp256k1Verify(...args, 'blake2') || secp256k1Verify(...args, 'keccak'),
+  ed25519: ed25519Verify,
+  sr25519: sr25519Verify,
 }
 
 /**
@@ -82,7 +85,7 @@ const polkadotVerifiers: Record<VerificationKeyType, VerifierFunction> = {
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
- * @param input.verifiers An object mapping key types to a verification function. Defaults to using polkadot-js's `signatureVerify` for all known key types.
+ * @param input.verifiers An object mapping key types to a verification function. The default handles secp256k1 (ecdsa) with blake2 or keccak message hashing, sr25519, and ed25519 signatures.
  */
 export async function verifyDidSignature({
   message,
