@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { isHex, u8aToU8a } from '@polkadot/util'
+import { isHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
 import {
   ed25519Verify,
   secp256k1Verify,
@@ -40,6 +40,7 @@ export type DidSignatureVerificationInput = {
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
   verifiers?: Record<VerificationKeyType, VerifierFunction>
+  wrapped?: boolean
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -86,6 +87,7 @@ const polkadotVerifiers: Record<VerificationKeyType, VerifierFunction> = {
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  * @param input.verifiers An object mapping key types to a verification function. The default handles secp256k1 (ecdsa) with blake2 or keccak message hashing, sr25519, and ed25519 signatures.
+ * @param input.wrapped Whether `u8aWrapBytes` was applied to the message before signing.
  */
 export async function verifyDidSignature({
   message,
@@ -96,6 +98,7 @@ export async function verifyDidSignature({
   expectedVerificationMethod,
   didResolveKey = resolveKey,
   verifiers = polkadotVerifiers,
+  wrapped = false,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
   const signer = parse(keyUri)
@@ -126,7 +129,9 @@ export async function verifyDidSignature({
       `no signature verification function available for key type ${type}`
     )
   }
-  if (verifiers[type](u8aToU8a(message), signature, publicKey) !== true) {
+  const messageBytes = u8aToU8a(message)
+  const verifyData = wrapped ? u8aWrapBytes(messageBytes) : messageBytes
+  if (verifiers[type](verifyData, signature, publicKey) !== true) {
     throw new SDKErrors.SignatureUnverifiableError()
   }
 }

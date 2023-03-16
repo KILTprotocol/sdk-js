@@ -9,6 +9,11 @@
  * @group unit/did
  */
 
+import { u8aWrapBytes } from '@polkadot/util'
+import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import type {
   DidDocument,
   DidResourceUri,
@@ -18,9 +23,7 @@ import type {
   NewLightDidVerificationKey,
   SignCallback,
 } from '@kiltprotocol/types'
-import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
+
 import * as Did from './index.js'
 import {
   verifyDidSignature,
@@ -333,6 +336,24 @@ describe('full DID', () => {
         signature,
         keyUri,
         expectedVerificationMethod: 'authentication',
+      })
+    ).resolves.not.toThrow()
+  })
+
+  it('verifies did signature over wrapped bytes', async () => {
+    const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
+    const { signature, keyUri } = await sign({
+      data: u8aWrapBytes(SIGNED_BYTES),
+      did: did.uri,
+      keyRelationship: 'authentication',
+    })
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_BYTES,
+        signature,
+        keyUri,
+        expectedVerificationMethod: 'authentication',
+        wrapped: true,
       })
     ).resolves.not.toThrow()
   })
