@@ -29,13 +29,20 @@ import type { VerifiableCredential, VerifiablePresentation } from './types.js'
  * Checks that an identity can act as a legitimate holder of a set of credentials and thus include them in a presentation they sign.
  * Credentials where `nonTransferable === true` and `credentialSubject.id !== holder` are disallowed and will cause this to fail.
  *
- * @param holder A DID.
- * @param credentials An array of credentials.
+ * @param presentation A Verifiable Presentation.
+ * @param presentation.holder The presentation holder's identifier.
+ * @param presentation.verifiableCredential A VC or an array of VCs.
  */
-export function assertHolderCanPresentCredentials(
-  holder: DidUri,
-  credentials: VerifiableCredential[]
-): void {
+export function assertHolderCanPresentCredentials({
+  holder,
+  verifiableCredential,
+}: {
+  holder: DidUri
+  verifiableCredential: VerifiableCredential[] | VerifiableCredential
+}): void {
+  const credentials = Array.isArray(verifiableCredential)
+    ? verifiableCredential
+    : [verifiableCredential]
   credentials.forEach(({ nonTransferable, credentialSubject, id }) => {
     if (nonTransferable && credentialSubject.id !== holder)
       throw new Error(
@@ -52,20 +59,21 @@ export function assertHolderCanPresentCredentials(
  * @param holder The holder of the credentials in the presentation, which also signs the presentation.
  * @returns A Verifiable Presentation containing the original VC with its proofs, but not extra signatures.
  */
-export function makePresentation(
+export function create(
   VCs: Array<
     VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
   >,
   holder: DidUri
 ): VerifiablePresentation {
-  assertHolderCanPresentCredentials(holder, VCs)
   const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
-  return {
+  const presentation: VerifiablePresentation = {
     '@context': [W3C_CREDENTIAL_CONTEXT_URL],
     type: [W3C_PRESENTATION_TYPE],
     verifiableCredential,
     holder,
   }
+  assertHolderCanPresentCredentials(presentation)
+  return presentation
 }
 
 function encodeBase64url(bytes: Uint8Array): string {
@@ -106,7 +114,7 @@ const signers: Record<
  * @param options.audience Identifier of the verifier to prevent unintended re-use of the presentation.
  * @returns A signed JWT in compact representation containing a VerifiablePresentation.
  */
-export function signPresentationJWT(
+export function signJwt(
   presentation: VerifiablePresentation,
   signingKey: {
     secretKey: Uint8Array
@@ -177,7 +185,7 @@ const verifiers: Record<VerificationKeyType, VerifierFunction> = {
  * @param options.challenge Expected challenge. Verification fails if the nonce claim in the JWT is not equal to this value.
  * @returns The VerifiablePresentation (without proof), the decoded JWT payload containing all claims, and the decoded JWT header.
  */
-export async function verifyJwtPresentation(
+export async function verifyJwt(
   jwt: string,
   { audience, challenge }: { audience?: string; challenge?: string }
 ): Promise<{
@@ -214,10 +222,7 @@ export async function verifyJwtPresentation(
     holder: payload.iss,
     ...(typeof payload.jti === 'string' && { id: payload.jti }),
   }
-  const credentials = Array.isArray(presentation.verifiableCredential)
-    ? presentation.verifiableCredential
-    : [presentation.verifiableCredential]
-  assertHolderCanPresentCredentials(presentation.holder, credentials)
+  assertHolderCanPresentCredentials(presentation)
   return {
     presentation,
     payload,

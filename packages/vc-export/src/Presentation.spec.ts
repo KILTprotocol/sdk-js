@@ -35,9 +35,9 @@ import {
   getFullDidUriFromKey,
 } from '@kiltprotocol/did'
 import {
-  makePresentation,
-  signPresentationJWT,
-  verifyJwtPresentation,
+  create as createPresentation,
+  signJwt,
+  verifyJwt,
 } from './Presentation'
 import type { VerifiableCredential, VerifiablePresentation } from './types'
 
@@ -123,9 +123,9 @@ it('verifies a presentation signed by an ecdsa key', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = makePresentation([credential], did)
+  const presentation = createPresentation([credential], did)
 
-  const signedPres = signPresentationJWT(
+  const signedPres = signJwt(
     presentation,
     {
       ...key,
@@ -135,7 +135,7 @@ it('verifies a presentation signed by an ecdsa key', async () => {
     { challenge: 'abcdef', expiresIn: 60 * 1000, audience: 'did:kilt:1234' }
   )
 
-  const myResult = await verifyJwtPresentation(signedPres, {
+  const myResult = await verifyJwt(signedPres, {
     audience: 'did:kilt:1234',
     challenge: 'abcdef',
   })
@@ -167,9 +167,9 @@ it('verifies a presentation signed by an ed25519 key', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = makePresentation([credential], did)
+  const presentation = createPresentation([credential], did)
 
-  const signedPres = signPresentationJWT(
+  const signedPres = signJwt(
     presentation,
     {
       ...key,
@@ -179,7 +179,7 @@ it('verifies a presentation signed by an ed25519 key', async () => {
     { challenge: 'abcdef', expiresIn: 60 * 1000, audience: 'did:kilt:1234' }
   )
 
-  const myResult = await verifyJwtPresentation(signedPres, {
+  const myResult = await verifyJwt(signedPres, {
     audience: 'did:kilt:1234',
     challenge: 'abcdef',
   })
@@ -211,13 +211,13 @@ it('fails if subject !== holder', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = makePresentation([credential], did)
+  const presentation = createPresentation([credential], did)
 
   // test making presentations
   const randomDid = getFullDidUri(encodeAddress(randomAsU8a(), 38))
   credential.credentialSubject.id = randomDid
   expect(() =>
-    makePresentation([credential], did)
+    createPresentation([credential], did)
   ).toThrowErrorMatchingInlineSnapshot(
     `"The credential with id kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad is non-transferable and cannot be presented by the identity did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo"`
   )
@@ -228,14 +228,14 @@ it('fails if subject !== holder', async () => {
   ;(
     presentation.verifiableCredential as VerifiableCredential
   ).credentialSubject.id = randomDid
-  const signedPres = signPresentationJWT(presentation, {
+  const signedPres = signJwt(presentation, {
     ...key,
     keyUri: didKey.id,
     type: 'ed25519',
   })
 
   await expect(
-    verifyJwtPresentation(signedPres, {})
+    verifyJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"The credential with id kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad is non-transferable and cannot be presented by the identity did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo"`
   )
@@ -248,9 +248,9 @@ it('fails if expired or not yet valid', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = makePresentation([credential], did)
+  const presentation = createPresentation([credential], did)
 
-  let signedPres = signPresentationJWT(
+  let signedPres = signJwt(
     presentation,
     {
       ...key,
@@ -261,12 +261,12 @@ it('fails if expired or not yet valid', async () => {
   )
 
   await expect(
-    verifyJwtPresentation(signedPres, {})
+    verifyJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"Time of validity is in the past"`
   )
 
-  signedPres = signPresentationJWT(
+  signedPres = signJwt(
     presentation,
     {
       ...key,
@@ -277,7 +277,7 @@ it('fails if expired or not yet valid', async () => {
   )
 
   await expect(
-    verifyJwtPresentation(signedPres, {})
+    verifyJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"Time of validity is in the future"`
   )
@@ -297,9 +297,9 @@ describe('when there is a presentation', () => {
 
     credential.credentialSubject.id = did
 
-    presentation = makePresentation([credential], did)
+    presentation = createPresentation([credential], did)
 
-    signedPresentation = signPresentationJWT(
+    signedPresentation = signJwt(
       presentation,
       {
         ...key,
@@ -316,7 +316,7 @@ describe('when there is a presentation', () => {
       .mockResolvedValue(api.createType('Option<RawDidLinkedInfo>'))
 
     await expect(
-      verifyJwtPresentation(signedPresentation, {
+      verifyJwt(signedPresentation, {
         audience: 'did:kilt:1234',
         challenge: 'abcdef',
       })
@@ -343,7 +343,7 @@ describe('when there is a presentation', () => {
     jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
     await expect(
-      verifyJwtPresentation(signedPresentation, {
+      verifyJwt(signedPresentation, {
         audience: 'did:kilt:4321',
         challenge: 'abcdef',
       })
@@ -374,7 +374,7 @@ describe('when there is a presentation', () => {
     jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
     await expect(
-      verifyJwtPresentation(signedPresentation, {
+      verifyJwt(signedPresentation, {
         challenge: 'whatup',
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
