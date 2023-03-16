@@ -33,6 +33,11 @@ import {
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
 
+jest.mock('@kiltprotocol/core', () => ({
+  ...jest.requireActual('@kiltprotocol/core'),
+  Attestation: { fromChain: jest.fn() },
+}))
+
 const mockedApi: any = ApiMocks.getMockedApi()
 
 const ctype: ICType = {
@@ -327,7 +332,7 @@ describe('proofs', () => {
     mockedApi.query.attestation.attestations.mockResolvedValueOnce(
       encodedAttestation
     )
-    jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
+    jest.mocked(Attestation.fromChain).mockReturnValue(attestation)
 
     const result = await verificationUtils.verifyAttestedProof(
       VC,
