@@ -34,7 +34,7 @@ it('consistent CType id generation', () => {
   })
 
   expect(ctypeV1.$id).toMatchInlineSnapshot(
-    `"kilt:ctype:0x12c8edb42b455aa6c29fabda8f3768bd1e8577f0618f122072828e41b6f4f728"`
+    `"kilt:ctype:0x3e0a3b18e775d0b9789147b5d29c772f197b57986bb6d56604268980b530964a"`
   )
 
   const ctypeV0 = CType.fromProperties(
