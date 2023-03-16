@@ -131,6 +131,7 @@ export const presentationSchema: JsonSchema.Schema = {
   definitions: {
     verifiableCredential: {
       type: 'object',
+      // only checking the minimal definition of a VC: a type field and potentially a context.
       properties: {
         '@context': { $ref: '#/definitions/contexts' },
         type: {
@@ -147,7 +148,7 @@ export const presentationSchema: JsonSchema.Schema = {
           ],
         },
       },
-      required: ['@context', 'type'],
+      required: ['type'],
     },
     contexts: {
       oneOf: [
