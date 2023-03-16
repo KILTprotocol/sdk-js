@@ -9,7 +9,7 @@ import { JsonSchema } from '@kiltprotocol/utils'
 
 export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
   // $id is not contained in schema when fetched from ipfs bc that is impossible with a content-addressed system
-  $id: 'ipfs://bafybeifzfxz6tfd2xo7ijxbfceaxo3l655yg7sovlsnpxgq2rwfl4kbfgm',
+  $id: 'ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq',
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'CType Metaschema (V1)',
   description:
@@ -27,28 +27,11 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
       patternProperties: {
         '^.+$': {
           oneOf: [
-            {
-              additionalProperties: false,
-              properties: {
-                $ref: {
-                  pattern: '^kilt:ctype:0x[0-9a-f]+(#/properties/.+)?$',
-                  format: 'uri',
-                  type: 'string',
-                },
-              },
-              required: ['$ref'],
-            },
-            {
-              additionalProperties: false,
-              properties: {
-                format: { enum: ['date', 'time', 'uri'], type: 'string' },
-                type: {
-                  enum: ['boolean', 'integer', 'number', 'string'],
-                  type: 'string',
-                },
-              },
-              required: ['type'],
-            },
+            { $ref: '#/definitions/string' },
+            { $ref: '#/definitions/number' },
+            { $ref: '#/definitions/boolean' },
+            { $ref: '#/definitions/cTypeReference' },
+            { $ref: '#/definitions/array' },
           ],
           type: 'object',
         },
@@ -66,6 +49,89 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
     'title',
     'type',
   ],
+  definitions: {
+    cTypeReference: {
+      additionalProperties: false,
+      properties: {
+        $ref: {
+          pattern: '^kilt:ctype:0x[0-9a-f]+(#/properties/.+)?$',
+          format: 'uri',
+          type: 'string',
+        },
+      },
+      required: ['$ref'],
+    },
+    string: {
+      additionalProperties: false,
+      properties: {
+        type: {
+          const: 'string',
+        },
+        format: { enum: ['date', 'time', 'uri'] },
+        enum: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        minLength: {
+          type: 'number',
+        },
+        maxLength: {
+          type: 'number',
+        },
+      },
+      required: ['type'],
+    },
+    boolean: {
+      additionalProperties: false,
+      properties: {
+        type: {
+          const: 'boolean',
+        },
+      },
+      required: ['type'],
+    },
+    number: {
+      additionalProperties: false,
+      properties: {
+        type: {
+          enum: ['integer', 'number'],
+        },
+        enum: {
+          type: 'array',
+          items: { type: 'number' },
+        },
+        minimum: {
+          type: 'number',
+        },
+        maximum: {
+          type: 'number',
+        },
+      },
+      required: ['type'],
+    },
+    array: {
+      additionalProperties: false,
+      properties: {
+        type: { const: 'array' },
+        items: {
+          oneOf: [
+            { $ref: '#/definitions/string' },
+            { $ref: '#/definitions/number' },
+            { $ref: '#/definitions/boolean' },
+            // TODO: do we have reasons not to allow CType references in arrays?
+            { $ref: '#/definitions/cTypeReference' },
+          ],
+        },
+        minItems: {
+          type: 'number',
+        },
+        maxItems: {
+          type: 'number',
+        },
+      },
+      required: ['type', 'items'],
+    },
+  },
 }
 
 export const CTypeModelDraft01: JsonSchema.Schema & { $id: string } = {
