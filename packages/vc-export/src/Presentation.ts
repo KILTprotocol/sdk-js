@@ -76,6 +76,109 @@ export function create(
   return presentation
 }
 
+export const presentationSchema: JsonSchema.Schema = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  properties: {
+    '@context': { $ref: '#/definitions/contexts' },
+    type: {
+      oneOf: [
+        {
+          type: 'array',
+          uniqueItems: true,
+          items: { type: 'string' },
+          contains: { const: W3C_PRESENTATION_TYPE },
+        },
+        {
+          const: W3C_PRESENTATION_TYPE,
+        },
+      ],
+    },
+    id: {
+      type: 'string',
+      format: 'uri',
+    },
+    verifiableCredential: {
+      oneOf: [
+        { $ref: '#/definitions/verifiableCredential' },
+        {
+          type: 'array',
+          items: { $ref: '#/definitions/verifiableCredential' },
+          minLength: 1,
+        },
+      ],
+    },
+    holder: {
+      type: 'string',
+      format: 'uri',
+    },
+    proof: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+        },
+      },
+      required: ['type'],
+    },
+  },
+  required: ['@context', 'type', 'verifiableCredential', 'holder'],
+  definitions: {
+    verifiableCredential: {
+      type: 'object',
+      properties: {
+        '@context': { $ref: '#/definitions/contexts' },
+        type: {
+          oneOf: [
+            {
+              type: 'array',
+              uniqueItems: true,
+              items: { type: 'string' },
+              contains: { const: W3C_CREDENTIAL_TYPE },
+            },
+            {
+              const: W3C_CREDENTIAL_TYPE,
+            },
+          ],
+        },
+      },
+      required: ['@context', 'type'],
+    },
+    contexts: {
+      oneOf: [
+        {
+          type: 'array',
+          uniqueItem: true,
+          items: [{ const: W3C_CREDENTIAL_CONTEXT_URL }],
+          additionalItems: { type: 'string', format: 'uri' },
+        },
+        { const: W3C_CREDENTIAL_CONTEXT_URL },
+      ],
+    },
+  },
+}
+
+// draft version '7' should align with $schema property of the schema above
+const schemaValidator = new JsonSchema.Validator(presentationSchema, '7')
+
+/**
+ * Validates an object against the VerifiablePresentation data model.
+ * Throws if object violates the [[presentationSchema]].
+ *
+ * @param presentation VerifiablePresentation or object to be validated.
+ */
+export function validateStructure(presentation: VerifiablePresentation): void {
+  const { errors, valid } = schemaValidator.validate(presentation)
+  if (!valid) {
+    throw new PresentationMalformedError(
+      `Object not matching VerifiablePresentation data model`,
+      {
+        cause: errors,
+      }
+    )
+  }
+}
+
 function encodeBase64url(bytes: Uint8Array): string {
   return toString(bytes, 'base64url')
 }
