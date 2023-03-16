@@ -9,7 +9,6 @@
  * @group unit/vc-export
  */
 
-import { verifyJWT } from 'did-jwt'
 import { hexToU8a } from '@polkadot/util'
 import {
   secp256k1PairFromSeed,
@@ -17,23 +16,26 @@ import {
   randomAsU8a,
   encodeAddress,
 } from '@polkadot/util-crypto'
-import {
-  DidDocument,
-  DidVerificationKey,
-  ResolvedDidKey,
-  VerificationKeyType,
-} from '@kiltprotocol/types'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { init } from '@kiltprotocol/core'
-import { ApiPromise } from '@polkadot/api'
-import { Crypto } from '@kiltprotocol/utils'
-import { Keypair } from '@polkadot/util-crypto/types'
+import type { ApiPromise } from '@polkadot/api'
+import type { Keypair } from '@polkadot/util-crypto/types'
 import type { Codec } from '@polkadot/types/types'
+import * as DidJwt from 'did-jwt'
+
+import { init } from '@kiltprotocol/core'
+import { Crypto } from '@kiltprotocol/utils'
 import {
   exportToDidDocument,
   getFullDidUri,
   getFullDidUriFromKey,
 } from '@kiltprotocol/did'
+import { ApiMocks } from '@kiltprotocol/testing'
+import type {
+  DidDocument,
+  DidVerificationKey,
+  ResolvedDidKey,
+  VerificationKeyType,
+} from '@kiltprotocol/types'
+
 import {
   create as createPresentation,
   signJwt,
@@ -146,7 +148,7 @@ it('verifies a presentation signed by an ecdsa key', async () => {
     payload: { iss: did },
   })
 
-  const result = await verifyJWT(signedPres, {
+  const result = await DidJwt.verifyJWT(signedPres, {
     // proofPurpose: 'authentication',
     audience: 'did:kilt:1234',
     resolver: {
@@ -190,7 +192,7 @@ it('verifies a presentation signed by an ed25519 key', async () => {
     payload: { iss: did },
   })
 
-  const result = await verifyJWT(signedPres, {
+  const result = await DidJwt.verifyJWT(signedPres, {
     // proofPurpose: 'authentication',
     audience: 'did:kilt:1234',
     resolver: {
@@ -323,7 +325,7 @@ describe('when there is a presentation', () => {
     ).rejects.toThrowErrorMatchingInlineSnapshot(`""`)
 
     await expect(
-      verifyJWT(signedPresentation, {
+      DidJwt.verifyJWT(signedPresentation, {
         // proofPurpose: 'authentication',
         audience: 'did:kilt:1234',
         resolver: {
@@ -352,7 +354,7 @@ describe('when there is a presentation', () => {
     )
 
     await expect(
-      verifyJWT(signedPresentation, {
+      DidJwt.verifyJWT(signedPresentation, {
         // proofPurpose: 'authentication',
         audience: 'did:kilt:4321',
         resolver: {
