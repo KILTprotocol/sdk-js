@@ -38,7 +38,7 @@ import {
   makePresentation,
   signPresentationJWT,
   verifyJwtPresentation,
-} from './presentationUtils'
+} from './Presentation'
 import type { VerifiableCredential, VerifiablePresentation } from './types'
 
 const credential = {
