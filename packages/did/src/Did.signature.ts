@@ -124,7 +124,7 @@ export async function verifyDidSignature({
     keyUri,
     expectedVerificationMethod
   )
-  if (!Object.hasOwn(verifiers, type)) {
+  if (!Object.keys(verifiers).includes(type)) {
     throw new Error(
       `no signature verification function available for key type ${type}`
     )
