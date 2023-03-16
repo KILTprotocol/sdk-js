@@ -46,6 +46,10 @@ const encodedAttestation = ApiMocks.mockChainQueryReturn(
 )
 mockedApi.query.attestation.attestations.mockResolvedValue(encodedAttestation)
 
+jest.mock('@kiltprotocol/core', () => ({
+  ...jest.requireActual('@kiltprotocol/core'),
+  Attestation: { fromChain: jest.fn() },
+}))
 const spy = jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
 let suite: AttestationSuite

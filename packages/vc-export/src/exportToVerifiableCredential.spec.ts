@@ -33,6 +33,11 @@ import {
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
 
+jest.mock('@kiltprotocol/core', () => ({
+  ...jest.requireActual('@kiltprotocol/core'),
+  Attestation: { fromChain: jest.fn() },
+}))
+
 const mockedApi: any = ApiMocks.getMockedApi()
 
 const ctype: ICType = {
