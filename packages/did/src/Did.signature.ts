@@ -121,12 +121,14 @@ export async function verifyDidSignature({
     keyUri,
     expectedVerificationMethod
   )
-  if (!Object.hasOwn(verifiers, type))
+  if (!Object.hasOwn(verifiers, type)) {
     throw new Error(
       `no signature verification function available for key type ${type}`
     )
-  if (verifiers[type](u8aToU8a(message), signature, publicKey) !== true)
+  }
+  if (verifiers[type](u8aToU8a(message), signature, publicKey) !== true) {
     throw new SDKErrors.SignatureUnverifiableError()
+  }
 }
 
 /**
