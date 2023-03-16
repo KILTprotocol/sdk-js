@@ -337,17 +337,13 @@ export function hashStatements(
  * Generate typed KILT blockchain keypair from a seed or random data.
  *
  * @param seed The keypair seed, only optional in the tests.
- * @param keyType Optional type of the keypair.
+ * @param type Optional type of the keypair.
  * @returns The keypair.
  */
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
->(
-  seed = randomAsU8a(32),
-  keyType?: KeyType
-): KiltKeyringPair & { type: KeyType } {
-  const type = keyType ?? 'ed25519'
-  const keyring = new Keyring({ ss58Format, type })
+>(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
@@ -355,14 +351,13 @@ export function makeKeypairFromSeed<
  * Generate typed KILT blockchain keypair from a polkadot keypair URI.
  *
  * @param uri The URI.
- * @param keyType Optional type of the keypair.
+ * @param type Optional type of the keypair.
  * @returns The keypair.
  */
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
->(uri: string, keyType?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const type = keyType ?? 'ed25519'
-  const keyring = new Keyring({ ss58Format, type })
+>(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 
