@@ -9,7 +9,7 @@ import { JsonSchema } from '@kiltprotocol/utils'
 
 export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
   // $id is not contained in schema when fetched from ipfs bc that is impossible with a content-addressed system
-  $id: 'ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq',
+  $id: 'ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq/',
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'CType Metaschema (V1)',
   description:
