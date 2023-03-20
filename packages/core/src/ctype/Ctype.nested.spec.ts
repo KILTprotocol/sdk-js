@@ -142,7 +142,7 @@ describe('Nested CTypes', () => {
         claimDeepContents
       )
     ).not.toThrow()
-    ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
+    ;(claimDeepContents.passport as any).fullName = {}
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType,
