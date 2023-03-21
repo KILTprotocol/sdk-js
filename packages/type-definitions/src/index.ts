@@ -50,7 +50,7 @@ export {
   types10720,
   types10800,
   types10900,
-  types10800 as types,
+  types10900 as types,
 }
 
 export { calls as didCalls } from './runtime/did.js'

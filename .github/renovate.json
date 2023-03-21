@@ -1,7 +1,6 @@
 {
   "extends": [
     ":preserveSemverRanges",
-    ":disableDevDependencies",
     ":disablePeerDependencies",
     ":semanticCommits"
   ],
@@ -36,6 +35,15 @@
       "separateMinorPatch": false,
       "groupName": "polkadot dependencies",
       "groupSlug": "polkadot"
+    },
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "excludePackagePatterns": [
+        "^@polkadot/*"
+      ],
+      "enabled": false
     }
   ]
 }

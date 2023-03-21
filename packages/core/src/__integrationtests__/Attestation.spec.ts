@@ -89,7 +89,7 @@ describe('handling attestations that do not exist', () => {
     )
     await expect(submitTx(authorized, tokenHolder)).rejects.toMatchObject({
       section: 'attestation',
-      name: 'AttestationNotFound',
+      name: expect.stringMatching(/^(Attestation)?NotFound$/),
     })
   }, 30_000)
 
@@ -103,7 +103,7 @@ describe('handling attestations that do not exist', () => {
     )
     await expect(submitTx(authorized, tokenHolder)).rejects.toMatchObject({
       section: 'attestation',
-      name: 'AttestationNotFound',
+      name: expect.stringMatching(/^(Attestation)?NotFound$/),
     })
   }, 30_000)
 })
@@ -275,7 +275,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     await expect(
       submitTx(authorizedStoreTx, tokenHolder)
-    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
+    ).rejects.toMatchObject({
+      section: 'ctype',
+      name: expect.stringMatching(/^(CType)?NotFound$/),
+    })
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
@@ -367,7 +370,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
       await expect(
         submitTx(authorizedRevokeTx, tokenHolder)
-      ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
+      ).rejects.toMatchObject({
+        section: 'attestation',
+        name: expect.stringMatching(/^(Unauthorized|NotAuthorized)$/),
+      })
       const storedAttestation = Attestation.fromChain(
         await api.query.attestation.attestations(attestation.claimHash),
         attestation.claimHash
