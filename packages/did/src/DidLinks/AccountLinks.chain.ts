@@ -6,7 +6,7 @@
  */
 
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
-import type { AnyNumber, TypeDef } from '@polkadot/types/types'
+import type { TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
@@ -41,21 +41,13 @@ type EncodedMultiAddress =
   | { AccountId32: Uint8Array }
 
 /**
- * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
+ * Detects whether the spec version indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
  */
 function isEthereumEnabled(api: ApiPromise): boolean {
-  const removeType = api.createType(
-    api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-      'bool'
-  )
-  const associateType = api.createType(
-    api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
-  )
-
-  return 'isAccountId20' in removeType || 'isEthereum' in associateType
+  return api.runtimeVersion.specVersion.gten(11000)
 }
 
 /**
@@ -93,7 +85,18 @@ export function accountToChain(account: Address): Address {
 
 /* ### EXTRINSICS ### */
 
-type AssociateAccountToChainResult = [string, AnyNumber, EncodedSignature]
+type LinkingInfo = [Address, unknown]
+type AssociateAccountToChainResult = [
+  (
+    | {
+        Polkadot: LinkingInfo
+      }
+    | {
+        Ethereum: LinkingInfo
+      }
+  ),
+  BN
+]
 
 /* ### HELPERS ### */
 
@@ -197,21 +200,21 @@ export async function getLinkingArguments(
 
   if (isEthereumEnabled(api)) {
     if (type === 'ethereum') {
-      const result = [{ Ethereum: [accountAddress, signature] }, validUntil]
-      // Force type cast to enable the old blockchain types to accept the future format
-      return result as unknown as AssociateAccountToChainResult
+      return [{ Ethereum: [accountAddress, signature] }, validUntil]
     }
-    const result = [{ Polkadot: [accountAddress, proof] }, validUntil]
-    // Force type cast to enable the old blockchain types to accept the future format
-    return result as unknown as AssociateAccountToChainResult
+    return [{ Polkadot: [accountAddress, proof] }, validUntil]
   }
 
   if (type === 'ethereum')
     throw new SDKErrors.CodecMismatchError(
       'Ethereum linking is not yet supported by this chain'
     )
-
-  return [accountAddress, validUntil, proof]
+  // Force type cast to enable the new blockchain types to accept the historic format
+  return [
+    accountAddress,
+    validUntil,
+    proof,
+  ] as unknown as AssociateAccountToChainResult
 }
 
 /**
