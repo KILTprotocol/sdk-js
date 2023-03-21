@@ -104,6 +104,8 @@ function mockDidDoc(key: Keypair, type: VerificationKeyType) {
 }
 
 beforeAll(async () => {
+  jest.useFakeTimers()
+  jest.setSystemTime(1679407014000)
   api = ApiMocks.createAugmentedApi()
   api.call.did = {
     // @ts-ignore
@@ -127,14 +129,14 @@ it('verifies a presentation signed by an ecdsa key', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  const signedPres = signJwt(
+  const signedPres = await signJwt(
     presentation,
     {
       ...key,
       keyUri: didKey.id,
       type: 'ecdsa',
     },
-    { challenge: 'abcdef', expiresIn: 60 * 1000, audience: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
   )
 
   const myResult = await verifyJwt(signedPres, {
@@ -144,7 +146,6 @@ it('verifies a presentation signed by an ecdsa key', async () => {
 
   expect(myResult).toMatchObject({
     presentation,
-    header: { kid: didKey.id },
     payload: { iss: did },
   })
 
@@ -171,14 +172,14 @@ it('verifies a presentation signed by an ed25519 key', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  const signedPres = signJwt(
+  const signedPres = await signJwt(
     presentation,
     {
       ...key,
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { challenge: 'abcdef', expiresIn: 60 * 1000, audience: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
   )
 
   const myResult = await verifyJwt(signedPres, {
@@ -188,7 +189,6 @@ it('verifies a presentation signed by an ed25519 key', async () => {
 
   expect(myResult).toMatchObject({
     presentation,
-    header: { kid: didKey.id },
     payload: { iss: did },
   })
 
@@ -230,7 +230,7 @@ it('fails if subject !== holder', async () => {
   ;(
     presentation.verifiableCredential as VerifiableCredential
   ).credentialSubject.id = randomDid
-  const signedPres = signJwt(presentation, {
+  const signedPres = await signJwt(presentation, {
     ...key,
     keyUri: didKey.id,
     type: 'ed25519',
@@ -252,23 +252,23 @@ it('fails if expired or not yet valid', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  let signedPres = signJwt(
+  let signedPres = await signJwt(
     presentation,
     {
       ...key,
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { validFrom: Date.now() - 70 * 1000, expiresIn: 60 * 1000 }
+    { validFrom: Date.now() - 70 * 1000, expiresIn: 60 }
   )
 
   await expect(
     verifyJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
-    `"Time of validity is in the past"`
+    `"invalid_jwt: JWT has expired: exp: 1679407004 < now: 1679407014"`
   )
 
-  signedPres = signJwt(
+  signedPres = await signJwt(
     presentation,
     {
       ...key,
@@ -281,7 +281,7 @@ it('fails if expired or not yet valid', async () => {
   await expect(
     verifyJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
-    `"Time of validity is in the future"`
+    `"invalid_jwt: JWT not valid before nbf: 1679407074"`
   )
 })
 
@@ -291,7 +291,7 @@ describe('when there is a presentation', () => {
   let onChainDoc: Codec
   let didDocument: DidDocument
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const key = ed25519PairFromSeed(seed)
     const mocks = mockDidDoc(key, 'ed25519')
     const { did, didKey } = mocks
@@ -301,14 +301,14 @@ describe('when there is a presentation', () => {
 
     presentation = createPresentation([credential], did)
 
-    signedPresentation = signJwt(
+    signedPresentation = await signJwt(
       presentation,
       {
         ...key,
         keyUri: didKey.id,
         type: 'ed25519',
       },
-      { challenge: 'abcdef', expiresIn: 60 * 1000, audience: 'did:kilt:1234' }
+      { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
     )
   })
 
@@ -322,7 +322,9 @@ describe('when there is a presentation', () => {
         audience: 'did:kilt:1234',
         challenge: 'abcdef',
       })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`""`)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"resolver_error: Unable to resolve DID document for did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo: notFound, "`
+    )
 
     await expect(
       DidJwt.verifyJWT(signedPresentation, {
@@ -350,7 +352,7 @@ describe('when there is a presentation', () => {
         challenge: 'abcdef',
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"expected audience not matching presentation"`
+      `"invalid_config: JWT audience does not match your DID or callback url"`
     )
 
     await expect(

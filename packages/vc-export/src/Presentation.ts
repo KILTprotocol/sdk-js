@@ -5,22 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { stringToU8a, u8aToString } from '@polkadot/util'
-import { ed25519Sign, ed25519Verify, sha256AsU8a } from '@polkadot/util-crypto'
 import type { AnyJson } from '@polkadot/types/types'
-import {
-  signSync as secp256k1Sign,
-  verify as secp256k1Verify,
-} from '@noble/secp256k1'
-import { toString, fromString } from 'uint8arrays'
+import * as jwt from 'did-jwt'
+import type { DIDResolutionResult, Resolvable } from 'did-resolver'
 
-import { VerifierFunction, verifyDidSignature } from '@kiltprotocol/did'
+import { resolveCompliant } from '@kiltprotocol/did'
 import { JsonSchema } from '@kiltprotocol/utils'
-import type {
-  DidResourceUri,
-  DidUri,
-  VerificationKeyType,
-} from '@kiltprotocol/types'
+import type { DidResourceUri, DidUri } from '@kiltprotocol/types'
 
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
@@ -185,68 +176,37 @@ export function validateStructure(presentation: VerifiablePresentation): void {
   }
 }
 
-function encodeBase64url(bytes: Uint8Array): string {
-  return toString(bytes, 'base64url')
-}
-
-function decodeBase64url(encoded: string): Uint8Array {
-  return fromString(encoded, 'base64url')
-}
-
-function jwtSerialize(obj: Record<string, unknown>): string {
-  return encodeBase64url(stringToU8a(JSON.stringify(obj)))
-}
-
-function jwtDeserialize(serialized: string): Record<string, AnyJson> {
-  return JSON.parse(u8aToString(decodeBase64url(serialized)))
-}
-
-export type JwtPayloadArgs = {
-  validFrom?: number
-  expiresIn?: number
-  challenge?: string
-  audience?: string
+function jwtTimestampFromDate(date: string | number | Date): number {
+  return Math.floor(new Date(date).getTime() / 1000)
 }
 
 /**
  * Produces a serialized JWT payload from a Verifiable Presentation.
  *
  * @param presentation A [[VerifiablePresentation]].
- * @param options Additional optional configuration.
- * @param options.validFrom Timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid. Defaults to the current time.
- * @param options.expiresIn Duration of validity of the presentation in ms. If omitted, the presentation's validity is unlimited.
- * @param options.challenge Optional challenge provided by a verifier that can be used to prevent replay attacks.
- * @param options.audience Identifier of the verifier to prevent unintended re-use of the presentation.
  * @returns The base64-url encoded payload.
  */
 export function toJwtPayload(
-  presentation: VerifiablePresentation,
-  { validFrom = Date.now(), expiresIn, challenge, audience }: JwtPayloadArgs
-): string {
+  presentation: VerifiablePresentation
+): jwt.JWTPayload {
   const { holder, id, ...vp } = presentation
-  const nbf = validFrom / 1000
-  const exp = typeof expiresIn === 'number' ? nbf + expiresIn / 1000 : undefined
-  const payload = {
+  return {
     jti: id,
     iss: holder,
     vp,
-    nbf,
-    exp,
-    aud: audience,
-    nonce: challenge,
   }
-  return jwtSerialize(payload)
 }
 
 /**
  * Reconstruct a Verifiable Presentation object from its JWT serialization.
  * Validates the structure of the reconstructed object as well.
  *
- * @param serialized The encoded payload of a JWT, containing a 'vp' claim.
+ * @param payload The encoded payload of a JWT, containing a 'vp' claim.
  * @returns A [[VerifiablePresentation]] object.
  */
-export function fromJwtPayload(serialized: string): VerifiablePresentation {
-  const payload = jwtDeserialize(serialized)
+export function fromJwtPayload(
+  payload: jwt.JWTPayload
+): VerifiablePresentation {
   if (typeof payload.vp !== 'object') {
     throw new Error('JWT must contain a vp claim')
   }
@@ -262,16 +222,11 @@ export function fromJwtPayload(serialized: string): VerifiablePresentation {
 type supportedKeys = 'ed25519' | 'ecdsa'
 
 const signers: Record<
-  supportedKeys,
-  (data: Uint8Array, secretKey: Uint8Array) => Uint8Array
+  jwt.JWTHeader['alg'],
+  (secretKey: Uint8Array) => jwt.Signer
 > = {
-  ecdsa: (data, secretKey) =>
-    secp256k1Sign(sha256AsU8a(data), secretKey, {
-      recovered: false,
-      canonical: true,
-      der: false,
-    }),
-  ed25519: (data, secretKey) => ed25519Sign(data, { secretKey }, true),
+  ES256K: jwt.ES256KSigner,
+  EdDSA: jwt.EdDSASigner,
 }
 
 /**
@@ -284,7 +239,7 @@ const signers: Record<
  * @param signingKey.type The key type. Ed25519 and ecdsa (secp256k1) are supported.
  * @param options Additional optional configuration.
  * @param options.validFrom Timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid. Defaults to the current time.
- * @param options.expiresIn Duration of validity of the presentation in ms. If omitted, the presentation's validity is unlimited.
+ * @param options.expiresIn Duration of validity of the presentation in seconds. If omitted, the presentation's validity is unlimited.
  * @param options.challenge Optional challenge provided by a verifier that can be used to prevent replay attacks.
  * @param options.audience Identifier of the verifier to prevent unintended re-use of the presentation.
  * @returns A signed JWT in compact representation containing a VerifiablePresentation.
@@ -296,10 +251,26 @@ export function signJwt(
     keyUri: DidResourceUri
     type: supportedKeys
   },
-  options: JwtPayloadArgs = {}
-): string {
-  const encodedPayload = toJwtPayload(presentation, options)
-
+  options: {
+    challenge?: string
+    audience?: string
+    validFrom?: Date | number | string
+  } & Partial<jwt.JWTOptions> = {}
+): Promise<string> {
+  const payload = toJwtPayload(presentation)
+  if (typeof payload.vp?.proof !== 'undefined') {
+    delete payload.vp.proof
+  }
+  const { challenge, audience, validFrom } = options
+  if (challenge) {
+    payload.nonce = challenge
+  }
+  if (audience) {
+    payload.aud = audience
+  }
+  if (typeof validFrom !== 'undefined') {
+    payload.nbf = jwtTimestampFromDate(validFrom)
+  }
   const { type, keyUri, secretKey } = signingKey
   const alg = { ecdsa: 'ES256K', ed25519: 'EdDSA' }[type]
   if (!alg)
@@ -309,71 +280,67 @@ export function signJwt(
     kid: keyUri,
     type: 'JWT',
   }
+  const signer = signers[alg](secretKey)
 
-  const signData = `${jwtSerialize(jwtHeader)}.${encodedPayload}`
-
-  const signature = encodeBase64url(
-    signers[type](stringToU8a(signData), secretKey)
+  return jwt.createJWT(
+    payload,
+    { ...options, issuer: presentation.holder, signer },
+    jwtHeader
   )
-
-  return `${signData}.${signature}`
 }
 
-const verifiers: Record<VerificationKeyType, VerifierFunction> = {
-  ecdsa: (message, signature, publicKey) =>
-    secp256k1Verify(signature, sha256AsU8a(message), publicKey),
-  ed25519: ed25519Verify,
-  sr25519: () => {
-    throw new Error('not implemented')
+const kiltDidResolver: Resolvable = {
+  resolve: async (did) => {
+    const {
+      didDocument = null,
+      didDocumentMetadata,
+      didResolutionMetadata,
+    } = await resolveCompliant(did as DidUri)
+
+    // did-jwt can't work with the DID document if the verificationMethod id is not identical to verification relationship entries (authentication, etc.).
+    didDocument?.verificationMethod?.forEach((key, index) => {
+      ;(didDocument as any).verificationMethod[index].id = key.id.substring(
+        didDocument.id.length
+      )
+    })
+
+    return {
+      didDocument,
+      didDocumentMetadata,
+      didResolutionMetadata,
+    } as DIDResolutionResult
   },
 }
 
 /**
  * Verifies a JWT rendering of a VerifiablePresentation.
  *
- * @param jwt The JWT in compact (string) encoding.
+ * @param token The JWT in compact (string) encoding.
  * @param options Optional configuration.
  * @param options.audience Expected audience. Verification fails if the aud claim in the JWT is not equal to this value.
  * @param options.challenge Expected challenge. Verification fails if the nonce claim in the JWT is not equal to this value.
  * @returns The VerifiablePresentation (without proof), the decoded JWT payload containing all claims, and the decoded JWT header.
  */
 export async function verifyJwt(
-  jwt: string,
+  token: string,
   { audience, challenge }: { audience?: string; challenge?: string }
 ): Promise<{
   presentation: VerifiablePresentation
   payload: Record<string, AnyJson>
-  header: Record<string, AnyJson>
 }> {
-  const parts = jwt.match(
-    /^([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)$/
-  )
-  if (!parts) throw new Error('not a valid JWT')
-  const message = `${parts[1]}.${parts[2]}`
-  const signature = decodeBase64url(parts[3])
-  const header = jwtDeserialize(parts[1])
-  const payload = jwtDeserialize(parts[2])
-  await verifyDidSignature({
-    message,
-    signature,
-    keyUri: header.kid as DidResourceUri,
-    expectedSigner: payload.iss as DidUri,
-    verifiers,
+  const { payload } = await jwt.verifyJWT(token, {
+    audience,
+    proofPurpose: 'authentication',
+    resolver: kiltDidResolver,
+    policies: { aud: typeof audience === 'string' },
+    skewTime: 0,
   })
-  if (audience && payload.aud !== audience)
-    throw new Error('expected audience not matching presentation')
   if (challenge && payload.nonce !== challenge)
     throw new Error('expected challenge not matching presentation')
-  const now = Date.now() / 1000
-  if (typeof payload.nbf === 'number' && payload.nbf > now)
-    throw new Error('Time of validity is in the future')
-  if (typeof payload.exp === 'number' && payload.exp < now)
-    throw new Error('Time of validity is in the past')
-  const presentation = fromJwtPayload(parts[2])
+  const presentation = fromJwtPayload(payload)
   assertHolderCanPresentCredentials(presentation)
   return {
     presentation,
     payload,
-    header,
   }
 }
