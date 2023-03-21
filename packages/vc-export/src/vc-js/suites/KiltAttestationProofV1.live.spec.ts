@@ -24,7 +24,7 @@ import type {
 import { createLightDidDocument } from '@kiltprotocol/did'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
-import { deriveProof } from '../../KiltAttestationProofV1.js'
+import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ingos-cred.json'
 import {
   combineDocumentLoaders,
@@ -36,31 +36,35 @@ import type {
   VerifiableCredential,
 } from '../../types.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
-import * as KiltCredentialV1 from '../../KiltCredentialV1.js'
+import { exportICredentialToVc } from '../../fromICredential.js'
 
 let api: ApiPromise
 const genesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
 )
 
-const attestedCredential = KiltCredentialV1.fromICredential(
+const attestedCredential = exportICredentialToVc(
   ingosCredential as ICredential,
-  'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
-  genesisHash,
-  hexToU8a(
-    '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
-  ),
-  1649670060 * 1000
+  {
+    issuer: 'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
+    chainGenesisHash: genesisHash,
+    blockHash: hexToU8a(
+      '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
+    ),
+    timestamp: 1649670060 * 1000,
+  }
 )
 
-const notAttestedCredential = KiltCredentialV1.fromICredential(
+const notAttestedCredential = exportICredentialToVc(
   Credential.fromClaim(ingosCredential.claim as IClaim),
-  'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
-  genesisHash,
-  hexToU8a(
-    '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
-  ),
-  1649670060 * 1000
+  {
+    issuer: 'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
+    chainGenesisHash: genesisHash,
+    blockHash: hexToU8a(
+      '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
+    ),
+    timestamp: 1649670060 * 1000,
+  }
 )
 
 let suite: KiltAttestationV1Suite
@@ -121,7 +125,7 @@ describe('jsigs', () => {
   })
 
   it('verifies proof with props removed', async () => {
-    const derived = deriveProof(attestedCredential, proof, [])
+    const derived = applySelectiveDisclosure(attestedCredential, proof, [])
     expect(derived.credential.credentialSubject).not.toHaveProperty('Email')
     expect(
       await jsigs.verify(
@@ -280,9 +284,12 @@ describe('vc-js', () => {
     })
 
     it('issues and verifies a signed credential', async () => {
-      const credential = { ...attestedCredential, issuer: did.uri }
+      const credential: VerifiableCredential = {
+        ...attestedCredential,
+        issuer: did.uri,
+      }
       delete credential.proof
-      // @ts-ignore
+      // @ts-expect-error
       delete credential.credentialStatus
       // TODO: light DIDs don't support assertionMethods
       const mockDidDocumentLoader = combineDocumentLoaders([

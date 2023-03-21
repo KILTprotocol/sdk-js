@@ -16,9 +16,9 @@ import {
   calculateRootHash,
   finalizeProof,
   initializeProof,
-  verifyProof,
+  verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
-import { checkStatus } from '../../KiltRevocationStatusV1.js'
+import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
 import type {
   KiltAttestationProofV1,
   VerifiableCredential,
@@ -56,7 +56,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     }: {
       credential: VerifiableCredential
     }): Promise<{ verified: boolean; error?: unknown }> => {
-      return checkStatus(api, credential.credentialStatus, credential)
+      return checkStatus(credential, { api })
         .then(() => ({ verified: true }))
         .catch((error) => ({ verified: false, error }))
     }
@@ -84,7 +84,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       // TODO: maybe I have to compact first
       const proof = options.proof as KiltAttestationProofV1
       const document = options.document as VerifiableCredential
-      await verifyProof(document, proof, this.api)
+      await verifyProof(document, proof, { api: this.api })
       return {
         verified: true,
       }
@@ -118,7 +118,10 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     const [rootHash] = submissionArgs
     this.pendingSubmissions.set(
       u8aToHex(rootHash as Uint8Array),
-      this.transactionHandler(this.api.tx.attestation.add(...submissionArgs))
+      this.transactionHandler(
+        this.api.tx.attestation.add(...submissionArgs),
+        this.api
+      )
     )
     return proof
   }

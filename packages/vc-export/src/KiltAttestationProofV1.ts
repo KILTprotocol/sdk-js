@@ -209,7 +209,7 @@ function makeCommitments(
  * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
  * @returns The root hash.
  */
-function calculateRootHash(
+export function calculateRootHash(
   credential: Pick<VerifiableCredential, 'federatedTrustModel'> &
     Partial<VerifiableCredential>,
   proof: Pick<KiltAttestationProofV1, 'commitments'> &
@@ -453,7 +453,10 @@ export async function verify(
   const tIssuance = new Date(credential.issuanceDate).getTime()
   // Accept exact matches as well as timestamps rounded to 1-second precision
   if (
-    !(timestamp === tIssuance || Math.round(timestamp / 1000) === tIssuance)
+    !(
+      timestamp === tIssuance ||
+      Math.round(timestamp / 1000) * 1000 === tIssuance
+    )
   ) {
     throw new SDKErrors.CredentialUnverifiableError(
       `block time ${new Date(
