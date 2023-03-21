@@ -118,7 +118,6 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
             { $ref: '#/definitions/string' },
             { $ref: '#/definitions/number' },
             { $ref: '#/definitions/boolean' },
-            // TODO: do we have reasons not to allow CType references in arrays?
             { $ref: '#/definitions/cTypeReference' },
           ],
         },
