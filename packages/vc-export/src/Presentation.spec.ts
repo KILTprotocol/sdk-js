@@ -38,8 +38,8 @@ import type {
 
 import {
   create as createPresentation,
-  signJwt,
-  verifyJwt,
+  signAsJwt,
+  verifySignedAsJwt,
 } from './Presentation'
 import type { VerifiableCredential, VerifiablePresentation } from './types'
 
@@ -129,18 +129,18 @@ it('verifies a presentation signed by an ecdsa key', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  const signedPres = await signJwt(
+  const signedPres = await signAsJwt(
     presentation,
     {
       ...key,
       keyUri: didKey.id,
       type: 'ecdsa',
     },
-    { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
   )
 
-  const myResult = await verifyJwt(signedPres, {
-    audience: 'did:kilt:1234',
+  const myResult = await verifySignedAsJwt(signedPres, {
+    verifier: 'did:kilt:1234',
     challenge: 'abcdef',
   })
 
@@ -172,18 +172,18 @@ it('verifies a presentation signed by an ed25519 key', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  const signedPres = await signJwt(
+  const signedPres = await signAsJwt(
     presentation,
     {
       ...key,
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
   )
 
-  const myResult = await verifyJwt(signedPres, {
-    audience: 'did:kilt:1234',
+  const myResult = await verifySignedAsJwt(signedPres, {
+    verifier: 'did:kilt:1234',
     challenge: 'abcdef',
   })
 
@@ -225,19 +225,17 @@ it('fails if subject !== holder', async () => {
   )
 
   // test verifying presentations
-
-  // test verifying presentations
   ;(
     presentation.verifiableCredential as VerifiableCredential
   ).credentialSubject.id = randomDid
-  const signedPres = await signJwt(presentation, {
+  const signedPres = await signAsJwt(presentation, {
     ...key,
     keyUri: didKey.id,
     type: 'ed25519',
   })
 
   await expect(
-    verifyJwt(signedPres, {})
+    verifySignedAsJwt(signedPres, {})
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"The credential with id kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad is non-transferable and cannot be presented by the identity did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo"`
   )
@@ -252,7 +250,7 @@ it('fails if expired or not yet valid', async () => {
 
   const presentation = createPresentation([credential], did)
 
-  let signedPres = await signJwt(
+  let signedPres = await signAsJwt(
     presentation,
     {
       ...key,
@@ -263,12 +261,12 @@ it('fails if expired or not yet valid', async () => {
   )
 
   await expect(
-    verifyJwt(signedPres, {})
+    verifySignedAsJwt(signedPres, { skewTime: 5 })
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"invalid_jwt: JWT has expired: exp: 1679407004 < now: 1679407014"`
   )
 
-  signedPres = await signJwt(
+  signedPres = await signAsJwt(
     presentation,
     {
       ...key,
@@ -279,7 +277,7 @@ it('fails if expired or not yet valid', async () => {
   )
 
   await expect(
-    verifyJwt(signedPres, {})
+    verifySignedAsJwt(signedPres, { skewTime: 30 })
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"invalid_jwt: JWT not valid before nbf: 1679407074"`
   )
@@ -301,14 +299,14 @@ describe('when there is a presentation', () => {
 
     presentation = createPresentation([credential], did)
 
-    signedPresentation = await signJwt(
+    signedPresentation = await signAsJwt(
       presentation,
       {
         ...key,
         keyUri: didKey.id,
         type: 'ed25519',
       },
-      { challenge: 'abcdef', expiresIn: 60, audience: 'did:kilt:1234' }
+      { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
     )
   })
 
@@ -318,8 +316,8 @@ describe('when there is a presentation', () => {
       .mockResolvedValue(api.createType('Option<RawDidLinkedInfo>'))
 
     await expect(
-      verifyJwt(signedPresentation, {
-        audience: 'did:kilt:1234',
+      verifySignedAsJwt(signedPresentation, {
+        verifier: 'did:kilt:1234',
         challenge: 'abcdef',
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
@@ -347,8 +345,8 @@ describe('when there is a presentation', () => {
     jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
     await expect(
-      verifyJwt(signedPresentation, {
-        audience: 'did:kilt:4321',
+      verifySignedAsJwt(signedPresentation, {
+        verifier: 'did:kilt:4321',
         challenge: 'abcdef',
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
@@ -378,7 +376,7 @@ describe('when there is a presentation', () => {
     jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
     await expect(
-      verifyJwt(signedPresentation, {
+      verifySignedAsJwt(signedPresentation, {
         challenge: 'whatup',
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(

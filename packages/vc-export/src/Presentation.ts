@@ -5,14 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { AnyJson } from '@polkadot/types/types'
-import * as jwt from 'did-jwt'
-import type { DIDResolutionResult, Resolvable } from 'did-resolver'
+import type { JWTOptions, JWTVerified } from 'did-jwt'
 
-import { resolveCompliant } from '@kiltprotocol/did'
 import { JsonSchema } from '@kiltprotocol/utils'
 import type { DidResourceUri, DidUri } from '@kiltprotocol/types'
 
+import {
+  supportedKeys,
+  verify,
+  create as createJWT,
+  presentationToPayload,
+  presentationFromPayload,
+} from './DidJwt.js'
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
@@ -20,57 +24,6 @@ import {
 } from './constants.js'
 import { PresentationMalformedError } from './errors.js'
 import type { VerifiableCredential, VerifiablePresentation } from './types.js'
-
-/**
- * Checks that an identity can act as a legitimate holder of a set of credentials and thus include them in a presentation they sign.
- * Credentials where `nonTransferable === true` and `credentialSubject.id !== holder` are disallowed and will cause this to fail.
- *
- * @param presentation A Verifiable Presentation.
- * @param presentation.holder The presentation holder's identifier.
- * @param presentation.verifiableCredential A VC or an array of VCs.
- */
-export function assertHolderCanPresentCredentials({
-  holder,
-  verifiableCredential,
-}: {
-  holder: DidUri
-  verifiableCredential: VerifiableCredential[] | VerifiableCredential
-}): void {
-  const credentials = Array.isArray(verifiableCredential)
-    ? verifiableCredential
-    : [verifiableCredential]
-  credentials.forEach(({ nonTransferable, credentialSubject, id }) => {
-    if (nonTransferable && credentialSubject.id !== holder)
-      throw new Error(
-        `The credential with id ${id} is non-transferable and cannot be presented by the identity ${holder}`
-      )
-  })
-}
-
-/**
- * Creates a Verifiable Presentation from a KILT Verifiable Credential and allows removing properties while doing so.
- * Does not currently sign the presentation or allow adding a challenge to be signed.
- *
- * @param VCs One or more KILT Verifiable Credential as exported with the SDK utils.
- * @param holder The holder of the credentials in the presentation, which also signs the presentation.
- * @returns A Verifiable Presentation containing the original VC with its proofs, but not extra signatures.
- */
-export function create(
-  VCs: Array<
-    VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
-  >,
-  holder: DidUri
-): VerifiablePresentation {
-  const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
-  const presentation: VerifiablePresentation = {
-    '@context': [W3C_CREDENTIAL_CONTEXT_URL],
-    type: [W3C_PRESENTATION_TYPE],
-    verifiableCredential,
-    holder,
-  }
-  assertHolderCanPresentCredentials(presentation)
-  return presentation
-}
 
 export const presentationSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -176,57 +129,56 @@ export function validateStructure(presentation: VerifiablePresentation): void {
   }
 }
 
-function jwtTimestampFromDate(date: string | number | Date): number {
-  return Math.floor(new Date(date).getTime() / 1000)
+/**
+ * Checks that an identity can act as a legitimate holder of a set of credentials and thus include them in a presentation they sign.
+ * Credentials where `nonTransferable === true` and `credentialSubject.id !== holder` are disallowed and will cause this to fail.
+ *
+ * @param presentation A Verifiable Presentation.
+ * @param presentation.holder The presentation holder's identifier.
+ * @param presentation.verifiableCredential A VC or an array of VCs.
+ */
+export function assertHolderCanPresentCredentials({
+  holder,
+  verifiableCredential,
+}: {
+  holder: DidUri
+  verifiableCredential: VerifiableCredential[] | VerifiableCredential
+}): void {
+  const credentials = Array.isArray(verifiableCredential)
+    ? verifiableCredential
+    : [verifiableCredential]
+  credentials.forEach(({ nonTransferable, credentialSubject, id }) => {
+    if (nonTransferable && credentialSubject.id !== holder)
+      throw new Error(
+        `The credential with id ${id} is non-transferable and cannot be presented by the identity ${holder}`
+      )
+  })
 }
 
 /**
- * Produces a serialized JWT payload from a Verifiable Presentation.
+ * Creates a Verifiable Presentation from one or more Verifiable Credentials.
+ * This should be signed before sending to a verifier to provide authentication.
  *
- * @param presentation A [[VerifiablePresentation]].
- * @returns The base64-url encoded payload.
+ * @param VCs One or more Verifiable Credentials.
+ * @param holder The holder of the credentials in the presentation, which also signs the presentation.
+ * @returns An (unsigned) Verifiable Presentation containing the original VCs with its proofs.
  */
-export function toJwtPayload(
-  presentation: VerifiablePresentation
-): jwt.JWTPayload {
-  const { holder, id, ...vp } = presentation
-  return {
-    jti: id,
-    iss: holder,
-    vp,
-  }
-}
-
-/**
- * Reconstruct a Verifiable Presentation object from its JWT serialization.
- * Validates the structure of the reconstructed object as well.
- *
- * @param payload The encoded payload of a JWT, containing a 'vp' claim.
- * @returns A [[VerifiablePresentation]] object.
- */
-export function fromJwtPayload(
-  payload: jwt.JWTPayload
+export function create(
+  VCs: Array<
+    VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
+  >,
+  holder: DidUri
 ): VerifiablePresentation {
-  if (typeof payload.vp !== 'object') {
-    throw new Error('JWT must contain a vp claim')
+  const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
+  const presentation: VerifiablePresentation = {
+    '@context': [W3C_CREDENTIAL_CONTEXT_URL],
+    type: [W3C_PRESENTATION_TYPE],
+    verifiableCredential,
+    holder,
   }
-  const presentation = {
-    ...payload.vp,
-    holder: payload.iss,
-    ...(typeof payload.jti === 'string' && { id: payload.jti }),
-  } as VerifiablePresentation
   validateStructure(presentation)
+  assertHolderCanPresentCredentials(presentation)
   return presentation
-}
-
-type supportedKeys = 'ed25519' | 'ecdsa'
-
-const signers: Record<
-  jwt.JWTHeader['alg'],
-  (secretKey: Uint8Array) => jwt.Signer
-> = {
-  ES256K: jwt.ES256KSigner,
-  EdDSA: jwt.EdDSASigner,
 }
 
 /**
@@ -238,13 +190,14 @@ const signers: Record<
  * @param signingKey.keyUri The key uri by which the public key can be looked up from a DID document.
  * @param signingKey.type The key type. Ed25519 and ecdsa (secp256k1) are supported.
  * @param options Additional optional configuration.
- * @param options.validFrom Timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid. Defaults to the current time.
+ * @param options.validFrom A Date or timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid.
+ * @param options.validUntil A Date or timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid.
  * @param options.expiresIn Duration of validity of the presentation in seconds. If omitted, the presentation's validity is unlimited.
  * @param options.challenge Optional challenge provided by a verifier that can be used to prevent replay attacks.
- * @param options.audience Identifier of the verifier to prevent unintended re-use of the presentation.
+ * @param options.verifier Identifier of the verifier to prevent unintended re-use of the presentation.
  * @returns A signed JWT in compact representation containing a VerifiablePresentation.
  */
-export function signJwt(
+export function signAsJwt(
   presentation: VerifiablePresentation,
   signingKey: {
     secretKey: Uint8Array
@@ -253,63 +206,38 @@ export function signJwt(
   },
   options: {
     challenge?: string
-    audience?: string
+    verifier?: string
     validFrom?: Date | number | string
-  } & Partial<jwt.JWTOptions> = {}
+    validUntil?: Date | number | string
+  } & Partial<JWTOptions> = {}
 ): Promise<string> {
-  const payload = toJwtPayload(presentation)
-  if (typeof payload.vp?.proof !== 'undefined') {
-    delete payload.vp.proof
+  const { challenge, verifier, validFrom, validUntil } = options
+  // map options such as audience/verifier and time of validity to their VP/VC representations
+  const issuanceDate =
+    typeof validFrom !== 'undefined'
+      ? new Date(validFrom).toISOString()
+      : undefined
+  const expirationDate =
+    typeof validUntil !== 'undefined'
+      ? new Date(validUntil).toISOString()
+      : undefined
+  const optionsApplied = {
+    issuanceDate,
+    expirationDate,
+    verifier,
+    // already existing values on the presentation take precedence
+    ...presentation,
   }
-  const { challenge, audience, validFrom } = options
+  // JWS replaces any existing proof
+  delete optionsApplied.proof
+  // produce (unencoded) payload where keys on the presentation object are mapped to JWT claims
+  const payload = presentationToPayload(optionsApplied)
+  // add challenge claim to JWTs
   if (challenge) {
     payload.nonce = challenge
   }
-  if (audience) {
-    payload.aud = audience
-  }
-  if (typeof validFrom !== 'undefined') {
-    payload.nbf = jwtTimestampFromDate(validFrom)
-  }
-  const { type, keyUri, secretKey } = signingKey
-  const alg = { ecdsa: 'ES256K', ed25519: 'EdDSA' }[type]
-  if (!alg)
-    throw new Error(`no signature algorithm available for key type ${type}`)
-  const jwtHeader = {
-    alg,
-    kid: keyUri,
-    type: 'JWT',
-  }
-  const signer = signers[alg](secretKey)
-
-  return jwt.createJWT(
-    payload,
-    { ...options, issuer: presentation.holder, signer },
-    jwtHeader
-  )
-}
-
-const kiltDidResolver: Resolvable = {
-  resolve: async (did) => {
-    const {
-      didDocument = null,
-      didDocumentMetadata,
-      didResolutionMetadata,
-    } = await resolveCompliant(did as DidUri)
-
-    // did-jwt can't work with the DID document if the verificationMethod id is not identical to verification relationship entries (authentication, etc.).
-    didDocument?.verificationMethod?.forEach((key, index) => {
-      ;(didDocument as any).verificationMethod[index].id = key.id.substring(
-        didDocument.id.length
-      )
-    })
-
-    return {
-      didDocument,
-      didDocumentMetadata,
-      didResolutionMetadata,
-    } as DIDResolutionResult
-  },
+  // encode and add JWS
+  return createJWT(payload, signingKey, options)
 }
 
 /**
@@ -317,30 +245,36 @@ const kiltDidResolver: Resolvable = {
  *
  * @param token The JWT in compact (string) encoding.
  * @param options Optional configuration.
- * @param options.audience Expected audience. Verification fails if the aud claim in the JWT is not equal to this value.
+ * @param options.verifier Expected audience/verifier. Verification fails if the aud claim in the JWT is not equal to this value.
  * @param options.challenge Expected challenge. Verification fails if the nonce claim in the JWT is not equal to this value.
- * @returns The VerifiablePresentation (without proof), the decoded JWT payload containing all claims, and the decoded JWT header.
+ * @param options.skewTime Allowed tolerance, in seconds, when verifying time of validity to account for clock skew between two machines. Default: 60s.
+ * @returns An object including the `presentation` (without proof) and the decoded JWT `payload` containing all claims.
  */
-export async function verifyJwt(
+export async function verifySignedAsJwt(
   token: string,
-  { audience, challenge }: { audience?: string; challenge?: string }
-): Promise<{
-  presentation: VerifiablePresentation
-  payload: Record<string, AnyJson>
-}> {
-  const { payload } = await jwt.verifyJWT(token, {
-    audience,
+  {
+    verifier,
+    challenge,
+    skewTime = 60,
+  }: { verifier?: string; challenge?: string; skewTime?: number }
+): Promise<
+  JWTVerified & {
+    presentation: VerifiablePresentation
+  }
+> {
+  const result = await verify(token, {
     proofPurpose: 'authentication',
-    resolver: kiltDidResolver,
-    policies: { aud: typeof audience === 'string' },
-    skewTime: 0,
+    audience: verifier,
+    skewTime,
   })
-  if (challenge && payload.nonce !== challenge)
+  if (challenge && result.payload.nonce !== challenge) {
     throw new Error('expected challenge not matching presentation')
-  const presentation = fromJwtPayload(payload)
+  }
+  const presentation = presentationFromPayload(result.payload)
+  validateStructure(presentation)
   assertHolderCanPresentCredentials(presentation)
   return {
     presentation,
-    payload,
+    ...result,
   }
 }

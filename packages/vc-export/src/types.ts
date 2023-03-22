@@ -135,4 +135,7 @@ export interface VerifiablePresentation {
   verifiableCredential: VerifiableCredential | VerifiableCredential[]
   holder: DidUri
   proof?: Record<string, unknown> | Array<Record<string, unknown>>
+  expirationDate?: string
+  issuanceDate?: string
+  verifier?: string
 }
