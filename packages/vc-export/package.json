@@ -41,7 +41,6 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@noble/secp256k1": "1.7.0",
     "@polkadot/api": "^9.10.2",
     "@polkadot/types": "^9.10.2",
     "@polkadot/util": "^10.2.1",
@@ -49,7 +48,6 @@
     "did-jwt": "^6.11.0",
     "jsonld": "^2.0.2",
     "jsonld-signatures": "^5.0.0",
-    "uint8arrays": "^3.1.1",
     "vc-js": "^0.6.4"
   }
 }

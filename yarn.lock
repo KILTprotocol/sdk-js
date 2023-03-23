@@ -2054,7 +2054,6 @@ __metadata:
     "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@noble/secp256k1": 1.7.0
     "@polkadot/api": ^9.10.2
     "@polkadot/types": ^9.10.2
     "@polkadot/util": ^10.2.1
@@ -2065,7 +2064,6 @@ __metadata:
     jsonld-signatures: ^5.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
-    uint8arrays: ^3.1.1
     vc-js: ^0.6.4
   languageName: unknown
   linkType: soft
@@ -10617,7 +10615,7 @@ typescript@^4.8.3:
   languageName: node
   linkType: hard
 
-"uint8arrays@npm:^3.0.0, uint8arrays@npm:^3.1.1":
+"uint8arrays@npm:^3.0.0":
   version: 3.1.1
   resolution: "uint8arrays@npm:3.1.1"
   dependencies:

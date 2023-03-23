@@ -106,7 +106,7 @@ export async function verifyAttesterSignedQuote(
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
     ...signatureFromJson(attesterSignature),
-    message: Crypto.hash(Crypto.encodeObjectAsStr(basicQuote)),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedSigner: basicQuote.attesterDid,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
@@ -144,7 +144,7 @@ export async function createQuoteAgreement(
 
   await verifyDidSignature({
     ...signatureFromJson(attesterSignature),
-    message: Crypto.hash(Crypto.encodeObjectAsStr(basicQuote)),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })
@@ -188,7 +188,7 @@ export async function verifyQuoteAgreement(
   // verify claimer signature
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
-    message: Crypto.hash(
+    message: Crypto.hashStr(
       Crypto.encodeObjectAsStr({ ...attesterSignedQuote, claimerDid, rootHash })
     ),
     expectedSigner: claimerDid,
