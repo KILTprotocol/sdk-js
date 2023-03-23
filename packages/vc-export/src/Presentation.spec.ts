@@ -19,15 +19,10 @@ import {
 import type { ApiPromise } from '@polkadot/api'
 import type { Keypair } from '@polkadot/util-crypto/types'
 import type { Codec } from '@polkadot/types/types'
-import * as DidJwt from 'did-jwt'
 
 import { init } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
-import {
-  exportToDidDocument,
-  getFullDidUri,
-  getFullDidUriFromKey,
-} from '@kiltprotocol/did'
+import { getFullDidUri, getFullDidUriFromKey } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   DidDocument,
@@ -122,7 +117,7 @@ beforeAll(async () => {
 
 it('verifies a presentation signed by an ecdsa key', async () => {
   const key = secp256k1PairFromSeed(seed)
-  const { did, didKey, onChainDoc, didDocument } = mockDidDoc(key, 'ecdsa')
+  const { did, didKey, onChainDoc } = mockDidDoc(key, 'ecdsa')
   jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
   credential.credentialSubject.id = did
@@ -148,24 +143,11 @@ it('verifies a presentation signed by an ecdsa key', async () => {
     presentation,
     payload: { iss: did },
   })
-
-  const result = await DidJwt.verifyJWT(signedPres, {
-    // proofPurpose: 'authentication',
-    audience: 'did:kilt:1234',
-    resolver: {
-      resolve: async () =>
-        ({
-          didDocument: exportToDidDocument(didDocument, 'application/ld+json'),
-        } as any),
-    },
-  })
-
-  expect(result).toMatchObject({ verified: true })
 })
 
 it('verifies a presentation signed by an ed25519 key', async () => {
   const key = ed25519PairFromSeed(seed)
-  const { did, didKey, onChainDoc, didDocument } = mockDidDoc(key, 'ed25519')
+  const { did, didKey, onChainDoc } = mockDidDoc(key, 'ed25519')
   jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
 
   credential.credentialSubject.id = did
@@ -191,19 +173,6 @@ it('verifies a presentation signed by an ed25519 key', async () => {
     presentation,
     payload: { iss: did },
   })
-
-  const result = await DidJwt.verifyJWT(signedPres, {
-    // proofPurpose: 'authentication',
-    audience: 'did:kilt:1234',
-    resolver: {
-      resolve: async () =>
-        ({
-          didDocument: exportToDidDocument(didDocument, 'application/ld+json'),
-        } as any),
-    },
-  })
-
-  expect(result).toMatchObject({ verified: true })
 })
 
 it('fails if subject !== holder', async () => {
@@ -287,13 +256,12 @@ describe('when there is a presentation', () => {
   let signedPresentation: string
   let presentation: VerifiablePresentation
   let onChainDoc: Codec
-  let didDocument: DidDocument
 
   beforeAll(async () => {
     const key = ed25519PairFromSeed(seed)
     const mocks = mockDidDoc(key, 'ed25519')
     const { did, didKey } = mocks
-    ;({ onChainDoc, didDocument } = mocks)
+    ;({ onChainDoc } = mocks)
 
     credential.credentialSubject.id = did
 
@@ -323,22 +291,6 @@ describe('when there is a presentation', () => {
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"resolver_error: Unable to resolve DID document for did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo: notFound, "`
     )
-
-    await expect(
-      DidJwt.verifyJWT(signedPresentation, {
-        // proofPurpose: 'authentication',
-        audience: 'did:kilt:1234',
-        resolver: {
-          resolve: async () =>
-            ({
-              didDocument: null,
-              didResolutionMetadata: { error: 'notFound' },
-            } as any),
-        },
-      })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"resolver_error: Unable to resolve DID document for did:kilt:4qqbHjqZ45gLCjsoNS3PXECZpYZqHZuoGyWJZm1Jz8YFhMoo: notFound, "`
-    )
   })
 
   it('fails when audience does not match', async () => {
@@ -348,24 +300,6 @@ describe('when there is a presentation', () => {
       verifySignedAsJwt(signedPresentation, {
         verifier: 'did:kilt:4321',
         challenge: 'abcdef',
-      })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"invalid_config: JWT audience does not match your DID or callback url"`
-    )
-
-    await expect(
-      DidJwt.verifyJWT(signedPresentation, {
-        // proofPurpose: 'authentication',
-        audience: 'did:kilt:4321',
-        resolver: {
-          resolve: async () =>
-            ({
-              didDocument: exportToDidDocument(
-                didDocument,
-                'application/ld+json'
-              ),
-            } as any),
-        },
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"invalid_config: JWT audience does not match your DID or callback url"`

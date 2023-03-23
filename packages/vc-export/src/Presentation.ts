@@ -164,9 +164,7 @@ export function assertHolderCanPresentCredentials({
  * @returns An (unsigned) Verifiable Presentation containing the original VCs with its proofs.
  */
 export function create(
-  VCs: Array<
-    VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
-  >,
+  VCs: VerifiableCredential[],
   holder: DidUri
 ): VerifiablePresentation {
   const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
