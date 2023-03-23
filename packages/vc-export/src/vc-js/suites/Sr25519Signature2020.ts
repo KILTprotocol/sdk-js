@@ -42,9 +42,12 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
   public static readonly CONTEXT = context[SUITE_CONTEXT_URL]
 
   /**
+   * Cryptographic suite to produce and verify Sr25519Signature2020 linked data signatures.
+   * This is modelled after the Ed25519Signature2020 suite (https://w3id.org/security/suites/ed25519-2020/v1) but uses the sr25519 signature scheme common in the polkadot ecosystem.
+   *
    * @param options - Options hashmap.
    *
-   * Either a `key` OR at least one of `signer`/`verifier` is required:
+   * Either a `key` OR at least one of `signer`/`verifier` is required.
    *
    * @param [options.key] - An optional key object (containing an
    *   `id` property, and either `signer` or `verifier`, depending on the
@@ -59,7 +62,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
    *   an object with an async `verify()` method. Useful when working with a
    *   KMS-provided verifier function.
    *
-   * Advanced optional parameters and overrides:
+   * Advanced optional parameters and overrides.
    *
    * @param [options.proof] - A JSON-LD document with options to use
    *   for the `proof` node (e.g. any other custom fields can be provided here
@@ -94,8 +97,6 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
       date,
       useNativeCanonize,
     })
-    // Some operations may be performed with Sr25519VerificationKey2020.
-    // So, Sr25519VerificationKey2020 is recommended, but not strictly required.
   }
 
   /**
@@ -156,12 +157,14 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     }
     const signatureBytes = base58Decode(proofValue.substr(1))
 
-    let { verifier } = this
-    if (!verifier) {
-      const key = await this.LDKeyClass.from(verificationMethod)
-      verifier = key.verifier()
-    }
-    return verifier!.verify({ data: verifyData, signature: signatureBytes })
+    const verifier =
+      this.verifier ??
+      (await this.LDKeyClass.from(verificationMethod)).verifier()
+
+    return verifier.verify({
+      data: verifyData,
+      signature: signatureBytes,
+    })
   }
 
   async assertVerificationMethod({

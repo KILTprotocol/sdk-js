@@ -189,9 +189,11 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    * Generates and returns a multiformats encoded ed25519 public key
    * fingerprint (for use with cryptonyms, for example).
    *
+   * Ed25519 multiformat is used due to the lack of a registered multicodec prefix for Sr25519, which uses a compressed variant of the Ed25519 curve.
+   *
    * @see https://github.com/multiformats/multicodec
    *
-   * @param publicKey
+   * @param publicKey Metadata object containing the public key material.
    * @param publicKey.publicKeyBase58 - The base58 encoded public key material.
    *
    * @returns The fingerprint.
@@ -203,6 +205,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   }): string {
     // ed25519 cryptonyms are multicodec encoded values, specifically:
     // (multicodec ed25519-pub 0xed01 + key bytes)
+
+    // TODO: register multicodec representation of sr25519 keys
     const pubkeyBytes = base58Decode(publicKeyBase58)
 
     const buffer = new Uint8Array(2 + pubkeyBytes.length)
@@ -216,6 +220,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   /**
    * Generates and returns a multiformats encoded ed25519 public key
    * fingerprint (for use with cryptonyms, for example).
+   *
+   * Ed25519 multiformat is used due to the lack of a registered multicodec prefix for Sr25519, which uses a compressed variant of the Ed25519 curve.
    *
    * @see https://github.com/multiformats/multicodec
    *
@@ -234,8 +240,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    * @example
    * > srKeyPair.verifyFingerprint({fingerprint: 'z2S2Q6MkaFJewa'});
    * {valid: true};
-   * @param fingerprint - A Base58 public key.
-   * @param fingerprint.fingerprint The key's fingerprint.
+   * @param publicKey - A Base58 public key.
+   * @param publicKey.fingerprint The key's fingerprint.
    *
    * @returns An object indicating valid is true or false.
    */

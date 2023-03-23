@@ -24,7 +24,11 @@ interface DocumentLoader extends jsigs.DocumentLoader {
   ): ReturnType<jsigs.DocumentLoader>
 }
 /**
- * @param loaders
+ * Combines multiple document loaders into one.
+ * The resulting loader resolves if any loader returns a result, and rejects otherwise.
+ *
+ * @param loaders An array of document loaders to be combined.
+ * @returns A composite document loader wrapping the input loaders.
  */
 export function combineDocumentLoaders(
   loaders: DocumentLoader[]

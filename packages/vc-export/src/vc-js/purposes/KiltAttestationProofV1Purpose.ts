@@ -51,7 +51,7 @@ export class KiltAttestationProofV1Purpose extends purposes.ProofPurpose {
     {
       /* document, documentLoader, expansionMap */
     }
-  ) {
+  ): Promise<boolean> {
     return proof.type === ATTESTATION_PROOF_V1_TYPE
   }
 }

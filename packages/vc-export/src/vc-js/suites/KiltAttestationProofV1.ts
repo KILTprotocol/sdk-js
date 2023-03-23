@@ -46,16 +46,15 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     this.transactionHandler = transactionHandler
   }
 
+  // eslint-disable-next-line jsdoc/require-returns
   /**
-   *
+   * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the [[KiltRevocationStatusV1]] method.
    */
-  public get checkStatus() {
+  public get checkStatus(): (args: {
+    credential: VerifiableCredential
+  }) => Promise<{ verified: boolean; error?: unknown }> {
     const { api } = this
-    return async ({
-      credential,
-    }: {
-      credential: VerifiableCredential
-    }): Promise<{ verified: boolean; error?: unknown }> => {
+    return async ({ credential }) => {
       return checkStatus(credential, { api })
         .then(() => ({ verified: true }))
         .catch((error) => ({ verified: false, error }))
@@ -63,12 +62,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * @param options
-   * @param options.proof
-   * @param options.document
-   * @param options.purpose
-   * @param options.documentLoader
-   * @param options.expansionMap
+   * @inheritdoc
    */
   public async verifyProof(options: {
     proof: jsigs.Proof
@@ -81,7 +75,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       if (!(await this.matchProof(options))) {
         throw new Error('Proof mismatch')
       }
-      // TODO: maybe I have to compact first
+      // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
       const proof = options.proof as KiltAttestationProofV1
       const document = options.document as VerifiableCredential
       await verifyProof(document, proof, { api: this.api })
@@ -97,7 +91,20 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * @inheritdoc
+   * Initializes a proof for a [[KiltCredentialV1]] type document.
+   *
+   * _! This is not a complete proof yet !_.
+   *
+   * After adding the proof stub to the credential, the resulting document must be processed
+   * by the `finalizeProof` method to make necessary adjustments to the document itself.
+   *
+   * @param input Object containing the function arguments.
+   * @param input.document [[KiltCredentialV1]] object to be signed.
+   * @param input.purpose Ignored here.
+   * @param input.documentLoader Ignored here.
+   * @param input.expansionMap Ignored here.
+   *
+   * @returns Resolves with the created proof object.
    */
   public async createProof({
     document,
@@ -127,13 +134,23 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * @param credential
+   * Processes a [[KiltCredentialV1]] with a proof stub created by `createProof` to produce a verifiable credential.
+   * The proof must have been created with the same instance of the [[KiltAttestationProofV1Suite]].
+   *
+   * @param credential A [[KiltCredentialV1]] with a proof stub created by `createProof`.
+   *
+   * @returns An updated copy of the credential with necessary adjustments, containing a complete [[KiltAttestationV1]] proof.
    */
   public async finalizeProof(
     credential: VerifiableCredential
   ): Promise<VerifiableCredential> {
     const { proof } = credential
-    const rootHash = u8aToHex(calculateRootHash(credential, proof!))
+    if (!proof) {
+      throw new Error(
+        'The credential must have a proof property containing a proof stub as created by the `createProof` method'
+      )
+    }
+    const rootHash = u8aToHex(calculateRootHash(credential, proof))
     const submissionPromise = this.pendingSubmissions.get(rootHash)
     if (!submissionPromise) {
       throw new Error('no submission found for this proof')
@@ -145,7 +162,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       this.pendingSubmissions.delete(rootHash)
       throw new Error(`Promise rejected with ${e}`)
     })
-    const updated = finalizeProof(credential, proof!, {
+    const updated = finalizeProof(credential, proof, {
       blockHash,
       timestamp,
       genesisHash: this.api.genesisHash,
