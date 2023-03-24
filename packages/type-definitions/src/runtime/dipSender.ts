@@ -17,7 +17,8 @@ export const calls: DefinitionsCall = {
           params: [
             {
               name: 'identifier',
-              type: 'DidIdentifierOf',
+              // TODO: Change with the definition of DidIdentifierOf when the spec_version is bumped to 11000
+              type: 'AccountId32',
             },
             {
               name: 'keys',
