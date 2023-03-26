@@ -6,7 +6,7 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidSignature } from './DidDocument'
+import type { DidSignature } from './KiltDidDocument'
 import type { IClaim } from './Claim'
 import type { IDelegationNode } from './Delegation'
 

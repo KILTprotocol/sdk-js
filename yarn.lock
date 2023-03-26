@@ -1832,6 +1832,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/asset-did@workspace:packages/asset-did"
   dependencies:
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
   languageName: unknown

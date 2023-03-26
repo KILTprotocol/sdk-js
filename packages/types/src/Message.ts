@@ -7,7 +7,7 @@
 
 import type { AnyJson } from '@polkadot/types/types/codec'
 
-import type { DidResourceUri, DidSignature, DidUri } from './DidDocument.js'
+import type { DidResourceUri, DidSignature, DidUri } from './KiltDidDocument.js'
 import type { IAttestation } from './Attestation.js'
 import type { PartialClaim } from './Claim.js'
 import type { IDelegationNode } from './Delegation.js'

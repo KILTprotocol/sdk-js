@@ -13,8 +13,8 @@ import {
   DidVerificationKey,
   EncryptionKeyType,
   VerificationKeyType,
-} from './DidDocument.js'
-import { DidResolutionDocumentMetadata } from './DidResolver.js'
+} from './KiltDidDocument.js'
+import { DidResolutionDocumentMetadata } from './KiltDidResolver.js'
 
 export type ConformingDidDocumentKeyType =
   | 'Ed25519VerificationKey2018'

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidSignature, DidUri } from './DidDocument'
+import type { DidSignature, DidUri } from './KiltDidDocument'
 import type { ICredential } from './Credential'
 import type { CTypeHash } from './CType'
 
