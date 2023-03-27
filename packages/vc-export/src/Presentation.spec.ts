@@ -237,7 +237,7 @@ it('fails if expired or not yet valid', async () => {
   await expect(
     verifySignedAsJwt(signedPres)
   ).rejects.toThrowErrorMatchingInlineSnapshot(
-    `"invalid_jwt: JWT has expired: exp: 1679407004 < now: 1679407014"`
+    `"invalid_jwt: JWT has expired: exp: 1679406974 < now: 1679407014"`
   )
 
   // try setting expiration date with expiresAt
@@ -253,7 +253,9 @@ it('fails if expired or not yet valid', async () => {
 
   await expect(
     verifySignedAsJwt(signedPres)
-  ).rejects.toThrowErrorMatchingInlineSnapshot()
+  ).rejects.toThrowErrorMatchingInlineSnapshot(
+    `"invalid_jwt: JWT has expired: exp: 1679406974 < now: 1679407014"`
+  )
 
   // should work if we set it to 80s
   signedPres = await signAsJwt(
@@ -269,7 +271,9 @@ it('fails if expired or not yet valid', async () => {
   await expect(verifySignedAsJwt(signedPres)).resolves.toMatchObject({
     presentation: {
       ...presentation,
-      expirationDate: new Date(Date.now() + 80_000).toISOString(),
+      expirationDate: new Date(
+        new Date(presentation.issuanceDate as string).getTime() + 80_000
+      ).toISOString(),
     },
   })
 
