@@ -625,7 +625,7 @@ describe('When resolving with the spec compliant resolver', () => {
     expect(didResolutionMetadata).toStrictEqual({})
 
     expect(didDocument.id).toStrictEqual<DidUri>(didWithAuthenticationKey)
-    expect(didDocument.authentication).toStrictEqual(['#auth'])
+    expect(didDocument.authentication).toStrictEqual([`${didDocument.id}#auth`])
     expect(didDocument.verificationMethod).toContainEqual<ConformingDidKey>({
       id: `${didWithAuthenticationKey}${'#auth'}`,
       controller: didWithAuthenticationKey,
