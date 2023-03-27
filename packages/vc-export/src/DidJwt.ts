@@ -89,13 +89,6 @@ const kiltDidResolver: Resolvable = {
       didResolutionMetadata,
     } = await resolveCompliant(did as DidUri)
 
-    // did-jwt can't work with the DID document if the verificationMethod id is not identical to verification relationship entries (authentication, etc.).
-    didDocument?.verificationMethod?.forEach((key, index) => {
-      ;(didDocument as any).verificationMethod[index].id = key.id.substring(
-        didDocument.id.length
-      )
-    })
-
     return {
       didDocument,
       didDocumentMetadata,
