@@ -37,6 +37,12 @@ import {
   verifySignedAsJwt,
 } from './Presentation'
 import type { VerifiableCredential, VerifiablePresentation } from './types'
+import {
+  create as createJWT,
+  verify as verifyJWT,
+  credentialToPayload,
+  credentialFromPayload,
+} from './DidJwt'
 
 const credential = {
   '@context': [
@@ -55,7 +61,7 @@ const credential = {
     premium: true,
   },
   issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-  issuanceDate: '2021-03-25T10:20:44.242Z',
+  issuanceDate: '2021-03-25T10:20:44.000Z',
   nonTransferable: true,
   proof: [
     {
@@ -83,11 +89,13 @@ function mockDidDoc(key: Keypair, type: VerificationKeyType) {
   const didDocument: DidDocument = {
     uri: did,
     authentication: [{ ...didKey, id: `#${keyHash}` } as DidVerificationKey],
+    assertionMethod: [{ ...didKey, id: `#${keyHash}` } as DidVerificationKey],
   }
   const onChainDoc = api.createType('Option<RawDidLinkedInfo>', {
     identifier: key.publicKey,
     details: {
       authenticationKey: keyHash,
+      assertionMethod: keyHash,
       publicKeys: {
         [keyHash]: {
           key: { PublicVerificationKey: { [type]: key.publicKey } },
@@ -175,6 +183,29 @@ it('verifies a presentation signed by an ed25519 key', async () => {
     presentation,
     payload: { iss: did },
   })
+})
+
+it('verifies a credential signed by an ed25519 key', async () => {
+  const key = ed25519PairFromSeed(seed)
+  const { didKey, onChainDoc } = mockDidDoc(key, 'ed25519')
+  jest.mocked(api.call.did.query).mockResolvedValue(onChainDoc)
+
+  const cred = {
+    ...credential,
+    expiresAt: '2026-03-25T10:20:44.000Z',
+  }
+
+  const jwtCredential = await createJWT(credentialToPayload(cred), {
+    ...key,
+    keyUri: didKey.id,
+    type: 'ed25519',
+  })
+
+  const result = await verifyJWT(jwtCredential, {
+    proofPurpose: 'assertionMethod',
+  })
+
+  expect(credentialFromPayload(result.payload)).toMatchObject(cred)
 })
 
 it('fails if subject !== holder', async () => {
