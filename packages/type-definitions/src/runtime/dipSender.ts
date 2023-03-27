@@ -21,7 +21,7 @@ export const calls: DefinitionsCall = {
             },
             {
               name: 'keys',
-              type: 'BTreeSet<Hash>',
+              type: 'Vec<Hash>',
             },
           ],
           type: 'Result<CompleteMerkleProof, ()>',
