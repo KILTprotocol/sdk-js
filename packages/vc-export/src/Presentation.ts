@@ -161,11 +161,26 @@ export function assertHolderCanPresentCredentials({
  *
  * @param VCs One or more Verifiable Credentials.
  * @param holder The holder of the credentials in the presentation, which also signs the presentation.
+ * @param verificationOptions Options to restrict the validity of a presentation to a specific audience or time frame.
+ * @param verificationOptions.verifier Identifier of the verifier to prevent unintended re-use of the presentation.
+ * @param verificationOptions.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
+ * Represented as `issuanceDate` on the presentation.
+ * @param verificationOptions.validUntil A Date or date-time string indicating when the presentation is no longer valid.
+ * Represented as `expirationDate` on the presentation.
  * @returns An (unsigned) Verifiable Presentation containing the original VCs with its proofs.
  */
 export function create(
   VCs: VerifiableCredential[],
-  holder: DidUri
+  holder: DidUri,
+  {
+    validFrom,
+    validUntil,
+    verifier,
+  }: {
+    verifier?: string
+    validFrom?: Date | string
+    validUntil?: Date | string
+  } = {}
 ): VerifiablePresentation {
   const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
   const presentation: VerifiablePresentation = {
@@ -174,6 +189,16 @@ export function create(
     verifiableCredential,
     holder,
   }
+  if (typeof validFrom !== 'undefined') {
+    presentation.issuanceDate = new Date(validFrom).toISOString()
+  }
+  if (typeof validUntil !== 'undefined') {
+    presentation.expirationDate = new Date(validUntil).toISOString()
+  }
+  if (typeof verifier === 'string') {
+    presentation.verifier = verifier
+  }
+
   validateStructure(presentation)
   assertHolderCanPresentCredentials(presentation)
   return presentation
@@ -188,11 +213,9 @@ export function create(
  * @param signingKey.keyUri The key uri by which the public key can be looked up from a DID document.
  * @param signingKey.type The key type. Ed25519 and ecdsa (secp256k1) are supported.
  * @param options Additional optional configuration.
- * @param options.validFrom A Date or timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid.
- * @param options.validUntil A Date or timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid.
- * @param options.expiresIn Duration of validity of the presentation in seconds. If omitted, the presentation's validity is unlimited.
+ * @param options.expiresIn Time in seconds until the presentation expires, based on issuanceDate or alternatively the current system time.
+ * If set, this replaces the presentation's current expirationDate.
  * @param options.challenge Optional challenge provided by a verifier that can be used to prevent replay attacks.
- * @param options.verifier Identifier of the verifier to prevent unintended re-use of the presentation.
  * @returns A signed JWT in compact representation containing a VerifiablePresentation.
  */
 export function signAsJwt(
@@ -204,32 +227,17 @@ export function signAsJwt(
   },
   options: {
     challenge?: string
-    verifier?: string
-    validFrom?: Date | number | string
-    validUntil?: Date | number | string
   } & Partial<JWTOptions> = {}
 ): Promise<string> {
-  const { challenge, verifier, validFrom, validUntil } = options
-  // map options such as audience/verifier and time of validity to their VP/VC representations
-  const issuanceDate =
-    typeof validFrom !== 'undefined'
-      ? new Date(validFrom).toISOString()
-      : undefined
-  const expirationDate =
-    typeof validUntil !== 'undefined'
-      ? new Date(validUntil).toISOString()
-      : undefined
-  const optionsApplied = {
-    issuanceDate,
-    expirationDate,
-    verifier,
-    // already existing values on the presentation take precedence
-    ...presentation,
-  }
-  // JWS replaces any existing proof
-  delete optionsApplied.proof
   // produce (unencoded) payload where keys on the presentation object are mapped to JWT claims
-  const payload = presentationToPayload(optionsApplied)
+  const payload = presentationToPayload(presentation)
+  // JWS replaces any existing proof
+  delete payload.vp.proof
+  const { challenge, expiresIn } = options
+  // if expiresIn is set, remove exp claim to make sure it is replaced
+  if (typeof expiresIn === 'number') {
+    delete payload.exp
+  }
   // add challenge claim to JWTs
   if (challenge) {
     payload.nonce = challenge
@@ -254,7 +262,7 @@ export async function verifySignedAsJwt(
     verifier,
     challenge,
     skewTime,
-  }: { verifier?: string; challenge?: string; skewTime?: number }
+  }: { verifier?: string; challenge?: string; skewTime?: number } = {}
 ): Promise<
   JWTVerified & {
     presentation: VerifiablePresentation

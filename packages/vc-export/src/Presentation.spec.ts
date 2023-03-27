@@ -103,15 +103,13 @@ beforeAll(async () => {
   jest.setSystemTime(1679407014000)
   api = ApiMocks.createAugmentedApi()
   api.call.did = {
-    // @ts-ignore
     query: jest
       .fn()
       .mockResolvedValue(api.createType('Option<RawDidLinkedInfo>')),
-  }
+  } as any
   api.query.did = {
-    // @ts-ignore
     didBlacklist: jest.fn().mockResolvedValue(api.createType('Option<Null>')),
-  }
+  } as any
   await init({ api })
 })
 
@@ -122,7 +120,9 @@ it('verifies a presentation signed by an ecdsa key', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = createPresentation([credential], did)
+  const presentation = createPresentation([credential], did, {
+    verifier: 'did:kilt:1234',
+  })
 
   const signedPres = await signAsJwt(
     presentation,
@@ -131,7 +131,7 @@ it('verifies a presentation signed by an ecdsa key', async () => {
       keyUri: didKey.id,
       type: 'ecdsa',
     },
-    { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60 }
   )
 
   const myResult = await verifySignedAsJwt(signedPres, {
@@ -152,7 +152,9 @@ it('verifies a presentation signed by an ed25519 key', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = createPresentation([credential], did)
+  const presentation = createPresentation([credential], did, {
+    verifier: 'did:kilt:1234',
+  })
 
   const signedPres = await signAsJwt(
     presentation,
@@ -161,7 +163,7 @@ it('verifies a presentation signed by an ed25519 key', async () => {
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
+    { challenge: 'abcdef', expiresIn: 60 }
   )
 
   const myResult = await verifySignedAsJwt(signedPres, {
@@ -217,7 +219,10 @@ it('fails if expired or not yet valid', async () => {
 
   credential.credentialSubject.id = did
 
-  const presentation = createPresentation([credential], did)
+  const presentation = createPresentation([credential], did, {
+    validFrom: new Date(Date.now() - 70_000), // 70 seconds ago
+    validUntil: new Date(Date.now() - 10_000), // 10 seconds ago
+  })
 
   let signedPres = await signAsJwt(
     presentation,
@@ -226,15 +231,16 @@ it('fails if expired or not yet valid', async () => {
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { validFrom: Date.now() - 70 * 1000, expiresIn: 60 }
+    { expiresIn: 30 }
   )
 
   await expect(
-    verifySignedAsJwt(signedPres, { skewTime: 5 })
+    verifySignedAsJwt(signedPres)
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"invalid_jwt: JWT has expired: exp: 1679407004 < now: 1679407014"`
   )
 
+  // try setting expiration date with expiresAt
   signedPres = await signAsJwt(
     presentation,
     {
@@ -242,11 +248,46 @@ it('fails if expired or not yet valid', async () => {
       keyUri: didKey.id,
       type: 'ed25519',
     },
-    { validFrom: Date.now() + 60 * 1000 }
+    { expiresIn: 30 }
   )
 
   await expect(
-    verifySignedAsJwt(signedPres, { skewTime: 30 })
+    verifySignedAsJwt(signedPres)
+  ).rejects.toThrowErrorMatchingInlineSnapshot()
+
+  // should work if we set it to 80s
+  signedPres = await signAsJwt(
+    presentation,
+    {
+      ...key,
+      keyUri: didKey.id,
+      type: 'ed25519',
+    },
+    { expiresIn: 80 }
+  )
+
+  await expect(verifySignedAsJwt(signedPres)).resolves.toMatchObject({
+    presentation: {
+      ...presentation,
+      expirationDate: new Date(Date.now() + 80_000).toISOString(),
+    },
+  })
+
+  // set issuanceDate to the future
+  signedPres = await signAsJwt(
+    {
+      ...presentation,
+      issuanceDate: new Date(Date.now() + 60 * 1000).toISOString(),
+    },
+    {
+      ...key,
+      keyUri: didKey.id,
+      type: 'ed25519',
+    }
+  )
+
+  await expect(
+    verifySignedAsJwt(signedPres)
   ).rejects.toThrowErrorMatchingInlineSnapshot(
     `"invalid_jwt: JWT not valid before nbf: 1679407074"`
   )
@@ -265,7 +306,9 @@ describe('when there is a presentation', () => {
 
     credential.credentialSubject.id = did
 
-    presentation = createPresentation([credential], did)
+    presentation = createPresentation([credential], did, {
+      verifier: 'did:kilt:1234',
+    })
 
     signedPresentation = await signAsJwt(
       presentation,
@@ -274,7 +317,7 @@ describe('when there is a presentation', () => {
         keyUri: didKey.id,
         type: 'ed25519',
       },
-      { challenge: 'abcdef', expiresIn: 60, verifier: 'did:kilt:1234' }
+      { challenge: 'abcdef', expiresIn: 60 }
     )
   })
 
