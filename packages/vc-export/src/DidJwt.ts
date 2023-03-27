@@ -117,12 +117,17 @@ export async function verify(
   token: string,
   options: Partial<JWTVerifyOptions>
 ): ReturnType<typeof verifyJWT> {
+  // set default skewTime to 0
+  const { skewTime = 0 } = options
   const result = await verifyJWT(token, {
-    skewTime: 0,
     resolver: kiltDidResolver,
     ...options,
+    skewTime,
     policies: {
+      // by default, do not require iat to be in the past
+      iat: false,
       ...options.policies,
+      // override aud policy: only check aud if expected audience is defined
       aud: typeof options.audience === 'string',
     },
   })

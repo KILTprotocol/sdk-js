@@ -239,13 +239,13 @@ export function signAsJwt(
 }
 
 /**
- * Verifies a JWT rendering of a VerifiablePresentation.
+ * Verifies a JWT rendering of a [[VerifiablePresentation]].
  *
  * @param token The JWT in compact (string) encoding.
  * @param options Optional configuration.
  * @param options.verifier Expected audience/verifier. Verification fails if the aud claim in the JWT is not equal to this value.
  * @param options.challenge Expected challenge. Verification fails if the nonce claim in the JWT is not equal to this value.
- * @param options.skewTime Allowed tolerance, in seconds, when verifying time of validity to account for clock skew between two machines. Default: 60s.
+ * @param options.skewTime Allowed tolerance, in seconds, when verifying time of validity to account for clock skew between two machines. Defaults to 0.
  * @returns An object including the `presentation` (without proof) and the decoded JWT `payload` containing all claims.
  */
 export async function verifySignedAsJwt(
@@ -253,7 +253,7 @@ export async function verifySignedAsJwt(
   {
     verifier,
     challenge,
-    skewTime = 60,
+    skewTime,
   }: { verifier?: string; challenge?: string; skewTime?: number }
 ): Promise<
   JWTVerified & {
