@@ -5,16 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import vcjs from '@digitalbazaar/vc'
-import jsigs from 'jsonld-signatures'
+import { defaultDocumentLoader } from '@digitalbazaar/vc'
 import jsonld from 'jsonld'
+import type jsigs from 'jsonld-signatures'
+
 import * as Did from '@kiltprotocol/did'
-import { DidUri } from '@kiltprotocol/types'
 import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
   W3C_DID_CONTEXT_URL,
 } from '@kiltprotocol/did'
+import type { DidUri } from '@kiltprotocol/types'
+
 import { validationContexts } from './context/index.js'
 
 interface DocumentLoader extends jsigs.DocumentLoader {
@@ -42,10 +44,20 @@ export function combineDocumentLoaders(
     return response
   })
   thisLoader = async (url: string) => {
-    return Promise.any(wrappedLoaders.map((i) => i(url))).catch((e) => {
-      throw new Error(
-        `${url} could not be resolved by any of the available document loaders`,
-        { cause: e.errors }
+    // essentially re-implements Promise.any, which does not exist in node 14
+    return new Promise((resolve, reject) => {
+      Promise.allSettled(wrappedLoaders.map((i) => i(url).then(resolve))).then(
+        (results) => {
+          const errors = results
+            .filter((i) => i.status === 'rejected')
+            .map((i) => (i as PromiseRejectedResult).reason)
+          reject(
+            new Error(
+              `${url} could not be resolved by any of the available document loaders`,
+              { cause: errors }
+            )
+          )
+        }
       )
     })
   }
@@ -71,7 +83,6 @@ export const kiltDidLoader: DocumentLoader = async (
     )
   }
   // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
-  // Also converts relative URIs into absolute ones; many implementations can't work with the former.
   const document = await jsonld.frame(
     didDocument ?? {},
     {
@@ -81,7 +92,7 @@ export const kiltDidLoader: DocumentLoader = async (
       '@id': url,
     },
     {
-      // this is required so that the processor is able to work with the relative URIs used in verification relationships
+      // transform any relative URIs to absolute ones so that the processor is able to work with them
       base: did,
       documentLoader,
       expandContext: {
@@ -101,6 +112,6 @@ export const kiltDidLoader: DocumentLoader = async (
  * @returns An object containing the resolution result.
  */
 export const documentLoader: jsigs.DocumentLoader = combineDocumentLoaders([
-  vcjs.defaultDocumentLoader,
+  defaultDocumentLoader,
   kiltContextsLoader,
 ])

@@ -38,6 +38,9 @@ import type {
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import { exportICredentialToVc } from '../../fromICredential.js'
 
+// is not needed and imports a dependency that does not work in node 18
+jest.mock('@digitalbazaar/http-client', () => ({}))
+
 let api: ApiPromise
 const genesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'

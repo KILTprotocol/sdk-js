@@ -8,12 +8,13 @@
 /* eslint-disable no-empty-pattern */
 /* eslint-disable class-methods-use-this */
 
+import jsigs from 'jsonld-signatures'
 import type { Proof } from 'jsonld-signatures'
-import { purposes } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
+
 import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
 
-export class KiltAttestationProofV1Purpose extends purposes.ProofPurpose {
+export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   constructor({
     date,
     maxTimestampDelta = Infinity,
