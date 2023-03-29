@@ -45,6 +45,7 @@
     "@polkadot/types": "^9.10.2",
     "@polkadot/util": "^10.2.1",
     "@polkadot/util-crypto": "^10.2.1",
+    "did-jwt": "^6.11.0",
     "jsonld": "^2.0.2",
     "jsonld-signatures": "^5.0.0",
     "vc-js": "^0.6.4"

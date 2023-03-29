@@ -11,4 +11,6 @@ import { SDKErrors } from '@kiltprotocol/utils'
 
 export class CredentialMalformedError extends SDKErrors.SDKError {}
 
+export class PresentationMalformedError extends SDKErrors.SDKError {}
+
 export class ProofMalformedError extends SDKErrors.SDKError {}
