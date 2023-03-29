@@ -18,13 +18,8 @@ import {
 import type { DidUri } from '@kiltprotocol/types'
 
 import { validationContexts } from './context/index.js'
+import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
 
-interface DocumentLoader extends jsigs.DocumentLoader {
-  (
-    url: string,
-    documentLoader: jsigs.DocumentLoader
-  ): ReturnType<jsigs.DocumentLoader>
-}
 /**
  * Combines multiple document loaders into one.
  * The resulting loader resolves if any loader returns a result, and rejects otherwise.
@@ -33,17 +28,16 @@ interface DocumentLoader extends jsigs.DocumentLoader {
  * @returns A composite document loader wrapping the input loaders.
  */
 export function combineDocumentLoaders(
-  loaders: DocumentLoader[]
+  loaders: jsigs.DocumentLoader[]
 ): jsigs.DocumentLoader {
-  let thisLoader: jsigs.DocumentLoader
   const wrappedLoaders = loaders.map((i) => async (url: string) => {
-    const response = await i(url, thisLoader)
+    const response = await i(url)
     if (typeof response.document !== 'object') {
       throw new Error('no document in response')
     }
     return response
   })
-  thisLoader = async (url: string) => {
+  return async (url: string) => {
     // essentially re-implements Promise.any, which does not exist in node 14
     return new Promise((resolve, reject) => {
       Promise.allSettled(wrappedLoaders.map((i) => i(url).then(resolve))).then(
@@ -61,7 +55,6 @@ export function combineDocumentLoaders(
       )
     })
   }
-  return thisLoader
 }
 
 export const kiltContextsLoader: jsigs.DocumentLoader = async (url) => {
@@ -71,10 +64,7 @@ export const kiltContextsLoader: jsigs.DocumentLoader = async (url) => {
   throw new Error(`not a known Kilt context: ${url}`)
 }
 
-export const kiltDidLoader: DocumentLoader = async (
-  url,
-  documentLoader: jsigs.DocumentLoader = kiltContextsLoader
-) => {
+export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
   const { did } = Did.parse(url as DidUri)
   const { didDocument, didResolutionMetadata } = await Did.resolveCompliant(did)
   if (didResolutionMetadata.error) {
@@ -94,13 +84,49 @@ export const kiltDidLoader: DocumentLoader = async (
     {
       // transform any relative URIs to absolute ones so that the processor is able to work with them
       base: did,
-      documentLoader,
+      documentLoader: kiltContextsLoader,
       expandContext: {
         '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
       },
       // forced because 'base' is not defined in the types we're using; these are for v1.5 bc no more recent types exist
     } as jsonld.Options.Frame
   )
+  // The signature suites expect key-related json-LD contexts; we add them here
+  switch ((document as { type: string }).type) {
+    // these 4 are currently used
+    case Sr25519VerificationKey2020.suite:
+      document['@context'].push(Sr25519VerificationKey2020.SUITE_CONTEXT)
+      break
+    case 'Ed25519VerificationKey2018':
+      document['@context'].push(
+        'https://w3id.org/security/suites/ed25519-2018/v1'
+      )
+      break
+    case 'EcdsaSecp256k1VerificationKey2019':
+      document['@context'].push('https://w3id.org/security/v1')
+      break
+    case 'X25519KeyAgreementKey2019':
+      document['@context'].push(
+        'https://w3id.org/security/suites/x25519-2019/v1'
+      )
+      break
+    // these are added for upgradability
+    case 'Ed25519VerificationKey2020':
+      document['@context'].push(
+        'https://w3id.org/security/suites/ed25519-2020/v1'
+      )
+      break
+    case 'X25519KeyAgreementKey2020':
+      document['@context'].push(
+        'https://w3id.org/security/suites/x25519-2020/v1'
+      )
+      break
+    case 'Multikey':
+      document['@context'].push('https://w3id.org/security/multikey/v1')
+      break
+    default:
+      break
+  }
   return { contextUrl: undefined, documentUrl: url, document }
 }
 

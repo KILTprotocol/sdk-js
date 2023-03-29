@@ -1577,6 +1577,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digitalbazaar/security-context@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@digitalbazaar/security-context@npm:1.0.0"
+  checksum: bc05e428c25677e9005fae6eed9ac3553726eb8544a9804cc9f6ee439d45f424ae011ebc3de80d4f82598ab3d8d9773344e1c40bfe2f7a1844d0fb05d5c371ef
+  languageName: node
+  linkType: hard
+
 "@digitalbazaar/vc@npm:^2.1.0":
   version: 2.1.0
   resolution: "@digitalbazaar/vc@npm:2.1.0"
@@ -2016,6 +2023,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
+    "@digitalbazaar/security-context": ^1.0.0
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"

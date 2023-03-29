@@ -225,16 +225,7 @@ describe('vc-js', () => {
       signingSuite = new Sr25519Signature2020({ signer })
       didDocumentLoader = combineDocumentLoaders([
         documentLoader,
-        // @ts-ignore
-        async (url, dl) => {
-          const result = await kiltDidLoader(url, dl)
-          // we need to add the context url to keys or it won't be accepted
-          result.document['@context'] = [
-            ...result?.document?.['@context'],
-            Sr25519Signature2020.CONTEXT_URL,
-          ]
-          return result
-        },
+        kiltDidLoader,
       ])
     })
 
@@ -298,13 +289,9 @@ describe('vc-js', () => {
       const mockDidDocumentLoader = combineDocumentLoaders([
         documentLoader,
         // @ts-ignore
-        async (url, dl) => {
-          const result = await kiltDidLoader(url, dl)
-          // we need to add the context url to keys or it won't be accepted
-          result.document['@context'] = [
-            ...result?.document?.['@context'],
-            Sr25519Signature2020.CONTEXT_URL,
-          ]
+        async (url) => {
+          const result = await kiltDidLoader(url)
+
           if ('authentication' in result.document) {
             // @ts-ignore
             result.document.assertionMethod = result.document.authentication
