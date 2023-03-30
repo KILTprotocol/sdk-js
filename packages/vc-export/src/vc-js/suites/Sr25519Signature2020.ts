@@ -5,16 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import jsigs, {
-  DocumentLoader,
-  ExpansionMap,
-  Proof,
-  purposes,
-  Signer,
-  Verifier,
-} from 'jsonld-signatures'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
-import { JsonLdObj } from 'jsonld/jsonld-spec.js'
+
+import jsigs from 'jsonld-signatures' // cjs module
+import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
+
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
@@ -32,10 +27,10 @@ const SUITE_CONTEXT_URL = KILT_CREDENTIAL_CONTEXT_URL
 const MULTIBASE_BASE58BTC_HEADER = 'z'
 
 type Options = {
-  proof: Proof
+  proof: jsigs.Proof
   document: JsonLdObj
   purpose: any
-  documentLoader: DocumentLoader
+  documentLoader: jsigs.DocumentLoader
 }
 
 export class Sr25519Signature2020 extends LinkedDataSignature {
@@ -81,9 +76,9 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     useNativeCanonize,
   }: {
     key?: Sr25519VerificationKey2020
-    signer?: Signer
-    verifier?: Verifier
-    proof?: Proof
+    signer?: jsigs.Signer
+    verifier?: jsigs.Verifier
+    proof?: jsigs.Proof
     date?: string | Date
     useNativeCanonize?: boolean
   } = {}) {
@@ -117,7 +112,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     verifyData,
     proof,
   }: Pick<Options, 'proof'> & { verifyData: Uint8Array }): Promise<
-    { proofValue: string } & Proof
+    { proofValue: string } & jsigs.Proof
   > {
     if (!(this.signer && typeof this.signer.sign === 'function')) {
       throw new Error('A signer API has not been specified.')
@@ -147,7 +142,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     verifyData: Uint8Array
     verificationMethod: Record<string, unknown>
   }): Promise<boolean> {
-    const { proofValue } = proof as Proof & { proofValue: string }
+    const { proofValue } = proof as jsigs.Proof & { proofValue: string }
     if (!(Boolean(proofValue) && typeof proofValue === 'string')) {
       throw new TypeError(
         'The proof does not include a valid "proofValue" property.'
@@ -209,7 +204,9 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
       return this.key.export({ publicKey: true })
     }
 
-    let { verificationMethod } = proof as Proof & { verificationMethod: any }
+    let { verificationMethod } = proof as jsigs.Proof & {
+      verificationMethod: any
+    }
 
     if (typeof verificationMethod === 'object') {
       verificationMethod = verificationMethod.id
@@ -242,11 +239,11 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     purpose,
     documentLoader,
   }: {
-    proof: Proof & { verificationMethod?: { id: string } | string }
+    proof: jsigs.Proof & { verificationMethod?: { id: string } | string }
     document?: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
+    purpose?: jsigs.purposes.ProofPurpose
+    documentLoader?: jsigs.DocumentLoader
+    expansionMap?: jsigs.ExpansionMap
   }): Promise<boolean> {
     if (!includesContext({ document, contextUrl: SUITE_CONTEXT_URL })) {
       return false

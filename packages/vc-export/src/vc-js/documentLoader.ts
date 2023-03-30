@@ -5,14 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { defaultDocumentLoader } from '@digitalbazaar/vc'
-import jsonld from 'jsonld'
-import type jsigs from 'jsonld-signatures'
+import jsonld from 'jsonld' // cjs module
+import type jsigs from 'jsonld-signatures' // cjs module
 
-import * as Did from '@kiltprotocol/did'
 import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
+  parse,
+  resolveCompliant,
   W3C_DID_CONTEXT_URL,
 } from '@kiltprotocol/did'
 import type { DidUri } from '@kiltprotocol/types'
@@ -65,8 +65,8 @@ export const kiltContextsLoader: jsigs.DocumentLoader = async (url) => {
 }
 
 export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
-  const { did } = Did.parse(url as DidUri)
-  const { didDocument, didResolutionMetadata } = await Did.resolveCompliant(did)
+  const { did } = parse(url as DidUri)
+  const { didDocument, didResolutionMetadata } = await resolveCompliant(did)
   if (didResolutionMetadata.error) {
     throw new Error(
       `${didResolutionMetadata.error}:${didResolutionMetadata.errorMessage}`
@@ -137,7 +137,5 @@ export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
  * @param url Document/context URL to resolve.
  * @returns An object containing the resolution result.
  */
-export const documentLoader: jsigs.DocumentLoader = combineDocumentLoaders([
-  defaultDocumentLoader,
-  kiltContextsLoader,
-])
+export const defaultDocumentLoader: jsigs.DocumentLoader =
+  combineDocumentLoaders([kiltContextsLoader, kiltDidLoader])

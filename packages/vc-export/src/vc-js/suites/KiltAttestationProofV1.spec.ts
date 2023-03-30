@@ -11,8 +11,9 @@
 
 import { hexToU8a, u8aEq } from '@polkadot/util'
 import vcjs from '@digitalbazaar/vc'
-import jsigs, { Proof, purposes } from 'jsonld-signatures'
-import jsonld from 'jsonld'
+
+import jsigs from 'jsonld-signatures' // cjs module
+import jsonld from 'jsonld' // cjs module
 
 import { Credential } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
@@ -134,7 +135,7 @@ const documentLoader = combineDocumentLoaders([
 ])
 
 let suite: KiltAttestationV1Suite
-let purpose: purposes.ProofPurpose
+let purpose: jsigs.purposes.ProofPurpose
 let proof: KiltAttestationProofV1
 let keypair: KiltKeyringPair
 let didDocument: ConformingDidDocument
@@ -180,7 +181,7 @@ describe('jsigs', () => {
         { ...proof, '@context': attestedVc['@context'] },
         attestedVc['@context'],
         { documentLoader, compactToRelative: false }
-      )) as Proof
+      )) as jsigs.Proof
       expect(await purpose.match(compactedProof, {})).toBe(true)
       expect(
         await purpose.match(compactedProof, {

@@ -13,10 +13,12 @@ import {
   sr25519Sign,
   sr25519Verify,
 } from '@polkadot/util-crypto'
-import cryptold from 'crypto-ld'
-import { Keypair } from '@polkadot/util-crypto/types'
-import type { Signer, Verifier } from 'jsonld-signatures'
 import { u8aEq } from '@polkadot/util'
+import type { Keypair } from '@polkadot/util-crypto/types'
+
+import cryptold from 'crypto-ld' // cjs module
+import type { Signer, Verifier } from 'jsonld-signatures' // cjs module
+
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 
 const { LDKeyPair } = cryptold

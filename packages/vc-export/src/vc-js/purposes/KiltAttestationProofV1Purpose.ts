@@ -8,8 +8,7 @@
 /* eslint-disable no-empty-pattern */
 /* eslint-disable class-methods-use-this */
 
-import jsigs from 'jsonld-signatures'
-import type { Proof } from 'jsonld-signatures'
+import jsigs from 'jsonld-signatures' // cjs module
 import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 
 import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
@@ -23,7 +22,7 @@ export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   }
 
   async validate(
-    proof: Proof,
+    proof: jsigs.Proof,
     {
       document,
     }: /* suite, verificationMethod,
@@ -32,23 +31,23 @@ export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   ): Promise<object> {
     const created: string =
       (proof as any).created ?? (document as any).issuanceDate
-    return super.validate<Proof & { created: string }>(
+    return super.validate<jsigs.Proof & { created: string }>(
       { ...proof, created },
       {}
     )
   }
 
   async update(
-    proof: Proof,
+    proof: jsigs.Proof,
     {
       /* document, suite, documentLoader, expansionMap */
     }
-  ): Promise<Proof> {
+  ): Promise<jsigs.Proof> {
     return { ...proof, type: ATTESTATION_PROOF_V1_TYPE }
   }
 
   async match(
-    proof: Proof,
+    proof: jsigs.Proof,
     {
       /* document, documentLoader, expansionMap */
     }

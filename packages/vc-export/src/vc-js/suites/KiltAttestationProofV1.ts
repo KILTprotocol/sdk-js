@@ -8,9 +8,11 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-pattern */
 
-import jsigs from 'jsonld-signatures'
-import { ApiPromise } from '@polkadot/api'
 import { u8aToHex } from '@polkadot/util'
+import type { ApiPromise } from '@polkadot/api'
+
+import jsigs from 'jsonld-signatures' // cjs module
+
 import {
   AttestationHandler,
   calculateRootHash,
@@ -19,11 +21,11 @@ import {
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
 import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
+import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
 import type {
   KiltAttestationProofV1,
   VerifiableCredential,
 } from '../../types.js'
-import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
 
 const {
   suites: { LinkedDataProof },

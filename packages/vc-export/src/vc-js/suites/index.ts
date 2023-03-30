@@ -7,3 +7,4 @@
 
 export * from './KiltAttestationProofV1.js'
 export * from './Sr25519Signature2020.js'
+export * from './Sr25519VerificationKey.js'
