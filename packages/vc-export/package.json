@@ -30,7 +30,8 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@digitalbazaar/vc": "^2.1.0",
+    "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
+    "@digitalbazaar/vc": "^6.0.1",
     "@kiltprotocol/testing": "workspace:*",
     "@types/jsonld": "1.5.1",
     "rimraf": "^3.0.2",

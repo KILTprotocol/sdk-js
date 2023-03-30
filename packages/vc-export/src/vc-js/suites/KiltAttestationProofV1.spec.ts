@@ -10,8 +10,12 @@
  */
 
 import { hexToU8a, u8aEq } from '@polkadot/util'
-import vcjs from '@digitalbazaar/vc'
-
+import * as vcjs from '@digitalbazaar/vc'
+import {
+  Ed25519Signature2020,
+  suiteContext as Ed25519Signature2020Context,
+  // @ts-expect-error not a typescript module
+} from '@digitalbazaar/ed25519-signature-2020'
 import jsigs from 'jsonld-signatures' // cjs module
 import jsonld from 'jsonld' // cjs module
 
@@ -157,9 +161,19 @@ beforeAll(async () => {
       ],
       assertionMethod: [{ ...keypair, id: '#assertion' }],
     },
-    'application/ld+json'
+    'application/json'
   )
   jest.mocked(Did.resolveCompliant).mockImplementation(async (did) => {
+    if (did.includes('light')) {
+      return {
+        didDocument: Did.exportToDidDocument(
+          Did.parseDocumentFromLightDid(did, false),
+          'application/json'
+        ),
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+      }
+    }
     if (did.startsWith(didDocument.id)) {
       return {
         didDocument,
@@ -316,7 +330,7 @@ describe('vc-js', () => {
       expect(result).not.toHaveProperty('error')
     })
 
-    it('creates and verifies a signed presentation', async () => {
+    it('creates and verifies a signed presentation (sr25519)', async () => {
       const signer = {
         sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
         id: didDocument.authentication[0],
@@ -339,8 +353,7 @@ describe('vc-js', () => {
       const result = await vcjs.verify({
         presentation,
         suite: [suite, new Sr25519Signature2020()],
-        // TODO: vcjs is currently broken and ignores the presentationPurpose if a purpose is given; so we can't actually verify the credential within unfortunately
-        // purpose: new AnyProofPurpose(),
+        purpose: new KiltAttestationProofV1Purpose(),
         challenge: '0x1234',
         documentLoader,
         checkStatus: suite.checkStatus,
@@ -351,10 +364,57 @@ describe('vc-js', () => {
         expect.any(Array)
       )
       expect(result).toMatchObject({
-        // verified: true,
-        // error: undefined,
+        verified: true,
         presentationResult: { verified: true },
-        // credentialResults: [{verified: true, error: undefined}]
+        credentialResults: [{ verified: true }],
+      })
+    })
+
+    it('creates and verifies a signed presentation (ed25519)', async () => {
+      const edKeypair = Crypto.makeKeypairFromUri('//Ingo', 'ed25519')
+      const lightDid = Did.createLightDidDocument({
+        authentication: [edKeypair],
+      })
+      const edSigner = {
+        sign: async ({ data }: { data: Uint8Array }) => edKeypair.sign(data),
+        id: lightDid.uri + lightDid.authentication[0].id,
+      }
+      const signingSuite = new Ed25519Signature2020({ signer: edSigner })
+
+      const extendedDocLoader = combineDocumentLoaders([
+        documentLoader,
+        Ed25519Signature2020Context.documentLoader,
+      ])
+
+      let presentation = vcjs.createPresentation({
+        verifiableCredential: attestedVc,
+        holder: lightDid.uri,
+      })
+
+      presentation = await vcjs.signPresentation({
+        presentation,
+        suite: signingSuite,
+        challenge: '0x1234',
+        documentLoader: extendedDocLoader,
+      })
+
+      const result = await vcjs.verify({
+        presentation,
+        suite: [suite, new Ed25519Signature2020()],
+        challenge: '0x1234',
+        documentLoader: extendedDocLoader,
+        checkStatus: suite.checkStatus,
+        purpose: new KiltAttestationProofV1Purpose(),
+      })
+
+      expect(result.presentationResult).not.toHaveProperty(
+        'error',
+        expect.any(Array)
+      )
+      expect(result).toMatchObject({
+        verified: true,
+        presentationResult: { verified: true },
+        credentialResults: [{ verified: true }],
       })
     })
 
@@ -384,7 +444,6 @@ describe('vc-js', () => {
         suite: new Sr25519Signature2020(),
         documentLoader,
       })
-      console.log(JSON.stringify(result, null, 2))
       expect(result).not.toHaveProperty('error')
       expect(result).toHaveProperty('verified', true)
     })
