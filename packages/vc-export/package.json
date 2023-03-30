@@ -47,7 +47,8 @@
     "@polkadot/types": "^9.10.2",
     "@polkadot/util": "^10.2.1",
     "@polkadot/util-crypto": "^10.2.1",
-    "crypto-ld": "^6.0.0 || ^5.0.0"
+    "crypto-ld": "^6.0.0 || ^5.0.0",
+    "did-jwt": "^6.11.0"
   },
   "peerDependencies": {
     "@digitalbazaar/vc": "^2.1.0 || ^6.0.1",

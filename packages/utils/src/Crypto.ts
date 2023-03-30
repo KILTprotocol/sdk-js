@@ -343,7 +343,7 @@ export function hashStatements(
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
@@ -357,7 +357,7 @@ export function makeKeypairFromSeed<
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 
