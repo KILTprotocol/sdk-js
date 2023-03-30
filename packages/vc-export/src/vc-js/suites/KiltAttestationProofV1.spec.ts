@@ -38,7 +38,10 @@ import {
   kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
-import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+import {
+  KILT_CREDENTIAL_CONTEXT_URL,
+  W3C_CREDENTIAL_CONTEXT_URL,
+} from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ingos-cred.json'
@@ -301,8 +304,17 @@ describe('jsigs', () => {
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
     ).toMatchObject({ verified: false })
   })
-})
 
+  it('detects proof mismatch', async () => {
+    const tamperCred: VerifiableCredential = JSON.parse(
+      JSON.stringify(attestedVc)
+    )
+    tamperCred.proof!.type = 'Sr25519Signature2020' as any
+    expect(
+      await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+    ).toMatchObject({ verified: false })
+  })
+})
 describe('vc-js', () => {
   const mockSuite = new KiltAttestationV1Suite({
     api: {
@@ -480,30 +492,31 @@ describe('vc-js', () => {
 })
 
 describe('issuance', () => {
+  let txArgs: any
+  const issuanceSuite = new KiltAttestationV1Suite({
+    api: mockedApi,
+    transactionHandler: async (tx) => {
+      txArgs = tx.args
+      return {
+        blockHash,
+        timestamp,
+      }
+    },
+  })
+  const toBeSigned: Partial<VerifiableCredential> = {
+    '@context': attestedVc['@context'],
+    type: attestedVc.type,
+    credentialSubject: attestedVc.credentialSubject,
+    credentialSchema: attestedVc.credentialSchema,
+    nonTransferable: true,
+    issuer: attestedVc.issuer,
+  }
   it('issues a credential via vc-js', async () => {
-    let txArgs: any
-    const issuanceSuite = new KiltAttestationV1Suite({
-      api: mockedApi,
-      transactionHandler: async (tx) => {
-        txArgs = tx.args
-        return {
-          blockHash,
-          timestamp,
-        }
-      },
-    })
-    const toBeSigned: Partial<VerifiableCredential> = {
-      '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
-      type: attestedVc.type,
-      credentialSubject: attestedVc.credentialSubject,
-      credentialSchema: attestedVc.credentialSchema,
-      nonTransferable: true,
-      issuer: attestedVc.issuer,
-    }
     let newCred = (await vcjs.issue({
       credential: toBeSigned,
       suite: issuanceSuite,
       documentLoader,
+      purpose,
     })) as VerifiableCredential
     expect(newCred.proof).toMatchObject({
       type: 'KiltAttestationProofV1',
@@ -544,9 +557,75 @@ describe('issuance', () => {
       credential: newCred,
       suite,
       documentLoader,
-      purpose: new KiltAttestationProofV1Purpose(),
+      purpose,
       checkStatus: suite.checkStatus,
     })
     expect(result).toMatchObject({ verified: true })
+  })
+
+  it('adds context if not present', async () => {
+    const newCred = (await vcjs.issue({
+      credential: {
+        ...toBeSigned,
+        '@context': [W3C_CREDENTIAL_CONTEXT_URL],
+      },
+      suite: issuanceSuite,
+      documentLoader,
+      purpose,
+    })) as VerifiableCredential
+    expect(newCred['@context']).toContain(KILT_CREDENTIAL_CONTEXT_URL)
+
+    await expect(
+      jsigs.sign(
+        {
+          ...toBeSigned,
+          '@context': [W3C_CREDENTIAL_CONTEXT_URL],
+        },
+        {
+          suite: issuanceSuite,
+          documentLoader,
+          purpose,
+          addSuiteContext: false,
+        }
+      )
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"The document to be signed must contain this suite's @context, \\"https://www.kilt.io/contexts/credentials\\"."`
+    )
+  })
+
+  it('complains if transaction handler not given', async () => {
+    await expect(
+      vcjs.issue({
+        credential: toBeSigned,
+        suite,
+        documentLoader,
+        purpose,
+      })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"suite must be configured with a transactionHandler for proof generation"`
+    )
+  })
+
+  it('fails proof finalization if credential does not have proof', async () => {
+    await expect(
+      issuanceSuite.finalizeProof(toBeSigned as VerifiableCredential)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"no submission found for this proof"`
+    )
+  })
+
+  it('fails if proof stub was created by different suite', async () => {
+    const newCred = (await vcjs.issue({
+      credential: toBeSigned,
+      suite: issuanceSuite,
+      documentLoader,
+      purpose,
+    })) as VerifiableCredential
+
+    await expect(
+      suite.finalizeProof(newCred)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Cannot read properties of undefined (reading 'map')"`
+    )
   })
 })
