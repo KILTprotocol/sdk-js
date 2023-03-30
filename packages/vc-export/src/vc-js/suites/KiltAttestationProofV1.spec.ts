@@ -43,7 +43,7 @@ import {
 } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
-import ingosCredential from '../examples/ingos-cred.json'
+import ingosCredential from '../examples/ICredentialExample.json'
 import {
   makeAttestationCreatedEvents,
   mockedApi,

@@ -28,7 +28,7 @@ import {
 import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
-import ingosCredential from '../examples/ingos-cred.json'
+import ingosCredential from '../examples/ICredentialExample.json'
 import type { VerifiableCredential } from '../../types.js'
 
 // is not needed and imports a dependency that does not work in node 18
