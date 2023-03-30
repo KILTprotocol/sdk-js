@@ -26,6 +26,8 @@ const { LDKeyPair } = cryptold
 const SUITE_ID = 'Sr25519VerificationKey2020'
 
 /* eslint-disable no-use-before-define */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/check-param-names */
 
 export class Sr25519VerificationKey2020 extends LDKeyPair {
   // Used by CryptoLD harness for dispatching.
@@ -66,22 +68,22 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   /**
    * Generates a KeyPair with an optional deterministic seed.
    *
-   * @example
-   * > const keyPair = await Sr25519VerificationKey2020.generate();
-   * > keyPair
-   * Sr25519VerificationKey2020 { ...
-   * @param [options={}] - See LDKeyPair
-   * docstring for full list.
+   * @param [options={}] - See LDKeyPair docstring for full list.
    * @param [options.seed] -
    * a 32-byte array seed for a deterministic key.
    *
    * @returns Generates a key pair.
    */
   static async generate(
-    options: { seed?: Uint8Array } = {}
+    options: {
+      seed?: Uint8Array | string
+      controller?: string
+      id?: string
+      revoked?: string
+    } = {}
   ): Promise<Sr25519VerificationKey2020> {
     let keyObject: Keypair
-    if (options.seed) {
+    if (typeof options.seed !== 'undefined') {
       keyObject = sr25519PairFromSeed(options.seed)
     } else {
       keyObject = sr25519PairFromSeed(randomAsU8a(32))
@@ -312,10 +314,10 @@ function Sr25519SignerFactory(key: Sr25519VerificationKey2020): {
     }
   }
   const secretKey = base58Decode(key.privateKeyBase58)
-
+  const publicKey = base58Decode(key.publicKeyBase58)
   return {
     async sign({ data }) {
-      const signature = sr25519Sign(data, { secretKey })
+      const signature = sr25519Sign(data, { secretKey, publicKey })
       return signature
     },
   }

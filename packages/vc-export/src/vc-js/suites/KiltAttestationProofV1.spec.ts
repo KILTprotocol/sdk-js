@@ -24,7 +24,6 @@ import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
   ConformingDidDocument,
-  DidUri,
   IClaim,
   ICredential,
   KiltKeyringPair,
@@ -53,6 +52,7 @@ import type {
   KiltAttestationProofV1,
   VerifiableCredential,
 } from '../../types.js'
+import { makeFakeDid } from './Sr25519Signature2020.spec'
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
@@ -152,44 +152,7 @@ beforeAll(async () => {
   suite = new KiltAttestationV1Suite({ api: mockedApi })
   purpose = new KiltAttestationProofV1Purpose()
   proof = attestedVc.proof as KiltAttestationProofV1
-
-  keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
-  didDocument = Did.exportToDidDocument(
-    {
-      uri: ingosCredential.claim.owner as DidUri,
-      authentication: [
-        {
-          ...keypair,
-          id: '#authentication',
-        },
-      ],
-      assertionMethod: [{ ...keypair, id: '#assertion' }],
-    },
-    'application/json'
-  )
-  jest.mocked(Did.resolveCompliant).mockImplementation(async (did) => {
-    if (did.includes('light')) {
-      return {
-        didDocument: Did.exportToDidDocument(
-          Did.parseDocumentFromLightDid(did, false),
-          'application/json'
-        ),
-        didDocumentMetadata: {},
-        didResolutionMetadata: {},
-      }
-    }
-    if (did.startsWith(didDocument.id)) {
-      return {
-        didDocument,
-        didDocumentMetadata: {},
-        didResolutionMetadata: {},
-      }
-    }
-    return {
-      didDocumentMetadata: {},
-      didResolutionMetadata: { error: 'notFound' },
-    }
-  })
+  ;({ keypair, didDocument } = await makeFakeDid())
 })
 
 describe('jsigs', () => {
@@ -429,36 +392,6 @@ describe('vc-js', () => {
         presentationResult: { verified: true },
         credentialResults: [{ verified: true }],
       })
-    })
-
-    it('issues and verifies a signed credential', async () => {
-      const signer = {
-        sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        id: didDocument.assertionMethod![0],
-      }
-      const signingSuite = new Sr25519Signature2020({ signer })
-
-      const credential: VerifiableCredential = {
-        ...attestedVc,
-        issuer: didDocument.id,
-      }
-      delete credential.proof
-      // @ts-expect-error
-      delete credential.credentialStatus
-
-      const verifiableCredential = await vcjs.issue({
-        credential,
-        suite: signingSuite,
-        documentLoader,
-      })
-
-      const result = await vcjs.verifyCredential({
-        credential: verifiableCredential,
-        suite: new Sr25519Signature2020(),
-        documentLoader,
-      })
-      expect(result).not.toHaveProperty('error')
-      expect(result).toHaveProperty('verified', true)
     })
   })
 
