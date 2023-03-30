@@ -110,20 +110,6 @@ export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
         'https://w3id.org/security/suites/x25519-2019/v1'
       )
       break
-    // these are added for upgradability
-    case 'Ed25519VerificationKey2020':
-      document['@context'].push(
-        'https://w3id.org/security/suites/ed25519-2020/v1'
-      )
-      break
-    case 'X25519KeyAgreementKey2020':
-      document['@context'].push(
-        'https://w3id.org/security/suites/x25519-2020/v1'
-      )
-      break
-    case 'Multikey':
-      document['@context'].push('https://w3id.org/security/multikey/v1')
-      break
     default:
       break
   }
