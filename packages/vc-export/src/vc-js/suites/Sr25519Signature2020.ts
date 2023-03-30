@@ -21,6 +21,7 @@ import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-use-before-define */
+/* eslint-disable jsdoc/require-description-complete-sentence */
 
 const {
   suites: { LinkedDataSignature },

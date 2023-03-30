@@ -30,7 +30,7 @@ import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
   combineDocumentLoaders,
-  documentLoader,
+  kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
@@ -126,6 +126,12 @@ jest.mocked(mockedApi.query.system.events).mockResolvedValue(
 jest
   .mocked(mockedApi.query.timestamp.now)
   .mockResolvedValue(mockedApi.createType('u64', timestamp) as any)
+
+const documentLoader = combineDocumentLoaders([
+  kiltDidLoader,
+  kiltContextsLoader,
+  vcjs.defaultDocumentLoader,
+])
 
 let suite: KiltAttestationV1Suite
 let purpose: purposes.ProofPurpose
@@ -297,14 +303,6 @@ describe('vc-js', () => {
   })
 
   describe('attested', () => {
-    let didDocumentLoader: jsigs.DocumentLoader
-    beforeAll(async () => {
-      didDocumentLoader = combineDocumentLoaders([
-        documentLoader,
-        kiltDidLoader,
-      ])
-    })
-
     it('verifies Kilt Attestation Proof', async () => {
       const result = await vcjs.verifyCredential({
         credential: attestedVc,
@@ -343,7 +341,7 @@ describe('vc-js', () => {
         // TODO: vcjs is currently broken and ignores the presentationPurpose if a purpose is given; so we can't actually verify the credential within unfortunately
         // purpose: new AnyProofPurpose(),
         challenge: '0x1234',
-        documentLoader: didDocumentLoader,
+        documentLoader,
         checkStatus: suite.checkStatus,
       })
 
@@ -383,7 +381,7 @@ describe('vc-js', () => {
       const result = await vcjs.verifyCredential({
         credential: verifiableCredential,
         suite: new Sr25519Signature2020(),
-        documentLoader: didDocumentLoader,
+        documentLoader,
       })
       console.log(JSON.stringify(result, null, 2))
       expect(result).not.toHaveProperty('error')
