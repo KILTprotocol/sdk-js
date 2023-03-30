@@ -18,10 +18,9 @@ import type { DidUri } from '@kiltprotocol/types'
 
 import {
   attestation,
-  attestationCreatedIndex,
   blockHash,
   credential,
-  makeEvent,
+  makeAttestationCreatedEvents,
   mockedApi,
   timestamp,
 } from './exportToVerifiableCredential.spec'
@@ -164,11 +163,13 @@ describe('issuance', () => {
     jest
       .mocked(mockedApi.query.system.events)
       .mockResolvedValueOnce(
-        makeEvent(attestationCreatedIndex, [
-          '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-          txArgs[0],
-          txArgs[1],
-          txArgs[2],
+        makeAttestationCreatedEvents([
+          [
+            '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+            txArgs[0],
+            txArgs[1],
+            txArgs[2],
+          ],
         ]) as any
       )
 
@@ -271,7 +272,7 @@ describe('negative tests', () => {
       )
     jest
       .mocked(mockedApi.query.system.events)
-      .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
+      .mockResolvedValueOnce(makeAttestationCreatedEvents([]) as any)
     const { proof, ...cred } = VC
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
     await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()

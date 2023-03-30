@@ -9,90 +9,176 @@
  * @group unit/vc-js
  */
 
-import jsigs, { Proof, purposes } from 'jsonld-signatures'
-import { connect, Credential, disconnect } from '@kiltprotocol/core'
+import { hexToU8a, u8aEq } from '@polkadot/util'
 import vcjs from '@digitalbazaar/vc'
+import jsigs, { Proof, purposes } from 'jsonld-signatures'
 import jsonld from 'jsonld'
-import { ApiPromise, Keyring } from '@polkadot/api'
-import { hexToU8a } from '@polkadot/util'
+
+import { Credential } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
 import type {
-  DidDocument,
+  ConformingDidDocument,
+  DidUri,
   IClaim,
   ICredential,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { createLightDidDocument } from '@kiltprotocol/did'
-import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
-import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
+
+import { exportICredentialToVc } from '../../fromICredential.js'
 import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
-import ingosCredential from '../examples/ingos-cred.json'
+import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
   combineDocumentLoaders,
   documentLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
+import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
+import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
+import ingosCredential from '../examples/ingos-cred.json'
+import {
+  makeAttestationCreatedEvents,
+  mockedApi,
+} from '../../exportToVerifiableCredential.spec.js'
 import type {
   KiltAttestationProofV1,
   VerifiableCredential,
 } from '../../types.js'
-import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
-import { exportICredentialToVc } from '../../fromICredential.js'
+
+jest.mock('@kiltprotocol/did', () => ({
+  ...jest.requireActual('@kiltprotocol/did'),
+  resolveCompliant: jest.fn(),
+}))
 
 // is not needed and imports a dependency that does not work in node 18
 jest.mock('@digitalbazaar/http-client', () => ({}))
 
-let api: ApiPromise
-const genesisHash = hexToU8a(
-  '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
+const attester = '4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare'
+const timestamp = 1_649_670_060_000
+const blockHash = hexToU8a(
+  '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
 )
+const { genesisHash } = mockedApi
 
-const attestedCredential = exportICredentialToVc(
-  ingosCredential as ICredential,
-  {
-    issuer: 'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
-    chainGenesisHash: genesisHash,
-    blockHash: hexToU8a(
-      '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
-    ),
-    timestamp: 1649670060 * 1000,
-  }
-)
+const attestedVc = exportICredentialToVc(ingosCredential as ICredential, {
+  issuer: `did:kilt:${attester}`,
+  chainGenesisHash: genesisHash,
+  blockHash,
+  timestamp,
+})
 
-const notAttestedCredential = exportICredentialToVc(
+const notAttestedVc = exportICredentialToVc(
   Credential.fromClaim(ingosCredential.claim as IClaim),
   {
-    issuer: 'did:kilt:4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare',
+    issuer: `did:kilt:${attester}`,
     chainGenesisHash: genesisHash,
-    blockHash: hexToU8a(
-      '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
-    ),
-    timestamp: 1649670060 * 1000,
+    blockHash,
+    timestamp,
   }
 )
+const revokedCredential = Credential.fromClaim(ingosCredential.claim as IClaim)
+const revokedVc = exportICredentialToVc(revokedCredential, {
+  issuer: `did:kilt:${attester}`,
+  chainGenesisHash: genesisHash,
+  blockHash,
+  timestamp,
+})
+
+jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
+  // @ts-expect-error
+  async (claimHash) => {
+    if (u8aEq(claimHash, ingosCredential.rootHash)) {
+      return mockedApi.createType(
+        'Option<AttestationAttestationsAttestationDetails>',
+        {
+          ctypeHash: ingosCredential.claim.cTypeHash,
+          attester,
+          revoked: false,
+        }
+      )
+    }
+    if (u8aEq(claimHash, revokedCredential.rootHash)) {
+      return mockedApi.createType(
+        'Option<AttestationAttestationsAttestationDetails>',
+        {
+          ctypeHash: revokedCredential.claim.cTypeHash,
+          attester,
+          revoked: true,
+        }
+      )
+    }
+    return mockedApi.createType(
+      'Option<AttestationAttestationsAttestationDetails>'
+    )
+  }
+)
+jest.mocked(mockedApi.query.system.events).mockResolvedValue(
+  makeAttestationCreatedEvents([
+    [attester, ingosCredential.rootHash, ingosCredential.claim.cTypeHash, null],
+    [
+      attester,
+      revokedCredential.rootHash,
+      revokedCredential.claim.cTypeHash,
+      null,
+    ],
+  ]) as any
+)
+jest
+  .mocked(mockedApi.query.timestamp.now)
+  .mockResolvedValue(mockedApi.createType('u64', timestamp) as any)
 
 let suite: KiltAttestationV1Suite
 let purpose: purposes.ProofPurpose
 let proof: KiltAttestationProofV1
+let keypair: KiltKeyringPair
+let didDocument: ConformingDidDocument
 
 beforeAll(async () => {
-  api = await connect('wss://spiritnet.kilt.io')
-  suite = new KiltAttestationV1Suite({ api })
+  suite = new KiltAttestationV1Suite({ api: mockedApi })
   purpose = new KiltAttestationProofV1Purpose()
-  proof = attestedCredential.proof as KiltAttestationProofV1
+  proof = attestedVc.proof as KiltAttestationProofV1
+
+  keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
+  didDocument = Did.exportToDidDocument(
+    {
+      uri: ingosCredential.claim.owner as DidUri,
+      authentication: [
+        {
+          ...keypair,
+          id: '#authentication',
+        },
+      ],
+      assertionMethod: [{ ...keypair, id: '#assertion' }],
+    },
+    'application/ld+json'
+  )
+  jest.mocked(Did.resolveCompliant).mockImplementation(async (did) => {
+    if (did.startsWith(didDocument.id)) {
+      return {
+        didDocument,
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+      }
+    }
+    return {
+      didDocumentMetadata: {},
+      didResolutionMetadata: { error: 'notFound' },
+    }
+  })
 })
 
 describe('jsigs', () => {
   describe('proof matching', () => {
     it('purpose matches compacted proof', async () => {
       const compactedProof = (await jsonld.compact(
-        { ...proof, '@context': attestedCredential['@context'] },
-        attestedCredential['@context'],
+        { ...proof, '@context': attestedVc['@context'] },
+        attestedVc['@context'],
         { documentLoader, compactToRelative: false }
       )) as Proof
       expect(await purpose.match(compactedProof, {})).toBe(true)
       expect(
         await purpose.match(compactedProof, {
-          document: attestedCredential,
+          document: attestedVc,
           documentLoader,
         })
       ).toBe(true)
@@ -101,13 +187,13 @@ describe('jsigs', () => {
     it('suite matches proof', async () => {
       const proofWithContext = {
         ...proof,
-        '@context': attestedCredential['@context'],
+        '@context': attestedVc['@context'],
       }
       expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
       expect(
         await suite.matchProof({
           proof: proofWithContext,
-          document: attestedCredential,
+          document: attestedVc,
           purpose,
           documentLoader,
         })
@@ -117,7 +203,7 @@ describe('jsigs', () => {
 
   describe('attested', () => {
     it('verifies Kilt Attestation Proof', async () => {
-      const result = await jsigs.verify(attestedCredential, {
+      const result = await jsigs.verify(attestedVc, {
         suite,
         purpose,
         documentLoader,
@@ -128,7 +214,7 @@ describe('jsigs', () => {
   })
 
   it('verifies proof with props removed', async () => {
-    const derived = applySelectiveDisclosure(attestedCredential, proof, [])
+    const derived = applySelectiveDisclosure(attestedVc, proof, [])
     expect(derived.credential.credentialSubject).not.toHaveProperty('Email')
     expect(
       await jsigs.verify(
@@ -138,23 +224,22 @@ describe('jsigs', () => {
     ).toMatchObject({ verified: true })
   })
 
-  // TODO: need example credential
-  describe.skip('revoked', () => {
-    it('fails to verify Kilt Attestation Proof', async () => {
+  describe('revoked', () => {
+    it('still verifies Kilt Attestation Proof', async () => {
       expect(
-        await jsigs.verify(attestedCredential, {
+        await jsigs.verify(revokedVc, {
           suite,
           purpose,
           documentLoader,
         })
-      ).toMatchObject({ verified: false })
+      ).toMatchObject({ verified: true })
     })
   })
 
   describe('not attested', () => {
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
-        await jsigs.verify(notAttestedCredential, {
+        await jsigs.verify(notAttestedVc, {
           suite,
           purpose,
           documentLoader,
@@ -166,7 +251,7 @@ describe('jsigs', () => {
   it('detects tampering on claims', async () => {
     // make a copy
     const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedCredential)
+      JSON.stringify(attestedVc)
     )
     tamperCred.credentialSubject.Email = 'macgyver@google.com'
     expect(
@@ -176,7 +261,7 @@ describe('jsigs', () => {
 
   it('detects tampering on credential', async () => {
     const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedCredential)
+      JSON.stringify(attestedVc)
     )
     tamperCred.id = tamperCred.id.replace('1', '2') as any
     expect(
@@ -186,7 +271,7 @@ describe('jsigs', () => {
 
   it('detects signer mismatch', async () => {
     const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedCredential)
+      JSON.stringify(attestedVc)
     )
     tamperCred.issuer =
       'did:kilt:4oFNEgM6ibgEW1seCGXk3yCM6o7QTnDGrqGtgSRSspVMDg4c'
@@ -203,26 +288,17 @@ describe('vc-js', () => {
       query: {
         attestation: {
           attestations: async () =>
-            api.createType('Option<AttestationAttestationsAttestationDetails>'),
+            mockedApi.createType(
+              'Option<AttestationAttestationsAttestationDetails>'
+            ),
         },
       },
     } as any,
   })
 
   describe('attested', () => {
-    let did: DidDocument
-    let signingSuite: any
     let didDocumentLoader: jsigs.DocumentLoader
     beforeAll(async () => {
-      const keypair = new Keyring({ type: 'sr25519' }).addFromMnemonic(
-        '//Alice'
-      ) as KiltKeyringPair & { type: 'sr25519' }
-      did = createLightDidDocument({ authentication: [keypair] })
-      const signer = {
-        sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        id: did.uri + did.authentication[0].id,
-      }
-      signingSuite = new Sr25519Signature2020({ signer })
       didDocumentLoader = combineDocumentLoaders([
         documentLoader,
         kiltDidLoader,
@@ -231,7 +307,7 @@ describe('vc-js', () => {
 
     it('verifies Kilt Attestation Proof', async () => {
       const result = await vcjs.verifyCredential({
-        credential: attestedCredential,
+        credential: attestedVc,
         suite,
         purpose,
         documentLoader,
@@ -242,10 +318,16 @@ describe('vc-js', () => {
     })
 
     it('creates and verifies a signed presentation', async () => {
-      const verifiableCredential = { ...attestedCredential }
+      const signer = {
+        sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
+        id: didDocument.authentication[0],
+      }
+      const signingSuite = new Sr25519Signature2020({ signer })
+
+      const verifiableCredential = { ...attestedVc }
       let presentation = vcjs.createPresentation({
         verifiableCredential,
-        holder: did.uri,
+        holder: didDocument.id,
       })
 
       presentation = await vcjs.signPresentation({
@@ -278,27 +360,19 @@ describe('vc-js', () => {
     })
 
     it('issues and verifies a signed credential', async () => {
+      const signer = {
+        sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
+        id: didDocument.assertionMethod![0],
+      }
+      const signingSuite = new Sr25519Signature2020({ signer })
+
       const credential: VerifiableCredential = {
-        ...attestedCredential,
-        issuer: did.uri,
+        ...attestedVc,
+        issuer: didDocument.id,
       }
       delete credential.proof
       // @ts-expect-error
       delete credential.credentialStatus
-      // TODO: light DIDs don't support assertionMethods
-      const mockDidDocumentLoader = combineDocumentLoaders([
-        documentLoader,
-        // @ts-ignore
-        async (url) => {
-          const result = await kiltDidLoader(url)
-
-          if ('authentication' in result.document) {
-            // @ts-ignore
-            result.document.assertionMethod = result.document.authentication
-          }
-          return result
-        },
-      ])
 
       const verifiableCredential = await vcjs.issue({
         credential,
@@ -309,18 +383,19 @@ describe('vc-js', () => {
       const result = await vcjs.verifyCredential({
         credential: verifiableCredential,
         suite: new Sr25519Signature2020(),
-        documentLoader: mockDidDocumentLoader,
+        documentLoader: didDocumentLoader,
       })
+      console.log(JSON.stringify(result, null, 2))
       expect(result).not.toHaveProperty('error')
       expect(result).toHaveProperty('verified', true)
     })
   })
 
   describe('revoked', () => {
-    it('fails to verify Kilt Attestation Proof', async () => {
+    it('fails to verify credential', async () => {
       expect(
         await vcjs.verifyCredential({
-          credential: attestedCredential,
+          credential: revokedVc,
           suite,
           purpose,
           documentLoader,
@@ -334,7 +409,7 @@ describe('vc-js', () => {
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
         await vcjs.verifyCredential({
-          credential: notAttestedCredential,
+          credential: notAttestedVc,
           suite,
           purpose,
           documentLoader,
@@ -344,5 +419,3 @@ describe('vc-js', () => {
     })
   })
 })
-
-afterAll(disconnect)
