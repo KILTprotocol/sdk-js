@@ -580,7 +580,12 @@ export function initializeProof(
   KiltAttestationProofV1,
   Parameters<ApiPromise['tx']['attestation']['add']>
 ] {
-  const { credentialSubject, credentialSchema } = credential
+  const { credentialSubject, credentialSchema, nonTransferable } = credential
+
+  if (nonTransferable !== true) {
+    throw new Error('nonTransferable must be set to true')
+  }
+
   // 1. json-ld expand credentialSubject
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   // 2. Transform to normalized statments and hash

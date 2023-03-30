@@ -21,20 +21,44 @@ import {
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
 import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
-import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
+import {
+  ATTESTATION_PROOF_V1_TYPE,
+  KILT_CREDENTIAL_CONTEXT_URL,
+} from '../../constants.js'
 import type {
   KiltAttestationProofV1,
   VerifiableCredential,
 } from '../../types.js'
+import { chainIdFromGenesis } from '../../CAIP/caip2.js'
 
 const {
   suites: { LinkedDataProof },
 } = jsigs
 
+function includesContext({
+  document,
+  contextUrl,
+}: {
+  document: object
+  contextUrl: string
+}): boolean {
+  const context = document['@context']
+  return (
+    context === contextUrl ||
+    (Array.isArray(context) && context.includes(contextUrl))
+  )
+}
+
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private api: ApiPromise
   private transactionHandler?: AttestationHandler
   private pendingSubmissions = new Map<string, ReturnType<AttestationHandler>>()
+
+  public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
+  /**
+   * Placeholder value as @digitalbazaar/vc requires a verificationMethod property on issuance.
+   */
+  public readonly verificationMethod: string
 
   constructor({
     api,
@@ -46,6 +70,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
     this.api = api
     this.transactionHandler = transactionHandler
+    this.verificationMethod = chainIdFromGenesis(api.genesisHash)
   }
 
   // eslint-disable-next-line jsdoc/require-returns
@@ -90,6 +115,45 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         error: error instanceof Error ? error : new Error(String(error)),
       }
     }
+  }
+
+  /**
+   * Ensures the document to be signed contains the required signature suite
+   * specific `@context`, by either adding it (if `addSuiteContext` is true),
+   * or throwing an error if it's missing.
+   *
+   * @param options - Options hashmap.
+   * @param options.document - JSON-LD document to be signed.
+   * @param options.addSuiteContext - Add suite context?
+   */
+  public ensureSuiteContext({
+    document,
+    addSuiteContext = true,
+  }: {
+    document: object
+    addSuiteContext: boolean
+  }): void {
+    const { contextUrl } = this
+
+    if (includesContext({ document, contextUrl })) {
+      // document already includes the required context
+      return
+    }
+
+    if (!addSuiteContext) {
+      throw new TypeError(
+        `The document to be signed must contain this suite's @context, ` +
+          `"${contextUrl}".`
+      )
+    }
+
+    // enforce the suite's context by adding it to the document
+    const existingContext = document['@context'] ?? []
+
+    // eslint-disable-next-line no-param-reassign
+    document['@context'] = Array.isArray(existingContext)
+      ? [...existingContext, contextUrl]
+      : [existingContext, contextUrl]
   }
 
   /**

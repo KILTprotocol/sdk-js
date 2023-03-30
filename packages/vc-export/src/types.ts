@@ -7,7 +7,7 @@
 
 /* eslint-disable no-use-before-define */
 
-// import { Proof } from 'jsonld-signatures'
+import type { Proof } from 'jsonld-signatures' // cjs module
 
 import type {
   ICType,
@@ -32,7 +32,7 @@ import type {
 
 export type IPublicKeyRecord = ConformingDidKey
 
-export interface KiltAttestationProofV1 {
+export interface KiltAttestationProofV1 extends Proof {
   type: typeof ATTESTATION_PROOF_V1_TYPE
   block: string
   commitments: string[]

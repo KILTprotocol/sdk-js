@@ -38,6 +38,7 @@ import {
   kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
+import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ingos-cred.json'
@@ -475,5 +476,77 @@ describe('vc-js', () => {
         })
       ).toMatchObject({ verified: false })
     })
+  })
+})
+
+describe('issuance', () => {
+  it('issues a credential via vc-js', async () => {
+    let txArgs: any
+    const issuanceSuite = new KiltAttestationV1Suite({
+      api: mockedApi,
+      transactionHandler: async (tx) => {
+        txArgs = tx.args
+        return {
+          blockHash,
+          timestamp,
+        }
+      },
+    })
+    const toBeSigned: Partial<VerifiableCredential> = {
+      '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
+      type: attestedVc.type,
+      credentialSubject: attestedVc.credentialSubject,
+      credentialSchema: attestedVc.credentialSchema,
+      nonTransferable: true,
+      issuer: attestedVc.issuer,
+    }
+    let newCred = (await vcjs.issue({
+      credential: toBeSigned,
+      suite: issuanceSuite,
+      documentLoader,
+    })) as VerifiableCredential
+    expect(newCred.proof).toMatchObject({
+      type: 'KiltAttestationProofV1',
+      commitments: expect.any(Array),
+      salt: expect.any(Array),
+    })
+    expect(newCred).toMatchObject(toBeSigned)
+
+    newCred = await issuanceSuite.finalizeProof(newCred)
+    expect(newCred.issuanceDate).toStrictEqual(attestedVc.issuanceDate)
+    expect(newCred.proof?.block).toStrictEqual(attestedVc.proof.block)
+    expect(newCred.credentialStatus).toMatchObject({
+      id: expect.any(String),
+      type: 'KiltRevocationStatusV1',
+    })
+    expect(newCred.credentialStatus.id).not.toMatch(
+      attestedVc.credentialStatus.id
+    )
+    expect(newCred.id).not.toMatch(attestedVc.id)
+
+    jest
+      .mocked(mockedApi.query.system.events)
+      .mockResolvedValueOnce(
+        makeAttestationCreatedEvents([[attester, ...txArgs]]) as any
+      )
+    jest.mocked(mockedApi.query.attestation.attestations).mockResolvedValueOnce(
+      mockedApi.createType(
+        'Option<AttestationAttestationsAttestationDetails>',
+        {
+          ctypeHash: txArgs[1],
+          attester,
+          revoked: false,
+        }
+      ) as any
+    )
+
+    const result = await vcjs.verifyCredential({
+      credential: newCred,
+      suite,
+      documentLoader,
+      purpose: new KiltAttestationProofV1Purpose(),
+      checkStatus: suite.checkStatus,
+    })
+    expect(result).toMatchObject({ verified: true })
   })
 })
