@@ -426,27 +426,32 @@ describe('vc-js', () => {
 
 describe('issuance', () => {
   let txArgs: any
-  const issuanceSuite = new KiltAttestationV1Suite({
-    api: mockedApi,
-    transactionHandler: async (tx) => {
-      txArgs = tx.args
-      return {
-        blockHash,
-        timestamp,
-      }
-    },
+  let issuanceSuite: KiltAttestationV1Suite
+  let toBeSigned: Partial<VerifiableCredential>
+  beforeEach(() => {
+    issuanceSuite = new KiltAttestationV1Suite({
+      api: mockedApi,
+      transactionHandler: async (tx) => {
+        txArgs = tx.args
+        return {
+          blockHash,
+          timestamp,
+        }
+      },
+    })
+    toBeSigned = {
+      '@context': attestedVc['@context'],
+      type: attestedVc.type,
+      credentialSubject: attestedVc.credentialSubject,
+      credentialSchema: attestedVc.credentialSchema,
+      nonTransferable: true,
+      issuer: attestedVc.issuer,
+    }
   })
-  const toBeSigned: Partial<VerifiableCredential> = {
-    '@context': attestedVc['@context'],
-    type: attestedVc.type,
-    credentialSubject: attestedVc.credentialSubject,
-    credentialSchema: attestedVc.credentialSchema,
-    nonTransferable: true,
-    issuer: attestedVc.issuer,
-  }
+
   it('issues a credential via vc-js', async () => {
     let newCred = (await vcjs.issue({
-      credential: toBeSigned,
+      credential: { ...toBeSigned },
       suite: issuanceSuite,
       documentLoader,
       purpose,
@@ -543,7 +548,7 @@ describe('issuance', () => {
     await expect(
       issuanceSuite.finalizeProof(toBeSigned as VerifiableCredential)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"no submission found for this proof"`
+      `"The credential must have a proof property containing a proof stub as created by the \`createProof\` method"`
     )
   })
 
@@ -558,7 +563,7 @@ describe('issuance', () => {
     await expect(
       suite.finalizeProof(newCred)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Cannot read properties of undefined (reading 'map')"`
+      `"no submission found for this proof"`
     )
   })
 })

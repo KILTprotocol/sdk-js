@@ -211,12 +211,15 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     credential: VerifiableCredential
   ): Promise<VerifiableCredential> {
     const { proof } = credential
-    if (!proof) {
+    const proofStub = (Array.isArray(proof) ? proof : [proof]).find(
+      (p) => p?.type === ATTESTATION_PROOF_V1_TYPE
+    ) as VerifiableCredential['proof']
+    if (!proofStub) {
       throw new Error(
         'The credential must have a proof property containing a proof stub as created by the `createProof` method'
       )
     }
-    const rootHash = u8aToHex(calculateRootHash(credential, proof))
+    const rootHash = u8aToHex(calculateRootHash(credential, proofStub))
     const submissionPromise = this.pendingSubmissions.get(rootHash)
     if (!submissionPromise) {
       throw new Error('no submission found for this proof')
@@ -228,7 +231,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       this.pendingSubmissions.delete(rootHash)
       throw new Error(`Promise rejected with ${e}`)
     })
-    const updated = finalizeProof(credential, proof, {
+    const updated = finalizeProof(credential, proofStub, {
       blockHash,
       timestamp,
       genesisHash: this.api.genesisHash,
