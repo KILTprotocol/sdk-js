@@ -46,7 +46,7 @@ jobs:
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-${{ matrix.node-version }}
           path: build.zip
@@ -66,7 +66,7 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build-${{ matrix.node-version }}
       - name: unzip
@@ -90,7 +90,7 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build-14.x
       - name: unzip

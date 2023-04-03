@@ -30,7 +30,7 @@ jobs:
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: build.zip
@@ -58,7 +58,7 @@ jobs:
           cache: 'yarn'
       - name: Log out node version
         run: node --version
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
@@ -103,7 +103,7 @@ jobs:
         with:
           node-version: 14
           cache: 'yarn'
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
@@ -111,7 +111,7 @@ jobs:
       - name: yarn bundle
         run: yarn bundle
       - name: upload bundle artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist/sdk-js.umd.js
@@ -127,12 +127,12 @@ jobs:
         with:
           node-version: 14
           cache: 'yarn'
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist
