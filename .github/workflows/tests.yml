@@ -63,6 +63,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
+          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -129,6 +130,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
+          cache: 'yarn'
       - name: Log out node version
         run: node --version
       - uses: actions/download-artifact@v2
@@ -175,6 +177,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
+          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -206,6 +209,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
+          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -225,9 +229,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.x'
+          cache: 'yarn'
       - run: basename /packages/sdk-js/dist/
       - name: pull node image
         env:
