@@ -47,13 +47,11 @@ jobs:
         run: yarn install --immutable
       - name: yarn build
         run: yarn build
-      - name: zip build
-        run: zip -r build.zip .
       - name: upload build
         uses: actions/upload-artifact@v3
         with:
           name: build
-          path: build.zip
+          path: ./
 
   lint:
     runs-on: ubuntu-latest
@@ -63,8 +61,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build
-      - name: unzip
-        run: unzip build.zip -d .
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
@@ -97,8 +93,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build
-      - name: unzip
-        run: unzip build.zip -d .
       - name: unit tests
         run: yarn test:ci
 
@@ -128,8 +122,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build
-      - name: unzip
-        run: unzip build.zip -d .
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
@@ -175,8 +167,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build
-      - name: unzip
-        run: unzip build.zip -d .
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
@@ -207,8 +197,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build
-      - name: unzip
-        run: unzip build.zip -d .
       - uses: actions/download-artifact@v3
         with:
           name: checked-nonmin-bundle
