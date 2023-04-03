@@ -18,8 +18,7 @@ jobs:
           yarn build:docs
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/api # The folder the action should deploy to.
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs/api # The folder the action should deploy to.
