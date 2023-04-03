@@ -23,7 +23,7 @@ runs:
       env:
         CACHE_PATH: ${{ inputs.cache-directory }}${{ inputs.cache-file }}.tar
       run: |
-        echo "::set-output name=path::$CACHE_PATH"
+        echo "path=$CACHE_PATH" >> $GITHUB_OUTPUT
 
     - name: check image cache
       id: image-cache

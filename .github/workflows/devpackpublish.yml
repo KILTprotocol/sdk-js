@@ -31,7 +31,7 @@ jobs:
         run: npm version --no-git-tag-version prerelease
       - name: Get current package version
         id: package_version
-        run: echo "::set-output name=package_version::$(node -pe "require('./package.json').version")"
+        run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Set all other packages to same version
         env:
           PACKAGE_VERSION: ${{ steps.package_version.outputs.package_version }}

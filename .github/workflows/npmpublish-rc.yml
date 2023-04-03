@@ -32,7 +32,7 @@ jobs:
         run: yarn run bundle
       - name: Get current package version
         id: package_version
-        run: echo "::set-output name=package_version::$(node -pe "require('./package.json').version")"          
+        run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT    
       - name: Publish to NPM
         run: yarn run publish --tag rc
         env:
