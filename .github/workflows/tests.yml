@@ -13,7 +13,8 @@ on:
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'dc.build.node.yml'
-      - '.github/workflows/*publish.yml'
+      - '.github/**'
+      - '!.github/workflows/tests.yml'
   pull_request:
     branches:
       - develop
