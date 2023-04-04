@@ -51,18 +51,17 @@ jobs:
     needs: cache_imgs
 
     steps:
+      - name: Use Node.js 14
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: Log out node version
+        run: node --version
       - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'yarn'
-      - name: Log out node version
-        run: node --version
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -98,16 +97,15 @@ jobs:
     needs: build
 
     steps:
+      - name: Use Node.js 14
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
       - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'yarn'
       - name: yarn bundle
         run: yarn bundle
       - name: upload bundle artifact
@@ -122,6 +120,9 @@ jobs:
     needs: [cache_imgs, bundle_cache]
 
     steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
       - uses: actions/download-artifact@v3
         with:
           name: build
@@ -131,10 +132,6 @@ jobs:
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'
-          cache: 'yarn'
       - run: basename /packages/sdk-js/dist/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
