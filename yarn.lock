@@ -2116,7 +2116,7 @@ __metadata:
     "@polkadot/util": ^10.2.1
     "@polkadot/util-crypto": ^10.2.1
     "@types/jsonld": 1.5.1
-    crypto-ld: ^6.0.0 || ^5.0.0
+    crypto-ld: ^6.0.0
     did-jwt: ^6.11.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
@@ -4907,7 +4907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-ld@npm:^6.0.0 || ^5.0.0":
+"crypto-ld@npm:^6.0.0":
   version: 6.0.0
   resolution: "crypto-ld@npm:6.0.0"
   checksum: ad274e675270a15498c0262e92fde0080bec3328c508c614fb584a1c218a68df24853420977108f7ab7ea8121ea64f2312baaa9d1368f27ea48144bb2ca0fc5d
@@ -8298,7 +8298,7 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^3.2.10":
+"node-fetch@npm:^3.2.10, node-fetch@npm:^3.3.0":
   version: 3.3.1
   resolution: "node-fetch@npm:3.3.1"
   dependencies:
@@ -8306,17 +8306,6 @@ fsevents@^2.3.2:
     fetch-blob: ^3.1.4
     formdata-polyfill: ^4.0.10
   checksum: 62145fd3ba4770a76110bc31fdc0054ab2f5442b5ce96e9c4b39fc9e94a3d305560eec76e1165d9259eab866e02a8eecf9301062bb5dfc9f08a4d08b69d223dd
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "node-fetch@npm:3.3.0"
-  dependencies:
-    data-uri-to-buffer: ^4.0.0
-    fetch-blob: ^3.1.4
-    formdata-polyfill: ^4.0.10
-  checksum: e9936908d2783d3c48a038e187f8062de294d75ef43ec8ab812d7cbd682be2b67605868758d2e9cad6103706dcfe4a9d21d78f6df984e8edf10e7a5ce2e665f8
   languageName: node
   linkType: hard
 
