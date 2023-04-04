@@ -30,24 +30,11 @@ import type {
   VerifiableCredential,
 } from '../../types.js'
 import { chainIdFromGenesis } from '../../CAIP/caip2.js'
+import { includesContext } from './utils.js'
 
 const {
   suites: { LinkedDataProof },
 } = jsigs
-
-function includesContext({
-  document,
-  contextUrl,
-}: {
-  document: object
-  contextUrl: string
-}): boolean {
-  const context = document['@context']
-  return (
-    context === contextUrl ||
-    (Array.isArray(context) && context.includes(contextUrl))
-  )
-}
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private api: ApiPromise

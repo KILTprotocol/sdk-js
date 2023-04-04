@@ -14,7 +14,6 @@ import {
   sr25519Verify,
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
-import type { Keypair } from '@polkadot/util-crypto/types'
 
 import cryptold from 'crypto-ld' // cjs module
 import type { Signer, Verifier } from 'jsonld-signatures' // cjs module
@@ -24,6 +23,8 @@ import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 const { LDKeyPair } = cryptold
 
 const SUITE_ID = 'Sr25519VerificationKey2020'
+
+const Ed25519MulticodecPrefix = new Uint8Array([0xed, 0x01])
 
 /* eslint-disable no-use-before-define */
 /* eslint-disable jsdoc/require-param */
@@ -82,12 +83,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
       revoked?: string
     } = {}
   ): Promise<Sr25519VerificationKey2020> {
-    let keyObject: Keypair
-    if (typeof options.seed !== 'undefined') {
-      keyObject = sr25519PairFromSeed(options.seed)
-    } else {
-      keyObject = sr25519PairFromSeed(randomAsU8a(32))
-    }
+    const keyObject = sr25519PairFromSeed(options.seed ?? randomAsU8a(32))
+
     return new Sr25519VerificationKey2020({
       publicKeyBase58: base58Encode(keyObject.publicKey),
       privateKeyBase58: base58Encode(keyObject.secretKey),
@@ -216,8 +213,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
     const pubkeyBytes = base58Decode(publicKeyBase58)
 
     const buffer = new Uint8Array(2 + pubkeyBytes.length)
-    buffer[0] = 0xed
-    buffer[1] = 0x01
+    buffer.set(Ed25519MulticodecPrefix)
     buffer.set(pubkeyBytes, 2)
     // prefix with `z` to indicate multi-base base58btc encoding
     return `z${base58Encode(buffer)}`
@@ -273,13 +269,11 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
       return { error: e, valid: false }
     }
 
-    const buffersEqual = u8aEq(publicKeyBuffer, fingerprintBuffer.slice(2))
-
     // validate the first two multicodec bytes 0xed01
     const valid =
-      fingerprintBuffer[0] === 0xed &&
-      fingerprintBuffer[1] === 0x01 &&
-      buffersEqual
+      fingerprintBuffer[0] === Ed25519MulticodecPrefix[0] &&
+      fingerprintBuffer[1] === Ed25519MulticodecPrefix[1] &&
+      u8aEq(publicKeyBuffer, fingerprintBuffer.slice(2))
     if (!valid) {
       return {
         error: new Error('The fingerprint does not match the public key.'),

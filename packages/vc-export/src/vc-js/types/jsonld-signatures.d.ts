@@ -35,7 +35,7 @@ declare module 'jsonld-signatures' {
       suite: suites.LinkedDataProof | suites.LinkedDataProof[]
       purpose: purposes.ProofPurpose
       documentLoader?: DocumentLoader
-      expansionMap?: ExpansionMap,
+      expansionMap?: ExpansionMap
       addSuiteContext?: boolean
     }
   ): Promise<JsonLdObj>

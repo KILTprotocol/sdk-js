@@ -13,6 +13,7 @@ import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
+import { includesContext } from './utils.js'
 
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-use-before-define */
@@ -151,7 +152,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     if (proofValue[0] !== MULTIBASE_BASE58BTC_HEADER) {
       throw new Error('Only base58btc multibase encoding is supported.')
     }
-    const signatureBytes = base58Decode(proofValue.substr(1))
+    const signatureBytes = base58Decode(proofValue.substring(1))
 
     const verifier =
       this.verifier ??
@@ -213,7 +214,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     }
 
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (!verificationMethod) {
+    if (typeof verificationMethod !== 'string') {
       throw new Error('No "verificationMethod" found in proof.')
     }
 
@@ -223,13 +224,11 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
       typeof document === 'string' ? JSON.parse(document) : document
 
     await this.assertVerificationMethod({ verificationMethod })
-    if (verificationMethod.type === 'Sr25519VerificationKey2020') {
-      verificationMethod = (
-        await Sr25519VerificationKey2020.from({
-          ...verificationMethod,
-        })
-      ).export({ publicKey: true, includeContext: true })
-    }
+    verificationMethod = (
+      await Sr25519VerificationKey2020.from({
+        ...verificationMethod,
+      })
+    ).export({ publicKey: true, includeContext: true })
     return verificationMethod
   }
 
@@ -268,25 +267,4 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     }
     return verificationMethod === this.key.id
   }
-}
-
-/**
- * Tests whether a provided JSON-LD document includes a context url in its
- * `@context` property.
- *
- * @param options - Options hashmap.
- * @param options.document - A JSON-LD document.
- * @param options.contextUrl - A context url.
- *
- * @returns Returns true if document includes context.
- */
-function includesContext({
-  document,
-  contextUrl,
-}: {
-  document?: JsonLdObj
-  contextUrl: string
-}): boolean {
-  const ctx = document?.['@context']
-  return ctx === contextUrl || (Array.isArray(ctx) && ctx.includes(contextUrl))
 }
