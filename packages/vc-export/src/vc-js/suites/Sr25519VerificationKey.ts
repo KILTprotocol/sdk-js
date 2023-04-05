@@ -43,7 +43,7 @@ export type ExportedKey = Pick<Sr25519VerificationKey2020, 'type'> &
 
 const SUITE_ID = 'Sr25519VerificationKey2020'
 
-const Ed25519MulticodecPrefix = new Uint8Array([0xed, 0x01])
+const Sr25519MulticodecPrefix = new Uint8Array([0xef, 0x01])
 
 /* eslint-disable no-use-before-define */
 /* eslint-disable jsdoc/require-param */
@@ -199,10 +199,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   }
 
   /**
-   * Generates and returns a multiformats encoded ed25519 public key
+   * Generates and returns a multiformats encoded sr25519 public key
    * fingerprint (for use with cryptonyms, for example).
-   *
-   * Ed25519 multiformat is used due to the lack of a registered multicodec prefix for Sr25519, which uses a compressed variant of the Ed25519 curve.
    *
    * @see https://github.com/multiformats/multicodec
    *
@@ -216,24 +214,21 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   }: {
     publicKeyBase58: string
   }): string {
-    // ed25519 cryptonyms are multicodec encoded values, specifically:
-    // (multicodec ed25519-pub 0xed01 + key bytes)
+    // sr25519 cryptonyms are multicodec encoded values, specifically:
+    // (multicodec sr25519-pub 0xef01 + key bytes)
 
-    // TODO: register multicodec representation of sr25519 keys
     const pubkeyBytes = base58Decode(publicKeyBase58)
 
     const buffer = new Uint8Array(2 + pubkeyBytes.length)
-    buffer.set(Ed25519MulticodecPrefix)
+    buffer.set(Sr25519MulticodecPrefix)
     buffer.set(pubkeyBytes, 2)
     // prefix with `z` to indicate multi-base base58btc encoding
     return `z${base58Encode(buffer)}`
   }
 
   /**
-   * Generates and returns a multiformats encoded ed25519 public key
+   * Generates and returns a multiformats encoded sr25519 public key
    * fingerprint (for use with cryptonyms, for example).
-   *
-   * Ed25519 multiformat is used due to the lack of a registered multicodec prefix for Sr25519, which uses a compressed variant of the Ed25519 curve.
    *
    * @see https://github.com/multiformats/multicodec
    *
@@ -279,10 +274,10 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
       return { error: e, valid: false }
     }
 
-    // validate the first two multicodec bytes 0xed01
+    // validate the first two multicodec bytes 0xef01
     const valid =
-      fingerprintBuffer[0] === Ed25519MulticodecPrefix[0] &&
-      fingerprintBuffer[1] === Ed25519MulticodecPrefix[1] &&
+      fingerprintBuffer[0] === Sr25519MulticodecPrefix[0] &&
+      fingerprintBuffer[1] === Sr25519MulticodecPrefix[1] &&
       u8aEq(publicKeyBuffer, fingerprintBuffer.slice(2))
     if (!valid) {
       return {

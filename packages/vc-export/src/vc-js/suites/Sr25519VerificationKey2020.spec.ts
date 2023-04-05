@@ -26,7 +26,7 @@ it('generates a key', async () => {
 
   const fingerprint = key.fingerprint()
   expect(fingerprint).toMatchInlineSnapshot(
-    `"z6Mkj61EbqdaA1KXa29K83WqBtL5KZJUqmFV9DTAxptTUhjM"`
+    `"z6QNpeAzjiWieArycF5BRtQcEu17GQmxGKPtmHqfeTXRtPkb"`
   )
   expect(key.verifyFingerprint({ fingerprint })).toMatchObject({
     valid: true,

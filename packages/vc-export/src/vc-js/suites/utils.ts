@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { JsonLdObj } from '../documentLoader'
+import type { JsonLdObj } from '../documentLoader.js'
 
 /**
  * Tests whether a provided JSON-LD document includes a context url in its
