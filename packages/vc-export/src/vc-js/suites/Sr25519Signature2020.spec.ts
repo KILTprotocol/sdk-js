@@ -9,6 +9,7 @@
  * @group unit/vc-js
  */
 
+// @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
 import { init } from '@kiltprotocol/core'

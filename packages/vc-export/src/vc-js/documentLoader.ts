@@ -6,7 +6,6 @@
  */
 
 import jsonld from 'jsonld' // cjs module
-import type jsigs from 'jsonld-signatures' // cjs module
 
 import {
   DID_CONTEXTS,
@@ -15,10 +14,22 @@ import {
   resolveCompliant,
   W3C_DID_CONTEXT_URL,
 } from '@kiltprotocol/did'
-import type { DidUri } from '@kiltprotocol/types'
+import type {
+  ConformingDidDocument,
+  ConformingDidKey,
+  DidUri,
+} from '@kiltprotocol/types'
 
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
+
+export type JsonLdObj = Record<string, unknown>
+export interface RemoteDocument {
+  contextUrl?: string
+  documentUrl: string
+  document: JsonLdObj
+}
+export type DocumentLoader = (url: string) => Promise<RemoteDocument>
 
 /**
  * Combines multiple document loaders into one.
@@ -28,8 +39,8 @@ import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
  * @returns A composite document loader wrapping the input loaders.
  */
 export function combineDocumentLoaders(
-  loaders: jsigs.DocumentLoader[]
-): jsigs.DocumentLoader {
+  loaders: DocumentLoader[]
+): DocumentLoader {
   const wrappedLoaders = loaders.map((i) => async (url: string) => {
     const response = await i(url)
     if (typeof response.document !== 'object') {
@@ -57,14 +68,14 @@ export function combineDocumentLoaders(
   }
 }
 
-export const kiltContextsLoader: jsigs.DocumentLoader = async (url) => {
+export const kiltContextsLoader: DocumentLoader = async (url) => {
   const context = validationContexts[url] ?? DID_CONTEXTS[url]
   if (context !== undefined)
     return { contextUrl: undefined, documentUrl: url, document: context }
   throw new Error(`not a known Kilt context: ${url}`)
 }
 
-export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
+export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as DidUri)
   const { didDocument, didResolutionMetadata } = await resolveCompliant(did)
   if (didResolutionMetadata.error) {
@@ -73,7 +84,7 @@ export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
     )
   }
   // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
-  const document = await jsonld.frame(
+  const document = (await jsonld.frame(
     didDocument ?? {},
     {
       // add did contexts to make sure we get a compacted representation
@@ -90,7 +101,7 @@ export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
       },
       // forced because 'base' is not defined in the types we're using; these are for v1.5 bc no more recent types exist
     } as jsonld.Options.Frame
-  )
+  )) as ConformingDidDocument | ConformingDidKey
   // The signature suites expect key-related json-LD contexts; we add them here
   switch ((document as { type: string }).type) {
     // these 4 are currently used
@@ -123,5 +134,7 @@ export const kiltDidLoader: jsigs.DocumentLoader = async (url) => {
  * @param url Document/context URL to resolve.
  * @returns An object containing the resolution result.
  */
-export const defaultDocumentLoader: jsigs.DocumentLoader =
-  combineDocumentLoaders([kiltContextsLoader, kiltDidLoader])
+export const defaultDocumentLoader: DocumentLoader = combineDocumentLoaders([
+  kiltContextsLoader,
+  kiltDidLoader,
+])

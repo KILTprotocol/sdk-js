@@ -10,12 +10,14 @@
  */
 
 import { hexToU8a, u8aEq } from '@polkadot/util'
+// @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 import {
   Ed25519Signature2020,
   suiteContext as Ed25519Signature2020Context,
   // @ts-expect-error not a typescript module
 } from '@digitalbazaar/ed25519-signature-2020'
+// @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 import jsonld from 'jsonld' // cjs module
 
@@ -33,6 +35,7 @@ import { exportICredentialToVc } from '../../fromICredential.js'
 import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
+  JsonLdObj,
   combineDocumentLoaders,
   kiltContextsLoader,
   kiltDidLoader,
@@ -50,7 +53,8 @@ import {
 } from '../../exportToVerifiableCredential.spec.js'
 import type {
   KiltAttestationProofV1,
-  VerifiableCredential,
+  Proof,
+  KiltCredentialV1,
 } from '../../types.js'
 import { makeFakeDid } from './Sr25519Signature2020.spec'
 
@@ -143,7 +147,7 @@ const documentLoader = combineDocumentLoaders([
 ])
 
 let suite: KiltAttestationV1Suite
-let purpose: jsigs.purposes.ProofPurpose
+let purpose: KiltAttestationProofV1Purpose
 let proof: KiltAttestationProofV1
 let keypair: KiltKeyringPair
 let didDocument: ConformingDidDocument
@@ -162,7 +166,7 @@ describe('jsigs', () => {
         { ...proof, '@context': attestedVc['@context'] },
         attestedVc['@context'],
         { documentLoader, compactToRelative: false }
-      )) as jsigs.Proof
+      )) as Proof
       expect(await purpose.match(compactedProof, {})).toBe(true)
       expect(
         await purpose.match(compactedProof, {
@@ -181,7 +185,7 @@ describe('jsigs', () => {
       expect(
         await suite.matchProof({
           proof: proofWithContext,
-          document: attestedVc,
+          document: attestedVc as unknown as JsonLdObj,
           purpose,
           documentLoader,
         })
@@ -238,9 +242,7 @@ describe('jsigs', () => {
 
   it('detects tampering on claims', async () => {
     // make a copy
-    const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedVc)
-    )
+    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
     tamperCred.credentialSubject.Email = 'macgyver@google.com'
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -248,9 +250,7 @@ describe('jsigs', () => {
   })
 
   it('detects tampering on credential', async () => {
-    const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedVc)
-    )
+    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
     tamperCred.id = tamperCred.id.replace('1', '2') as any
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -258,9 +258,7 @@ describe('jsigs', () => {
   })
 
   it('detects signer mismatch', async () => {
-    const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedVc)
-    )
+    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
     tamperCred.issuer =
       'did:kilt:4oFNEgM6ibgEW1seCGXk3yCM6o7QTnDGrqGtgSRSspVMDg4c'
     expect(
@@ -269,9 +267,7 @@ describe('jsigs', () => {
   })
 
   it('detects proof mismatch', async () => {
-    const tamperCred: VerifiableCredential = JSON.parse(
-      JSON.stringify(attestedVc)
-    )
+    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
     tamperCred.proof!.type = 'Sr25519Signature2020' as any
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -427,7 +423,7 @@ describe('vc-js', () => {
 describe('issuance', () => {
   let txArgs: any
   let issuanceSuite: KiltAttestationV1Suite
-  let toBeSigned: Partial<VerifiableCredential>
+  let toBeSigned: Partial<KiltCredentialV1>
   beforeEach(() => {
     issuanceSuite = new KiltAttestationV1Suite({
       api: mockedApi,
@@ -455,7 +451,7 @@ describe('issuance', () => {
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as VerifiableCredential
+    })) as KiltCredentialV1
     expect(newCred.proof).toMatchObject({
       type: 'KiltAttestationProofV1',
       commitments: expect.any(Array),
@@ -510,7 +506,7 @@ describe('issuance', () => {
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as VerifiableCredential
+    })) as KiltCredentialV1
     expect(newCred['@context']).toContain(KILT_CREDENTIAL_CONTEXT_URL)
 
     await expect(
@@ -546,7 +542,7 @@ describe('issuance', () => {
 
   it('fails proof finalization if credential does not have proof', async () => {
     await expect(
-      issuanceSuite.finalizeProof(toBeSigned as VerifiableCredential)
+      issuanceSuite.finalizeProof(toBeSigned as KiltCredentialV1)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"The credential must have a proof property containing a proof stub as created by the \`createProof\` method"`
     )
@@ -558,7 +554,7 @@ describe('issuance', () => {
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as VerifiableCredential
+    })) as KiltCredentialV1
 
     await expect(
       suite.finalizeProof(newCred)

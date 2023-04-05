@@ -78,7 +78,7 @@ import type {
   CredentialSubject,
   KiltAttestationProofV1,
   KiltAttesterLegitimationV1,
-  VerifiableCredential,
+  KiltCredentialV1,
 } from './types.js'
 
 /**
@@ -210,8 +210,8 @@ function makeCommitments(
  * @returns The root hash.
  */
 export function calculateRootHash(
-  credential: Pick<VerifiableCredential, 'federatedTrustModel'> &
-    Partial<VerifiableCredential>,
+  credential: Pick<KiltCredentialV1, 'federatedTrustModel'> &
+    Partial<KiltCredentialV1>,
   proof: Pick<KiltAttestationProofV1, 'commitments'> &
     Partial<KiltAttestationProofV1>
 ): Uint8Array {
@@ -362,12 +362,12 @@ async function verifyLegitimation(
  * @returns Object indicating whether proof could be verified.
  */
 export async function verify(
-  credentialInput: VerifiableCredential,
+  credentialInput: Omit<KiltCredentialV1, 'proof'>,
   proof: KiltAttestationProofV1,
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { proof: _, ...credential } = credentialInput
+  const { proof: _, ...credential } = credentialInput as KiltCredentialV1
   // 0. check proof structure
   validateStructure(proof)
   // 1 - 3. check credential structure
@@ -515,15 +515,19 @@ export async function verify(
  * ```
  */
 export function applySelectiveDisclosure(
-  credentialInput: VerifiableCredential,
+  credentialInput: Omit<KiltCredentialV1, 'proof'>,
   proofInput: KiltAttestationProofV1,
   disclosedClaims: Array<keyof CredentialSubject>
 ): {
-  credential: VerifiableCredential
+  credential: Omit<KiltCredentialV1, 'proof'>
   proof: KiltAttestationProofV1
 } {
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const { credentialSubject, proof: _, ...remainder } = credentialInput
+  const {
+    credentialSubject,
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    proof: _,
+    ...remainder
+  } = credentialInput as KiltCredentialV1
   // 1. Make normalized statements sorted by their hash value
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
@@ -575,7 +579,7 @@ export function applySelectiveDisclosure(
  * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
  */
 export function initializeProof(
-  credential: VerifiableCredential
+  credential: Omit<KiltCredentialV1, 'proof'>
 ): [
   KiltAttestationProofV1,
   Parameters<ApiPromise['tx']['attestation']['add']>
@@ -638,14 +642,14 @@ export function initializeProof(
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export function finalizeProof(
-  credential: VerifiableCredential,
+  credential: Omit<KiltCredentialV1, 'proof'>,
   proof: KiltAttestationProofV1,
   {
     blockHash,
     timestamp,
     genesisHash = spiritnetGenesisHash,
   }: { blockHash: Uint8Array; timestamp: number; genesisHash?: Uint8Array }
-): VerifiableCredential {
+): KiltCredentialV1 {
   const rootHash = calculateRootHash(credential, proof)
   return {
     ...credential,
@@ -681,7 +685,7 @@ export type AttestationHandler = (
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
-  credential: VerifiableCredential,
+  credential: KiltCredentialV1,
   {
     did,
     didSigner,
@@ -696,7 +700,7 @@ export async function issue(
     txSubmissionHandler: AttestationHandler
     api?: ApiPromise
   } & Parameters<typeof authorizeTx>[4]
-): Promise<VerifiableCredential> {
+): Promise<KiltCredentialV1> {
   const [proof, callArgs] = initializeProof(credential)
   const call = api.tx.attestation.add(...callArgs)
   const didSigned = await authorizeTx(

@@ -27,7 +27,7 @@ import type {
 
 import * as JWT from './DidJwt'
 import * as Presentation from './Presentation'
-import type { VerifiableCredential } from './types'
+import type { KiltCredentialV1 } from './types'
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
@@ -116,7 +116,7 @@ it('produces and reverses JWT payload representations of a credential and presen
       id: 'polkadot:1234567890:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
       type: 'KiltRevocationStatusV1',
     },
-  } as VerifiableCredential
+  } as KiltCredentialV1
 
   let payload = JWT.credentialToPayload(credential)
   const fromPayload = JWT.credentialFromPayload(payload)
@@ -132,7 +132,7 @@ it('produces and reverses JWT payload representations of a credential and presen
 })
 
 it('verifies a JWT signed by an ed25519 key', async () => {
-  const credential: Partial<VerifiableCredential> = {
+  const credential: Partial<KiltCredentialV1> = {
     '@context': [
       'https://www.w3.org/2018/credentials/v1',
       'https://www.kilt.io/contexts/credentials',
@@ -153,7 +153,7 @@ it('verifies a JWT signed by an ed25519 key', async () => {
     nonTransferable: true,
   }
 
-  const payload = JWT.credentialToPayload(credential as VerifiableCredential)
+  const payload = JWT.credentialToPayload(credential as KiltCredentialV1)
 
   const signedJWT = await JWT.create(
     payload,

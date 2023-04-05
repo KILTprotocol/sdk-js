@@ -8,10 +8,12 @@
 /* eslint-disable no-empty-pattern */
 /* eslint-disable class-methods-use-this */
 
+// @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 
 import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
+import type { Proof } from '../../types.js'
 
 export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   constructor({
@@ -22,32 +24,29 @@ export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   }
 
   async validate(
-    proof: jsigs.Proof,
+    proof: Proof,
     {
       document,
     }: /* suite, verificationMethod,
       documentLoader, expansionMap */
-    { document: JsonLdObj }
+    { document?: JsonLdObj }
   ): Promise<object> {
     const created: string =
-      (proof as any).created ?? (document as any).issuanceDate
-    return super.validate<jsigs.Proof & { created: string }>(
-      { ...proof, created },
-      {}
-    )
+      (proof as any)?.created ?? (document as any)?.issuanceDate
+    return super.validate({ ...proof, created }, {})
   }
 
   async update(
-    proof: jsigs.Proof,
+    proof: Proof,
     {
       /* document, suite, documentLoader, expansionMap */
     }
-  ): Promise<jsigs.Proof> {
+  ): Promise<Proof> {
     return { ...proof, type: ATTESTATION_PROOF_V1_TYPE }
   }
 
   async match(
-    proof: jsigs.Proof,
+    proof: Proof,
     {
       /* document, documentLoader, expansionMap */
     }

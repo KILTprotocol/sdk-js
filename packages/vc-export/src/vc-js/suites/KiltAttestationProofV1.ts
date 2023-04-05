@@ -11,6 +11,7 @@
 import { u8aToHex } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 
+// @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
 import {
@@ -25,16 +26,25 @@ import {
   ATTESTATION_PROOF_V1_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
 } from '../../constants.js'
-import type {
-  KiltAttestationProofV1,
-  VerifiableCredential,
-} from '../../types.js'
 import { chainIdFromGenesis } from '../../CAIP/caip2.js'
 import { includesContext } from './utils.js'
+import type {
+  KiltAttestationProofV1,
+  Proof,
+  KiltCredentialV1,
+} from '../../types.js'
+import type { JSigsVerificationResult } from './types.js'
+import type { JsonLdObj } from '../documentLoader.js'
 
 const {
   suites: { LinkedDataProof },
 } = jsigs
+
+interface CallArgs {
+  proof: Proof
+  document?: JsonLdObj
+  [key: string]: unknown
+}
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private api: ApiPromise
@@ -65,7 +75,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the [[KiltRevocationStatusV1]] method.
    */
   public get checkStatus(): (args: {
-    credential: VerifiableCredential
+    credential: KiltCredentialV1
   }) => Promise<{ verified: boolean; error?: unknown }> {
     const { api } = this
     return async ({ credential }) => {
@@ -78,20 +88,26 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   /**
    * @inheritdoc
    */
-  public async verifyProof(options: {
-    proof: jsigs.Proof
-    document?: object | undefined
-    purpose?: jsigs.purposes.ProofPurpose
-    documentLoader?: jsigs.DocumentLoader
-    expansionMap?: jsigs.ExpansionMap
-  }): Promise<jsigs.VerificationResult> {
+  public async matchProof(options: CallArgs): Promise<boolean> {
+    return super.matchProof(options)
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public async verifyProof(
+    options: CallArgs
+  ): Promise<JSigsVerificationResult> {
     try {
       if (!(await this.matchProof(options))) {
         throw new Error('Proof mismatch')
       }
+      if (!options.document) {
+        throw new TypeError('document is required for verification')
+      }
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
       const proof = options.proof as KiltAttestationProofV1
-      const document = options.document as VerifiableCredential
+      const document = options.document as unknown as KiltCredentialV1
       await verifyProof(document, proof, { api: this.api })
       return {
         verified: true,
@@ -153,9 +169,6 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    *
    * @param input Object containing the function arguments.
    * @param input.document [[KiltCredentialV1]] object to be signed.
-   * @param input.purpose Ignored here.
-   * @param input.documentLoader Ignored here.
-   * @param input.expansionMap Ignored here.
    *
    * @returns Resolves with the created proof object.
    */
@@ -163,9 +176,6 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     document,
   }: {
     document: object
-    purpose?: jsigs.purposes.ProofPurpose
-    documentLoader?: jsigs.DocumentLoader
-    expansionMap?: jsigs.ExpansionMap
   }): Promise<KiltAttestationProofV1> {
     if (!this.transactionHandler) {
       throw new Error(
@@ -173,7 +183,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       )
     }
     const [proof, submissionArgs] = initializeProof(
-      document as VerifiableCredential
+      document as KiltCredentialV1
     )
     const [rootHash] = submissionArgs
     this.pendingSubmissions.set(
@@ -195,12 +205,12 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * @returns An updated copy of the credential with necessary adjustments, containing a complete [[KiltAttestationV1]] proof.
    */
   public async finalizeProof(
-    credential: VerifiableCredential
-  ): Promise<VerifiableCredential> {
+    credential: KiltCredentialV1
+  ): Promise<KiltCredentialV1> {
     const { proof } = credential
-    const proofStub = (Array.isArray(proof) ? proof : [proof]).find(
-      (p) => p?.type === ATTESTATION_PROOF_V1_TYPE
-    ) as VerifiableCredential['proof']
+    const proofStub: KiltAttestationProofV1 | undefined = (
+      Array.isArray(proof) ? proof : [proof]
+    ).find((p) => p?.type === ATTESTATION_PROOF_V1_TYPE)
     if (!proofStub) {
       throw new Error(
         'The credential must have a proof property containing a proof stub as created by the `createProof` method'

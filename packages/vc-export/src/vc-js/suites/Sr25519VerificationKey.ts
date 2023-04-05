@@ -15,12 +15,22 @@ import {
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
+// @ts-expect-error not a typescript module
 import cryptold from 'crypto-ld' // cjs module
-import type { Signer, Verifier } from 'jsonld-signatures' // cjs module
+import type { JSigsSigner, JSigsVerifier } from './types.js'
 
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 
 const { LDKeyPair } = cryptold
+
+/* eslint-disable no-use-before-define */
+export type ExportedKey = Pick<Sr25519VerificationKey2020, 'type'> &
+  Partial<
+    Pick<
+      Sr25519VerificationKey2020,
+      'controller' | 'id' | 'privateKeyBase58' | 'publicKeyBase58' | 'revoked'
+    >
+  > & { '@context'?: string }
 
 const SUITE_ID = 'Sr25519VerificationKey2020'
 
@@ -35,6 +45,14 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   public static readonly suite = SUITE_ID
   // Used by CryptoLD harness's fromKeyId() method.
   public static readonly SUITE_CONTEXT = KILT_CREDENTIAL_CONTEXT_URL
+
+  public type: string
+  public publicKeyBase58: string
+  public privateKeyBase58?: string
+  public id?: string
+  public controller?: string
+  public revoked?: string
+
   /**
    * An implementation of the Sr25519VerificationKey spec, for use with
    * Linked Data Proofs.
@@ -109,7 +127,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    *
    * @returns A signer for the json-ld block.
    */
-  signer(): Signer {
+  signer(): JSigsSigner {
     const signer = Sr25519SignerFactory(this)
     return { ...signer, id: this.id }
   }
@@ -125,7 +143,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    *
    * @returns Used to verify jsonld-signatures.
    */
-  verifier(): Verifier {
+  verifier(): JSigsVerifier {
     const verifier = Sr25519VerifierFactory(this)
     return { ...verifier, id: this.id }
   }
@@ -146,27 +164,13 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
     publicKey = false,
     privateKey = false,
     includeContext = false,
-  } = {}): Required<Pick<Sr25519VerificationKey2020, 'id' | 'type'>> &
-    Partial<
-      Pick<
-        Sr25519VerificationKey2020,
-        'controller' | 'publicKeyBase58' | 'privateKeyBase58' | 'revoked'
-      >
-    > {
+  } = {}): ExportedKey {
     if (!(publicKey || privateKey)) {
       throw new TypeError(
         'Export requires specifying either "publicKey" or "privateKey".'
       )
     }
-    const exportedKey: Required<
-      Pick<Sr25519VerificationKey2020, 'id' | 'type'>
-    > &
-      Partial<
-        Pick<
-          Sr25519VerificationKey2020,
-          'controller' | 'publicKeyBase58' | 'privateKeyBase58' | 'revoked'
-        >
-      > = {
+    const exportedKey: ExportedKey = {
       id: this.id,
       type: this.type,
     }

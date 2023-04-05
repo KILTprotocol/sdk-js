@@ -7,6 +7,7 @@
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
+// @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 
@@ -14,6 +15,9 @@ import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'
+import type { JSigsSigner, JSigsVerifier } from './types.js'
+import type { DocumentLoader } from '../documentLoader.js'
+import type { Proof } from '../../types.js'
 
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-use-before-define */
@@ -27,16 +31,25 @@ const SUITE_CONTEXT_URL = KILT_CREDENTIAL_CONTEXT_URL
 // multibase base58-btc header
 const MULTIBASE_BASE58BTC_HEADER = 'z'
 
-type Options = {
-  proof: jsigs.Proof
+interface VerificationMethod {
+  verificationMethod: Record<string, unknown>
+}
+interface Options extends VerificationMethod {
+  proof: Proof & Partial<VerificationMethod>
   document: JsonLdObj
   purpose: any
-  documentLoader: jsigs.DocumentLoader
+  documentLoader: DocumentLoader
+  verifyData: Uint8Array
 }
 
 export class Sr25519Signature2020 extends LinkedDataSignature {
   public static readonly CONTEXT_URL = SUITE_CONTEXT_URL
   public static readonly CONTEXT = context[SUITE_CONTEXT_URL]
+
+  public signer?: JSigsSigner
+  public verifier?: JSigsVerifier
+  public key?: Sr25519VerificationKey2020
+  public LDKeyClass = Sr25519VerificationKey2020
 
   /**
    * Cryptographic suite to produce and verify Sr25519Signature2020 linked data signatures.
@@ -77,9 +90,9 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     useNativeCanonize,
   }: {
     key?: Sr25519VerificationKey2020
-    signer?: jsigs.Signer
-    verifier?: jsigs.Verifier
-    proof?: jsigs.Proof
+    signer?: JSigsSigner
+    verifier?: JSigsVerifier
+    proof?: Proof
     date?: string | Date
     useNativeCanonize?: boolean
   } = {}) {
@@ -112,8 +125,8 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
   async sign({
     verifyData,
     proof,
-  }: Pick<Options, 'proof'> & { verifyData: Uint8Array }): Promise<
-    { proofValue: string } & jsigs.Proof
+  }: Pick<Options, 'proof' | 'verifyData'>): Promise<
+    { proofValue: string } & Proof
   > {
     if (!(this.signer && typeof this.signer.sign === 'function')) {
       throw new Error('A signer API has not been specified.')
@@ -139,11 +152,11 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     verifyData,
     verificationMethod,
     proof,
-  }: Pick<Options, 'proof'> & {
-    verifyData: Uint8Array
-    verificationMethod: Record<string, unknown>
-  }): Promise<boolean> {
-    const { proofValue } = proof as jsigs.Proof & { proofValue: string }
+  }: Pick<
+    Options,
+    'proof' | 'verifyData' | 'verificationMethod'
+  >): Promise<boolean> {
+    const { proofValue } = proof as Proof & { proofValue: string }
     if (!(Boolean(proofValue) && typeof proofValue === 'string')) {
       throw new TypeError(
         'The proof does not include a valid "proofValue" property.'
@@ -156,7 +169,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
 
     const verifier =
       this.verifier ??
-      (await this.LDKeyClass.from(verificationMethod)).verifier()
+      (await this.LDKeyClass.from(verificationMethod as any)).verifier()
 
     return verifier.verify({
       data: verifyData,
@@ -166,9 +179,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
 
   async assertVerificationMethod({
     verificationMethod,
-  }: {
-    verificationMethod: any
-  }): Promise<void> {
+  }: Pick<Options, 'verificationMethod'>): Promise<void> {
     let contextUrl
     if (verificationMethod.type === 'Sr25519VerificationKey2020') {
       contextUrl = SUITE_CONTEXT_URL
@@ -205,31 +216,27 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
       return this.key.export({ publicKey: true })
     }
 
-    let { verificationMethod } = proof as jsigs.Proof & {
-      verificationMethod: any
+    const verificationMethodId =
+      typeof proof.verificationMethod === 'object'
+        ? proof.verificationMethod.id
+        : proof.verificationMethod
+
+    if (typeof verificationMethodId !== 'string') {
+      throw new Error('No valid "verificationMethod" found in proof.')
     }
 
-    if (typeof verificationMethod === 'object') {
-      verificationMethod = verificationMethod.id
-    }
+    const { document } = await documentLoader(verificationMethodId)
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (typeof verificationMethod !== 'string') {
-      throw new Error('No "verificationMethod" found in proof.')
-    }
-
-    const { document } = await documentLoader(verificationMethod)
-
-    verificationMethod =
+    const verificationMethod =
       typeof document === 'string' ? JSON.parse(document) : document
 
     await this.assertVerificationMethod({ verificationMethod })
-    verificationMethod = (
+    const verificationKey = (
       await Sr25519VerificationKey2020.from({
         ...verificationMethod,
       })
     ).export({ publicKey: true, includeContext: true })
-    return verificationMethod
+    return verificationKey
   }
 
   async matchProof({
@@ -237,19 +244,15 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     document,
     purpose,
     documentLoader,
-  }: {
-    proof: jsigs.Proof & { verificationMethod?: { id: string } | string }
-    document?: JsonLdObj
-    purpose?: jsigs.purposes.ProofPurpose
-    documentLoader?: jsigs.DocumentLoader
-    expansionMap?: jsigs.ExpansionMap
-  }): Promise<boolean> {
+  }: Pick<Options, 'proof' | 'document'> &
+    Partial<Pick<Options, 'purpose' | 'documentLoader'>>): Promise<boolean> {
     if (!includesContext({ document, contextUrl: SUITE_CONTEXT_URL })) {
       return false
     }
 
     if (
-      !(await super.matchProof({ proof, document, purpose, documentLoader }))
+      (await super.matchProof({ proof, document, purpose, documentLoader })) !==
+      true
     ) {
       return false
     }

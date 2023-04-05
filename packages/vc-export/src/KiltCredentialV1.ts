@@ -32,7 +32,7 @@ import type {
   JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
-  VerifiableCredential,
+  KiltCredentialV1,
 } from './types.js'
 import { credentialIdFromRootHash } from './common.js'
 
@@ -44,7 +44,7 @@ interface CredentialInput {
   timestamp: number
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
-  legitimations?: Array<VerifiableCredential | VerifiableCredential['id']>
+  legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
   delegationId?: IDelegationNode['id']
 }
 interface CredentialInputWithRootHash extends CredentialInput {
@@ -53,7 +53,7 @@ interface CredentialInputWithRootHash extends CredentialInput {
 
 export function fromInput(
   input: CredentialInputWithRootHash
-): Omit<VerifiableCredential, 'proof'>
+): Omit<KiltCredentialV1, 'proof'>
 /**
  * Produces a KiltCredentialV1 from input data.
  *
@@ -80,7 +80,7 @@ export function fromInput({
   legitimations,
   delegationId,
 }: CredentialInput): Omit<
-  VerifiableCredential,
+  KiltCredentialV1,
   'proof' | 'id' | 'credentialStatus'
 > {
   // write root hash to id
@@ -110,7 +110,7 @@ export function fromInput({
     credentialSchema.schema = cType
   }
 
-  const federatedTrustModel: VerifiableCredential['federatedTrustModel'] = []
+  const federatedTrustModel: KiltCredentialV1['federatedTrustModel'] = []
   legitimations?.forEach((legitimation) => {
     const type = KILT_ATTESTER_LEGITIMATION_V1_TYPE
     const entry: KiltAttesterLegitimationV1 =
@@ -271,7 +271,9 @@ schemaValidator.addSchema(CType.Schemas.CTypeModel, 'kilt.schemas/CTypeModel')
  *
  * @param credential Credential or object to be validated.
  */
-export function validateStructure(credential: VerifiableCredential): void {
+export function validateStructure(
+  credential: Omit<KiltCredentialV1, 'proof'>
+): void {
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new CredentialMalformedError(
@@ -302,7 +304,7 @@ export function fromICredential(
     chainGenesisHash = spiritnetGenesisHash,
   }: Pick<CredentialInput, 'chainGenesisHash' | 'timestamp' | 'issuer'> &
     Partial<Pick<CredentialInput, 'cType'>>
-): VerifiableCredential {
+): Omit<KiltCredentialV1, 'proof'> {
   const {
     legitimations: legitimationsInput,
     delegationId,

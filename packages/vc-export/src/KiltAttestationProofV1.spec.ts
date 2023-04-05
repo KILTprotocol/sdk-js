@@ -34,9 +34,9 @@ import {
 import { check as checkStatus } from './KiltRevocationStatusV1'
 import { fromICredential } from './KiltCredentialV1'
 import { credentialIdFromRootHash } from './common'
-import type { VerifiableCredential } from './types'
+import type { KiltCredentialV1 } from './types'
 
-let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
+let VC: KiltCredentialV1
 describe('proofs', () => {
   beforeAll(() => {
     VC = exportICredentialToVc(credential, {
@@ -97,7 +97,7 @@ describe('proofs', () => {
 
   it('checks delegation node owners', async () => {
     const delegator: DidUri = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
-    const credentialWithDelegators: VerifiableCredential = {
+    const credentialWithDelegators: KiltCredentialV1 = {
       ...VC,
       federatedTrustModel: VC.federatedTrustModel?.map((i) => {
         if (i.type === 'KiltAttesterDelegationV1') {
