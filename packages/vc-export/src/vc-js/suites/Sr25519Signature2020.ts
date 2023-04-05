@@ -22,9 +22,17 @@ import type { Proof } from '../../types.js'
 /* eslint-disable no-use-before-define */
 /* eslint-disable jsdoc/require-description-complete-sentence */
 
-const {
-  suites: { LinkedDataSignature },
-} = jsigs
+const LinkedDataSignature = jsigs.suites.LinkedDataSignature as {
+  new (props: any): {
+    signer?: JSigsSigner
+    verifier?: JSigsVerifier
+    key?: Sr25519VerificationKey2020
+    LDKeyClass: typeof Sr25519VerificationKey2020
+    matchProof(
+      ...args: Parameters<Sr25519Signature2020['matchProof']>
+    ): ReturnType<Sr25519Signature2020['matchProof']>
+  }
+}
 
 const SUITE_CONTEXT_URL = KILT_CREDENTIAL_CONTEXT_URL
 // multibase base58-btc header
@@ -44,11 +52,6 @@ interface Options extends VerificationMethod {
 export class Sr25519Signature2020 extends LinkedDataSignature {
   public static readonly CONTEXT_URL = SUITE_CONTEXT_URL
   public static readonly CONTEXT = context[SUITE_CONTEXT_URL]
-
-  public signer?: JSigsSigner
-  public verifier?: JSigsVerifier
-  public key?: Sr25519VerificationKey2020
-  public LDKeyClass = Sr25519VerificationKey2020
 
   /**
    * Cryptographic suite to produce and verify Sr25519Signature2020 linked data signatures.

@@ -21,7 +21,16 @@ import type { JSigsSigner, JSigsVerifier } from './types.js'
 
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 
-const { LDKeyPair } = cryptold
+interface LDKeyPairProps {
+  id?: string
+  controller?: string
+  revoked?: string
+}
+const { LDKeyPair } = cryptold as {
+  LDKeyPair: {
+    new (props: LDKeyPairProps): LDKeyPairProps
+  }
+}
 
 /* eslint-disable no-use-before-define */
 export type ExportedKey = Pick<Sr25519VerificationKey2020, 'type'> &
@@ -49,9 +58,6 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   public type: string
   public publicKeyBase58: string
   public privateKeyBase58?: string
-  public id?: string
-  public controller?: string
-  public revoked?: string
 
   /**
    * An implementation of the Sr25519VerificationKey spec, for use with
