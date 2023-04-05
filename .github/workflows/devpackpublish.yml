@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version: 14
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install --immutable
