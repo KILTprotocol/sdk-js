@@ -21,7 +21,7 @@ jobs:
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
           cache: 'yarn'
       - name: yarn install
         run: yarn install --immutable
@@ -54,7 +54,7 @@ jobs:
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
       - name: Log out node version
         run: node --version
       - uses: actions/download-artifact@v3
@@ -100,7 +100,7 @@ jobs:
       - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v3
         with:
           name: build
@@ -122,7 +122,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v3
         with:
           name: build
