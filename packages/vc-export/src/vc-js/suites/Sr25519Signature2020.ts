@@ -9,14 +9,13 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
-import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 
 import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'
 import type { JSigsSigner, JSigsVerifier } from './types.js'
-import type { DocumentLoader } from '../documentLoader.js'
+import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
 import type { Proof } from '../../types.js'
 
 /* eslint-disable class-methods-use-this */

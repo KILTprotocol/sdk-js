@@ -10,10 +10,10 @@
 
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
-import type { JsonLdObj } from 'jsonld/jsonld-spec.js'
 
 import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
 import type { Proof } from '../../types.js'
+import type { JsonLdObj } from '../documentLoader.js'
 
 export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   constructor({

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { JsonLdObj } from 'jsonld/jsonld-spec'
+import type { JsonLdObj } from '../documentLoader'
 
 /**
  * Tests whether a provided JSON-LD document includes a context url in its

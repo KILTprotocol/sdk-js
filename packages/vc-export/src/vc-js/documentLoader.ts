@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
 import {

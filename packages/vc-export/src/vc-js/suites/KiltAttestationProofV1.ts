@@ -133,7 +133,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     document,
     addSuiteContext = true,
   }: {
-    document: object
+    document: JsonLdObj
     addSuiteContext: boolean
   }): void {
     const { contextUrl } = this

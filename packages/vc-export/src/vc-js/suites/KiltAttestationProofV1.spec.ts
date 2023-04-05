@@ -19,6 +19,7 @@ import {
 } from '@digitalbazaar/ed25519-signature-2020'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
+// @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
 import { Credential } from '@kiltprotocol/core'
