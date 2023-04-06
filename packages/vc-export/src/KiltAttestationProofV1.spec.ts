@@ -18,10 +18,9 @@ import type { DidUri } from '@kiltprotocol/types'
 
 import {
   attestation,
-  attestationCreatedIndex,
   blockHash,
   credential,
-  makeEvent,
+  makeAttestationCreatedEvents,
   mockedApi,
   timestamp,
 } from './exportToVerifiableCredential.spec'
@@ -35,9 +34,9 @@ import {
 import { check as checkStatus } from './KiltRevocationStatusV1'
 import { fromICredential } from './KiltCredentialV1'
 import { credentialIdFromRootHash } from './common'
-import type { VerifiableCredential } from './types'
+import type { KiltCredentialV1 } from './types'
 
-let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
+let VC: KiltCredentialV1
 describe('proofs', () => {
   beforeAll(() => {
     VC = exportICredentialToVc(credential, {
@@ -98,7 +97,7 @@ describe('proofs', () => {
 
   it('checks delegation node owners', async () => {
     const delegator: DidUri = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
-    const credentialWithDelegators: VerifiableCredential = {
+    const credentialWithDelegators: KiltCredentialV1 = {
       ...VC,
       federatedTrustModel: VC.federatedTrustModel?.map((i) => {
         if (i.type === 'KiltAttesterDelegationV1') {
@@ -164,11 +163,13 @@ describe('issuance', () => {
     jest
       .mocked(mockedApi.query.system.events)
       .mockResolvedValueOnce(
-        makeEvent(attestationCreatedIndex, [
-          '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-          txArgs[0],
-          txArgs[1],
-          txArgs[2],
+        makeAttestationCreatedEvents([
+          [
+            '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+            txArgs[0],
+            txArgs[1],
+            txArgs[2],
+          ],
         ]) as any
       )
 
@@ -271,7 +272,7 @@ describe('negative tests', () => {
       )
     jest
       .mocked(mockedApi.query.system.events)
-      .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
+      .mockResolvedValueOnce(makeAttestationCreatedEvents([]) as any)
     const { proof, ...cred } = VC
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
     await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()

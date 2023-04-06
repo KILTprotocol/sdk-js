@@ -30,8 +30,9 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
+    "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
+    "@digitalbazaar/vc": "^6.0.1",
     "@kiltprotocol/testing": "workspace:*",
-    "@types/jsonld": "1.5.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
@@ -45,9 +46,12 @@
     "@polkadot/types": "^9.10.2",
     "@polkadot/util": "^10.2.1",
     "@polkadot/util-crypto": "^10.2.1",
-    "did-jwt": "^6.11.0",
-    "jsonld": "^2.0.2",
-    "jsonld-signatures": "^5.0.0",
-    "vc-js": "^0.6.4"
+    "crypto-ld": "^6.0.0",
+    "did-jwt": "^6.11.0"
+  },
+  "peerDependencies": {
+    "@digitalbazaar/vc": "^2.1.0 || ^6.0.1",
+    "jsonld": "^5.2.0 || ^8.1.0",
+    "jsonld-signatures": "^9.3.0 || ^11.0.0"
   }
 }

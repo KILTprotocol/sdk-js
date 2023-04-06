@@ -22,7 +22,7 @@ import { resolveCompliant } from '@kiltprotocol/did'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { DidResourceUri, DidUri } from '@kiltprotocol/types'
 
-import type { VerifiableCredential, VerifiablePresentation } from './types.js'
+import type { UnsignedVc, VerifiablePresentation } from './types.js'
 
 function jwtTimestampFromDate(date: string | number | Date): number {
   return Math.floor(new Date(date).getTime() / 1000)
@@ -184,7 +184,7 @@ export function presentationToPayload(
  * @returns The payload, ready for serialization.
  */
 export function credentialToPayload(
-  credential: VerifiableCredential & { expirationDate?: string }
+  credential: UnsignedVc & { expirationDate?: string }
 ): JWTPayload & {
   iss: string
 } {
@@ -251,18 +251,16 @@ export function presentationFromPayload(
  * @param payload The encoded payload of a JWT, containing a 'vc' claim.
  * @returns A [[VerifiableCredential]] object.
  */
-export function credentialFromPayload(
-  payload: JWTPayload
-): VerifiableCredential {
+export function credentialFromPayload(payload: JWTPayload): UnsignedVc {
   const { vc, iss, sub } = payload
   if (typeof vc !== 'object' || vc === null) {
     throw new Error('JWT must contain a vc claim')
   }
 
-  const decoded = {
+  const decoded: UnsignedVc = {
     ...vc,
     ...fromPayloadCommon(payload),
-  } as VerifiableCredential
+  }
 
   if (typeof iss === 'string') {
     decoded.issuer = iss as DidUri
@@ -275,5 +273,5 @@ export function credentialFromPayload(
     }
   }
 
-  return decoded as VerifiableCredential
+  return decoded
 }

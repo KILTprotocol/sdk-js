@@ -19,9 +19,9 @@ import {
 } from './exportToVerifiableCredential.spec'
 import { exportICredentialToVc } from './fromICredential'
 import { validateStructure } from './KiltCredentialV1'
-import { VerifiableCredential } from './types'
+import type { KiltCredentialV1 } from './types'
 
-let VC: VerifiableCredential
+let VC: KiltCredentialV1
 const timestamp = 1234567
 const blockHash = randomAsU8a(32)
 const attester = attestation.owner

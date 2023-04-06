@@ -9,7 +9,7 @@ import type { ICredential } from '@kiltprotocol/types'
 
 import { fromICredential as vcFromCredential } from './KiltCredentialV1.js'
 import { fromICredential as proofFromCredential } from './KiltAttestationProofV1.js'
-import type { KiltAttestationProofV1, VerifiableCredential } from './types.js'
+import type { KiltCredentialV1 } from './types.js'
 
 type Params = Parameters<typeof vcFromCredential>[1] &
   Parameters<typeof proofFromCredential>[1]
@@ -29,7 +29,7 @@ type Params = Parameters<typeof vcFromCredential>[1] &
 export function exportICredentialToVc(
   input: ICredential,
   { blockHash, issuer, chainGenesisHash, timestamp, cType }: Params
-): VerifiableCredential & { proof: KiltAttestationProofV1 } {
+): KiltCredentialV1 {
   const proof = proofFromCredential(input, { blockHash })
   return {
     ...vcFromCredential(input, { issuer, chainGenesisHash, timestamp, cType }),

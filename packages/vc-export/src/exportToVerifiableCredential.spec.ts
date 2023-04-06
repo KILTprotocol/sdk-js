@@ -11,7 +11,6 @@
 
 import { randomAsU8a } from '@polkadot/util-crypto'
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
-import type { U8aLike } from '@polkadot/util/types'
 
 import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -27,19 +26,23 @@ import { credentialIdFromRootHash } from './common'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
-export function makeEvent(idx: U8aLike, eventData: unknown[]) {
-  const index = u8aToU8a(idx)
-  return mockedApi.createType('Vec<FrameSystemEventRecord>', [
-    {
+const attestationCreatedIndex = u8aToU8a([
+  62,
+  mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
+])
+export function makeAttestationCreatedEvents(events: unknown[][]) {
+  return mockedApi.createType(
+    'Vec<FrameSystemEventRecord>',
+    events.map((eventData) => ({
       event: u8aConcat(
-        index,
-        new (mockedApi.registry.findMetaEvent(index))(
+        attestationCreatedIndex,
+        new (mockedApi.registry.findMetaEvent(attestationCreatedIndex))(
           mockedApi.registry,
           eventData
         ).toU8a()
       ),
-    },
-  ])
+    }))
+  )
 }
 
 export const cType: ICType = {
@@ -131,19 +134,17 @@ mockedApi.query.timestamp = {
   now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
 } as any
 
-export const attestationCreatedIndex = [
-  62,
-  mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
-]
 mockedApi.query.system = {
   events: jest
     .fn()
     .mockResolvedValue(
-      makeEvent(attestationCreatedIndex, [
-        '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-        attestation.claimHash,
-        attestation.cTypeHash,
-        { Delegation: attestation.delegationId },
+      makeAttestationCreatedEvents([
+        [
+          '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+          attestation.claimHash,
+          attestation.cTypeHash,
+          { Delegation: attestation.delegationId },
+        ],
       ])
     ),
 } as any

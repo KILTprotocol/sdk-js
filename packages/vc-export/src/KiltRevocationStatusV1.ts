@@ -21,7 +21,7 @@ import {
   getDelegationNodeIdForCredential,
 } from './common.js'
 import { CredentialMalformedError } from './errors.js'
-import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
+import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -32,7 +32,7 @@ import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
  * If not given this function will try to retrieve a cached connection from the [[ConfigService]].
  */
 export async function check(
-  credential: VerifiableCredential,
+  credential: Omit<KiltCredentialV1, 'proof'>,
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   const { credentialStatus } = credential

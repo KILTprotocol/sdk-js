@@ -9,7 +9,7 @@ import { CType } from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
 
 import { jsonLdExpandCredentialSubject } from './common.js'
-import type { VerifiableCredential } from './types.js'
+import type { KiltCredentialV1 } from './types.js'
 
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition on the `credentialSchema` property.
@@ -20,7 +20,7 @@ import type { VerifiableCredential } from './types.js'
  * @param cType Optionally pass the CType definition to be used if it is not embedded in the credentialSchema.
  */
 export function validateSubject(
-  { credentialSubject, credentialSchema }: VerifiableCredential,
+  { credentialSubject, credentialSchema }: KiltCredentialV1,
   cType?: ICType
 ): void {
   const { schema = cType } = credentialSchema ?? {}

@@ -7,8 +7,6 @@
 
 /* eslint-disable no-use-before-define */
 
-// import { Proof } from 'jsonld-signatures'
-
 import type {
   ICType,
   ConformingDidKey,
@@ -27,12 +25,83 @@ import type {
   KILT_CREDENTIAL_IRI_PREFIX,
   KILT_REVOCATION_STATUS_V1_TYPE,
   W3C_CREDENTIAL_CONTEXT_URL,
+  W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from './constants.js'
 
+export * from './vc-js/types.js'
+
 export type IPublicKeyRecord = ConformingDidKey
 
-export interface KiltAttestationProofV1 {
+export interface Proof {
+  type: string
+}
+
+export interface UnsignedVc {
+  /**
+   * References to json-ld contexts defining the terms used.
+   */
+  '@context': [typeof W3C_CREDENTIAL_CONTEXT_URL, ...string[]]
+  /**
+   * Credential identifier.
+   */
+  id?: string
+  /**
+   * The credential types, which declare what data to expect in the credential.
+   */
+  type: typeof W3C_CREDENTIAL_TYPE | string[]
+  /**
+   * Claims about the subjects of the credential.
+   */
+  credentialSubject: { id?: string }
+  /**
+   * The entity that issued the credential.
+   */
+  issuer: string
+  /**
+   * When the credential was issued.
+   */
+  issuanceDate: string
+  /**
+   * If true, this credential can only be presented and used by its subject.
+   */
+  nonTransferable?: boolean
+  /**
+   * Contains json schema for the validation of credentialSubject claims.
+   */
+  credentialSchema?: {
+    id?: string
+    type: string
+  }
+  /**
+   * Contains credentials status method.
+   */
+  credentialStatus?: {
+    id: string
+    type: string
+  }
+}
+
+export interface VerifiableCredential extends UnsignedVc {
+  /**
+   *  Cryptographic proof that makes the credential tamper-evident.
+   */
+  proof: Proof | Proof[]
+}
+
+export interface VerifiablePresentation {
+  id?: string
+  '@context': [typeof W3C_CREDENTIAL_CONTEXT_URL, ...string[]]
+  type: [typeof W3C_PRESENTATION_TYPE, ...string[]]
+  verifiableCredential: VerifiableCredential | VerifiableCredential[]
+  holder: DidUri
+  proof?: Proof | Proof[]
+  expirationDate?: string
+  issuanceDate?: string
+  verifier?: string
+}
+
+export interface KiltAttestationProofV1 extends Proof {
   type: typeof ATTESTATION_PROOF_V1_TYPE
   block: string
   commitments: string[]
@@ -55,22 +124,15 @@ export interface KiltRevocationStatusV1 {
   type: typeof KILT_REVOCATION_STATUS_V1_TYPE
 }
 
-export interface CredentialSubject extends IClaimContents {
-  '@context': {
-    '@vocab': string
-  }
-  id: DidUri
-}
-
 interface IssuerBacking {
   id: string
   type: string
 }
 
 export interface KiltAttesterLegitimationV1 extends IssuerBacking {
-  id: VerifiableCredential['id']
+  id: KiltCredentialV1['id']
   type: typeof KILT_ATTESTER_LEGITIMATION_V1_TYPE
-  verifiableCredential?: VerifiableCredential
+  verifiableCredential?: KiltCredentialV1
 }
 
 export interface KiltAttesterDelegationV1 extends IssuerBacking {
@@ -79,7 +141,14 @@ export interface KiltAttesterDelegationV1 extends IssuerBacking {
   delegators?: DidUri[]
 }
 
-export interface VerifiableCredential {
+export interface CredentialSubject extends IClaimContents {
+  '@context': {
+    '@vocab': string
+  }
+  id: DidUri
+}
+
+export interface KiltCredentialV1 extends VerifiableCredential {
   /**
    * References to json-ld contexts defining the terms used.
    */
@@ -101,13 +170,9 @@ export interface VerifiableCredential {
    */
   issuer: DidUri
   /**
-   * When the credential was issued.
-   */
-  issuanceDate: string
-  /**
    * If true, this credential can only be presented and used by its subject.
    */
-  nonTransferable?: boolean
+  nonTransferable: true
   /**
    * Contains json schema for the validation of credentialSubject claims.
    */
@@ -125,17 +190,5 @@ export interface VerifiableCredential {
   /**
    *  Cryptographic proof that makes the credential tamper-evident.
    */
-  proof?: KiltAttestationProofV1
-}
-
-export interface VerifiablePresentation {
-  id?: string
-  '@context': [typeof W3C_CREDENTIAL_CONTEXT_URL, ...string[]]
-  type: [typeof W3C_PRESENTATION_TYPE, ...string[]]
-  verifiableCredential: VerifiableCredential | VerifiableCredential[]
-  holder: DidUri
-  proof?: Record<string, unknown> | Array<Record<string, unknown>>
-  expirationDate?: string
-  issuanceDate?: string
-  verifier?: string
+  proof: KiltAttestationProofV1
 }

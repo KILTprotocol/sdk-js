@@ -15,13 +15,12 @@ import {
   KILT_CREDENTIAL_IRI_PREFIX,
 } from './constants.js'
 import { CredentialMalformedError } from './errors.js'
-import type { KiltAttesterDelegationV1, VerifiableCredential } from './types.js'
+import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
 
-export type ExpandedContents<
-  T extends VerifiableCredential['credentialSubject']
-> = {
-  [Key in keyof T as `${T['@context']['@vocab']}`]: T[Key]
-} & { '@id': T['id'] }
+export type ExpandedContents<T extends KiltCredentialV1['credentialSubject']> =
+  {
+    [Key in keyof T as `${T['@context']['@vocab']}`]: T[Key]
+  } & { '@id': T['id'] }
 
 /**
  * Transforms credentialSubject to an expanded JSON-LD representation.
@@ -31,7 +30,7 @@ export type ExpandedContents<
  * @private
  */
 export function jsonLdExpandCredentialSubject<
-  T extends VerifiableCredential['credentialSubject']
+  T extends KiltCredentialV1['credentialSubject']
 >(credentialSubject: T): ExpandedContents<T> {
   const expandedContents = {}
   const vocabulary = credentialSubject['@context']['@vocab']
@@ -82,7 +81,7 @@ export function delegationIdFromAttesterDelegation(
  * @private
  */
 export function getDelegationNodeIdForCredential(
-  credential: Pick<VerifiableCredential, 'federatedTrustModel'>
+  credential: Pick<KiltCredentialV1, 'federatedTrustModel'>
 ): Uint8Array | null {
   const delegation = credential.federatedTrustModel?.find(
     (i): i is KiltAttesterDelegationV1 =>
@@ -103,7 +102,7 @@ export function getDelegationNodeIdForCredential(
  */
 export function assertMatchingConnection(
   api: ApiPromise,
-  { credentialStatus }: VerifiableCredential
+  { credentialStatus }: Pick<KiltCredentialV1, 'credentialStatus'>
 ): ReturnType<typeof Caip19.parse> {
   const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
   const parsed = Caip19.parse(credentialStatus.id)
@@ -122,7 +121,7 @@ export function assertMatchingConnection(
  * @returns The credential root hash as a Uint8Array.
  */
 export function credentialIdToRootHash(
-  credentialId: VerifiableCredential['id']
+  credentialId: KiltCredentialV1['id']
 ): Uint8Array {
   const base58String = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
     ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
@@ -145,6 +144,6 @@ export function credentialIdToRootHash(
  */
 export function credentialIdFromRootHash(
   rootHash: Uint8Array
-): VerifiableCredential['id'] {
+): KiltCredentialV1['id'] {
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(rootHash, false)}`
 }
