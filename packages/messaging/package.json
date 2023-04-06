@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/messaging",
-  "version": "0.32.0-9",
+  "version": "0.32.1-1",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -39,6 +39,6 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/util": "^10.2.1"
+    "@polkadot/util": "^11.0.0"
   }
 }

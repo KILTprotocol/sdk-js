@@ -34,7 +34,7 @@ it('consistent CType id generation', () => {
   })
 
   expect(ctypeV1.$id).toMatchInlineSnapshot(
-    `"kilt:ctype:0x12c8edb42b455aa6c29fabda8f3768bd1e8577f0618f122072828e41b6f4f728"`
+    `"kilt:ctype:0xc4145b9c5c7ae10f60c6a707b9dabf704ab65d7802a839854643a579c9bc80a5"`
   )
 
   const ctypeV0 = CType.fromProperties(
@@ -49,6 +49,239 @@ it('consistent CType id generation', () => {
   expect(ctypeV0.$id).toMatchInlineSnapshot(
     `"kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84"`
   )
+})
+
+describe('value constraints', () => {
+  let cTypeWithConstraints: ICType
+  beforeAll(() => {
+    cTypeWithConstraints = CType.fromProperties('ConstraintsCtype', {
+      labels: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: ['important', 'vital', 'critical', 'essential'],
+        },
+        minItems: 1,
+        maxItems: 3,
+      },
+      w3n: {
+        type: 'string',
+        minLength: 3,
+        maxLength: 10,
+      },
+      date: {
+        type: 'string',
+        format: 'date',
+      },
+      age: {
+        type: 'integer',
+        minimum: 0,
+        maximum: 999,
+      },
+      multiplier: {
+        type: 'number',
+        enum: [0.2, 0.6, 1.2, 2.4],
+      },
+    })
+  })
+
+  it('constrains array length', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['critical'],
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['important', 'critical'],
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['important', 'critical', 'essential'],
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: [],
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['important', 'vital', 'critical', 'essential'],
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
+
+  it('constrains array contents via enum', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['important', 'critical', 'essential'],
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: ['niceToHave'],
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          labels: [12],
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
+
+  it('constrains string length', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          w3n: 'juergen',
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          w3n: 'jo',
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          w3n: 'Peter der Große, Zar von Russland',
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
+
+  it('constrains numeric range', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          age: 22,
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          age: -12,
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          age: 1000,
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
+
+  it('constrains to numbers in enum', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          multiplier: 1.2,
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          multiplier: 1,
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          multiplier: 0.14,
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
+
+  it('constrains string to date format', () => {
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          date: '2022-01-22',
+        },
+        didAlice
+      )
+    ).not.toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          date: '11:30',
+        },
+        didAlice
+      )
+    ).toThrow()
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(
+        cTypeWithConstraints,
+        {
+          date: 'fried fish',
+        },
+        didAlice
+      )
+    ).toThrow()
+  })
 })
 
 it('e2e', () => {

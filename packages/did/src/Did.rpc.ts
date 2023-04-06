@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, U8aFixed, Vec } from '@polkadot/types'
+import type { Option, Vec } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {
@@ -14,6 +14,7 @@ import type {
   DidDidDetailsDidPublicKeyDetails,
   DidDidDetails,
   DidServiceEndpointsDidEndpoint,
+  PalletDidLookupLinkableAccountLinkableAccountId,
 } from '@kiltprotocol/augment-api'
 import type {
   Deposit,
@@ -136,17 +137,6 @@ function servicesFromChain(
   encoded: DidServiceEndpointsDidEndpoint[]
 ): DidServiceEndpoint[] {
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
-}
-
-/**
- * Type describing storage type that is yet to be deployed to spiritnet.
- */
-interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
-  readonly isAccountId20: boolean
-  readonly asAccountId20: U8aFixed
-  readonly isAccountId32: boolean
-  readonly asAccountId32: AccountId32
-  readonly type: 'AccountId20' | 'AccountId32'
 }
 
 function isLinkableAccountId(
