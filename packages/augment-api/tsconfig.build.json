@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "outDir": "./lib/cjs",
+    "module": "ES6",
+    "outDir": "./lib",
+    "declaration": true,
+    "emitDeclarationOnly": true,
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "paths": {
