@@ -8,8 +8,8 @@
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "paths": {
-      "@kiltprotocol/augment-api/*": [
-        "./src/*"
+      "@kiltprotocol/augment-api/extraDefs": [
+        "./src/interfaces/extraDefs/index.ts"
       ],
       "@polkadot/api/augment": [
         "./src/interfaces/augment-api.ts"

@@ -7,6 +7,9 @@
   "exports": {
     ".": {
       "types": "./lib/index.d.ts"
+    },
+    "./extraDefs": {
+      "types": "./lib/interfaces/extraDefs/index.d.ts"
     }
   },
   "files": [
