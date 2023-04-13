@@ -4,16 +4,22 @@
   "description": "",
   "types": "./lib/index.d.ts",
   "type": "module",
+  "main": "./index.cjs",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts"
+      "types": "./lib/index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.cjs"
     },
     "./extraDefs": {
       "types": "./lib/interfaces/extraDefs/index.d.ts"
     }
   },
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "index.mjs",
+    "index.cjs",
+    "extraDefs/*"
   ],
   "scripts": {
     "clean": "rimraf ./lib",
