@@ -33,7 +33,7 @@ import { types11000 } from './types_11000.js'
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
-import { calls as dipSenderCalls } from './runtime/dipSender.js'
+import { calls as dipProviderCalls } from './runtime/dipProvider.js'
 
 export {
   types8,
@@ -58,7 +58,7 @@ export {
 export { calls as didCalls } from './runtime/did.js'
 export { calls as stakingCalls } from './runtime/staking.js'
 export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
-export { calls as dipSenderCalls } from './runtime/dipSender.js'
+export { calls as dipProviderCalls } from './runtime/dipProvider.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -181,13 +181,13 @@ export const typesBundle: OverrideBundleType = {
       },
       types: defaultTypesBundle,
     },
-    'DIP sender dev': {
+    'DIP provider dev': {
       runtime: {
-        ...dipSenderCalls,
+        ...dipProviderCalls,
       },
       types: defaultTypesBundle,
     },
-    'DIP receiver dev': {
+    'DIP consumer dev': {
       types: defaultTypesBundle,
     },
     Development: {
