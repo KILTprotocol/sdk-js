@@ -26,12 +26,14 @@ import { types10410 } from './types_10410.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
 import { types10900 } from './types_10900.js'
+import { types11000 } from './types_11000.js'
 
 // Custom runtime calls
 
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
+import { calls as dipSenderCalls } from './runtime/dipSender.js'
 
 export {
   types8,
@@ -50,12 +52,13 @@ export {
   types10720,
   types10800,
   types10900,
-  types10900 as types,
+  types11000 as types,
 }
 
 export { calls as didCalls } from './runtime/did.js'
 export { calls as stakingCalls } from './runtime/staking.js'
 export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
+export { calls as dipSenderCalls } from './runtime/dipSender.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -119,8 +122,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types10800,
   },
   {
-    minmax: [10900, undefined],
+    minmax: [10900, 10999],
     types: types10900,
+  },
+  {
+    minmax: [11000, undefined],
+    types: types11000,
   },
 ]
 
@@ -172,6 +179,15 @@ export const typesBundle: OverrideBundleType = {
         ...didCalls,
         ...publicCredentialsCalls,
       },
+      types: defaultTypesBundle,
+    },
+    'DIP sender dev': {
+      runtime: {
+        ...dipSenderCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'DIP receiver dev': {
       types: defaultTypesBundle,
     },
     Development: {
