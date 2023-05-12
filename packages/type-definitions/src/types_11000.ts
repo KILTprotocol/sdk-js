@@ -11,7 +11,7 @@ import { types10900 } from './types_10900.js'
 
 export const types11000: RegistryTypes = {
   ...types10900,
-  // DipSender state_call
+  // DipProvider state_call
   CompleteMerkleProof: {
     root: 'MerkleRoot',
     proof: 'MerkleProof',
