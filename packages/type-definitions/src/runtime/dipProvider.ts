@@ -8,7 +8,7 @@
 import type { DefinitionsCall } from '@polkadot/types/types'
 
 export const calls: DefinitionsCall = {
-  DipSender: [
+  DipProvider: [
     {
       methods: {
         generate_proof: {
