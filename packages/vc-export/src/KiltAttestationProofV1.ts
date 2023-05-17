@@ -359,7 +359,6 @@ async function verifyLegitimation(
  * @param proof KiltAttestationProofV1 proof object to be verified. Any proofs embedded in the credentialInput are stripped and ignored.
  * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
- * @returns Object indicating whether proof could be verified.
  */
 export async function verify(
   credentialInput: Omit<KiltCredentialV1, 'proof'>,
