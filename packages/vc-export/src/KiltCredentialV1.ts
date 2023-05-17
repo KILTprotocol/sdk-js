@@ -75,7 +75,7 @@ export function fromInput({
   claims,
   cType,
   issuer,
-  timestamp,
+  timestamp = Date.now(),
   chainGenesisHash = spiritnetGenesisHash,
   legitimations,
   delegationId,
@@ -83,9 +83,6 @@ export function fromInput({
   KiltCredentialV1,
   'proof' | 'id' | 'credentialStatus'
 > {
-  // write root hash to id
-  const id = credentialIdFromRootHash(hexToU8a(claimHash))
-
   const cTypeId = typeof cType === 'object' ? cType.$id : cType
   // transform & annotate claim to be json-ld and VC conformant
   const credentialSubject = {
@@ -139,15 +136,15 @@ export function fromInput({
   return {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
     type: DEFAULT_CREDENTIAL_TYPES,
-    ...(id && { id }),
     nonTransferable: true,
+    ...(claimHash && {
+      id: credentialIdFromRootHash(hexToU8a(claimHash)),
+      credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
+    }),
     credentialSubject,
     credentialSchema,
     issuer,
     issuanceDate,
-    ...(claimHash && {
-      credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
-    }),
     ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
 }
