@@ -70,6 +70,6 @@
     "typedoc": "^0.22.15",
     "typescript": "^4.8.3"
   },
-  "version": "0.32.1-5",
+  "version": "0.32.1-6",
   "packageManager": "yarn@3.3.1"
 }
