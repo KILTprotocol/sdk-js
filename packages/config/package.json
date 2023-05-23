@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.32.1-8",
+  "version": "0.32.1-9",
   "description": "",
   "type": "commonjs",
   "main": "./lib/index.js",
