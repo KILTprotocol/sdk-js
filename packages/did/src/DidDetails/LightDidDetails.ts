@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decode as cborDecode, encode as cborEncode } from 'cbor'
+import { decode as cborDecode, encode as cborEncode } from 'cbor-web'
 import {
   base58Decode,
   base58Encode,

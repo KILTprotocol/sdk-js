@@ -22,7 +22,7 @@ import type {
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { encode as cborEncode, decode as cborDecode } from 'cbor-web'
 
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
