@@ -1,7 +1,7 @@
 {
   "name": "@kiltprotocol/testing",
   "private": true,
-  "version": "0.32.1-7",
+  "version": "0.32.1-8",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
