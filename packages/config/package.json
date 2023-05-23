@@ -2,13 +2,15 @@
   "name": "@kiltprotocol/config",
   "version": "0.32.0",
   "description": "",
-  "main": "./lib/cjs/index.js",
-  "module": "./lib/esm/index.js",
-  "types": "./lib/cjs/index.d.ts",
+  "type": "commonjs",
+  "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js"
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
     }
   },
   "files": [
@@ -18,8 +20,8 @@
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
+    "build:cjs": "tsc --declaration -p tsconfig.build.json",
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && yarn exec cp -f ./lib/esm/index.js ./lib/index.mjs && rimraf ./lib/esm"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
