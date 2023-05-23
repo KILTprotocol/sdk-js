@@ -29,7 +29,7 @@
     "build:ts": "tsc -p tsconfig.build.json",
     "generate:defs": "ts-node --esm -P tsconfig.build.json ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api --input ./src/interfaces --endpoint ./metadata/spiritnet.json",
     "generate:meta": "ts-node --esm -P tsconfig.build.json ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/augment-api --endpoint ./metadata/spiritnet.json --output ./src/interfaces  --strict",
-    "update-metadata": "node ./scripts/fetchMetadata.js -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'"
+    "update-metadata": "node ./scripts/fetchMetadata.cjs -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
