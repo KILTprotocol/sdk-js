@@ -545,22 +545,7 @@ describe('issuance', () => {
     await expect(
       issuanceSuite.finalizeProof(toBeSigned as KiltCredentialV1)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The credential must have a proof property containing a proof stub as created by the \`createProof\` method"`
-    )
-  })
-
-  it('fails if proof stub was created by different suite', async () => {
-    const newCred = (await vcjs.issue({
-      credential: toBeSigned,
-      suite: issuanceSuite,
-      documentLoader,
-      purpose,
-    })) as KiltCredentialV1
-
-    await expect(
-      suite.finalizeProof(newCred)
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"no submission found for this proof"`
+      `"The credential must have a KiltAttestationProofV1 type proof as created by the createProof method"`
     )
   })
 })

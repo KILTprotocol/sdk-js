@@ -8,15 +8,14 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-pattern */
 
-import { u8aToHex } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
 import {
   AttestationHandler,
-  calculateRootHash,
   finalizeProof,
   initializeProof,
   verify as verifyProof,
@@ -49,7 +48,6 @@ interface CallArgs {
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private api: ApiPromise
   private transactionHandler?: AttestationHandler
-  private pendingSubmissions = new Map<string, ReturnType<AttestationHandler>>()
 
   public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
   /**
@@ -162,10 +160,10 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   /**
    * Initializes a proof for a [[KiltCredentialV1]] type document.
    *
-   * _! This is not a complete proof yet !_.
+   * _! TO BE VERIFIABLE WITH THIS PROOF, ADJUSTMENTS HAVE TO BE MADE TO THE DOCUMENT !_.
    *
-   * After adding the proof stub to the credential, the resulting document must be processed
-   * by the `finalizeProof` method to make necessary adjustments to the document itself.
+   * To do so, the document, with the proof added, must be processed
+   * by the `finalizeProof` method.
    *
    * @param input Object containing the function arguments.
    * @param input.document [[KiltCredentialV1]] object to be signed.
@@ -185,55 +183,41 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     const [proof, submissionArgs] = initializeProof(
       document as KiltCredentialV1
     )
-    const [rootHash] = submissionArgs
-    this.pendingSubmissions.set(
-      u8aToHex(rootHash as Uint8Array),
-      this.transactionHandler(
-        this.api.tx.attestation.add(...submissionArgs),
-        this.api
-      )
+    const { blockHash } = await this.transactionHandler(
+      this.api.tx.attestation.add(...submissionArgs),
+      this.api
     )
-    return proof
+    return { ...proof, block: base58Encode(blockHash) }
   }
 
   /**
-   * Processes a [[KiltCredentialV1]] with a proof stub created by `createProof` to produce a verifiable credential.
-   * The proof must have been created with the same instance of the [[KiltAttestationProofV1Suite]].
+   * Processes a preliminary [[KiltCredentialV1]] with a proof created by `createProof` to produce a verifiable [[KiltCredentialV1]].
    *
-   * @param credential A [[KiltCredentialV1]] with a proof stub created by `createProof`.
+   * @param credential A (non-finalized) [[KiltCredentialV1]] with a [[KiltAttestationV1]] proof as created by `createProof`.
    *
-   * @returns An updated copy of the credential with necessary adjustments, containing a complete [[KiltAttestationV1]] proof.
+   * @returns An updated copy of the credential with necessary adjustments to be verifiable with its [[KiltAttestationV1]] proof.
    */
   public async finalizeProof(
     credential: KiltCredentialV1
   ): Promise<KiltCredentialV1> {
     const { proof } = credential
-    const proofStub: KiltAttestationProofV1 | undefined = (
+    const attestationProof: KiltAttestationProofV1 | undefined = (
       Array.isArray(proof) ? proof : [proof]
     ).find((p) => p?.type === ATTESTATION_PROOF_V1_TYPE)
-    if (!proofStub) {
+    if (!attestationProof) {
       throw new Error(
-        'The credential must have a proof property containing a proof stub as created by the `createProof` method'
+        `The credential must have a ${ATTESTATION_PROOF_V1_TYPE} type proof as created by the createProof method`
       )
     }
-    const rootHash = u8aToHex(calculateRootHash(credential, proofStub))
-    const submissionPromise = this.pendingSubmissions.get(rootHash)
-    if (!submissionPromise) {
-      throw new Error('no submission found for this proof')
-    }
-    const {
-      blockHash,
-      timestamp = (await this.api.query.timestamp.now.at(blockHash)).toNumber(),
-    } = await submissionPromise.catch((e) => {
-      this.pendingSubmissions.delete(rootHash)
-      throw new Error(`Promise rejected with ${e}`)
-    })
-    const updated = finalizeProof(credential, proofStub, {
+    const blockHash = base58Decode(proof.block)
+    const timestamp = (
+      await (await this.api.at(blockHash)).query.timestamp.now()
+    ).toNumber()
+    const updated = finalizeProof(credential, attestationProof, {
       blockHash,
       timestamp,
       genesisHash: this.api.genesisHash,
     })
-    this.pendingSubmissions.delete(rootHash)
     return updated
   }
 }
