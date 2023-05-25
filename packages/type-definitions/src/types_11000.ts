@@ -12,6 +12,12 @@ import { types10900 } from './types_10900.js'
 export const types11000: RegistryTypes = {
   ...types10900,
   // DipProvider state_call
+  DipProofRequest: {
+    identifier: 'AccountId32',
+    keys: 'Vec<Hash>',
+    accounts: 'Vec<PalletDidLookupLinkableAccountLinkableAccountId>',
+    shouldIncludeWeb3Name: 'bool',
+  },
   CompleteMerkleProof: {
     root: 'MerkleRoot',
     proof: 'MerkleProof',
@@ -26,14 +32,12 @@ export const types11000: RegistryTypes = {
   RevealedLeaves: 'Vec<RevealedLeaf>',
   RevealedLeaf: {
     _enum: {
-      KeyReference: '(KeyReferenceKey, KeyReferenceValue)',
-      KeyDetails: '(KeyDetailsKey, KeyDetailsValue)',
+      DidKey: '(DidKeyMerkleKey, DidKeyMerkleValue)',
+      Web3Name: '(Web3NameMerkleKey, Web3NameMerkleValue)',
+      LinkedAccount: '(LinkedAccountMerkleKey, LinkedAccountMerkleValue)',
     },
   },
-  KeyReferenceKey: '(KeyId, KeyRelationship)',
-  KeyReferenceValue: 'Null',
-  KeyDetailsKey: 'KeyId',
-  KeyDetailsValue: 'DidDidDetailsDidPublicKeyDetails',
+  DidKeyMerkleKey: '(KeyId, KeyRelationship)',
   KeyId: 'Hash',
   KeyRelationship: {
     _enum: {
@@ -49,4 +53,9 @@ export const types11000: RegistryTypes = {
       'AssertionMethod',
     ],
   },
+  DidKeyMerkleValue: 'DidDidDetailsDidPublicKeyDetails',
+  Web3NameMerkleKey: 'Text',
+  Web3NameMerkleValue: 'BlockNumber',
+  LinkedAccountMerkleKey: 'PalletDidLookupLinkableAccountLinkableAccountId',
+  LinkedAccountMerkleValue: 'Null',
 }
