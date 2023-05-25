@@ -13,15 +13,11 @@ export const calls: DefinitionsCall = {
       methods: {
         generate_proof: {
           description:
-            'Generate a Merkle proof for the DIP protocol for the specified DID and public keys.',
+            'Generate a Merkle proof for the DIP protocol for the specified request parameters.',
           params: [
             {
-              name: 'identifier',
-              type: 'AccountId32',
-            },
-            {
-              name: 'keys',
-              type: 'Vec<Hash>',
+              name: 'request',
+              type: 'DipProofRequest',
             },
           ],
           type: 'Result<CompleteMerkleProof, ()>',
