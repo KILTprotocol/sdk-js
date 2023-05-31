@@ -30,7 +30,6 @@ import {
 import {
   blake2AsHex,
   blake2AsU8a,
-  naclBoxPairFromSecret,
   randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
@@ -42,13 +41,27 @@ import jsonabc from './jsonabc.js'
 import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
 
-export {
-  naclBoxPairFromSecret,
-  mnemonicGenerate,
-  mnemonicToMiniSecret,
-} from '@polkadot/util-crypto'
+export { mnemonicGenerate, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
+
+/**
+ * Creates a new public/secret box keypair from a secret.
+ *
+ * @param secret The secret.
+ * @returns An object containing a box `publicKey` & `secretKey` generated from the supplied secret.
+ * @example
+ * <BR>
+ *
+ * ```javascript
+ * import { naclBoxPairFromSecret } from '@polkadot/util-crypto';
+ *
+ * naclBoxPairFromSecret(...); // => { secretKey: [...], publicKey: [...] }
+ * ```
+ */
+export function naclBoxPairFromSecret(secret: Uint8Array): nacl.BoxKeyPair {
+  return nacl.box.keyPair.fromSecretKey(secret)
+}
 
 /**
  * Types accepted by hashing and crypto functions.
