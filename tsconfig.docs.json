@@ -31,7 +31,6 @@
     "excludePrivate": true,
     "hideGenerator": true,
     "name": "API Documentation",
-    "listInvalidSymbolLinks": true,
     "readme": "README.md"
   }
 }
