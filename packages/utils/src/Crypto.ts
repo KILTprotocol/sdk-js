@@ -50,14 +50,6 @@ export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
  *
  * @param secret The secret.
  * @returns An object containing a box `publicKey` & `secretKey` generated from the supplied secret.
- * @example
- * <BR>
- *
- * ```javascript
- * import { naclBoxPairFromSecret } from '@polkadot/util-crypto';
- *
- * naclBoxPairFromSecret(...); // => { secretKey: [...], publicKey: [...] }
- * ```
  */
 export function naclBoxPairFromSecret(secret: Uint8Array): nacl.BoxKeyPair {
   return nacl.box.keyPair.fromSecretKey(secret)
