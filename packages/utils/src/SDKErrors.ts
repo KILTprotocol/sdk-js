@@ -171,15 +171,6 @@ export class IdentityMismatchError extends SDKError {
   }
 }
 
-export class BlockchainApiMissingError extends SDKError {
-  constructor(options?: ErrorOptions) {
-    super(
-      'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?',
-      options
-    )
-  }
-}
-
 export class SubscriptionsNotSupportedError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(

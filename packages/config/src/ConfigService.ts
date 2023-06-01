@@ -22,8 +22,7 @@ import {
   getLogControl,
   LogGroupControlSettings,
 } from 'typescript-logging'
-import { SDKErrors } from '@kiltprotocol/utils'
-import { SubscriptionPromise } from '@kiltprotocol/types'
+import type { SubscriptionPromise } from '@kiltprotocol/types'
 
 const DEFAULT_DEBUG_LEVEL =
   typeof process !== 'undefined' &&
@@ -72,7 +71,9 @@ export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
   if (typeof configuration[configOpt] === 'undefined') {
     switch (configOpt) {
       case 'api':
-        throw new SDKErrors.BlockchainApiMissingError()
+        throw new Error(
+          'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?'
+        )
       default:
         throw new Error(`GENERIC NOT CONFIGURED ERROR FOR KEY: "${configOpt}"`)
     }
