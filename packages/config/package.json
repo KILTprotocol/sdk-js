@@ -25,7 +25,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^10.0.0",
+    "@polkadot/api": "^10.4.0",
     "typescript-logging": "^1.0.0"
   }
 }
