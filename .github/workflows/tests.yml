@@ -60,15 +60,15 @@ jobs:
     needs: build
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
       - name: lint
         run: yarn lint
       - name: check dependency duplication
@@ -124,17 +124,17 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: unzip
+        run: unzip build.zip -d .
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
       - name: Log out node version
         run: node --version
-      - uses: actions/download-artifact@v3
-        with:
-          name: build
-      - name: unzip
-        run: unzip build.zip -d .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -170,15 +170,15 @@ jobs:
     needs: build
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
       - name: yarn bundle
         run: yarn bundle
       - name: upload bundle artifact
@@ -201,9 +201,6 @@ jobs:
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
-      - uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v3
         with:
           name: build
@@ -213,6 +210,10 @@ jobs:
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
