@@ -13,8 +13,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { LogLevel, Logger } from 'typescript-logging'
 
-import { SDKErrors } from '@kiltprotocol/utils'
-
 import * as ConfigService from './ConfigService'
 
 describe('Log Configuration', () => {
@@ -47,8 +45,8 @@ describe('Log Configuration', () => {
 describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
-    expect(() => ConfigService.get('api')).toThrowError(
-      SDKErrors.BlockchainApiMissingError
+    expect(() => ConfigService.get('api')).toThrowErrorMatchingInlineSnapshot(
+      `"The blockchain API is not set. Did you forget to call \`Kilt.connect(…)\` or \`Kilt.init(…)\`?"`
     )
   })
   describe('set function for api instance, logLevel and any custom configuration prop', () => {
@@ -70,8 +68,8 @@ describe('Configuration Service', () => {
   describe('get function for api instance, logLevel and any other injected configuration prop', () => {
     it('throws if api not set', () => {
       ConfigService.unset('api')
-      expect(() => ConfigService.get('api')).toThrowError(
-        SDKErrors.BlockchainApiMissingError
+      expect(() => ConfigService.get('api')).toThrowErrorMatchingInlineSnapshot(
+        `"The blockchain API is not set. Did you forget to call \`Kilt.connect(…)\` or \`Kilt.init(…)\`?"`
       )
     })
     it('returns logLevel property', () => {
