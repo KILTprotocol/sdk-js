@@ -23,7 +23,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -40,12 +40,12 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^10.0.0",
-    "@polkadot/keyring": "^11.0.0",
-    "@polkadot/types": "^10.0.0",
-    "@polkadot/types-codec": "^10.0.0",
-    "@polkadot/util": "^11.0.0",
-    "@polkadot/util-crypto": "^11.0.0",
+    "@polkadot/api": "^10.4.0",
+    "@polkadot/keyring": "^12.0.0",
+    "@polkadot/types": "^10.4.0",
+    "@polkadot/types-codec": "^10.4.0",
+    "@polkadot/util": "^12.0.0",
+    "@polkadot/util-crypto": "^12.0.0",
     "cbor-web": "^8.0.0"
   }
 }
