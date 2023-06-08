@@ -83,7 +83,7 @@ export interface CTypeChainDetails {
   createdAt: BN
 }
 
-export type ICTypeDetails = ICType & CTypeChainDetails
+export type ICTypeDetails = { ctype: ICType } & CTypeChainDetails
 
 /**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
@@ -226,8 +226,10 @@ export async function fetchFromChain(
   const [ctypeInput, creator] = lastRightCTypeCreationCall
 
   return {
-    ...ctypeInput,
-    $id: cTypeId,
+    ctype: {
+      ...ctypeInput,
+      $id: cTypeId,
+    },
     creator,
     createdAt,
   }

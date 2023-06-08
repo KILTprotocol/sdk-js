@@ -87,7 +87,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
       const { createdAt, creator, ...originalCtype } = retrievedCType
       expect(originalCtype).toStrictEqual(ctype)
       expect(creator).toBe(ctypeCreator.uri)
-      await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
+      await expect(
+        CType.verifyStored(retrievedCType.ctype)
+      ).resolves.not.toThrow()
     }
   }, 40_000)
 
