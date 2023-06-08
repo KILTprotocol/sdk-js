@@ -17,6 +17,7 @@
  * @packageDocumentation
  */
 
+import { ConfigService } from '@kiltprotocol/config'
 import {
   isDidSignature,
   verifyDidSignature,
@@ -26,6 +27,7 @@ import {
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
+  DidUri,
   Hash,
   IAttestation,
   IClaim,
@@ -36,6 +38,7 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import * as Attestation from '../attestation/index.js'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -128,8 +131,9 @@ export function makeSigningData(
  * @param input - The credential to check.
  */
 export function verifyRootHash(input: ICredential): void {
-  if (input.rootHash !== calculateRootHash(input))
+  if (input.rootHash !== calculateRootHash(input)) {
     throw new SDKErrors.RootHashUnverifiableError()
+  }
 }
 
 /**
@@ -175,12 +179,14 @@ export function verifyDataStructure(input: ICredential): void {
   if (!('claimNonceMap' in input)) {
     throw new SDKErrors.ClaimNonceMapMissingError()
   }
-  if (typeof input.claimNonceMap !== 'object')
+  if (typeof input.claimNonceMap !== 'object') {
     throw new SDKErrors.ClaimNonceMapMalformedError()
+  }
   Object.entries(input.claimNonceMap).forEach(([digest, nonce]) => {
     DataUtils.verifyIsHex(digest, 256)
-    if (!digest || typeof nonce !== 'string' || !nonce)
+    if (!digest || typeof nonce !== 'string' || !nonce) {
       throw new SDKErrors.ClaimNonceMapMalformedError()
+    }
   })
 
   if (!('claimHashes' in input)) {
@@ -190,20 +196,6 @@ export function verifyDataStructure(input: ICredential): void {
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
-}
-
-/**
- * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[ICType.$schema]] structure.
- *
- * @param credential A [[Credential]] for the attester.
- * @param ctype A [[CType]] to verify the [[Claim]] structure.
- */
-export function verifyAgainstCType(
-  credential: ICredential,
-  ctype: ICType
-): void {
-  verifyDataStructure(credential)
-  verifyClaimAgainstSchema(credential.claim.contents, ctype)
 }
 
 /**
@@ -228,11 +220,11 @@ export async function verifySignature(
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
-  if (challenge && challenge !== claimerSignature.challenge)
+  if (challenge && challenge !== claimerSignature.challenge) {
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
-
+  }
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
@@ -293,43 +285,133 @@ type VerifyOptions = {
 
 /**
  * Verifies data structure & data integrity of a credential object.
+ * This combines all offline sanity checks that can be performed on an ICredential object.
+ * A credential is valid only if it is well formed AND there is an on-chain attestation record referencing its root hash.
+ * To check the latter condition as well, you need to call [[verifyCredential]] or [[verifyPresentation]].
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  */
-export async function verifyCredential(
+export function verifyWellFormed(
   credential: ICredential,
   { ctype }: VerifyOptions = {}
-): Promise<void> {
+): void {
   verifyDataStructure(credential)
   verifyDataIntegrity(credential)
 
   if (ctype) {
-    verifyAgainstCType(credential, ctype)
+    verifyClaimAgainstSchema(credential.claim.contents, ctype)
   }
 }
 
 /**
- * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
+ * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
- * Upon presentation of a credential, a verifier would call this function.
+ * @param credential The [[ICredential]] whose attestation status should be checked.
+ * @returns An object containing the `attester` DID and `revoked` status of the on-chain attestation.
+ */
+export async function verifyAttested(credential: ICredential): Promise<{
+  attester: DidUri
+  revoked: boolean
+}> {
+  const api = ConfigService.get('api')
+  const { rootHash } = credential
+  const maybeAttestation = await api.query.attestation.attestations(rootHash)
+  if (maybeAttestation.isNone) {
+    throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
+  }
+  const attestation = Attestation.fromChain(
+    maybeAttestation,
+    credential.rootHash
+  )
+  Attestation.verifyAgainstCredential(attestation, credential)
+  const { owner: attester, revoked } = attestation
+  return { attester, revoked }
+}
+
+export interface VerifiedCredential extends ICredential {
+  revoked: boolean
+  attester: DidUri
+}
+
+/**
+ * Updates the revocation status of a previously verified credential to allow checking if it is still valid.
+ *
+ * @param verifiedCredential The output of [[verifyCredential]] or [[verifyPresentation]], which adds a `revoked` and `attester` property.
+ * @returns A promise of resolving to the same object but with the `revoked` property updated.
+ * The promise rejects if the attestation has been deleted or its data changed since verification.
+ */
+export async function refreshRevocationStatus(
+  verifiedCredential: VerifiedCredential
+): Promise<VerifiedCredential> {
+  if (
+    typeof verifiedCredential.attester !== 'string' ||
+    typeof verifiedCredential.revoked !== 'boolean'
+  ) {
+    throw new TypeError(
+      'This function expects a VerifiedCredential with properties `revoked` (boolean) and `attester` (string)'
+    )
+  }
+  const { revoked, attester } = await verifyAttested(verifiedCredential)
+  if (attester !== verifiedCredential.attester) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attester has changed since first verification'
+    )
+  }
+  return { ...verifiedCredential, revoked }
+}
+
+/**
+ * Performs all steps to verify a credential (unsigned), which includes verifying data structure, data integrity, and looking up its attestation on the KILT blockchain.
+ * In most cases, credentials submitted by a third party would be expected to be signed (a 'presentation').
+ * To verify the additional signature as well, use `verifyPresentation`.
+ *
+ * @param credential - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ * @returns A [[VerifiedCredential]] object, which is the orignal credential with two additional properties: a boolean `revoked` status flag and the `attester` DID.
+ */
+export async function verifyCredential(
+  credential: ICredential,
+  { ctype }: VerifyOptions = {}
+): Promise<VerifiedCredential> {
+  verifyWellFormed(credential, { ctype })
+  const { revoked, attester } = await verifyAttested(credential)
+  return {
+    ...credential,
+    revoked,
+    attester,
+  }
+}
+
+/**
+ * Performs all steps to verify a credential presentation (signed).
+ * In addition to verifying data structure, data integrity, and looking up the attestation record on the KILT blockchain,
+ * this involves verifying the claimer's signature over the credential.
+ *
+ * This is the function verifiers would typically call upon receiving a credential presentation from a third party.
+ * The attester's identity and the credential revocation status returned by this function would then be either displayed to an end user
+ * or processed in application logic deciding whether to accept or reject a credential submission
+ * (e.g., by matching the attester DID against an allow-list of trusted attesters).
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
+ * @returns A [[VerifiedCredential]] object, which is the orignal credential presentation with two additional properties:
+ * a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
   { ctype, challenge, didResolveKey = resolveKey }: VerifyOptions = {}
-): Promise<void> {
-  await verifyCredential(presentation, { ctype })
+): Promise<VerifiedCredential> {
   await verifySignature(presentation, {
     challenge,
     didResolveKey,
   })
+  return verifyCredential(presentation, { ctype })
 }
 
 /**

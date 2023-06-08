@@ -28,17 +28,23 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
+  ApiMocks,
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
+import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
+import { init } from '../kilt'
 
-const testCType = CType.fromProperties('raw ctype', {
-  name: { type: 'string' },
+const testCType = CType.fromProperties('Credential', {
+  a: { type: 'string' },
+  b: { type: 'string' },
+  c: { type: 'string' },
 })
 
 function buildCredential(
@@ -59,6 +65,20 @@ function buildCredential(
   })
   return credential
 }
+
+beforeAll(async () => {
+  const api = ApiMocks.createAugmentedApi()
+  api.query.attestation = {
+    attestations: jest.fn().mockResolvedValue(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+        revoked: false,
+        attester: '4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ',
+        ctypeHash: CType.idToHash(testCType.$id),
+      } as any)
+    ),
+  } as any
+  await init({ api })
+})
 
 describe('Credential', () => {
   const identityAlice =
@@ -83,9 +103,11 @@ describe('Credential', () => {
     )
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
-    await Credential.verifyCredential(credential, {
-      ctype: testCType,
-    })
+    await expect(
+      Credential.verifyCredential(credential, {
+        ctype: testCType,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: identityBob })
 
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
@@ -285,16 +307,131 @@ describe('Credential', () => {
       []
     )
     expect(() =>
-      Credential.verifyAgainstCType(builtCredential, testCType)
+      Credential.verifyWellFormed(builtCredential, { ctype: testCType })
     ).not.toThrow()
-    builtCredential.claim.contents.name = 123
+    const builtCredentialWrong = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 1,
+      },
+      []
+    )
     expect(() =>
-      Credential.verifyAgainstCType(builtCredential, testCType)
+      Credential.verifyWellFormed(builtCredentialWrong, { ctype: testCType })
     ).toThrow()
+  })
+
+  it('two Credentials on an empty ctype will have different root hashes', async () => {
+    const ctype = CType.fromProperties('CType', {})
+    const claimA1 = Claim.fromCTypeAndClaimContents(ctype, {}, identityAlice)
+    const claimA2 = Claim.fromCTypeAndClaimContents(ctype, {}, identityAlice)
+
+    expect(Credential.fromClaim(claimA1).rootHash).not.toEqual(
+      Credential.fromClaim(claimA2).rootHash
+    )
+  })
+
+  it('re-checks attestation status', async () => {
+    const api = ConfigService.get('api')
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+
+    const { attester, revoked } = await Credential.verifyAttested(credential)
+    expect(revoked).toBe(false)
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).resolves.toMatchObject({ revoked, attester })
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+        revoked: true,
+        attester: Did.toChain(attester),
+        ctypeHash: credential.claim.cTypeHash,
+      } as any) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).resolves.toMatchObject({ revoked: true, attester })
+
+    await expect(
+      Credential.refreshRevocationStatus(credential as any)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"This function expects a VerifiedCredential with properties \`revoked\` (boolean) and \`attester\` (string)"`
+    )
+
+    jest
+      .mocked(api.query.attestation.attestations)
+      .mockResolvedValueOnce(
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations') as any
+      )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"Attestation not found"`)
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: false,
+          attester: Did.toChain(identityAlice),
+          ctypeHash: credential.claim.cTypeHash,
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Attester has changed since first verification"`
+    )
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: true,
+          attester: Did.toChain(attester),
+          ctypeHash: randomAsHex(),
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Some attributes of the on-chain attestation diverge from the credential: claimHash"`
+    )
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: true,
+          attester: Did.toChain(attester),
+          ctypeHash: credential.claim.cTypeHash,
+          authorizationId: { Delegation: randomAsHex() },
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Some attributes of the on-chain attestation diverge from the credential: delegationId"`
+    )
   })
 })
 
-describe('Credential', () => {
+describe('Presentations', () => {
   let keyAlice: KeyTool
   let keyCharlie: KeyTool
   let identityAlice: DidDocument
@@ -327,12 +464,11 @@ describe('Credential', () => {
     sign: SignCallback
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
-
-    const ctype = CType.fromProperties('Credential', {
-      name: { type: 'string' },
-    })
-
-    const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
+    const claim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      contents,
+      claimer.uri
+    )
     // build credential with legitimations
     const credential = Credential.fromClaim(claim, {
       legitimations,
@@ -367,6 +503,16 @@ describe('Credential', () => {
       [],
       keyAlice.getSignCallback(identityAlice)
     )
+
+    jest
+      .mocked(ConfigService.get('api').query.attestation.attestations)
+      .mockResolvedValue(
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: false,
+          attester: Did.toChain(identityBob.uri),
+          ctypeHash: CType.idToHash(testCType.$id),
+        } as any) as any
+      )
   })
 
   it('verify credentials signed by a full DID', async () => {
@@ -384,9 +530,11 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
-    await Credential.verifyPresentation(presentation, {
-      didResolveKey,
-    })
+    await expect(
+      Credential.verifyPresentation(presentation, {
+        didResolveKey,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: identityBob.uri })
   })
   it('verify credentials signed by a light DID', async () => {
     const { getSignCallback, authentication } = makeSigningKeyTool('ed25519')
@@ -408,9 +556,11 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
-    await Credential.verifyPresentation(presentation, {
-      didResolveKey,
-    })
+    await expect(
+      Credential.verifyPresentation(presentation, {
+        didResolveKey,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: identityBob.uri })
   })
 
   it('throws if signature is missing on credential presentation', async () => {
@@ -576,7 +726,10 @@ describe('create presentation', () => {
   let attester: DidDocument
   let credential: ICredential
 
-  const ctype = CType.fromProperties(testCType.title, testCType.properties)
+  const ctype = CType.fromProperties('otherCType', {
+    name: { type: 'string' },
+    age: { type: 'number' },
+  })
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
@@ -644,6 +797,16 @@ describe('create presentation', () => {
         migratedClaimerFullDid.uri
       )
     )
+
+    jest
+      .mocked(ConfigService.get('api').query.attestation.attestations)
+      .mockResolvedValue(
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: false,
+          attester: Did.toChain(attester.uri),
+          ctypeHash: CType.idToHash(ctype.$id),
+        } as any) as any
+      )
   })
 
   it('should create presentation and exclude specific attributes using a full DID', async () => {
@@ -656,9 +819,11 @@ describe('create presentation', () => {
       ),
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
-      didResolveKey,
-    })
+    await expect(
+      Credential.verifyPresentation(presentation, {
+        didResolveKey,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: attester.uri })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
@@ -683,9 +848,11 @@ describe('create presentation', () => {
       ),
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
-      didResolveKey,
-    })
+    await expect(
+      Credential.verifyPresentation(presentation, {
+        didResolveKey,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: attester.uri })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
@@ -712,9 +879,11 @@ describe('create presentation', () => {
       ),
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
-      didResolveKey,
-    })
+    await expect(
+      Credential.verifyPresentation(presentation, {
+        didResolveKey,
+      })
+    ).resolves.toMatchObject({ revoked: false, attester: attester.uri })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
@@ -781,9 +950,13 @@ describe('create presentation', () => {
   })
 
   it('should verify the credential claims structure against the ctype', () => {
-    expect(() => Credential.verifyAgainstCType(credential, ctype)).not.toThrow()
+    expect(() =>
+      CType.verifyClaimAgainstSchema(credential.claim.contents, ctype)
+    ).not.toThrow()
     credential.claim.contents.name = 123
 
-    expect(() => Credential.verifyAgainstCType(credential, ctype)).toThrow()
+    expect(() =>
+      CType.verifyClaimAgainstSchema(credential.claim.contents, ctype)
+    ).toThrow()
   })
 })

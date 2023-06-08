@@ -159,8 +159,6 @@ export class CredentialUnverifiableError extends SDKError {}
 
 export class ClaimUnverifiableError extends SDKError {}
 
-export class NestedClaimUnverifiableError extends SDKError {}
-
 export class IdentityMismatchError extends SDKError {
   constructor(context?: string, type?: string) {
     if (type && context) {
@@ -170,15 +168,6 @@ export class IdentityMismatchError extends SDKError {
     } else {
       super('Addresses expected to be equal mismatched')
     }
-  }
-}
-
-export class BlockchainApiMissingError extends SDKError {
-  constructor(options?: ErrorOptions) {
-    super(
-      'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?',
-      options
-    )
   }
 }
 

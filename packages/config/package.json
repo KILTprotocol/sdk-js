@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.32.1",
+  "version": "0.33.0",
   "description": "",
   "type": "commonjs",
   "main": "./lib/index.js",
@@ -25,7 +25,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -37,8 +37,7 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.10.2",
+    "@polkadot/api": "^10.4.0",
     "typescript-logging": "^1.0.0"
   }
 }

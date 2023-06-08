@@ -134,7 +134,7 @@ describe('Nested CTypes', () => {
         claimContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType,
@@ -142,7 +142,7 @@ describe('Nested CTypes', () => {
         claimDeepContents
       )
     ).not.toThrow()
-    ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
+    ;(claimDeepContents.passport as any).fullName = {}
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType,
@@ -164,6 +164,6 @@ describe('Nested CTypes', () => {
         claimDeepContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
   })
 })

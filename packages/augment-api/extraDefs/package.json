@@ -1,0 +1,7 @@
+{
+  "types": "../lib/interfaces/extraDefs/index.d.ts",
+  "//": [
+    "This is a fallback to support the extraDefs subpath export for module systems that do not support the package.json exports field.",
+    "Inspired by https://github.com/andrewbranch/example-subpath-exports-ts-compat/blob/1ffe3425b0a7ad8ecdf3c373f76f431ee341366b/examples/node_modules/package-json-redirects/."
+  ]
+}
