@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["bundle-test.ts", "types.d.ts", "cbor-web.d.ts"],
+  "include": ["bundle-test.ts", "types.d.ts"],
   "compilerOptions": {
     "module": "None",
     "resolveJsonModule": false,
