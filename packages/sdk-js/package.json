@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.33.1-1",
+  "version": "0.33.1-2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
