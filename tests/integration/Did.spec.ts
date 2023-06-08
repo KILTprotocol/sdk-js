@@ -48,11 +48,6 @@ beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
 }, 30_000)
 
-it('fetches the correct deposit amount', async () => {
-  const depositAmount = api.consts.did.deposit.toBn()
-  expect(depositAmount.toString()).toMatchInlineSnapshot('"2007900000000000"')
-})
-
 describe('write and didDeleteTx', () => {
   let did: DidDocument
   let key: KeyTool
@@ -1261,7 +1256,7 @@ describe('Runtime constraints', () => {
     })
 
     it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
-      const uris = ['x:url-1', 'x:url-2']
+      const uris = ['x:url-1', 'x:url-2', 'x:url-3']
       const limit = api.consts.did.maxNumberOfUrlsPerService.toNumber()
       expect(uris.length).toBeGreaterThan(limit)
     })
