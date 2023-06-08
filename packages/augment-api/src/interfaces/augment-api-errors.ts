@@ -291,6 +291,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotVoter: AugmentedError<ApiType>;
       /**
+       * The preimage does not exist.
+       **/
+      PreimageNotExist: AugmentedError<ApiType>;
+      /**
        * Proposal still blacklisted
        **/
       ProposalBlacklisted: AugmentedError<ApiType>;
@@ -503,6 +507,64 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Permanent: AugmentedError<ApiType>;
     };
+    multisig: {
+      /**
+       * Call is already approved by this signatory.
+       **/
+      AlreadyApproved: AugmentedError<ApiType>;
+      /**
+       * The data to be stored is already stored.
+       **/
+      AlreadyStored: AugmentedError<ApiType>;
+      /**
+       * The maximum weight information provided was too low.
+       **/
+      MaxWeightTooLow: AugmentedError<ApiType>;
+      /**
+       * Threshold must be 2 or greater.
+       **/
+      MinimumThreshold: AugmentedError<ApiType>;
+      /**
+       * Call doesn't need any (more) approvals.
+       **/
+      NoApprovalsNeeded: AugmentedError<ApiType>;
+      /**
+       * Multisig operation not found when attempting to cancel.
+       **/
+      NotFound: AugmentedError<ApiType>;
+      /**
+       * No timepoint was given, yet the multisig operation is already underway.
+       **/
+      NoTimepoint: AugmentedError<ApiType>;
+      /**
+       * Only the account that originally created the multisig is able to cancel it.
+       **/
+      NotOwner: AugmentedError<ApiType>;
+      /**
+       * The sender was contained in the other signatories; it shouldn't be.
+       **/
+      SenderInSignatories: AugmentedError<ApiType>;
+      /**
+       * The signatories were provided out of order; they should be ordered.
+       **/
+      SignatoriesOutOfOrder: AugmentedError<ApiType>;
+      /**
+       * There are too few signatories in the list.
+       **/
+      TooFewSignatories: AugmentedError<ApiType>;
+      /**
+       * There are too many signatories in the list.
+       **/
+      TooManySignatories: AugmentedError<ApiType>;
+      /**
+       * A timepoint was given, yet no multisig operation is underway.
+       **/
+      UnexpectedTimepoint: AugmentedError<ApiType>;
+      /**
+       * A different timepoint was given to the multisig operation that is underway.
+       **/
+      WrongTimepoint: AugmentedError<ApiType>;
+    };
     parachainStaking: {
       /**
        * The delegator has already previously delegated the collator
@@ -659,7 +721,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     parachainSystem: {
       /**
-       * The inherent which supplies the host configuration did not run this block
+       * The inherent which supplies the host configuration did not run this block.
        **/
       HostConfigurationNotAvailable: AugmentedError<ApiType>;
       /**
@@ -671,16 +733,16 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotScheduled: AugmentedError<ApiType>;
       /**
-       * Attempt to upgrade validation function while existing upgrade pending
+       * Attempt to upgrade validation function while existing upgrade pending.
        **/
       OverlappingUpgrades: AugmentedError<ApiType>;
       /**
-       * Polkadot currently prohibits this parachain from upgrading its validation function
+       * Polkadot currently prohibits this parachain from upgrading its validation function.
        **/
       ProhibitedByPolkadot: AugmentedError<ApiType>;
       /**
        * The supplied validation function has compiled into a blob larger than Polkadot is
-       * willing to run
+       * willing to run.
        **/
       TooBig: AugmentedError<ApiType>;
       /**
@@ -688,7 +750,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unauthorized: AugmentedError<ApiType>;
       /**
-       * The inherent which supplies the validation data did not run this block
+       * The inherent which supplies the validation data did not run this block.
        **/
       ValidationDataNotAvailable: AugmentedError<ApiType>;
     };
