@@ -17,7 +17,7 @@
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
-    "set:version": "yarn workspaces foreach -p exec npm version --no-git-tag-version",
+    "set:version": "npm version --no-git-tag-version --no-workspaces-update --workspaces --include-workspace-root",
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
     "test": "jest --coverage --group=unit",
@@ -67,9 +67,9 @@
     "testcontainers": "^9.0.0",
     "ts-jest": "^27.1.2",
     "ts-jest-resolver": "^2.0.0",
-    "typedoc": "^0.22.15",
+    "typedoc": "^0.23.0",
     "typescript": "^4.8.3"
   },
-  "version": "0.32.1-9",
+  "version": "0.33.1-3",
   "packageManager": "yarn@3.3.1"
 }
