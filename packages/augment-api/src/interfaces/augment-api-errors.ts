@@ -22,10 +22,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyRevoked: AugmentedError<ApiType>;
       /**
-       * No attestation on chain matching the claim hash.
-       **/
-      AttestationNotFound: AugmentedError<ApiType>;
-      /**
        * The attestation CType does not match the CType specified in the
        * delegation hierarchy root.
        **/
@@ -39,37 +35,11 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * The call origin is not authorized to change the attestation.
        **/
-      Unauthorized: AugmentedError<ApiType>;
-    };
-    authorship: {
+      NotAuthorized: AugmentedError<ApiType>;
       /**
-       * The uncle is genesis.
+       * No attestation on chain matching the claim hash.
        **/
-      GenesisUncle: AugmentedError<ApiType>;
-      /**
-       * The uncle parent not in the chain.
-       **/
-      InvalidUncleParent: AugmentedError<ApiType>;
-      /**
-       * The uncle isn't recent enough to be included.
-       **/
-      OldUncle: AugmentedError<ApiType>;
-      /**
-       * The uncle is too high in chain.
-       **/
-      TooHighUncle: AugmentedError<ApiType>;
-      /**
-       * Too many uncles.
-       **/
-      TooManyUncles: AugmentedError<ApiType>;
-      /**
-       * The uncle is already included.
-       **/
-      UncleAlreadyIncluded: AugmentedError<ApiType>;
-      /**
-       * Uncles already set in the block.
-       **/
-      UnclesAlreadySet: AugmentedError<ApiType>;
+      NotFound: AugmentedError<ApiType>;
     };
     balances: {
       /**
@@ -151,11 +121,11 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * The CType already exists.
        **/
-      CTypeAlreadyExists: AugmentedError<ApiType>;
+      AlreadyExists: AugmentedError<ApiType>;
       /**
        * There is no CType with the given hash.
        **/
-      CTypeNotFound: AugmentedError<ApiType>;
+      NotFound: AugmentedError<ApiType>;
       /**
        * The paying account was unable to pay the fees for creating a ctype.
        **/
@@ -201,7 +171,7 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * An error that is not supposed to take place, yet it happened.
        **/
-      InternalError: AugmentedError<ApiType>;
+      Internal: AugmentedError<ApiType>;
       /**
        * The delegate's signature for the delegation creation operation is
        * invalid.
@@ -321,6 +291,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotVoter: AugmentedError<ApiType>;
       /**
+       * The preimage does not exist.
+       **/
+      PreimageNotExist: AugmentedError<ApiType>;
+      /**
        * Proposal still blacklisted
        **/
       ProposalBlacklisted: AugmentedError<ApiType>;
@@ -356,25 +330,21 @@ declare module '@polkadot/api-base/types/errors' {
     };
     did: {
       /**
+       * The DID has already been previously deleted.
+       **/
+      AlreadyDeleted: AugmentedError<ApiType>;
+      /**
+       * The DID with the given identifier is already present on chain.
+       **/
+      AlreadyExists: AugmentedError<ApiType>;
+      /**
        * The DID call was submitted by the wrong account
        **/
       BadDidOrigin: AugmentedError<ApiType>;
       /**
-       * The DID has already been previously deleted.
-       **/
-      DidAlreadyDeleted: AugmentedError<ApiType>;
-      /**
-       * The DID with the given identifier is already present on chain.
-       **/
-      DidAlreadyPresent: AugmentedError<ApiType>;
-      /**
-       * No DID with the given identifier is present on chain.
-       **/
-      DidNotPresent: AugmentedError<ApiType>;
-      /**
        * An error that is not supposed to take place, yet it happened.
        **/
-      InternalError: AugmentedError<ApiType>;
+      Internal: AugmentedError<ApiType>;
       /**
        * The call had parameters that conflicted with each other
        * or were invalid.
@@ -399,14 +369,19 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidSignatureFormat: AugmentedError<ApiType>;
       /**
+       * The maximum number of key agreements has been reached for the DID
+       * subject.
+       **/
+      MaxKeyAgreementKeysExceeded: AugmentedError<ApiType>;
+      /**
        * A number of new key agreement keys greater than the maximum allowed
        * has been provided.
        **/
-      MaxKeyAgreementKeysLimitExceeded: AugmentedError<ApiType>;
+      MaxNewKeyAgreementKeysLimitExceeded: AugmentedError<ApiType>;
       /**
        * The maximum number of service endpoints for a DID has been exceeded.
        **/
-      MaxNumberOfServicesPerDidExceeded: AugmentedError<ApiType>;
+      MaxNumberOfServicesExceeded: AugmentedError<ApiType>;
       /**
        * The maximum number of types for a service endpoint has been
        * exceeded.
@@ -420,7 +395,7 @@ declare module '@polkadot/api-base/types/errors' {
        * The maximum number of public keys for this DID key identifier has
        * been reached.
        **/
-      MaxPublicKeysPerDidExceeded: AugmentedError<ApiType>;
+      MaxPublicKeysExceeded: AugmentedError<ApiType>;
       /**
        * The service endpoint ID exceeded the maximum allowed length.
        **/
@@ -436,10 +411,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       MaxServiceUrlLengthExceeded: AugmentedError<ApiType>;
       /**
-       * The maximum number of key agreements has been reached for the DID
-       * subject.
+       * The number of service endpoints stored under the DID is larger than
+       * the number of endpoints to delete.
        **/
-      MaxTotalKeyAgreementKeysExceeded: AugmentedError<ApiType>;
+      MaxStoredEndpointsCountExceeded: AugmentedError<ApiType>;
+      /**
+       * No DID with the given identifier is present on chain.
+       **/
+      NotFound: AugmentedError<ApiType>;
       /**
        * Only the owner of the deposit can reclaim its reserved balance.
        **/
@@ -447,16 +426,11 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * A service with the provided ID is already present for the given DID.
        **/
-      ServiceAlreadyPresent: AugmentedError<ApiType>;
+      ServiceAlreadyExists: AugmentedError<ApiType>;
       /**
        * A service with the provided ID is not present under the given DID.
        **/
-      ServiceNotPresent: AugmentedError<ApiType>;
-      /**
-       * The number of service endpoints stored under the DID is larger than
-       * the number of endpoints to delete.
-       **/
-      StoredEndpointsCountTooLarge: AugmentedError<ApiType>;
+      ServiceNotFound: AugmentedError<ApiType>;
       /**
        * The block number provided in a DID-authorized operation is invalid.
        **/
@@ -473,23 +447,29 @@ declare module '@polkadot/api-base/types/errors' {
        * One or more verification keys referenced are not stored in the set
        * of verification keys.
        **/
-      VerificationKeyNotPresent: AugmentedError<ApiType>;
+      VerificationKeyNotFound: AugmentedError<ApiType>;
     };
     didLookup: {
-      /**
-       * The association does not exist.
-       **/
-      AssociationNotFound: AugmentedError<ApiType>;
       /**
        * The account has insufficient funds and can't pay the fees or reserve
        * the deposit.
        **/
       InsufficientFunds: AugmentedError<ApiType>;
       /**
+       * The ConnectedAccounts and ConnectedDids storage are out of sync.
+       * 
+       * NOTE: this will only be returned if the storage has inconsistencies.
+       **/
+      Migration: AugmentedError<ApiType>;
+      /**
        * The origin was not allowed to manage the association between the DID
        * and the account ID.
        **/
       NotAuthorized: AugmentedError<ApiType>;
+      /**
+       * The association does not exist.
+       **/
+      NotFound: AugmentedError<ApiType>;
       /**
        * The supplied proof of ownership was outdated.
        **/
@@ -526,6 +506,64 @@ declare module '@polkadot/api-base/types/errors' {
        * The index is permanent and may not be freed/changed.
        **/
       Permanent: AugmentedError<ApiType>;
+    };
+    multisig: {
+      /**
+       * Call is already approved by this signatory.
+       **/
+      AlreadyApproved: AugmentedError<ApiType>;
+      /**
+       * The data to be stored is already stored.
+       **/
+      AlreadyStored: AugmentedError<ApiType>;
+      /**
+       * The maximum weight information provided was too low.
+       **/
+      MaxWeightTooLow: AugmentedError<ApiType>;
+      /**
+       * Threshold must be 2 or greater.
+       **/
+      MinimumThreshold: AugmentedError<ApiType>;
+      /**
+       * Call doesn't need any (more) approvals.
+       **/
+      NoApprovalsNeeded: AugmentedError<ApiType>;
+      /**
+       * Multisig operation not found when attempting to cancel.
+       **/
+      NotFound: AugmentedError<ApiType>;
+      /**
+       * No timepoint was given, yet the multisig operation is already underway.
+       **/
+      NoTimepoint: AugmentedError<ApiType>;
+      /**
+       * Only the account that originally created the multisig is able to cancel it.
+       **/
+      NotOwner: AugmentedError<ApiType>;
+      /**
+       * The sender was contained in the other signatories; it shouldn't be.
+       **/
+      SenderInSignatories: AugmentedError<ApiType>;
+      /**
+       * The signatories were provided out of order; they should be ordered.
+       **/
+      SignatoriesOutOfOrder: AugmentedError<ApiType>;
+      /**
+       * There are too few signatories in the list.
+       **/
+      TooFewSignatories: AugmentedError<ApiType>;
+      /**
+       * There are too many signatories in the list.
+       **/
+      TooManySignatories: AugmentedError<ApiType>;
+      /**
+       * A timepoint was given, yet no multisig operation is underway.
+       **/
+      UnexpectedTimepoint: AugmentedError<ApiType>;
+      /**
+       * A different timepoint was given to the multisig operation that is underway.
+       **/
+      WrongTimepoint: AugmentedError<ApiType>;
     };
     parachainStaking: {
       /**
@@ -683,7 +721,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     parachainSystem: {
       /**
-       * The inherent which supplies the host configuration did not run this block
+       * The inherent which supplies the host configuration did not run this block.
        **/
       HostConfigurationNotAvailable: AugmentedError<ApiType>;
       /**
@@ -695,16 +733,16 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotScheduled: AugmentedError<ApiType>;
       /**
-       * Attempt to upgrade validation function while existing upgrade pending
+       * Attempt to upgrade validation function while existing upgrade pending.
        **/
       OverlappingUpgrades: AugmentedError<ApiType>;
       /**
-       * Polkadot currently prohibits this parachain from upgrading its validation function
+       * Polkadot currently prohibits this parachain from upgrading its validation function.
        **/
       ProhibitedByPolkadot: AugmentedError<ApiType>;
       /**
        * The supplied validation function has compiled into a blob larger than Polkadot is
-       * willing to run
+       * willing to run.
        **/
       TooBig: AugmentedError<ApiType>;
       /**
@@ -712,11 +750,15 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unauthorized: AugmentedError<ApiType>;
       /**
-       * The inherent which supplies the validation data did not run this block
+       * The inherent which supplies the validation data did not run this block.
        **/
       ValidationDataNotAvailable: AugmentedError<ApiType>;
     };
     polkadotXcm: {
+      /**
+       * The given account is not an identifiable sovereign account for any location.
+       **/
+      AccountNotSovereign: AugmentedError<ApiType>;
       /**
        * The location is invalid since it already has a subscription from us.
        **/
@@ -743,13 +785,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Empty: AugmentedError<ApiType>;
       /**
+       * The operation required fees to be paid which the initiator could not meet.
+       **/
+      FeesNotMet: AugmentedError<ApiType>;
+      /**
        * The message execution fails the filter.
        **/
       Filtered: AugmentedError<ApiType>;
       /**
+       * The unlock operation cannot succeed because there are still users of the lock.
+       **/
+      InUse: AugmentedError<ApiType>;
+      /**
+       * Invalid asset for the operation.
+       **/
+      InvalidAsset: AugmentedError<ApiType>;
+      /**
        * Origin is invalid for sending.
        **/
       InvalidOrigin: AugmentedError<ApiType>;
+      /**
+       * A remote lock with the corresponding data could not be found.
+       **/
+      LockNotFound: AugmentedError<ApiType>;
+      /**
+       * The owner does not own (all) of the asset that they wish to do the operation on.
+       **/
+      LowBalance: AugmentedError<ApiType>;
       /**
        * The referenced subscription could not be found.
        **/
@@ -763,6 +825,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Too many assets have been attempted for transfer.
        **/
       TooManyAssets: AugmentedError<ApiType>;
+      /**
+       * The asset owner has too many locks on the asset.
+       **/
+      TooManyLocks: AugmentedError<ApiType>;
       /**
        * The desired destination was unreachable, generally because there is a no way of routing
        * to it.
@@ -838,29 +904,29 @@ declare module '@polkadot/api-base/types/errors' {
        * A credential with the same root hash has already issued to the
        * specified subject.
        **/
-      CredentialAlreadyIssued: AugmentedError<ApiType>;
-      /**
-       * No credential with the specified root hash has been issued to the
-       * specified subject.
-       **/
-      CredentialNotFound: AugmentedError<ApiType>;
+      AlreadyAttested: AugmentedError<ApiType>;
       /**
        * Catch-all for any other errors that should not happen, yet it
        * happened.
        **/
-      InternalError: AugmentedError<ApiType>;
+      Internal: AugmentedError<ApiType>;
       /**
        * The credential input is invalid.
        **/
       InvalidInput: AugmentedError<ApiType>;
       /**
+       * The caller is not authorized to performed the operation.
+       **/
+      NotAuthorized: AugmentedError<ApiType>;
+      /**
+       * No credential with the specified root hash has been issued to the
+       * specified subject.
+       **/
+      NotFound: AugmentedError<ApiType>;
+      /**
        * Not enough tokens to pay for the fees or the deposit.
        **/
       UnableToPayFees: AugmentedError<ApiType>;
-      /**
-       * The caller is not authorized to performed the operation.
-       **/
-      Unauthorized: AugmentedError<ApiType>;
     };
     scheduler: {
       /**
@@ -1086,17 +1152,38 @@ declare module '@polkadot/api-base/types/errors' {
     };
     web3Names: {
       /**
+       * The specified name has already been previously banned.
+       **/
+      AlreadyBanned: AugmentedError<ApiType>;
+      /**
+       * The specified name has already been previously claimed.
+       **/
+      AlreadyExists: AugmentedError<ApiType>;
+      /**
+       * The specified name has been banned and cannot be interacted
+       * with.
+       **/
+      Banned: AugmentedError<ApiType>;
+      /**
        * The tx submitter does not have enough funds to pay for the deposit.
        **/
       InsufficientFunds: AugmentedError<ApiType>;
       /**
        * A name that contains not allowed characters is being claimed.
        **/
-      InvalidWeb3NameCharacter: AugmentedError<ApiType>;
+      InvalidCharacter: AugmentedError<ApiType>;
       /**
        * The actor cannot performed the specified operation.
        **/
       NotAuthorized: AugmentedError<ApiType>;
+      /**
+       * The specified name is not currently banned.
+       **/
+      NotBanned: AugmentedError<ApiType>;
+      /**
+       * The specified name does not exist.
+       **/
+      NotFound: AugmentedError<ApiType>;
       /**
        * The specified owner already owns a name.
        **/
@@ -1106,38 +1193,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OwnerNotFound: AugmentedError<ApiType>;
       /**
-       * The origin was not authorized to perform that action
-       **/
-      Unauthorized: AugmentedError<ApiType>;
-      /**
-       * The specified name has already been previously banned.
-       **/
-      Web3NameAlreadyBanned: AugmentedError<ApiType>;
-      /**
-       * The specified name has already been previously claimed.
-       **/
-      Web3NameAlreadyClaimed: AugmentedError<ApiType>;
-      /**
-       * The specified name has been banned and cannot be interacted
-       * with.
-       **/
-      Web3NameBanned: AugmentedError<ApiType>;
-      /**
-       * The specified name is not currently banned.
-       **/
-      Web3NameNotBanned: AugmentedError<ApiType>;
-      /**
-       * The specified name does not exist.
-       **/
-      Web3NameNotFound: AugmentedError<ApiType>;
-      /**
        * A name that is too long is being claimed.
        **/
-      Web3NameTooLong: AugmentedError<ApiType>;
+      TooLong: AugmentedError<ApiType>;
       /**
        * A name that is too short is being claimed.
        **/
-      Web3NameTooShort: AugmentedError<ApiType>;
+      TooShort: AugmentedError<ApiType>;
     };
     xcmpQueue: {
       /**

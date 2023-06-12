@@ -8,10 +8,15 @@
 import type { CTypeHash } from './CType'
 import type { DidUri } from './DidDocument'
 
-export type IClaimContents = Record<
-  string,
-  Record<string, unknown> | string | number | boolean
->
+type ClaimPrimitives = string | number | boolean
+
+export interface IClaimContents {
+  [key: string]:
+    | ClaimPrimitives
+    | IClaimContents
+    | Array<ClaimPrimitives | IClaimContents>
+}
+
 export interface IClaim {
   cTypeHash: CTypeHash
   contents: IClaimContents

@@ -54,11 +54,6 @@ beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
 }, 30_000)
 
-it('fetches the correct deposit amount', async () => {
-  const depositAmount = api.consts.did.deposit.toBn()
-  expect(depositAmount.toString()).toMatchInlineSnapshot('"2007900000000000"')
-})
-
 describe('write and didDeleteTx', () => {
   let did: DidDocument
   let key: KeyTool
@@ -184,7 +179,9 @@ describe('write and didDeleteTx', () => {
     // Will fail because count provided is too low
     await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
       section: 'did',
-      name: 'StoredEndpointsCountTooLarge',
+      name: expect.stringMatching(
+        /^(StoredEndpointsCountTooLarge|MaxStoredEndpointsCountExceeded)$/
+      ),
     })
   }, 60_000)
 
@@ -555,7 +552,7 @@ describe('DID authorization', () => {
     )
     await expect(submitTx(tx2, paymentAccount)).rejects.toMatchObject({
       section: 'did',
-      name: 'DidNotPresent',
+      name: expect.stringMatching(/^(DidNotPresent|NotFound)$/),
     })
 
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
@@ -983,7 +980,7 @@ describe('DID management batching', () => {
       // Now, submitting will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(submitTx(updateTx, paymentAccount)).rejects.toMatchObject({
         section: 'did',
-        name: 'ServiceAlreadyPresent',
+        name: expect.stringMatching(/^ServiceAlready(Exists|Present)$/),
       })
 
       const updatedFullDidLinkedInfo = await api.call.did.query(
@@ -1265,7 +1262,7 @@ describe('Runtime constraints', () => {
     })
 
     it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
-      const uris = ['x:url-1', 'x:url-2']
+      const uris = ['x:url-1', 'x:url-2', 'x:url-3']
       const limit = api.consts.did.maxNumberOfUrlsPerService.toNumber()
       expect(uris.length).toBeGreaterThan(limit)
     })

@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/messaging",
-  "version": "0.32.0-6",
+  "version": "0.33.1-3",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -23,7 +23,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -39,6 +39,6 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/util": "^10.2.1"
+    "@polkadot/util": "^12.0.0"
   }
 }

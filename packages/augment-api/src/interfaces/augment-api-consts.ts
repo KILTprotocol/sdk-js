@@ -25,14 +25,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxDelegatedAttestations: u32 & AugmentedConst<ApiType>;
     };
-    authorship: {
-      /**
-       * The number of blocks back we should accept uncles.
-       * This means that we will deal with uncle-parents that are
-       * `UncleGenerations + 1` before `now`.
-       **/
-      uncleGenerations: u64 & AugmentedConst<ApiType>;
-    };
     balances: {
       /**
        * The minimum amount required to keep an account open.
@@ -139,16 +131,22 @@ declare module '@polkadot/api-base/types/consts' {
     did: {
       /**
        * The amount of balance that will be taken for each DID as a deposit
-       * to incentivise fair use of the on chain storage. The deposit can be
-       * reclaimed when the DID is deleted.
+       * to incentivise fair use of the on chain storage. The deposits
+       * increase by the amount of used keys and service endpoints. The
+       * deposit can be reclaimed when the DID is deleted.
        **/
-      deposit: u128 & AugmentedConst<ApiType>;
+      baseDeposit: u128 & AugmentedConst<ApiType>;
       /**
        * The amount of balance that will be taken for each DID as a fee to
        * incentivise fair use of the on chain storage. The fee will not get
        * refunded when the DID is deleted.
        **/
       fee: u128 & AugmentedConst<ApiType>;
+      /**
+       * The amount of balance that will be taken for each added key as a
+       * deposit to incentivise fair use of the on chain storage.
+       **/
+      keyDeposit: u128 & AugmentedConst<ApiType>;
       /**
        * The maximum number of blocks a DID-authorized operation is
        * considered valid after its creation.
@@ -196,6 +194,13 @@ declare module '@polkadot/api-base/types/consts' {
        * Should be greater than `MaxNewKeyAgreementKeys`.
        **/
       maxTotalKeyAgreementKeys: u32 & AugmentedConst<ApiType>;
+      /**
+       * The amount of balance that will be taken for each service endpoint
+       * as a deposit to incentivise fair use of the on chain storage. The
+       * deposit can be reclaimed when the service endpoint is removed or the
+       * DID deleted.
+       **/
+      serviceEndpointDeposit: u128 & AugmentedConst<ApiType>;
     };
     didLookup: {
       /**
@@ -223,6 +228,27 @@ declare module '@polkadot/api-base/types/consts' {
        * period.
        **/
       initialPeriodReward: u128 & AugmentedConst<ApiType>;
+    };
+    multisig: {
+      /**
+       * The base amount of currency needed to reserve for creating a multisig execution or to
+       * store a dispatch call for later.
+       * 
+       * This is held for an additional storage item whose value size is
+       * `4 + sizeof((BlockNumber, Balance, AccountId))` bytes and whose key size is
+       * `32 + sizeof(AccountId)` bytes.
+       **/
+      depositBase: u128 & AugmentedConst<ApiType>;
+      /**
+       * The amount of currency needed per unit threshold when creating a multisig execution.
+       * 
+       * This is held for adding 32 bytes more into a pre-existing storage value.
+       **/
+      depositFactor: u128 & AugmentedConst<ApiType>;
+      /**
+       * The maximum amount of signatories allowed in the multisig.
+       **/
+      maxSignatories: u32 & AugmentedConst<ApiType>;
     };
     parachainStaking: {
       /**

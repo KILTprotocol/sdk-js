@@ -6,7 +6,7 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../jest-setup/setup.js'],
-  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/|@digitalbazaar|base.+-universal|crypto-ld)'],
   coverageThreshold: {
     global: {
       branches: 70,

@@ -13,7 +13,8 @@ on:
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'dc.build.node.yml'
-      - '.github/workflows/*publish.yml'
+      - '.github/**'
+      - '!.github/workflows/tests.yml'
   pull_request:
     branches:
       - develop
@@ -37,10 +38,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 14
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
           cache: 'yarn'
       - name: yarn install
         run: yarn install --immutable
@@ -49,7 +50,7 @@ jobs:
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: build.zip
@@ -59,15 +60,15 @@ jobs:
     needs: build
 
     steps:
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
       - name: lint
         run: yarn lint
       - name: check dependency duplication
@@ -79,10 +80,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14, 16]
+        node-version: [16, 18]
         required: ['required']
         include:
-          - node-version: 18
+          - node-version: 20
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
@@ -92,7 +93,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
@@ -123,22 +124,20 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - name: Log out node version
-        run: node --version
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - name: Log out node version
-        run: node --version
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: Log out node version
+        run: node --version
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -171,19 +170,19 @@ jobs:
     needs: build
 
     steps:
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
       - name: yarn bundle
         run: yarn bundle
       - name: upload bundle artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist/sdk-js.umd.js
@@ -202,21 +201,22 @@ jobs:
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -225,9 +225,6 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16.x'
       - run: basename /packages/sdk-js/dist/
       - name: pull node image
         env:

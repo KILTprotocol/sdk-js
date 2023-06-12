@@ -6,10 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
       - run: yarn install --immutable
       - run: yarn build
       - run: yarn test:ci
@@ -18,10 +19,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
       - name: Install dependencies
         run: yarn install --immutable
       - name: Build packages
@@ -30,7 +32,7 @@ jobs:
         run: yarn run bundle
       - name: Get current package version
         id: package_version
-        run: echo "::set-output name=package_version::$(node -pe "require('./package.json').version")"                  
+        run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT                  
       - name: Publish to NPM
         run: yarn run publish --tag latest
         env:

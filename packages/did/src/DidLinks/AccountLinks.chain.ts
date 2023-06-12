@@ -6,7 +6,7 @@
  */
 
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
-import type { AnyNumber, TypeDef } from '@polkadot/types/types'
+import type { TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
@@ -16,6 +16,7 @@ import {
   u8aConcatStrict,
   u8aToHex,
   u8aWrapBytes,
+  BN,
 } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 
@@ -26,7 +27,9 @@ import { ConfigService } from '@kiltprotocol/config'
 import { EncodedSignature } from '../Did.utils.js'
 import { toChain } from '../Did.chain.js'
 
-/// A chain-agnostic address, which can be encoded using any network prefix.
+/**
+ *  A chain-agnostic address, which can be encoded using any network prefix.
+ */
 export type SubstrateAddress = KeyringPair['address']
 
 export type EthereumAddress = HexString
@@ -38,21 +41,13 @@ type EncodedMultiAddress =
   | { AccountId32: Uint8Array }
 
 /**
- * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
+ * Detects whether the spec version indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
  */
 function isEthereumEnabled(api: ApiPromise): boolean {
-  const removeType = api.createType(
-    api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-      'bool'
-  )
-  const associateType = api.createType(
-    api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
-  )
-
-  return 'isAccountId20' in removeType || 'isEthereum' in associateType
+  return api.runtimeVersion.specVersion.gten(11000)
 }
 
 /**
@@ -90,7 +85,18 @@ export function accountToChain(account: Address): Address {
 
 /* ### EXTRINSICS ### */
 
-type AssociateAccountToChainResult = [string, AnyNumber, EncodedSignature]
+type LinkingInfo = [Address, unknown]
+type AssociateAccountToChainResult = [
+  (
+    | {
+        Polkadot: LinkingInfo
+      }
+    | {
+        Ethereum: LinkingInfo
+      }
+  ),
+  BN
+]
 
 /* ### HELPERS ### */
 
@@ -124,6 +130,121 @@ function getUnprefixedSignature(
   throw new SDKErrors.SignatureUnverifiableError()
 }
 
+async function getLinkingChallengeV1(
+  did: DidUri,
+  validUntil: BN
+): Promise<Uint8Array> {
+  const api = ConfigService.get('api')
+
+  // Gets the current definition of BlockNumber (second tx argument) from the metadata.
+  const BlockNumber =
+    api.tx.didLookup.associateAccount.meta.args[1].type.toString()
+  // This is some magic on the polkadot types internals to get the DidAddress definition from the metadata.
+  // We get it from the connectedAccounts storage, which is a double map from (DidAddress, Account) -> Null.
+  const DidAddress = (
+    api.registry.lookup.getTypeDef(
+      // gets the type id of the keys on the connectedAccounts storage (which is a double map).
+      api.query.didLookup.connectedAccounts.creator.meta.type.asMap.key
+    ).sub as TypeDef[]
+  )[0].type // get the type of the first key, which is the DidAddress
+
+  return api
+    .createType(`(${DidAddress}, ${BlockNumber})`, [toChain(did), validUntil])
+    .toU8a()
+}
+
+function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
+  return stringToU8a(
+    `Publicly link the signing address to ${did} before block number ${validUntil}`
+  )
+}
+
+/**
+ * Generates the challenge that links a DID to an account.
+ * The account has to sign the challenge, while the DID will sign the extrinsic that contains the challenge and will
+ * link the account to the DID.
+ *
+ * @param did The URI of the DID that that should be linked to an account.
+ * @param validUntil Last blocknumber that this challenge is valid for.
+ * @returns The encoded challenge.
+ */
+export async function getLinkingChallenge(
+  did: DidUri,
+  validUntil: BN
+): Promise<Uint8Array> {
+  const api = ConfigService.get('api')
+  if (isEthereumEnabled(api)) {
+    return getLinkingChallengeV2(did, validUntil)
+  }
+  return getLinkingChallengeV1(did, validUntil)
+}
+
+/**
+ * Generates the arguments for the extrinsic that links an account to a DID.
+ *
+ * @param accountAddress Address of the account to be linked.
+ * @param validUntil Last blocknumber that this challenge is valid for.
+ * @param signature The signature for the linking challenge.
+ * @param type The key type used to sign the challenge.
+ * @returns The arguments for the call that links account and DID.
+ */
+export async function getLinkingArguments(
+  accountAddress: Address,
+  validUntil: BN,
+  signature: Uint8Array,
+  type: KeypairType
+): Promise<AssociateAccountToChainResult> {
+  const api = ConfigService.get('api')
+
+  const proof = { [type]: signature } as EncodedSignature
+
+  if (isEthereumEnabled(api)) {
+    if (type === 'ethereum') {
+      return [{ Ethereum: [accountAddress, signature] }, validUntil]
+    }
+    return [{ Polkadot: [accountAddress, proof] }, validUntil]
+  }
+
+  if (type === 'ethereum')
+    throw new SDKErrors.CodecMismatchError(
+      'Ethereum linking is not yet supported by this chain'
+    )
+  // Force type cast to enable the new blockchain types to accept the historic format
+  return [
+    accountAddress,
+    validUntil,
+    proof,
+  ] as unknown as AssociateAccountToChainResult
+}
+
+/**
+ * Identifies the strategy to wrap raw bytes for signing.
+ */
+export type WrappingStrategy = 'ethereum' | 'polkadot'
+
+/**
+ * Wraps the provided challenge according to the key type.
+ *
+ * Ethereum addresses will cause the challenge to be prefixed with
+ * `\x19Ethereum Signed Message:\n` and the length of the message.
+ *
+ * For all other key types the message will be wrapped in `<Bytes>..</Bytes>`.
+ *
+ * @param type The key type that will sign the challenge.
+ * @param challenge The challenge to proof ownership of both account and DID.
+ * @returns The wrapped challenge.
+ */
+export function getWrappedChallenge(
+  type: WrappingStrategy,
+  challenge: Uint8Array
+): Uint8Array {
+  if (type === 'ethereum') {
+    const length = stringToU8a(String(challenge.length))
+    return u8aConcatStrict([U8A_WRAP_ETHEREUM, length, challenge])
+  }
+  return u8aWrapBytes(challenge)
+}
+
 /**
  * Builds the parameters for an extrinsic to link the `account` to the `did` where the fees and deposit are covered by some third account.
  * This extrinsic must be authorized using the same full DID.
@@ -146,53 +267,20 @@ export async function associateAccountToChainArgs(
   const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
 
-  // Gets the current definition of BlockNumber (second tx argument) from the metadata.
-  const BlockNumber =
-    api.tx.didLookup.associateAccount.meta.args[1].type.toString()
-  // This is some magic on the polkadot types internals to get the DidAddress definition from the metadata.
-  // We get it from the connectedAccounts storage, which is a double map from (DidAddress, Account) -> Null.
-  const DidAddress = (
-    api.registry.lookup.getTypeDef(
-      // gets the type id of the keys on the connectedAccounts storage (which is a double map).
-      api.query.didLookup.connectedAccounts.creator.meta.type.asMap.key
-    ).sub as TypeDef[]
-  )[0].type // get the type of the first key, which is the DidAddress
+  const challenge = await getLinkingChallenge(did, validTill)
 
-  const encoded = api
-    .createType(`(${DidAddress}, ${BlockNumber})`, [toChain(did), validTill])
-    .toU8a()
-
-  const isAccountId32 = decodeAddress(accountAddress).length > 20
-  const length = stringToU8a(String(encoded.length))
-  const paddedDetails = u8aToHex(
-    isAccountId32
-      ? u8aWrapBytes(encoded)
-      : u8aConcatStrict([U8A_WRAP_ETHEREUM, length, encoded])
+  // ethereum addresses are 42 characters long since they are 20 bytes hex encoded strings
+  // (they start with 0x, 2 characters per byte)
+  const predictedType = accountAddress.length === 42 ? 'ethereum' : 'polkadot'
+  const wrappedChallenge = u8aToHex(
+    getWrappedChallenge(predictedType, challenge)
   )
 
   const { signature, type } = getUnprefixedSignature(
-    paddedDetails,
-    await sign(paddedDetails),
+    wrappedChallenge,
+    await sign(wrappedChallenge),
     accountAddress
   )
 
-  const proof = { [type]: signature } as EncodedSignature
-
-  if (isEthereumEnabled(api)) {
-    if (type === 'ethereum') {
-      const result = [{ Ethereum: [accountAddress, signature] }, validTill]
-      // Force type cast to enable the old blockchain types to accept the future format
-      return result as unknown as AssociateAccountToChainResult
-    }
-    const result = [{ Dotsama: [accountAddress, proof] }, validTill]
-    // Force type cast to enable the old blockchain types to accept the future format
-    return result as unknown as AssociateAccountToChainResult
-  }
-
-  if (type === 'ethereum')
-    throw new SDKErrors.CodecMismatchError(
-      'Ethereum linking is not yet supported by this chain'
-    )
-
-  return [accountAddress, validTill, proof]
+  return getLinkingArguments(accountAddress, validTill, signature, type)
 }

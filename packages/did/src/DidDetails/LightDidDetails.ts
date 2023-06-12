@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decode as cborDecode, encode as cborEncode } from 'cbor'
+import * as cbor from 'cbor-web'
 import {
   base58Decode,
   base58Encode,
@@ -147,7 +147,7 @@ function serializeAdditionalLightDidDetails({
   }
 
   const serializationVersion = 0x0
-  const serialized = cborEncode(objectToSerialize)
+  const serialized = cbor.encode(objectToSerialize)
   return base58Encode([serializationVersion, ...serialized], true)
 }
 
@@ -166,7 +166,7 @@ function deserializeAdditionalLightDidDetails(
   if (serializationVersion !== 0x0) {
     throw new SDKErrors.DidError('Serialization algorithm not supported')
   }
-  const deserialized: SerializableStructure = cborDecode(serialized)
+  const deserialized: SerializableStructure = cbor.decode(serialized)
 
   const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
   return {

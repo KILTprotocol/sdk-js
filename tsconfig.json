@@ -18,6 +18,7 @@
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/testing": ["testing/src"],
       "@kiltprotocol/augment-api": ["augment-api/src"],
+      "@kiltprotocol/augment-api/extraDefs": ["augment-api/src/interfaces/extraDefs"],
       "@kiltprotocol/type-definitions": ["type-definitions/src"],
       }
   },

@@ -149,15 +149,19 @@ describe('When there is an on-chain DID', () => {
   describe.each(['ed25519', 'sr25519', 'ecdsa', 'ethereum'])(
     'and an %s account different than the sender to link',
     (keyType) => {
-      // TODO: remove this line to test against ethereum linking enabled chains
-      const it = keyType === 'ethereum' ? test.skip : test
-
+      let skip = false
       let keypair: KeyringPair
       let keypairChain: string
       beforeAll(async () => {
-        // TODO: remove this line to test against ethereum linking enabled chains
-        if (keyType === 'ethereum') return
-
+        if (
+          keyType === 'ethereum' &&
+          // @ts-ignore palletVersion exists but is not augmented
+          (await api.query.didLookup.palletVersion()) < 3
+        ) {
+          console.warn('skipping ethereum tests')
+          skip = true
+          return
+        }
         const keyTool = makeSigningKeyTool(keyType as KiltKeyringPair['type'])
         keypair = keyTool.keypair
         keypairChain = Did.accountToChain(keypair.address)
@@ -168,6 +172,9 @@ describe('When there is an on-chain DID', () => {
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
+        if (skip) {
+          return
+        }
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           did.uri,
@@ -175,7 +182,6 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           did.uri,
-          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           didKey.getSignCallback(did),
           paymentAccount.address
@@ -204,6 +210,9 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.document.uri).toStrictEqual(did.uri)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
+        if (skip) {
+          return
+        }
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           newDid.uri,
@@ -211,7 +220,6 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           newDid.uri,
-          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           newDidKey.getSignCallback(newDid),
           paymentAccount.address
@@ -237,6 +245,9 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
       })
       it('should be possible for the DID to remove the link', async () => {
+        if (skip) {
+          return
+        }
         const removeLinkTx =
           api.tx.didLookup.removeAccountAssociation(keypairChain)
         const signedTx = await Did.authorizeTx(
@@ -293,7 +304,6 @@ describe('When there is an on-chain DID', () => {
       )
       const signedTx = await Did.authorizeTx(
         did.uri,
-        // @ts-ignore
         api.tx.didLookup.associateAccount(...args),
         didKey.getSignCallback(did),
         paymentAccount.address

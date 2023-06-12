@@ -9,33 +9,43 @@
  * @group unit/vc-export
  */
 
-import {
-  DidUri,
-  IAttestation,
-  ICType,
-  ICredential,
-  ICredentialPresentation,
-} from '@kiltprotocol/types'
-import { Attestation } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
+import { randomAsU8a } from '@polkadot/util-crypto'
+import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+
+import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
-import type { DocumentLoader } from 'jsonld-signatures'
-import { base58Encode } from '@polkadot/util-crypto'
-import * as toVC from './exportToVerifiableCredential'
-import * as verificationUtils from './verificationUtils'
-import * as presentationUtils from './presentationUtils'
-import type { IPublicKeyRecord, VerifiableCredential } from './types'
+import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
+
+import { validateStructure as validateCredentialStructure } from './KiltCredentialV1'
+import { exportICredentialToVc } from './fromICredential'
 import {
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-  DEFAULT_VERIFIABLECREDENTIAL_TYPE,
-  KILT_CREDENTIAL_CONTEXT_URL,
-  KILT_VERIFIABLECREDENTIAL_TYPE,
+  DEFAULT_CREDENTIAL_CONTEXTS,
+  DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
+import { credentialIdFromRootHash } from './common'
 
-const mockedApi: any = ApiMocks.getMockedApi()
+export const mockedApi = ApiMocks.createAugmentedApi()
 
-const ctype: ICType = {
+const attestationCreatedIndex = u8aToU8a([
+  62,
+  mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
+])
+export function makeAttestationCreatedEvents(events: unknown[][]) {
+  return mockedApi.createType(
+    'Vec<FrameSystemEventRecord>',
+    events.map((eventData) => ({
+      event: u8aConcat(
+        attestationCreatedIndex,
+        new (mockedApi.registry.findMetaEvent(attestationCreatedIndex))(
+          mockedApi.registry,
+          eventData
+        ).toU8a()
+      ),
+    }))
+  )
+}
+
+export const cType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'membership',
   properties: {
@@ -54,7 +64,7 @@ const ctype: ICType = {
   $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-const credential: ICredentialPresentation = {
+export const credential: ICredential = {
   claim: {
     contents: {
       birthday: '1991-01-01',
@@ -82,86 +92,103 @@ const credential: ICredentialPresentation = {
       'adc7dc71-ab0a-45f9-a091-9f3ec1bb96c7',
   },
   legitimations: [],
-  delegationId: null,
-  rootHash:
-    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-  claimerSignature: {
-    signature:
-      '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
-    keyUri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
-  },
+  delegationId:
+    '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
+  rootHash: '0x',
 }
+credential.rootHash = Credential.calculateRootHash(credential)
 
-const attestation: IAttestation = {
-  claimHash:
-    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-  cTypeHash:
-    '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-  delegationId: null,
+export const attestation: IAttestation = {
+  claimHash: credential.rootHash,
+  cTypeHash: credential.claim.cTypeHash,
+  delegationId: credential.delegationId,
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   revoked: false,
 }
 
-const encodedAttestation = ApiMocks.mockChainQueryReturn(
-  'attestation',
-  'attestations',
-  [
-    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-    '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-    undefined,
-    false,
-    ['4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG', 0],
-  ]
-)
+export const timestamp = 1234567
+export const blockHash = randomAsU8a(32)
+export const genesisHash = randomAsU8a(32)
+jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))
+jest
+  .spyOn(mockedApi, 'queryMulti')
+  .mockImplementation((calls) =>
+    Promise.all(
+      calls.map((call) => (Array.isArray(call) ? call[0](call[1]) : call()))
+    )
+  )
+jest
+  .spyOn(mockedApi, 'genesisHash', 'get')
+  .mockImplementation(() => genesisHash as any)
+mockedApi.query.attestation = {
+  attestations: jest.fn().mockResolvedValue(
+    mockedApi.createType('Option<AttestationAttestationsAttestationDetails>', {
+      ctypeHash: attestation.cTypeHash,
+      attester: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+      revoked: false,
+      authorizationId: { Delegation: attestation.delegationId },
+    })
+  ),
+} as any
+mockedApi.query.timestamp = {
+  now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
+} as any
+
+mockedApi.query.system = {
+  events: jest
+    .fn()
+    .mockResolvedValue(
+      makeAttestationCreatedEvents([
+        [
+          '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+          attestation.claimHash,
+          attestation.cTypeHash,
+          { Delegation: attestation.delegationId },
+        ],
+      ])
+    ),
+} as any
 
 it('exports credential to VC', () => {
-  expect(
-    toVC.fromCredentialAndAttestation(credential, attestation)
-  ).toMatchObject({
-    '@context': [
-      DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-      KILT_CREDENTIAL_CONTEXT_URL,
-    ],
-    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE, KILT_VERIFIABLECREDENTIAL_TYPE],
+  const exported = exportICredentialToVc(credential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
+    blockHash,
+    timestamp,
+    cType,
+  })
+  expect(exported).toMatchObject({
+    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
+    type: DEFAULT_CREDENTIAL_TYPES,
     credentialSubject: {
-      '@id': 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+      id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    id: 'kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    id: credentialIdFromRootHash(hexToU8a(credential.rootHash)),
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-    legitimationIds: [],
     nonTransferable: true,
   })
-})
-
-it('exports includes ctype as schema', () => {
-  expect(
-    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
-  ).toMatchObject({
-    credentialSchema: {
-      '@id': ctype.$id,
-      name: ctype.title,
-      '@type': 'JsonSchemaValidator2018',
-      schema: ctype,
-    },
-  })
+  expect(() => validateCredentialStructure(exported)).not.toThrow()
 })
 
 it('VC has correct format (full example)', () => {
   expect(
-    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+    exportICredentialToVc(credential, {
+      issuer: attestation.owner,
+      chainGenesisHash: mockedApi.genesisHash,
+      blockHash,
+      timestamp,
+      cType,
+    })
   ).toMatchObject({
-    '@context': [
-      DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-      KILT_CREDENTIAL_CONTEXT_URL,
-    ],
-    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE, KILT_VERIFIABLECREDENTIAL_TYPE],
+    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
+    type: DEFAULT_CREDENTIAL_TYPES,
     credentialSchema: {
-      '@id': expect.any(String),
-      '@type': 'JsonSchemaValidator2018',
+      id: expect.any(String),
+      type: 'JsonSchemaValidator2018',
       name: 'membership',
       schema: {
         $id: expect.any(String),
@@ -186,297 +213,20 @@ it('VC has correct format (full example)', () => {
       '@context': {
         '@vocab': expect.any(String),
       },
-      '@id': expect.any(String),
+      id: expect.any(String),
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    delegationId: undefined,
     id: expect.any(String),
     issuanceDate: expect.any(String),
     issuer: expect.any(String),
-    legitimationIds: [],
     nonTransferable: true,
-    proof: [
-      {
-        signature: expect.any(String),
-        type: 'KILTSelfSigned2020',
-        verificationMethod: expect.any(String),
-      },
-      {
-        attester: expect.any(String),
-        type: 'KILTAttestation2020',
-      },
-      {
-        claimHashes: expect.any(Array),
-        nonces: expect.any(Object),
-        type: 'KILTCredentialDigest2020',
-      },
-    ],
-  })
-})
-
-describe('proofs', () => {
-  let VC: VerifiableCredential
-  let documentLoader: DocumentLoader
-  beforeAll(() => {
-    VC = toVC.fromCredentialAndAttestation(credential, attestation)
-    const keyId = VC.proof[0].verificationMethod
-    const verificationMethod: IPublicKeyRecord = {
-      id: keyId,
-      type: 'Ed25519VerificationKey2018',
-      publicKeyBase58: base58Encode(
-        Crypto.decodeAddress(Did.parse(keyId).address)
-      ),
-      controller: VC.credentialSubject['@id'] as DidUri,
-    }
-    documentLoader = (url) => {
-      if (url === keyId) {
-        return Promise.resolve({
-          documentUrl: url,
-          document: verificationMethod,
-        })
-      }
-      return Promise.reject(Error('not found'))
-    }
-  })
-
-  it('it verifies self-signed proof', async () => {
-    // verify
-    expect(
-      await verificationUtils.verifySelfSignedProof(
-        VC,
-        VC.proof[0],
-        documentLoader
-      )
-    ).toMatchObject({
-      verified: true,
-    })
-  })
-
-  it('it verifies schema', () => {
-    const VCWithSchema = toVC.fromCredentialAndAttestation(
-      credential,
-      attestation,
-      ctype
-    )
-    const result = verificationUtils.validateSchema(VCWithSchema)
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-    })
-  })
-
-  it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof[2].nonces).toMatchObject(credential.claimNonceMap)
-    expect(Object.entries(VC.proof[2].nonces)).toHaveLength(4)
-    const result = await verificationUtils.verifyCredentialDigestProof(
-      VC,
-      VC.proof[2]
-    )
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-    })
-  })
-
-  it('it verifies credential with selected properties revealed', async () => {
-    const reducedCredential: ICredential = JSON.parse(
-      JSON.stringify(credential)
-    )
-    delete reducedCredential.claim.contents.name
-    delete reducedCredential.claim.contents.birthday
-    const reducedVC = toVC.fromCredentialAndAttestation(
-      reducedCredential,
-      attestation
-    )
-
-    const result = await verificationUtils.verifyCredentialDigestProof(
-      reducedVC,
-      reducedVC.proof[2]
-    )
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-    })
-  })
-
-  it('makes presentation', async () => {
-    const presentation = await presentationUtils.makePresentation(VC, ['name'])
-    const { contents, owner } = credential.claim
-    expect(presentation).toHaveProperty(
-      'verifiableCredential.credentialSubject',
-      {
-        '@context': expect.any(Object),
-        '@id': owner,
-        name: contents.name,
-      }
-    )
-    const VCfromPresentation =
-      presentation.verifiableCredential as VerifiableCredential
-    const result = await verificationUtils.verifyCredentialDigestProof(
-      VCfromPresentation,
-      VCfromPresentation.proof[2]
-    )
-    expect(result.errors).toEqual([])
-    expect(result).toStrictEqual({ verified: true, errors: [] })
-    expect(Object.entries(VCfromPresentation.proof[2].nonces)).toHaveLength(2)
-  })
-
-  it('verifies attestation proof on chain', async () => {
-    mockedApi.query.attestation.attestations.mockResolvedValueOnce(
-      encodedAttestation
-    )
-    jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
-
-    const result = await verificationUtils.verifyAttestedProof(
-      VC,
-      VC.proof[1],
-      mockedApi
-    )
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-      status: 'valid',
-    })
-  })
-
-  describe('negative tests', () => {
-    beforeEach(() => {
-      VC = toVC.fromCredentialAndAttestation(credential, attestation, ctype)
-    })
-
-    it('errors on proof mismatch', async () => {
-      expect(
-        await verificationUtils.verifySelfSignedProof(
-          VC,
-          VC.proof[1],
-          documentLoader
-        )
-      ).toMatchObject({
-        verified: false,
-      })
-      expect(
-        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
-      ).toMatchObject({
-        verified: false,
-      })
-      expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[2], mockedApi)
-      ).toMatchObject({
-        verified: false,
-      })
-    })
-
-    it('rejects selecting non-existent properties for presentation', async () => {
-      await expect(
-        presentationUtils.makePresentation(VC, ['name', 'age', 'profession'])
-      ).rejects.toThrow()
-
-      const presentation = await presentationUtils.makePresentation(VC, [
-        'name',
-      ])
-
-      await expect(
-        presentationUtils.makePresentation(
-          presentation.verifiableCredential as VerifiableCredential,
-          ['premium']
-        )
-      ).rejects.toThrow()
-    })
-
-    it('it detects tampering with credential digest', async () => {
-      VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-      expect(
-        await verificationUtils.verifySelfSignedProof(
-          VC,
-          VC.proof[0],
-          documentLoader
-        )
-      ).toMatchObject({
-        verified: false,
-      })
-      expect(
-        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).toMatchObject({
-        verified: false,
-      })
-    })
-
-    it('it detects tampering with credential fields', async () => {
-      VC.delegationId = '0x123'
-      expect(
-        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).toMatchObject({
-        verified: false,
-      })
-      expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[1], mockedApi)
-      ).toMatchObject({
-        verified: false,
-        status: 'invalid',
-      })
-    })
-
-    it('it detects tampering on claimed properties', async () => {
-      VC.credentialSubject.name = 'Kort'
-      expect(
-        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).toMatchObject({
-        verified: false,
-      })
-    })
-
-    it('it detects schema violations', () => {
-      VC.credentialSubject.name = 42
-      const result = verificationUtils.validateSchema(VC)
-      expect(result).toMatchObject({
-        verified: false,
-      })
-    })
-
-    it('fails if attestation not on chain', async () => {
-      const result = await verificationUtils.verifyAttestedProof(
-        VC,
-        VC.proof[1],
-        mockedApi
-      )
-      expect(result).toMatchObject({
-        verified: false,
-        status: 'invalid',
-      })
-    })
-
-    it('fails if attestation on chain not identical', async () => {
-      const result = await verificationUtils.verifyAttestedProof(
-        VC,
-        VC.proof[1],
-        mockedApi
-      )
-      expect(result).toMatchObject({
-        verified: false,
-        status: 'invalid',
-      })
-    })
-
-    it('fails if attestation revoked', async () => {
-      mockedApi.query.attestation.attestations.mockResolvedValueOnce(
-        encodedAttestation
-      )
-      jest.spyOn(Attestation, 'fromChain').mockReturnValue({
-        ...attestation,
-        revoked: true,
-      })
-
-      const result = await verificationUtils.verifyAttestedProof(
-        VC,
-        VC.proof[1],
-        mockedApi
-      )
-      expect(result).toMatchObject({
-        verified: false,
-        status: 'revoked',
-      })
-    })
+    proof: {
+      type: 'KiltAttestationProofV1',
+      commitments: expect.any(Array),
+      salt: expect.any(Array),
+      block: expect.any(String),
+    },
   })
 })

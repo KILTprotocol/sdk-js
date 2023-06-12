@@ -30,7 +30,6 @@ import {
 import {
   blake2AsHex,
   blake2AsU8a,
-  naclBoxPairFromSecret,
   randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
@@ -42,13 +41,19 @@ import jsonabc from './jsonabc.js'
 import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
 
-export {
-  naclBoxPairFromSecret,
-  mnemonicGenerate,
-  mnemonicToMiniSecret,
-} from '@polkadot/util-crypto'
+export { mnemonicGenerate, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
+
+/**
+ * Creates a new public/secret box keypair from a secret.
+ *
+ * @param secret The secret.
+ * @returns An object containing a box `publicKey` & `secretKey` generated from the supplied secret.
+ */
+export function naclBoxPairFromSecret(secret: Uint8Array): nacl.BoxKeyPair {
+  return nacl.box.keyPair.fromSecretKey(secret)
+}
 
 /**
  * Types accepted by hashing and crypto functions.
@@ -343,7 +348,7 @@ export function hashStatements(
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
@@ -357,7 +362,7 @@ export function makeKeypairFromSeed<
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 

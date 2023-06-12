@@ -1,7 +1,7 @@
 {
   "name": "@kiltprotocol/testing",
   "private": true,
-  "version": "0.32.0-6",
+  "version": "0.33.1-3",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -24,7 +24,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -34,14 +34,17 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/sdk-js": "workspace:*",
     "@kiltprotocol/type-definitions": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.10.2",
-    "@polkadot/keyring": "^10.2.1",
-    "@polkadot/types": "^9.10.2",
-    "@polkadot/util": "^10.2.1",
-    "@polkadot/util-crypto": "^10.2.1"
+    "@polkadot/api": "^10.4.0",
+    "@polkadot/keyring": "^12.0.0",
+    "@polkadot/types": "^10.4.0",
+    "@polkadot/util": "^12.0.0",
+    "@polkadot/util-crypto": "^12.0.0",
+    "tweetnacl": "^1.0.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
