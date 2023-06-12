@@ -7,7 +7,7 @@
 
 import '@polkadot/keyring' // TS needs this for the augmentation below
 
-import type { HexString, KeyringPair, Prefix } from './index'
+import type { HexString, KeyringPair, Prefix } from './Imported'
 
 export interface KiltEncryptionKeypair {
   secretKey: Uint8Array
