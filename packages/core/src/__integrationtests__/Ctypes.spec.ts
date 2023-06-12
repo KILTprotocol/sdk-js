@@ -84,12 +84,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     if (hasBlockNumbers) {
       const retrievedCType = await CType.fetchFromChain(ctype.$id)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { createdAt, creator, ...originalCtype } = retrievedCType
+      const { ctype: originalCtype, creator } = retrievedCType
       expect(originalCtype).toStrictEqual(ctype)
       expect(creator).toBe(ctypeCreator.uri)
-      await expect(
-        CType.verifyStored(retrievedCType.ctype)
-      ).resolves.not.toThrow()
+      await expect(CType.verifyStored(originalCtype)).resolves.not.toThrow()
     }
   }, 40_000)
 
