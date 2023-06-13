@@ -65,7 +65,7 @@ export async function check(
   const delegationId = getDelegationNodeIdForCredential(credential)
   if (
     decoded.owner !== credential.issuer ||
-    onChainCType !== credential.credentialSchema.id ||
+    `${onChainCType}#` !== credential.credentialSubject['@context']['@vocab'] ||
     !u8aEq(
       delegationId ?? new Uint8Array(),
       decoded.delegationId ?? new Uint8Array()

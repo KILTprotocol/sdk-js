@@ -8,7 +8,6 @@
 /* eslint-disable no-use-before-define */
 
 import type {
-  ICType,
   ConformingDidKey,
   DidUri,
   Caip2ChainId,
@@ -108,15 +107,9 @@ export interface KiltAttestationProofV1 extends Proof {
   salt: string[]
 }
 
-export interface JsonSchemaValidator2018 {
+export interface JsonSchema2023 {
   id: string
   type: typeof JSON_SCHEMA_TYPE
-  schema?: ICType
-  modelVersion?: string
-  name?: string
-  author?: string
-  authored?: string
-  // proof?: Proof
 }
 
 export interface KiltRevocationStatusV1 {
@@ -176,7 +169,7 @@ export interface KiltCredentialV1 extends VerifiableCredential {
   /**
    * Contains json schema for the validation of credentialSubject claims.
    */
-  credentialSchema: JsonSchemaValidator2018
+  credentialSchema: JsonSchema2023
   /**
    * Contains credentials status method.
    */

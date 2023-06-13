@@ -188,26 +188,7 @@ it('VC has correct format (full example)', () => {
     type: DEFAULT_CREDENTIAL_TYPES,
     credentialSchema: {
       id: expect.any(String),
-      type: 'JsonSchemaValidator2018',
-      name: 'membership',
-      schema: {
-        $id: expect.any(String),
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          birthday: {
-            format: 'date',
-            type: 'string',
-          },
-          name: {
-            type: 'string',
-          },
-          premium: {
-            type: 'boolean',
-          },
-        },
-        title: 'membership',
-        type: 'object',
-      },
+      type: 'JsonSchema2023',
     },
     credentialSubject: {
       '@context': {

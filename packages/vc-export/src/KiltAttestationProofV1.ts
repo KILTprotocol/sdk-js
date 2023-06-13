@@ -437,7 +437,8 @@ export async function verify(
   } = await verifyAttestedAt(rootHash, base58Decode(proof.block), { api })
 
   const issuerMatches = attester === issuer
-  const cTypeMatches = onChainCType === credential.credentialSchema.id
+  const cTypeMatches =
+    `${onChainCType}#` === credential.credentialSubject['@context']['@vocab']
   const delegationMatches = u8aEq(
     delegationId ?? new Uint8Array(),
     getDelegationNodeIdForCredential(credential) ?? new Uint8Array()
@@ -583,7 +584,7 @@ export function initializeProof(
   KiltAttestationProofV1,
   Parameters<ApiPromise['tx']['attestation']['add']>
 ] {
-  const { credentialSubject, credentialSchema, nonTransferable } = credential
+  const { credentialSubject, nonTransferable } = credential
 
   if (nonTransferable !== true) {
     throw new Error('nonTransferable must be set to true')
@@ -616,7 +617,12 @@ export function initializeProof(
     proof,
     [
       rootHash,
-      CType.idToHash(credentialSchema.id as ICType['$id']),
+      CType.idToHash(
+        credentialSubject['@context']['@vocab'].replace(
+          '#',
+          ''
+        ) as ICType['$id']
+      ),
       delegationId && { Delegation: delegationId },
     ],
   ]

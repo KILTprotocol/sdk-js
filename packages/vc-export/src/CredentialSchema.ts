@@ -12,38 +12,39 @@ import { jsonLdExpandCredentialSubject } from './common.js'
 import type { KiltCredentialV1 } from './types.js'
 
 /**
- * Validates the claims in the VC's `credentialSubject` against a CType definition on the `credentialSchema` property.
+ * Validates the claims in the VC's `credentialSubject` against a CType definition.
  *
- * @param credential A verifiable credential where `credentialSchema.schema` is an [[ICType]].
+ * @param credential A [[KiltCredentialV1]] type verifiable credential.
  * @param credential.credentialSubject The credentialSubject to be validated.
- * @param credential.credentialSchema The credentialSchema to be applied.
- * @param cType Optionally pass the CType definition to be used if it is not embedded in the credentialSchema.
+ * @param cType The CType definition to be used.
  */
 export function validateSubject(
-  { credentialSubject, credentialSchema }: KiltCredentialV1,
-  cType?: ICType
+  { credentialSubject }: KiltCredentialV1,
+  cType: ICType
 ): void {
-  const { schema = cType } = credentialSchema ?? {}
   // check that we have access to the right schema
-  if (!schema) {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (!cType) {
     throw new Error(
-      'Schema validation can only be performed if schema is present in credentialSchema or passed as the cType argument'
+      'CType validation can only be performed if cType argument is present'
     )
-  }
-  if (schema.$id !== credentialSchema.id) {
-    throw new Error('CType[$id] must be equal to the credentialSchema[id]')
   }
   // normalize credential subject to form expected by CType schema
   const expandedClaims: Record<string, unknown> =
     jsonLdExpandCredentialSubject(credentialSubject)
   delete expandedClaims['@id']
-  const vocab = `${schema.$id}#`
+  const vocab = `${cType.$id}#`
   const claims = Object.entries(expandedClaims).reduce((obj, [key, value]) => {
+    if (!key.startsWith(vocab)) {
+      throw new Error(
+        `The credential contains claims which do not follow the expected CType: ${key}`
+      )
+    }
     return {
       ...obj,
-      [key.startsWith(vocab) ? key.substring(vocab.length) : key]: value,
+      [key.substring(vocab.length)]: value,
     }
   }, {})
   // validates against CType (also validates CType schema itself)
-  CType.verifyClaimAgainstSchema(claims, schema)
+  CType.verifyClaimAgainstSchema(claims, cType)
 }
