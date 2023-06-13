@@ -5,9 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
-import type { BN } from '@polkadot/util'
-
+import type { HexString, BN } from './Imported'
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IClaimContents } from './Claim'

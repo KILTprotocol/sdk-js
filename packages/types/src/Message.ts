@@ -5,8 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { AnyJson } from '@polkadot/types/types/codec'
-
+import type { AnyJson } from './Imported'
 import type { DidResourceUri, DidSignature, DidUri } from './DidDocument.js'
 import type { IAttestation } from './Attestation.js'
 import type { PartialClaim } from './Claim.js'

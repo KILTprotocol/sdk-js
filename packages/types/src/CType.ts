@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
+import type { HexString } from './Imported'
 
 export type InstanceType = 'boolean' | 'integer' | 'number' | 'string' | 'array'
 
