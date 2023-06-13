@@ -5,8 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { BN } from '@polkadot/util'
-
+import type { BN } from './Imported'
 import type { KiltAddress } from './Address'
 
 type AuthenticationKeyType = '00' | '01'

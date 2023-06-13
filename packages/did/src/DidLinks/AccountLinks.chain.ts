@@ -7,8 +7,6 @@
 
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { TypeDef } from '@polkadot/types/types'
-import type { HexString } from '@polkadot/util/types'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
   stringToU8a,
@@ -21,8 +19,13 @@ import {
 import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
+import type {
+  DidUri,
+  HexString,
+  KeyringPair,
+  KiltAddress,
+} from '@kiltprotocol/types'
 
 import { EncodedSignature } from '../Did.utils.js'
 import { toChain } from '../Did.chain.js'
