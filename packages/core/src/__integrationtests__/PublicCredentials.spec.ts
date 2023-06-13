@@ -10,13 +10,13 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import type { HexString } from '@polkadot/util/types'
 import type {
   AssetDidUri,
   DidDocument,
   IPublicCredential,
   IPublicCredentialInput,
   KiltKeyringPair,
+  HexString,
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'

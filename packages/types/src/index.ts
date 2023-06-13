@@ -9,10 +9,6 @@
  * @module @kiltprotocol/types
  */
 
-export type { ISubmittableResult } from '@polkadot/types/types'
-export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-export type { KeyringPair } from '@polkadot/keyring/types'
-
 export * as SubscriptionPromise from './SubscriptionPromise.js'
 
 export * from './Attestation.js'
@@ -33,3 +29,4 @@ export * from './CryptoCallbacks.js'
 export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
 export * from './PublicCredential.js'
+export * from './Imported.js'
