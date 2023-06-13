@@ -26,11 +26,12 @@ import type {
   DidVerificationKey,
   KiltAddress,
   UriFragment,
+  BN,
 } from '@kiltprotocol/types'
 
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { BN, u8aToString } from '@polkadot/util'
+import { u8aToString } from '@polkadot/util'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
 
 import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'

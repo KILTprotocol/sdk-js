@@ -5,10 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import type { PublicCredentialsCredentialsCredential } from '@kiltprotocol/augment-api'
 import type {
+  HexString,
   DidUri,
   IAssetClaim,
   ICType,

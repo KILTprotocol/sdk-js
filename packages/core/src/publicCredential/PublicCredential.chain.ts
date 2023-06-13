@@ -12,6 +12,7 @@ import type {
   IPublicCredentialInput,
   IPublicCredential,
   DidUri,
+  HexString,
 } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { GenericCall, Option } from '@polkadot/types'
@@ -24,7 +25,6 @@ import type {
 
 import * as cbor from 'cbor-web'
 
-import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { validateUri } from '@kiltprotocol/asset-did'

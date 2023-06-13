@@ -8,12 +8,12 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { HexString } from '@polkadot/util/types'
-
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
 import { types } from '@kiltprotocol/type-definitions'
+import type { HexString } from '@kiltprotocol/types'
+
 import metaStatic from '../metadata/spiritnet.js'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
