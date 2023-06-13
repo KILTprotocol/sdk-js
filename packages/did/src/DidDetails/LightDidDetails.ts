@@ -5,7 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decode as cborDecode, encode as cborEncode } from 'cbor-web'
+import * as cborImp from 'cbor-web'
+
 import {
   base58Decode,
   base58Encode,
@@ -26,6 +27,9 @@ import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import { getAddressByKey, parse } from '../Did.utils.js'
 import { resourceIdToChain, validateService } from '../Did.chain.js'
+
+// this is horrible but the only way to make this import work in both cjs & esm builds
+const cbor = cborImp.default ?? cborImp
 
 const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'
@@ -147,7 +151,7 @@ function serializeAdditionalLightDidDetails({
   }
 
   const serializationVersion = 0x0
-  const serialized = cborEncode(objectToSerialize)
+  const serialized = cbor.encode(objectToSerialize)
   return base58Encode([serializationVersion, ...serialized], true)
 }
 
@@ -166,7 +170,7 @@ function deserializeAdditionalLightDidDetails(
   if (serializationVersion !== 0x0) {
     throw new SDKErrors.DidError('Serialization algorithm not supported')
   }
-  const deserialized: SerializableStructure = cborDecode(serialized)
+  const deserialized: SerializableStructure = cbor.decode(serialized)
 
   const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
   return {

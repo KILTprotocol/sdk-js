@@ -22,7 +22,7 @@ import type {
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor-web'
+import * as cborImp from 'cbor-web'
 
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
@@ -32,6 +32,9 @@ import { SDKErrors } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
 import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
+
+// this is horrible but the only way to make this import work in both cjs & esm builds
+const cbor = cborImp.default ?? cborImp
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -51,7 +54,7 @@ export function toChain(
 ): EncodedPublicCredential {
   const { cTypeHash, claims, subject, delegationId } = publicCredential
 
-  const cborSerializedClaims = cborEncode(claims)
+  const cborSerializedClaims = cbor.encode(claims)
 
   return {
     ctypeHash: cTypeHash,
@@ -72,7 +75,7 @@ function credentialInputFromChain({
   const credentialSubject = subject.toUtf8()
   validateUri(credentialSubject)
   return {
-    claims: cborDecode(claims),
+    claims: cbor.decode(claims),
     cTypeHash: ctypeHash.toHex(),
     delegationId: authorization.unwrapOr(undefined)?.toHex() ?? null,
     subject: credentialSubject as AssetDidUri,
