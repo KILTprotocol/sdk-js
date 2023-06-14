@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as cbor from 'cbor-web'
 import {
   base58Decode,
   base58Encode,
@@ -22,7 +21,7 @@ import type {
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes } from '@kiltprotocol/types'
 
-import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format, cbor } from '@kiltprotocol/utils'
 
 import { getAddressByKey, parse } from '../Did.utils.js'
 import { resourceIdToChain, validateService } from '../Did.chain.js'

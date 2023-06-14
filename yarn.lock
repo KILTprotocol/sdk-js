@@ -1953,7 +1953,6 @@ __metadata:
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     "@types/uuid": ^8.0.0
-    cbor-web: ^9.0.0
     rimraf: ^3.0.2
     testcontainers: ^9.0.0
     typescript: ^4.8.3
@@ -1976,7 +1975,6 @@ __metadata:
     "@polkadot/types-codec": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
-    cbor-web: ^9.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -2071,6 +2069,7 @@ __metadata:
     "@polkadot/keyring": ^12.0.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    cbor-web: ^9.0.0
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
     typescript: ^4.8.3
