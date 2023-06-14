@@ -22,20 +22,14 @@ import type {
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
-// special import syntax as this is a pure cjs import
-import * as cborImp from 'cbor-web'
-
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { validateUri } from '@kiltprotocol/asset-did'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, cbor } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
 import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
-
-// this is horrible but the only way to make this import work in both cjs & esm builds
-const cbor = cborImp.default ?? cborImp
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
