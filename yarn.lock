@@ -2014,7 +2014,7 @@ __metadata:
     "@polkadot/keyring": ^12.0.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
-    cbor-web: ^8.0.0
+    cbor-web: ^9.0.0
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
     typescript: ^4.8.3
@@ -4003,10 +4003,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cbor-web@npm:^8.0.0":
-  version: 8.1.0
-  resolution: "cbor-web@npm:8.1.0"
-  checksum: 7898694ae4959a306f6e7dd2d042be8dab060a312d78dc8a2131d8ca641d5bcbcfe7e0691f1b6f0f95e5402b14ebf0ad797be14546712ab4682720b459c4836c
+"cbor-web@npm:^9.0.0":
+  version: 9.0.1
+  resolution: "cbor-web@npm:9.0.1"
+  checksum: fd5ffbb52490ec1d68607f9da8a207cf3b15ff7336556f9ffc34c34d7f26775dad6ff6e53b413bdaecaa75335d607d9d9170a17885e1d6640226fbcfa4c6453c
   languageName: node
   linkType: hard
 
