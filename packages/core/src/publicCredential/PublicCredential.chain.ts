@@ -22,6 +22,7 @@ import type {
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
+// special import syntax as this is a pure cjs import
 import * as cborImp from 'cbor-web'
 
 import { HexString } from '@polkadot/util/types'

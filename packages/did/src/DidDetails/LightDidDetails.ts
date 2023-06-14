@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// special import syntax as this is a pure cjs import
 import * as cborImp from 'cbor-web'
 
 import {
