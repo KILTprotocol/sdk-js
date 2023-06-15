@@ -36,7 +36,7 @@ import type {
 import { credentialIdFromRootHash } from './common.js'
 
 export const credentialSchema: JsonSchema.Schema = {
-  $id: 'ipfs://CID',
+  $id: 'ipfs://Qma4bM2hXb7pfnoZVwcGZJwBdUK8gwW1bovJqUESgn5bCJ',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
@@ -157,6 +157,14 @@ schemaValidator.addSchema(CType.Schemas.CTypeModel, 'kilt.schemas/CTypeModel')
 export function validateStructure(
   credential: Omit<KiltCredentialV1, 'proof'>
 ): void {
+  if (
+    credential?.credentialSchema?.type !== JSON_SCHEMA_TYPE ||
+    credential?.credentialSchema?.id !== credentialSchema.$id
+  ) {
+    throw new Error(
+      `A ${KILT_CREDENTIAL_TYPE} type credential must have a credentialSchema of type ${JSON_SCHEMA_TYPE} and id ${credentialSchema.$id}`
+    )
+  }
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new CredentialMalformedError(
