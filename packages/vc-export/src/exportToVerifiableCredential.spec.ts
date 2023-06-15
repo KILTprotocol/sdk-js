@@ -16,7 +16,10 @@ import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
-import { validateStructure as validateCredentialStructure } from './KiltCredentialV1'
+import {
+  credentialSchema,
+  validateStructure as validateCredentialStructure,
+} from './KiltCredentialV1'
 import { exportICredentialToVc } from './fromICredential'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -187,7 +190,7 @@ it('VC has correct format (full example)', () => {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
     type: DEFAULT_CREDENTIAL_TYPES,
     credentialSchema: {
-      id: expect.any(String),
+      id: credentialSchema.$id,
       type: 'JsonSchema2023',
     },
     credentialSubject: {
