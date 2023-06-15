@@ -14,6 +14,8 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   AttestationHandler,
   finalizeProof,
@@ -51,7 +53,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
   public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
   /**
-   * Placeholder value as @digitalbazaar/vc requires a verificationMethod property on issuance.
+   * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
    */
   public readonly verificationMethod: string
 
@@ -59,13 +61,13 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     api,
     transactionHandler,
   }: {
-    api: ApiPromise
+    api?: ApiPromise
     transactionHandler?: AttestationHandler
-  }) {
+  } = {}) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
-    this.api = api
+    this.api = api ?? ConfigService.get('api')
     this.transactionHandler = transactionHandler
-    this.verificationMethod = chainIdFromGenesis(api.genesisHash)
+    this.verificationMethod = chainIdFromGenesis(this.api.genesisHash)
   }
 
   // eslint-disable-next-line jsdoc/require-returns
