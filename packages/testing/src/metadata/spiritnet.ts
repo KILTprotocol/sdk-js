@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'fs'
 import path from 'path'
-import type { HexString } from '@polkadot/util/types'
+import type { HexString } from '@kiltprotocol/types'
 
 const META_PATH = '../../../../augment-api/metadata/spiritnet.json'
 const { result: metaHex } = JSON.parse(

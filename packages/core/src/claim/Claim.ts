@@ -18,8 +18,13 @@
  */
 
 import { hexToBn } from '@polkadot/util'
-import type { HexString } from '@polkadot/util/types'
-import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
+import type {
+  DidUri,
+  IClaim,
+  ICType,
+  PartialClaim,
+  HexString,
+} from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import * as CType from '../ctype/index.js'

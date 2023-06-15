@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/augment-api",
-  "version": "0.33.1-3",
+  "version": "0.33.2-0",
   "description": "",
   "types": "./lib/index.d.ts",
   "type": "module",

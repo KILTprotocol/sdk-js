@@ -15,8 +15,9 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
-  KiltEncryptionKeypair,
+  HexString,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 import {
@@ -36,7 +37,6 @@ import {
 import { Keyring } from '@polkadot/api'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
-import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.js'
 import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
