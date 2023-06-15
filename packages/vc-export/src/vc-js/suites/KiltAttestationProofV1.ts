@@ -14,6 +14,9 @@ import type { ApiPromise } from '@polkadot/api'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
+import { CType } from '@kiltprotocol/core'
+import type { ICType } from '@kiltprotocol/types'
+
 import {
   AttestationHandler,
   calculateRootHash,
@@ -33,8 +36,9 @@ import type {
   Proof,
   KiltCredentialV1,
 } from '../../types.js'
+import type { CTypeLoader } from '../../CredentialSchema.js'
 import type { JSigsVerificationResult } from './types.js'
-import type { JsonLdObj } from '../documentLoader.js'
+import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
 
 const {
   suites: { LinkedDataProof },
@@ -43,11 +47,13 @@ const {
 interface CallArgs {
   proof: Proof
   document?: JsonLdObj
+  documentLoader?: DocumentLoader
   [key: string]: unknown
 }
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private api: ApiPromise
+  private ctypes: ICType[]
   private transactionHandler?: AttestationHandler
   private pendingSubmissions = new Map<string, ReturnType<AttestationHandler>>()
 
@@ -59,13 +65,16 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
   constructor({
     api,
+    ctypes = [],
     transactionHandler,
   }: {
     api: ApiPromise
+    ctypes?: ICType[]
     transactionHandler?: AttestationHandler
   }) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
     this.api = api
+    this.ctypes = ctypes
     this.transactionHandler = transactionHandler
     this.verificationMethod = chainIdFromGenesis(api.genesisHash)
   }
@@ -108,7 +117,20 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
       const proof = options.proof as KiltAttestationProofV1
       const document = options.document as unknown as KiltCredentialV1
-      await verifyProof(document, proof, { api: this.api })
+      const loadCTypes: CTypeLoader = async (id) => {
+        const { document: ctype } = (await options.documentLoader?.(id)) ?? {}
+        if (!CType.isICType(ctype)) {
+          throw new Error(
+            `documentLoader failed to resolve to valid CType for ${id}`
+          )
+        }
+        return ctype
+      }
+      await verifyProof(document, proof, {
+        api: this.api,
+        loadCTypes,
+        cTypes: this.ctypes,
+      })
       return {
         verified: true,
       }

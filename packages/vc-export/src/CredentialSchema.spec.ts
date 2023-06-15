@@ -35,7 +35,7 @@ beforeAll(() => {
   })
 })
 
-it('exports to VC including ctype as schema', () => {
+it('exports to VC including ctype as schema', async () => {
   expect(VC).toMatchObject({
     credentialSchema: {
       id: credentialSchema.$id,
@@ -45,20 +45,26 @@ it('exports to VC including ctype as schema', () => {
   expect(() => validateStructure(VC)).not.toThrow()
 })
 
-it('it verifies valid claim against schema', () => {
-  expect(() => validateSubject(VC, cType)).not.toThrow()
+it('it verifies valid claim against schema', async () => {
+  await expect(validateSubject(VC, { cTypes: [cType] })).resolves.not.toThrow()
 })
 
-it('it detects schema violations', () => {
+it('it detects schema violations', async () => {
   const credentialSubject = { ...VC.credentialSubject, name: 5 }
-  expect(() => validateSubject({ ...VC, credentialSubject }, cType)).toThrow()
+  await expect(
+    validateSubject({ ...VC, credentialSubject }, { cTypes: [cType] })
+  ).rejects.toThrow()
 })
 
-it('detects wrong/invalid ctype being passed in', () => {
-  expect(() =>
+it('detects wrong/invalid ctype being passed in', async () => {
+  await expect(
     validateSubject(VC, {
-      ...cType,
-      $id: CType.hashToId(randomAsHex()),
+      cTypes: [
+        {
+          ...cType,
+          $id: CType.hashToId(randomAsHex()),
+        },
+      ],
     })
-  ).toThrow()
+  ).rejects.toThrow()
 })

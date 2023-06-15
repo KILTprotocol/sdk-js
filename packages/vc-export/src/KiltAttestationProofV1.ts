@@ -80,6 +80,7 @@ import type {
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
+import { CTypeLoader, validateSubject } from './CredentialSchema.js'
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
@@ -359,11 +360,13 @@ async function verifyLegitimation(
  * @param proof KiltAttestationProofV1 proof object to be verified. Any proofs embedded in the credentialInput are stripped and ignored.
  * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
+ * @param opts.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
+ * @param opts.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the [[CachingCTypeLoader]]. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function verify(
   credentialInput: Omit<KiltCredentialV1, 'proof'>,
   proof: KiltAttestationProofV1,
-  opts: { api?: ApiPromise } = {}
+  opts: { api?: ApiPromise; cTypes?: ICType[]; loadCTypes?: CTypeLoader } = {}
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { proof: _, ...credential } = credentialInput as KiltCredentialV1
@@ -374,6 +377,7 @@ export async function verify(
   const { nonTransferable, credentialStatus, credentialSubject, issuer } =
     credential
   validateUri(issuer, 'Did')
+  await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)
     throw new CredentialMalformedError('nonTransferable must be true')

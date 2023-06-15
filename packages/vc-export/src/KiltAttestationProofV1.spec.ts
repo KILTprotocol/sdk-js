@@ -23,18 +23,31 @@ import {
   makeAttestationCreatedEvents,
   mockedApi,
   timestamp,
+  cType,
 } from './exportToVerifiableCredential.spec'
 import { exportICredentialToVc } from './fromICredential'
 import {
   finalizeProof,
   initializeProof,
   applySelectiveDisclosure,
-  verify,
+  verify as verifyOriginal,
 } from './KiltAttestationProofV1'
 import { check as checkStatus } from './KiltRevocationStatusV1'
 import { fromICredential } from './KiltCredentialV1'
 import { credentialIdFromRootHash } from './common'
 import type { KiltCredentialV1 } from './types'
+
+// the original verify implementation but with a mocked CType loader
+const verify: typeof verifyOriginal = async (cred, proof, options) =>
+  verifyOriginal(cred, proof, {
+    ...options,
+    loadCTypes: async (id) => {
+      if (id === cType.$id) {
+        return cType
+      }
+      throw new Error('CType could not be resolved')
+    },
+  })
 
 let VC: KiltCredentialV1
 describe('proofs', () => {
