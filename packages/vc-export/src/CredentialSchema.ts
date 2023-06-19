@@ -47,22 +47,28 @@ const cachingCTypeLoader = newCachingCTypeLoader()
  *
  * @param credential A [[KiltCredentialV1]] type verifiable credential.
  * @param credential.credentialSubject The credentialSubject to be validated.
+ * @param credential.type The credential's types.
  * @param options Options map.
  * @param options.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
  * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the [[CachingCTypeLoader]]. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function validateSubject(
-  { credentialSubject }: Pick<KiltCredentialV1, 'credentialSubject'>,
+  {
+    credentialSubject,
+    type,
+  }: Pick<KiltCredentialV1, 'credentialSubject' | 'type'>,
   {
     cTypes = [],
     loadCTypes = cachingCTypeLoader,
   }: { cTypes?: ICType[]; loadCTypes?: false | CTypeLoader } = {}
 ): Promise<void> {
   // get CType id referenced in credential
-  const credentialsCTypeId = credentialSubject['@context']['@vocab'].replace(
-    '#',
-    ''
+  const credentialsCTypeId = type.find((str) =>
+    str.startsWith('kilt:ctype:')
   ) as ICType['$id']
+  if (!credentialsCTypeId) {
+    throw new Error('credential type does not contain a valid CType id')
+  }
   // check that we have access to the right schema
   let cType = cTypes?.find(({ $id }) => $id === credentialsCTypeId)
   if (!cType) {

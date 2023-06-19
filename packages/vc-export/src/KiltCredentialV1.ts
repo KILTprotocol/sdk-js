@@ -26,6 +26,7 @@ import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   KILT_CREDENTIAL_TYPE,
+  W3C_CREDENTIAL_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
 import type {
@@ -36,7 +37,7 @@ import type {
 import { credentialIdFromRootHash } from './common.js'
 
 export const credentialSchema: JsonSchema.Schema = {
-  $id: 'ipfs://Qma4bM2hXb7pfnoZVwcGZJwBdUK8gwW1bovJqUESgn5bCJ',
+  $id: 'ipfs://QmPruvY36kLgCRAjsRoCdX9vw6Y648AP72dhQdvEQ3zeUD',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
@@ -47,9 +48,13 @@ export const credentialSchema: JsonSchema.Schema = {
     type: {
       type: 'array',
       uniqueItems: true,
-      minItems: 2,
-      maxItems: 2,
-      items: { enum: DEFAULT_CREDENTIAL_TYPES },
+      minItems: 3,
+      maxItems: 3,
+      allOf: [
+        { contains: { const: W3C_CREDENTIAL_TYPE } },
+        { contains: { const: KILT_CREDENTIAL_TYPE } },
+        { contains: { type: 'string', pattern: '^kilt:ctype:0x[0-9a-f]+$' } },
+      ],
     },
     id: {
       type: 'string',
@@ -268,7 +273,7 @@ export function fromInput({
 
   return {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cTypeId],
     ...(id && { id }),
     nonTransferable: true,
     credentialSubject,

@@ -162,7 +162,7 @@ it('exports credential to VC', () => {
   })
   expect(exported).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
@@ -188,7 +188,7 @@ it('VC has correct format (full example)', () => {
     })
   ).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSchema: {
       id: credentialSchema.$id,
       type: 'JsonSchema2023',
