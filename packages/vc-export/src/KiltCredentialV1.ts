@@ -37,8 +37,10 @@ import type {
 import { credentialIdFromRootHash } from './common.js'
 
 export const credentialSchema: JsonSchema.Schema = {
-  $id: 'ipfs://QmPruvY36kLgCRAjsRoCdX9vw6Y648AP72dhQdvEQ3zeUD',
+  $id: 'ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z',
   $schema: 'http://json-schema.org/draft-07/schema#',
+  name: 'KiltCredentialV1',
+  description: 'Verifiable Credential of KiltCredentialV1 type',
   type: 'object',
   properties: {
     '@context': {
