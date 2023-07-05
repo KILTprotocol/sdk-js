@@ -30,6 +30,17 @@ import {
   CTypeModelV1,
 } from './CType.schemas.js'
 
+let notifyDeprecated: (cTypeId: ICType['$id']) => void = () => {
+  // do nothing
+}
+if (process?.env?.NODE_ENV && process.env.NODE_ENV !== 'production') {
+  const logger = ConfigService.LoggingFactory.getLogger('deprecated')
+  notifyDeprecated = (cTypeId) =>
+    logger.warn(
+      `Your application has processed the CType '${cTypeId}' which follows the meta schema '${CTypeModelDraft01.$id}'. This class of schemas has known issues that can result in unexpected properties being present in a credential. Consider switching to a CType based on meta schema ${CTypeModelV1.$id} which fixes this issue.`
+    )
+}
+
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
  *
@@ -136,6 +147,9 @@ export function verifyClaimAgainstSchema(
   messages?: string[]
 ): void {
   verifyObjectAgainstSchema(schema, CTypeModel, messages)
+  if (schema.$schema === CTypeModelDraft01.$id) {
+    notifyDeprecated(schema.$id)
+  }
   verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
@@ -162,6 +176,9 @@ export async function verifyStored(ctype: ICType): Promise<void> {
  */
 export function verifyDataStructure(input: ICType): void {
   verifyObjectAgainstSchema(input, CTypeModel)
+  if (input.$schema === CTypeModelDraft01.$id) {
+    notifyDeprecated(input.$id)
+  }
   const idFromSchema = getIdForSchema(input)
   if (idFromSchema !== input.$id) {
     throw new SDKErrors.CTypeIdMismatchError(idFromSchema, input.$id)
