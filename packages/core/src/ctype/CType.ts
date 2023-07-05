@@ -33,7 +33,11 @@ import {
 let notifyDeprecated: (cTypeId: ICType['$id']) => void = () => {
   // do nothing
 }
-if (process?.env?.NODE_ENV && process.env.NODE_ENV !== 'production') {
+if (
+  typeof process !== 'undefined' &&
+  process.env?.NODE_ENV &&
+  process.env.NODE_ENV !== 'production'
+) {
   const logger = ConfigService.LoggingFactory.getLogger('deprecated')
   const alreadyNotified = new Set<ICType['$id']>()
   notifyDeprecated = (cTypeId) => {

@@ -25,11 +25,13 @@ import {
 import type { SubscriptionPromise } from '@kiltprotocol/types'
 
 const DEFAULT_DEBUG_LEVEL = (() => {
-  if (process?.env?.DEBUG === 'true') {
-    return LogLevel.Debug
-  }
-  if (process?.env?.NODE_ENV && process.env.NODE_ENV !== 'production') {
-    return LogLevel.Warn
+  if (typeof process !== 'undefined') {
+    if (process.env.DEBUG === 'true') {
+      return LogLevel.Debug
+    }
+    if (process.env.NODE_ENV && process.env.NODE_ENV !== 'production') {
+      return LogLevel.Warn
+    }
   }
   return LogLevel.Error
 })()
