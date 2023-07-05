@@ -35,10 +35,16 @@ let notifyDeprecated: (cTypeId: ICType['$id']) => void = () => {
 }
 if (process?.env?.NODE_ENV && process.env.NODE_ENV !== 'production') {
   const logger = ConfigService.LoggingFactory.getLogger('deprecated')
-  notifyDeprecated = (cTypeId) =>
+  const alreadyNotified = new Set<ICType['$id']>()
+  notifyDeprecated = (cTypeId) => {
+    if (alreadyNotified.has(cTypeId)) {
+      return
+    }
     logger.warn(
       `Your application has processed the CType '${cTypeId}' which follows the meta schema '${CTypeModelDraft01.$id}'. This class of schemas has known issues that can result in unexpected properties being present in a credential. Consider switching to a CType based on meta schema ${CTypeModelV1.$id} which fixes this issue.`
     )
+    alreadyNotified.add(cTypeId)
+  }
 }
 
 /**
