@@ -148,5 +148,14 @@ export const context = {
         },
       },
     },
+    JsonSchema2023: {
+      '@id': 'https://www.w3.org/ns/credentials#JsonSchema2023',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
+      },
+    },
   },
 }

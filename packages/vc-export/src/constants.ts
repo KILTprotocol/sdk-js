@@ -53,7 +53,7 @@ export const KILT_ATTESTER_LEGITIMATION_V1_TYPE = 'KiltAttesterLegitimationV1'
 
 export const KILT_ATTESTER_DELEGATION_V1_TYPE = 'KiltAttesterDelegationV1'
 
-export const JSON_SCHEMA_TYPE = 'JsonSchemaValidator2018'
+export const JSON_SCHEMA_TYPE = 'JsonSchema2023'
 
 export const KILT_CREDENTIAL_IRI_PREFIX = 'kilt:credential:'
 

@@ -16,7 +16,10 @@ import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
-import { validateStructure as validateCredentialStructure } from './KiltCredentialV1'
+import {
+  credentialSchema,
+  validateStructure as validateCredentialStructure,
+} from './KiltCredentialV1'
 import { exportICredentialToVc } from './fromICredential'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -159,7 +162,7 @@ it('exports credential to VC', () => {
   })
   expect(exported).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
@@ -185,29 +188,10 @@ it('VC has correct format (full example)', () => {
     })
   ).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSchema: {
-      id: expect.any(String),
-      type: 'JsonSchemaValidator2018',
-      name: 'membership',
-      schema: {
-        $id: expect.any(String),
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          birthday: {
-            format: 'date',
-            type: 'string',
-          },
-          name: {
-            type: 'string',
-          },
-          premium: {
-            type: 'boolean',
-          },
-        },
-        title: 'membership',
-        type: 'object',
-      },
+      id: credentialSchema.$id,
+      type: 'JsonSchema2023',
     },
     credentialSubject: {
       '@context': {

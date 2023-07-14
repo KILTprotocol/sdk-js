@@ -19,10 +19,12 @@ import type {
   ConformingDidDocument,
   ConformingDidKey,
   DidUri,
+  ICType,
 } from '@kiltprotocol/types'
 
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
+import { newCachingCTypeLoader } from '../KiltCredentialV1.js'
 
 export type JsonLdObj = Record<string, unknown>
 export interface RemoteDocument {
@@ -128,6 +130,12 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
   return { contextUrl: undefined, documentUrl: url, document }
 }
 
+const loader = newCachingCTypeLoader()
+export const kiltCTypeLoader: DocumentLoader = async (id) => {
+  const document = (await loader(id as ICType['$id'])) as JsonLdObj & ICType
+  return { contextUrl: undefined, documentUrl: id, document }
+}
+
 /**
  * Document loader that provides access to the JSON-LD contexts required for verifying Kilt VCs.
  * Essentially wraps the vc-js defaultDocumentLoader, but additionally loads KILTs [[validationContexts]] & [[DID_CONTEXTS]].
@@ -138,4 +146,5 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
 export const defaultDocumentLoader: DocumentLoader = combineDocumentLoaders([
   kiltContextsLoader,
   kiltDidLoader,
+  kiltCTypeLoader,
 ])

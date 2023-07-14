@@ -8,21 +8,21 @@
 /* eslint-disable no-use-before-define */
 
 import type {
-  ICType,
   ConformingDidKey,
   DidUri,
   Caip2ChainId,
   IClaimContents,
+  ICType,
 } from '@kiltprotocol/types'
 
 import type {
   ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
   JSON_SCHEMA_TYPE,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
+  KILT_CREDENTIAL_TYPE,
   KILT_REVOCATION_STATUS_V1_TYPE,
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
@@ -108,15 +108,9 @@ export interface KiltAttestationProofV1 extends Proof {
   salt: string[]
 }
 
-export interface JsonSchemaValidator2018 {
+export interface JsonSchema2023 {
   id: string
   type: typeof JSON_SCHEMA_TYPE
-  schema?: ICType
-  modelVersion?: string
-  name?: string
-  author?: string
-  authored?: string
-  // proof?: Proof
 }
 
 export interface KiltRevocationStatusV1 {
@@ -160,7 +154,9 @@ export interface KiltCredentialV1 extends VerifiableCredential {
   /**
    * The credential types, which declare what data to expect in the credential.
    */
-  type: typeof DEFAULT_CREDENTIAL_TYPES
+  type: Array<
+    typeof W3C_CREDENTIAL_TYPE | typeof KILT_CREDENTIAL_TYPE | ICType['$id']
+  >
   /**
    * Claims about the subjects of the credential.
    */
@@ -176,7 +172,7 @@ export interface KiltCredentialV1 extends VerifiableCredential {
   /**
    * Contains json schema for the validation of credentialSubject claims.
    */
-  credentialSchema: JsonSchemaValidator2018
+  credentialSchema: JsonSchema2023
   /**
    * Contains credentials status method.
    */
