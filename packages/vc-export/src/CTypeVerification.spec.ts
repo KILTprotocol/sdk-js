@@ -11,14 +11,17 @@
 
 import { CType } from '@kiltprotocol/core'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
-import { validateSubject } from './CredentialSchema'
 import {
   attestation,
   credential,
   cType,
 } from './exportToVerifiableCredential.spec'
 import { exportICredentialToVc } from './fromICredential'
-import { credentialSchema, validateStructure } from './KiltCredentialV1'
+import {
+  credentialSchema,
+  validateStructure,
+  validateSubject,
+} from './KiltCredentialV1'
 import type { KiltCredentialV1 } from './types'
 
 let VC: KiltCredentialV1

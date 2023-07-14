@@ -62,7 +62,11 @@ import {
   KILT_REVOCATION_STATUS_V1_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
-import { validateStructure as validateCredentialStructure } from './KiltCredentialV1.js'
+import {
+  validateStructure as validateCredentialStructure,
+  CTypeLoader,
+  validateSubject,
+} from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   jsonLdExpandCredentialSubject,
@@ -80,7 +84,6 @@ import type {
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
-import { CTypeLoader, validateSubject } from './CredentialSchema.js'
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].

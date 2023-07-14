@@ -24,7 +24,7 @@ import type {
 
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
-import { newCachingCTypeLoader } from '../CredentialSchema.js'
+import { newCachingCTypeLoader } from '../KiltCredentialV1.js'
 
 export type JsonLdObj = Record<string, unknown>
 export interface RemoteDocument {

@@ -36,7 +36,7 @@ import type {
   Proof,
   KiltCredentialV1,
 } from '../../types.js'
-import type { CTypeLoader } from '../../CredentialSchema.js'
+import type { CTypeLoader } from '../../KiltCredentialV1.js'
 import type { JSigsVerificationResult } from './types.js'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
 
