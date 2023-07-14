@@ -31,12 +31,15 @@ import {
 } from '../../KiltAttestationProofV1.js'
 import type { CTypeLoader } from '../../KiltCredentialV1.js'
 import {
-  fromInput as credentialFromInput,
+  credentialSchema,
   validateStructure as validateCredentialStructure,
 } from '../../KiltCredentialV1.js'
 import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
+  DEFAULT_CREDENTIAL_CONTEXTS,
+  DEFAULT_CREDENTIAL_TYPES,
+  JSON_SCHEMA_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
 } from '../../constants.js'
 import type {
@@ -274,23 +277,31 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         'suite must be configured with a transactionHandler & didSigner for proof generation'
       )
     }
-    const {
-      credentialSubject: {
-        id: subject,
-        '@context': { '@vocab': vocab },
-        ...claims
-      },
-      type,
-    } = input
-    const cType = (type?.find((str) => str.startsWith('kilt:ctype:')) ??
-      vocab.slice(0, -1)) as ICType['$id']
+    const { credentialSubject, type } = input
 
-    const credentialStub = credentialFromInput({
-      subject,
-      claims,
-      cType,
-      issuer: this.didSigner.did,
-    })
+    let cType = type?.find((str): str is ICType['$id'] =>
+      str.startsWith('kilt:ctype:')
+    )
+    if (!cType) {
+      cType = credentialSubject['@context']['@vocab'].slice(
+        0,
+        -1
+      ) as ICType['$id']
+    } else {
+      credentialSubject['@context']['@vocab'] = `${cType}#`
+    }
+
+    const credentialStub = {
+      ...input,
+      '@context': DEFAULT_CREDENTIAL_CONTEXTS,
+      type: [...DEFAULT_CREDENTIAL_TYPES, cType],
+      nonTransferable: true as const,
+      credentialSubject,
+      credentialSchema: {
+        id: credentialSchema.$id as string,
+        type: JSON_SCHEMA_TYPE,
+      } as const,
+    }
 
     const { proof, ...credential } = await issue(credentialStub, {
       did: this.didSigner.did,
