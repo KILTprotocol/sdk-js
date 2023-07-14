@@ -26,131 +26,24 @@ import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   KILT_CREDENTIAL_TYPE,
+  W3C_CREDENTIAL_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
 import type {
-  JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
-import { credentialIdFromRootHash } from './common.js'
-
-interface CredentialInput {
-  subject: DidUri
-  claims: ICredential['claim']['contents']
-  cType: ICType | ICType['$id']
-  issuer: DidUri
-  timestamp?: number
-  chainGenesisHash?: Uint8Array
-  claimHash?: ICredential['rootHash']
-  legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
-  delegationId?: IDelegationNode['id']
-}
-interface CredentialInputWithRootHash extends CredentialInput {
-  claimHash: ICredential['rootHash']
-}
-
-export function fromInput(
-  input: CredentialInputWithRootHash
-): Omit<KiltCredentialV1, 'proof'>
-/**
- * Produces a KiltCredentialV1 from input data.
- *
- * @param input Container for input data.
- * @param input.subject Did of the credential subject (claimer).
- * @param input.claims A record of claims about the subject.
- * @param input.cType The CType (or alternatively its id) to which the claims conform.
- * @param input.issuer The issuer of the credential.
- * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
- * @param input.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
- * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
- * @param input.legitimations Optional: array of credentials (or credential ids) which function as legitimations to this credential.
- * @param input.delegationId Optional: the id of a delegation node which was used in attesting this credential.
- * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
- */
-export function fromInput({
-  subject,
-  claims,
-  cType,
-  issuer,
-  timestamp = Date.now(),
-  chainGenesisHash = spiritnetGenesisHash,
-  claimHash,
-  legitimations,
-  delegationId,
-}: CredentialInput): Omit<
-  KiltCredentialV1,
-  'proof' | 'id' | 'credentialStatus'
-> {
-  const cTypeId = typeof cType === 'object' ? cType.$id : cType
-  // transform & annotate claim to be json-ld and VC conformant
-  const credentialSubject = {
-    '@context': { '@vocab': `${cTypeId}#` },
-    id: subject,
-  }
-
-  Object.entries(claims).forEach(([key, claim]) => {
-    if (key.startsWith('@') || key === 'id' || key === 'type') {
-      credentialSubject[`${cTypeId}#${key}`] = claim
-    } else {
-      credentialSubject[key] = claim
-    }
-  })
-
-  const credentialSchema: JsonSchemaValidator2018 = {
-    id: cTypeId,
-    type: JSON_SCHEMA_TYPE,
-  }
-  if (typeof cType === 'object') {
-    credentialSchema.name = cType.title
-    credentialSchema.schema = cType
-  }
-
-  const federatedTrustModel: KiltCredentialV1['federatedTrustModel'] = []
-  legitimations?.forEach((legitimation) => {
-    const type = KILT_ATTESTER_LEGITIMATION_V1_TYPE
-    const entry: KiltAttesterLegitimationV1 =
-      typeof legitimation === 'object'
-        ? {
-            id: legitimation.id,
-            type,
-            verifiableCredential: legitimation,
-          }
-        : {
-            id: legitimation,
-            type,
-          }
-    federatedTrustModel.push(entry)
-  })
-  if (delegationId) {
-    const delegation: KiltAttesterDelegationV1 = {
-      id: `kilt:delegation/${base58Encode(hexToU8a(delegationId))}`,
-      type: KILT_ATTESTER_DELEGATION_V1_TYPE,
-    }
-    federatedTrustModel.push(delegation)
-  }
-
-  const issuanceDate = new Date(timestamp).toISOString()
-
-  return {
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: DEFAULT_CREDENTIAL_TYPES,
-    nonTransferable: true,
-    ...(claimHash && {
-      id: credentialIdFromRootHash(hexToU8a(claimHash)),
-      credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
-    }),
-    credentialSubject,
-    credentialSchema,
-    issuer,
-    issuanceDate,
-    ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
-  }
-}
+import {
+  credentialIdFromRootHash,
+  jsonLdExpandCredentialSubject,
+} from './common.js'
 
 export const credentialSchema: JsonSchema.Schema = {
+  $id: 'ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z',
   $schema: 'http://json-schema.org/draft-07/schema#',
+  name: 'KiltCredentialV1',
+  description: 'Verifiable Credential of KiltCredentialV1 type',
   type: 'object',
   properties: {
     '@context': {
@@ -160,9 +53,13 @@ export const credentialSchema: JsonSchema.Schema = {
     type: {
       type: 'array',
       uniqueItems: true,
-      minItems: 2,
-      maxItems: 2,
-      items: { enum: DEFAULT_CREDENTIAL_TYPES },
+      minItems: 3,
+      maxItems: 3,
+      allOf: [
+        { contains: { const: W3C_CREDENTIAL_TYPE } },
+        { contains: { const: KILT_CREDENTIAL_TYPE } },
+        { contains: { type: 'string', pattern: '^kilt:ctype:0x[0-9a-f]+$' } },
+      ],
     },
     id: {
       type: 'string',
@@ -230,7 +127,6 @@ export const credentialSchema: JsonSchema.Schema = {
           type: 'string',
           const: JSON_SCHEMA_TYPE,
         },
-        schema: { $ref: CType.Schemas.CTypeModel.$id },
       },
       required: ['id', 'type'],
     },
@@ -271,6 +167,14 @@ schemaValidator.addSchema(CType.Schemas.CTypeModel, 'kilt.schemas/CTypeModel')
 export function validateStructure(
   credential: Omit<KiltCredentialV1, 'proof'>
 ): void {
+  if (
+    credential?.credentialSchema?.type !== JSON_SCHEMA_TYPE ||
+    credential?.credentialSchema?.id !== credentialSchema.$id
+  ) {
+    throw new Error(
+      `A ${KILT_CREDENTIAL_TYPE} type credential must have a credentialSchema of type ${JSON_SCHEMA_TYPE} and id ${credentialSchema.$id}`
+    )
+  }
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new CredentialMalformedError(
@@ -279,6 +183,113 @@ export function validateStructure(
         cause: errors,
       }
     )
+}
+
+interface CredentialInput {
+  subject: DidUri
+  claims: ICredential['claim']['contents']
+  cType: ICType | ICType['$id']
+  issuer: DidUri
+  timestamp?: number
+  chainGenesisHash?: Uint8Array
+  claimHash?: ICredential['rootHash']
+  legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
+  delegationId?: IDelegationNode['id']
+}
+interface CredentialInputWithRootHash extends CredentialInput {
+  claimHash: ICredential['rootHash']
+}
+
+export function fromInput(
+  input: CredentialInputWithRootHash
+): Omit<KiltCredentialV1, 'proof'>
+/**
+ * Produces a KiltCredentialV1 from input data.
+ *
+ * @param input Container for input data.
+ * @param input.subject Did of the credential subject (claimer).
+ * @param input.claims A record of claims about the subject.
+ * @param input.cType The CType (or alternatively its id) to which the claims conform.
+ * @param input.issuer The issuer of the credential.
+ * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param input.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
+ * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
+ * @param input.legitimations Optional: array of credentials (or credential ids) which function as legitimations to this credential.
+ * @param input.delegationId Optional: the id of a delegation node which was used in attesting this credential.
+ * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
+ */
+export function fromInput({
+  subject,
+  claims,
+  cType,
+  issuer,
+  timestamp = Date.now(),
+  chainGenesisHash = spiritnetGenesisHash,
+  claimHash,
+  legitimations,
+  delegationId,
+}: CredentialInput): Omit<
+  KiltCredentialV1,
+  'proof' | 'id' | 'credentialStatus'
+> {
+  const cTypeId = typeof cType === 'object' ? cType.$id : cType
+  // transform & annotate claim to be json-ld and VC conformant
+  const credentialSubject = {
+    '@context': { '@vocab': `${cTypeId}#` },
+    id: subject,
+  }
+
+  Object.entries(claims).forEach(([key, claim]) => {
+    if (key.startsWith('@') || key === 'id' || key === 'type') {
+      credentialSubject[`${cTypeId}#${key}`] = claim
+    } else {
+      credentialSubject[key] = claim
+    }
+  })
+
+  const federatedTrustModel: KiltCredentialV1['federatedTrustModel'] = []
+  legitimations?.forEach((legitimation) => {
+    const type = KILT_ATTESTER_LEGITIMATION_V1_TYPE
+    const entry: KiltAttesterLegitimationV1 =
+      typeof legitimation === 'object'
+        ? {
+            id: legitimation.id,
+            type,
+            verifiableCredential: legitimation,
+          }
+        : {
+            id: legitimation,
+            type,
+          }
+    federatedTrustModel.push(entry)
+  })
+  if (delegationId) {
+    const delegation: KiltAttesterDelegationV1 = {
+      id: `kilt:delegation/${base58Encode(hexToU8a(delegationId))}`,
+      type: KILT_ATTESTER_DELEGATION_V1_TYPE,
+    }
+    federatedTrustModel.push(delegation)
+  }
+
+  const issuanceDate = new Date(timestamp).toISOString()
+
+  return {
+    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...DEFAULT_CREDENTIAL_TYPES, cTypeId],
+    nonTransferable: true,
+    credentialSubject,
+    credentialSchema: {
+      id: credentialSchema.$id as string,
+      type: JSON_SCHEMA_TYPE,
+    },
+    ...(claimHash && {
+      credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
+      id: credentialIdFromRootHash(hexToU8a(claimHash)),
+    }),
+    issuer,
+    issuanceDate,
+    ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
+  }
 }
 
 /**
@@ -328,4 +339,98 @@ export function fromICredential(
   })
 
   return vc
+}
+
+export type CTypeLoader = (id: ICType['$id']) => Promise<ICType>
+
+const loadCType: CTypeLoader = async (id) => {
+  return (await CType.fetchFromChain(id)).ctype
+}
+
+/**
+ * A factory for a CType loader that caches a CType definition once it has been loaded.
+ * Used in validating the credentialSubject of a [[KiltCredentialV1]] against the Claim Type referenced in its `type` field.
+ *
+ * @param initialCTypes An array of CTypes with which the cache is to be initialized.
+ * @returns A function that takes a CType id and looks up a CType definition in an internal cache, and if not found, tries to fetch it from the KILT blochchain.
+ */
+export function newCachingCTypeLoader(
+  initialCTypes: ICType[] = []
+): CTypeLoader {
+  const ctypes: Map<string, ICType> = new Map()
+
+  initialCTypes.forEach((ctype) => {
+    ctypes.set(ctype.$id, ctype)
+  })
+
+  async function getCType(id: ICType['$id']): Promise<ICType> {
+    const ctype: ICType = ctypes.get(id) ?? (await loadCType(id))
+    ctypes.set(ctype.$id, ctype)
+    return ctype
+  }
+  return getCType
+}
+
+const cachingCTypeLoader = newCachingCTypeLoader()
+
+/**
+ * Validates the claims in the VC's `credentialSubject` against a CType definition.
+ *
+ * @param credential A [[KiltCredentialV1]] type verifiable credential.
+ * @param credential.credentialSubject The credentialSubject to be validated.
+ * @param credential.type The credential's types.
+ * @param options Options map.
+ * @param options.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
+ * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the [[CachingCTypeLoader]]. If set to `false` or `undefined`, no additional CTypes will be loaded.
+ */
+export async function validateSubject(
+  {
+    credentialSubject,
+    type,
+  }: Pick<KiltCredentialV1, 'credentialSubject' | 'type'>,
+  {
+    cTypes = [],
+    loadCTypes = cachingCTypeLoader,
+  }: { cTypes?: ICType[]; loadCTypes?: false | CTypeLoader } = {}
+): Promise<void> {
+  // get CType id referenced in credential
+  const credentialsCTypeId = type.find((str) =>
+    str.startsWith('kilt:ctype:')
+  ) as ICType['$id']
+  if (!credentialsCTypeId) {
+    throw new Error('credential type does not contain a valid CType id')
+  }
+  // check that we have access to the right schema
+  let cType = cTypes?.find(({ $id }) => $id === credentialsCTypeId)
+  if (!cType) {
+    if (typeof loadCTypes !== 'function') {
+      throw new Error(
+        `The definition for this credential's CType ${credentialsCTypeId} has not been passed to the validator and CType loading has been disabled`
+      )
+    }
+    cType = await loadCTypes(credentialsCTypeId)
+    if (cType.$id !== credentialsCTypeId) {
+      throw new Error('failed to load correct CType')
+    }
+  }
+
+  // normalize credential subject to form expected by CType schema
+  const expandedClaims: Record<string, unknown> =
+    jsonLdExpandCredentialSubject(credentialSubject)
+  delete expandedClaims['@id']
+
+  const vocab = `${cType.$id}#`
+  const claims = Object.entries(expandedClaims).reduce((obj, [key, value]) => {
+    if (!key.startsWith(vocab)) {
+      throw new Error(
+        `The credential contains claims which do not follow the expected CType: ${key}`
+      )
+    }
+    return {
+      ...obj,
+      [key.substring(vocab.length)]: value,
+    }
+  }, {})
+  // validates against CType (also validates CType schema itself)
+  CType.verifyClaimAgainstSchema(claims, cType)
 }

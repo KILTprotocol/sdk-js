@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.33.2-2",
+  "version": "0.33.2-4",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -37,6 +37,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/did": "workspace:*",

@@ -27,6 +27,7 @@ import type {
 
 import * as JWT from './DidJwt'
 import * as Presentation from './Presentation'
+import { credentialSchema } from './KiltCredentialV1'
 import type { KiltCredentialV1 } from './types'
 
 jest.mock('@kiltprotocol/did', () => ({
@@ -109,8 +110,8 @@ it('produces and reverses JWT payload representations of a credential and presen
       salt: ['censored'],
     },
     credentialSchema: {
-      type: 'JsonSchemaValidator2018',
-      id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+      type: 'JsonSchema2023',
+      id: credentialSchema.$id,
     },
     credentialStatus: {
       id: 'polkadot:1234567890:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',

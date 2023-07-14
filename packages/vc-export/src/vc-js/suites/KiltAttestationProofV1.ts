@@ -15,6 +15,7 @@ import jsigs from 'jsonld-signatures' // cjs module
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
+import { CType } from '@kiltprotocol/core'
 import type {
   DidUri,
   ICType,
@@ -28,6 +29,7 @@ import {
   issue,
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
+import type { CTypeLoader } from '../../KiltCredentialV1.js'
 import {
   fromInput as credentialFromInput,
   validateStructure as validateCredentialStructure,
@@ -42,7 +44,7 @@ import type {
   KiltCredentialV1,
   Proof,
 } from '../../types.js'
-import type { JsonLdObj } from '../documentLoader.js'
+import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
 import type { JSigsVerificationResult } from './types.js'
 import { includesContext } from './utils.js'
 
@@ -53,6 +55,7 @@ const {
 interface CallArgs {
   proof: Proof
   document?: JsonLdObj
+  documentLoader?: DocumentLoader
   [key: string]: unknown
 }
 
@@ -86,9 +89,11 @@ function makeDefaultTxSubmit(
 }
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
+  private ctypes: ICType[]
   private didSigner?: DidSigner
   private transactionHandler?: TxHandler &
     Required<Pick<TxHandler, 'signAndSubmit'>>
+
   private attestationInfo = new Map<
     KiltCredentialV1['id'],
     KiltAttestationProofV1
@@ -103,13 +108,16 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   constructor({
+    ctypes = [],
     transactionHandler,
     didSigner,
   }: {
+    ctypes?: ICType[]
     transactionHandler?: TxHandler
     didSigner?: DidSigner
   } = {}) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
+    this.ctypes = ctypes
     this.didSigner = didSigner
     if (transactionHandler) {
       this.transactionHandler = {
@@ -158,7 +166,19 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
       const proof = options.proof as KiltAttestationProofV1
       const document = options.document as unknown as KiltCredentialV1
-      await verifyProof(document, proof)
+      const loadCTypes: CTypeLoader = async (id) => {
+        const { document: ctype } = (await options.documentLoader?.(id)) ?? {}
+        if (!CType.isICType(ctype)) {
+          throw new Error(
+            `documentLoader failed to resolve to valid CType for ${id}`
+          )
+        }
+        return ctype
+      }
+      await verifyProof(document, proof, {
+        loadCTypes,
+        cTypes: this.ctypes,
+      })
       return {
         verified: true,
       }
@@ -230,9 +250,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     const proof = this.attestationInfo.get(id)
     if (!proof) {
       throw new Error(
-        'No attestation information available for the credential ' +
-          id +
-          '. Make sure you have called anchorCredential on the same instance of this class.'
+        `No attestation information available for the credential ${id}. Make sure you have called anchorCredential on the same instance of this class.`
       )
     }
     return proof
@@ -249,7 +267,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    */
   public async anchorCredential({
     credentialSubject,
-    credentialSchema,
+    type,
   }: CredentialStub): Promise<Omit<KiltCredentialV1, 'proof'>> {
     if (!this.transactionHandler || !this.didSigner) {
       throw new Error(
@@ -261,7 +279,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       '@context': { '@vocab': vocab },
       ...claims
     } = credentialSubject
-    const cType = (credentialSchema?.id ?? vocab.slice(0, -1)) as ICType['$id']
+    const cType = (type?.find((str) => str.startsWith('kilt:ctype:')) ??
+      vocab.slice(0, -1)) as ICType['$id']
 
     const credentialStub = credentialFromInput({
       subject,

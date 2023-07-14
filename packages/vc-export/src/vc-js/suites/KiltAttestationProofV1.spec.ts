@@ -28,6 +28,7 @@ import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
   ConformingDidDocument,
+  ICType,
   IClaim,
   ICredential,
   KiltKeyringPair,
@@ -54,6 +55,7 @@ import {
 } from './KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ICredentialExample.json'
 import {
+  cType,
   makeAttestationCreatedEvents,
   mockedApi,
 } from '../../exportToVerifiableCredential.spec.js'
@@ -147,6 +149,18 @@ jest
   .mocked(mockedApi.query.timestamp.now)
   .mockResolvedValue(mockedApi.createType('u64', timestamp) as any)
 
+const emailCType: ICType = {
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  properties: {
+    Email: {
+      type: 'string',
+    },
+  },
+  title: 'Email',
+  type: 'object',
+  $id: 'kilt:ctype:0x3291bb126e33b4862d421bfaa1d2f272e6cdfc4f96658988fbcffea8914bd9ac',
+}
+
 const documentLoader = combineDocumentLoaders([
   kiltDidLoader,
   kiltContextsLoader,
@@ -160,7 +174,9 @@ let keypair: KiltKeyringPair
 let didDocument: ConformingDidDocument
 
 beforeAll(async () => {
-  suite = new KiltAttestationV1Suite()
+  suite = new KiltAttestationV1Suite({
+    ctypes: [cType, emailCType],
+  })
   purpose = new KiltAttestationProofV1Purpose()
   proof = attestedVc.proof as KiltAttestationProofV1
   ;({ keypair, didDocument } = await makeFakeDid())
@@ -437,7 +453,6 @@ describe('issuance', () => {
   beforeEach(() => {
     toBeSigned = {
       credentialSubject: attestedVc.credentialSubject,
-      credentialSchema: attestedVc.credentialSchema,
     }
     issuanceSuite = new KiltAttestationV1Suite({
       didSigner: {

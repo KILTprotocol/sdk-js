@@ -24,12 +24,17 @@ import {
 } from 'typescript-logging'
 import type { SubscriptionPromise } from '@kiltprotocol/types'
 
-const DEFAULT_DEBUG_LEVEL =
-  typeof process !== 'undefined' &&
-  process.env?.DEBUG &&
-  process.env.DEBUG === 'true'
-    ? LogLevel.Debug
-    : LogLevel.Error
+const DEFAULT_DEBUG_LEVEL = (() => {
+  if (typeof process !== 'undefined') {
+    if (process.env.DEBUG === 'true') {
+      return LogLevel.Debug
+    }
+    if (process.env.NODE_ENV && process.env.NODE_ENV !== 'production') {
+      return LogLevel.Warn
+    }
+  }
+  return LogLevel.Error
+})()
 
 export type configOpts = {
   api: ApiPromise
