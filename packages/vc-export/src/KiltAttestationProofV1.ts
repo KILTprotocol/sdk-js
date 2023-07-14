@@ -689,7 +689,6 @@ export type AttestationHandler = (
  * It receives an unsigned extrinsic and is expected to return the `blockHash` and `timestamp` when the extrinsic was included in a block.
  * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
  * If no `timestamp` is returned by the callback, the timestamp is queried from the blockchain based on the block hash.
- * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
@@ -699,17 +698,16 @@ export async function issue(
     didSigner,
     submitterAddress,
     txSubmissionHandler,
-    api = ConfigService.get('api'),
     ...otherParams
   }: {
     didSigner: SignExtrinsicCallback
     did: DidUri
     submitterAddress: KiltAddress
     txSubmissionHandler: AttestationHandler
-    api?: ApiPromise
   } & Parameters<typeof authorizeTx>[4]
 ): Promise<KiltCredentialV1> {
   const [proof, callArgs] = initializeProof(credential)
+  const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
   const didSigned = await authorizeTx(
     did,
