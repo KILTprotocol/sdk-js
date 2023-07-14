@@ -100,10 +100,11 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   >()
 
   public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
+  // eslint-disable-next-line jsdoc/require-returns
   /**
    * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
    */
-  public get verificationMethod() {
+  public get verificationMethod(): string {
     return chainIdFromGenesis(ConfigService.get('api').genesisHash)
   }
 
@@ -261,24 +262,26 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * The class instance keeps track of attestation-related data.
    * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
-   * @param credential A partial [[KiltCredentialV1]]; `credentialSubject` is required.
+   * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
    *
    * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
-  public async anchorCredential({
-    credentialSubject,
-    type,
-  }: CredentialStub): Promise<Omit<KiltCredentialV1, 'proof'>> {
+  public async anchorCredential(
+    input: CredentialStub
+  ): Promise<Omit<KiltCredentialV1, 'proof'>> {
     if (!this.transactionHandler || !this.didSigner) {
       throw new Error(
         'suite must be configured with a transactionHandler & didSigner for proof generation'
       )
     }
     const {
-      id: subject,
-      '@context': { '@vocab': vocab },
-      ...claims
-    } = credentialSubject
+      credentialSubject: {
+        id: subject,
+        '@context': { '@vocab': vocab },
+        ...claims
+      },
+      type,
+    } = input
     const cType = (type?.find((str) => str.startsWith('kilt:ctype:')) ??
       vocab.slice(0, -1)) as ICType['$id']
 
@@ -287,7 +290,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       claims,
       cType,
       issuer: this.didSigner.did,
-    } as any)
+    })
 
     const { proof, ...credential } = await issue(credentialStub, {
       did: this.didSigner.did,

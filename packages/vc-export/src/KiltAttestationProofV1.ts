@@ -571,6 +571,11 @@ export function applySelectiveDisclosure(
   }
 }
 
+export type UnissuedCredential = Omit<
+  KiltCredentialV1,
+  'proof' | 'id' | 'credentialStatus' | 'issuanceDate'
+>
+
 /**
  * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
  *
@@ -585,15 +590,27 @@ export function applySelectiveDisclosure(
  * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
  */
 export function initializeProof(
-  credential: Omit<KiltCredentialV1, 'proof'>
+  credential: UnissuedCredential
 ): [
   KiltAttestationProofV1,
   Parameters<ApiPromise['tx']['attestation']['add']>
 ] {
-  const { credentialSubject, nonTransferable, type } = credential
+  const { credentialSubject, nonTransferable } = credential
 
   if (nonTransferable !== true) {
     throw new Error('nonTransferable must be set to true')
+  }
+
+  const type = credential.type.find((str): str is ICType['$id'] =>
+    str.startsWith('kilt:ctype:')
+  )
+  if (!type) {
+    throw new Error('A CType id is required in the set of credential types')
+  }
+  if (`${type}#` !== credentialSubject['@context']['@vocab']) {
+    throw new Error(
+      `The credential type ${type} does not match credentialSubject vocabulary ${credentialSubject['@context']['@vocab']}`
+    )
   }
 
   // 1. json-ld expand credentialSubject
@@ -623,9 +640,7 @@ export function initializeProof(
     proof,
     [
       rootHash,
-      CType.idToHash(
-        type.find((str) => str.startsWith('kilt:ctype:')) as ICType['$id']
-      ),
+      CType.idToHash(type),
       delegationId && { Delegation: delegationId },
     ],
   ]
@@ -650,7 +665,7 @@ export function initializeProof(
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export function finalizeProof(
-  credential: Omit<KiltCredentialV1, 'proof'>,
+  credential: UnissuedCredential,
   proof: KiltAttestationProofV1,
   {
     blockHash,
@@ -692,7 +707,7 @@ export type AttestationHandler = (
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
-  credential: Omit<KiltCredentialV1, 'proof'>,
+  credential: Omit<UnissuedCredential, 'issuer'>,
   {
     did,
     didSigner,
@@ -706,7 +721,8 @@ export async function issue(
     txSubmissionHandler: AttestationHandler
   } & Parameters<typeof authorizeTx>[4]
 ): Promise<KiltCredentialV1> {
-  const [proof, callArgs] = initializeProof(credential)
+  const updatedCredential = { ...credential, issuer: did }
+  const [proof, callArgs] = initializeProof(updatedCredential)
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
   const didSigned = await authorizeTx(
@@ -720,7 +736,7 @@ export async function issue(
     blockHash,
     timestamp = (await api.query.timestamp.now.at(blockHash)).toNumber(),
   } = await txSubmissionHandler(didSigned, api)
-  return finalizeProof(credential, proof, {
+  return finalizeProof(updatedCredential, proof, {
     blockHash,
     timestamp,
     genesisHash: api.genesisHash,

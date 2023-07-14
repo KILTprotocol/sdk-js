@@ -188,7 +188,7 @@ export function validateStructure(
 interface CredentialInput {
   subject: DidUri
   claims: ICredential['claim']['contents']
-  cType: ICType | ICType['$id']
+  cType: ICType['$id']
   issuer: DidUri
   timestamp?: number
   chainGenesisHash?: Uint8Array
@@ -203,6 +203,9 @@ interface CredentialInputWithRootHash extends CredentialInput {
 export function fromInput(
   input: CredentialInputWithRootHash
 ): Omit<KiltCredentialV1, 'proof'>
+export function fromInput(
+  input: CredentialInput
+): Omit<KiltCredentialV1, 'proof' | 'id' | 'credentialStatus'>
 /**
  * Produces a KiltCredentialV1 from input data.
  *
@@ -232,16 +235,15 @@ export function fromInput({
   KiltCredentialV1,
   'proof' | 'id' | 'credentialStatus'
 > {
-  const cTypeId = typeof cType === 'object' ? cType.$id : cType
   // transform & annotate claim to be json-ld and VC conformant
   const credentialSubject = {
-    '@context': { '@vocab': `${cTypeId}#` },
+    '@context': { '@vocab': `${cType}#` },
     id: subject,
   }
 
   Object.entries(claims).forEach(([key, claim]) => {
     if (key.startsWith('@') || key === 'id' || key === 'type') {
-      credentialSubject[`${cTypeId}#${key}`] = claim
+      credentialSubject[`${cType}#${key}`] = claim
     } else {
       credentialSubject[key] = claim
     }
@@ -275,7 +277,7 @@ export function fromInput({
 
   return {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cTypeId],
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType],
     nonTransferable: true,
     credentialSubject,
     credentialSchema: {
