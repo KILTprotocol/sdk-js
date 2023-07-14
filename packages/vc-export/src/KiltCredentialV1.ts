@@ -41,7 +41,7 @@ interface CredentialInput {
   claims: ICredential['claim']['contents']
   cType: ICType | ICType['$id']
   issuer: DidUri
-  timestamp: number
+  timestamp?: number
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
   legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
@@ -70,13 +70,13 @@ export function fromInput(
  * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
  */
 export function fromInput({
-  claimHash,
   subject,
   claims,
   cType,
   issuer,
   timestamp = Date.now(),
   chainGenesisHash = spiritnetGenesisHash,
+  claimHash,
   legitimations,
   delegationId,
 }: CredentialInput): Omit<

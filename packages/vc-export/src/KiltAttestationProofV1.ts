@@ -49,7 +49,7 @@ import type {
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignCallback,
+  SignExtrinsicCallback,
 } from '@kiltprotocol/types'
 
 import { Caip19 } from './CAIP/index.js'
@@ -684,7 +684,7 @@ export type AttestationHandler = (
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
-  credential: KiltCredentialV1,
+  credential: Omit<KiltCredentialV1, 'proof'>,
   {
     did,
     didSigner,
@@ -693,7 +693,7 @@ export async function issue(
     api = ConfigService.get('api'),
     ...otherParams
   }: {
-    didSigner: SignCallback
+    didSigner: SignExtrinsicCallback
     did: DidUri
     submitterAddress: KiltAddress
     txSubmissionHandler: AttestationHandler

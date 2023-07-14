@@ -8,34 +8,43 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-pattern */
 
-import type { ApiPromise } from '@polkadot/api'
-import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import type { Signer } from '@polkadot/types/types'
 
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
+import type {
+  DidUri,
+  ICType,
+  KiltAddress,
+  SignExtrinsicCallback,
+} from '@kiltprotocol/types'
 
+import { chainIdFromGenesis } from '../../CAIP/caip2.js'
 import {
   AttestationHandler,
-  finalizeProof,
-  initializeProof,
+  issue,
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
+import {
+  fromInput as credentialFromInput,
+  validateStructure as validateCredentialStructure,
+} from '../../KiltCredentialV1.js'
 import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
 } from '../../constants.js'
-import { chainIdFromGenesis } from '../../CAIP/caip2.js'
-import { includesContext } from './utils.js'
 import type {
   KiltAttestationProofV1,
-  Proof,
   KiltCredentialV1,
+  Proof,
 } from '../../types.js'
-import type { JSigsVerificationResult } from './types.js'
 import type { JsonLdObj } from '../documentLoader.js'
+import type { JSigsVerificationResult } from './types.js'
+import { includesContext } from './utils.js'
 
 const {
   suites: { LinkedDataProof },
@@ -47,27 +56,69 @@ interface CallArgs {
   [key: string]: unknown
 }
 
+export type CredentialStub = Pick<KiltCredentialV1, 'credentialSubject'> &
+  Partial<KiltCredentialV1>
+
+export interface DidSigner {
+  did: DidUri
+  signer: SignExtrinsicCallback
+}
+
+export type TxHandler = {
+  account: KiltAddress
+  signAndSubmit?: AttestationHandler
+  signer?: Signer
+}
+
+function makeDefaultTxSubmit(
+  transactionHandler: TxHandler
+): AttestationHandler {
+  return async (tx, api) => {
+    const signed = await api.tx(tx).signAsync(transactionHandler.account, {
+      signer: transactionHandler.signer,
+    })
+    const result = await Blockchain.submitSignedTx(signed, {
+      resolveOn: Blockchain.IS_FINALIZED,
+    })
+    const blockHash = result.status.asFinalized
+    return { blockHash }
+  }
+}
+
 export class KiltAttestationV1Suite extends LinkedDataProof {
-  private api: ApiPromise
-  private transactionHandler?: AttestationHandler
+  private didSigner?: DidSigner
+  private transactionHandler?: TxHandler &
+    Required<Pick<TxHandler, 'signAndSubmit'>>
+  private attestationInfo = new Map<
+    KiltCredentialV1['id'],
+    KiltAttestationProofV1
+  >()
 
   public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
   /**
    * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
    */
-  public readonly verificationMethod: string
+  public get verificationMethod() {
+    return chainIdFromGenesis(ConfigService.get('api').genesisHash)
+  }
 
   constructor({
-    api,
     transactionHandler,
+    didSigner,
   }: {
-    api?: ApiPromise
-    transactionHandler?: AttestationHandler
+    transactionHandler?: TxHandler
+    didSigner?: DidSigner
   } = {}) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
-    this.api = api ?? ConfigService.get('api')
-    this.transactionHandler = transactionHandler
-    this.verificationMethod = chainIdFromGenesis(this.api.genesisHash)
+    this.didSigner = didSigner
+    if (transactionHandler) {
+      this.transactionHandler = {
+        ...transactionHandler,
+        signAndSubmit:
+          transactionHandler.signAndSubmit ??
+          makeDefaultTxSubmit(transactionHandler),
+      }
+    }
   }
 
   // eslint-disable-next-line jsdoc/require-returns
@@ -77,9 +128,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   public get checkStatus(): (args: {
     credential: KiltCredentialV1
   }) => Promise<{ verified: boolean; error?: unknown }> {
-    const { api } = this
     return async ({ credential }) => {
-      return checkStatus(credential, { api })
+      return checkStatus(credential)
         .then(() => ({ verified: true }))
         .catch((error) => ({ verified: false, error }))
     }
@@ -108,7 +158,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
       const proof = options.proof as KiltAttestationProofV1
       const document = options.document as unknown as KiltCredentialV1
-      await verifyProof(document, proof, { api: this.api })
+      await verifyProof(document, proof)
       return {
         verified: true,
       }
@@ -160,12 +210,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * Initializes a proof for a [[KiltCredentialV1]] type document.
+   * Adds a proof to a [[KiltCredentialV1]] type document.
    *
-   * _! TO BE VERIFIABLE WITH THIS PROOF, ADJUSTMENTS HAVE TO BE MADE TO THE DOCUMENT !_.
-   *
-   * To do so, the document, with the proof added, must be processed
-   * by the `finalizeProof` method.
+   * ! __This will fail unless the document has been created with `anchorCredential` by the same class instance prior to calling `createProof`__ !
    *
    * @param input Object containing the function arguments.
    * @param input.document [[KiltCredentialV1]] object to be signed.
@@ -177,49 +224,60 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }: {
     document: object
   }): Promise<KiltAttestationProofV1> {
-    if (!this.transactionHandler) {
+    const credential = document as KiltCredentialV1
+    validateCredentialStructure(credential)
+    const { id } = credential
+    const proof = this.attestationInfo.get(id)
+    if (!proof) {
       throw new Error(
-        'suite must be configured with a transactionHandler for proof generation'
+        'No attestation information available for the credential ' +
+          id +
+          '. Make sure you have called anchorCredential on the same instance of this class.'
       )
     }
-    const [proof, submissionArgs] = initializeProof(
-      document as KiltCredentialV1
-    )
-    const { blockHash } = await this.transactionHandler(
-      this.api.tx.attestation.add(...submissionArgs),
-      this.api
-    )
-    return { ...proof, block: base58Encode(blockHash) }
+    return proof
   }
 
   /**
-   * Processes a preliminary [[KiltCredentialV1]] with a proof created by `createProof` to produce a verifiable [[KiltCredentialV1]].
+   * Processes a [[KiltCredentialV1]] stub to produce a verifiable [[KiltCredentialV1]], which is anchored on the Kilt blockchain via an attestation.
+   * The class instance keeps track of attestation-related data.
+   * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
-   * @param credential A (non-finalized) [[KiltCredentialV1]] with a [[KiltAttestationV1]] proof as created by `createProof`.
+   * @param credential A partial [[KiltCredentialV1]]; `credentialSubject` is required.
    *
-   * @returns An updated copy of the credential with necessary adjustments to be verifiable with its [[KiltAttestationV1]] proof.
+   * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
-  public async finalizeProof(
-    credential: KiltCredentialV1
-  ): Promise<KiltCredentialV1> {
-    const { proof } = credential
-    const attestationProof: KiltAttestationProofV1 | undefined = (
-      Array.isArray(proof) ? proof : [proof]
-    ).find((p) => p?.type === ATTESTATION_PROOF_V1_TYPE)
-    if (!attestationProof) {
+  public async anchorCredential({
+    credentialSubject,
+    credentialSchema,
+  }: CredentialStub): Promise<Omit<KiltCredentialV1, 'proof'>> {
+    if (!this.transactionHandler || !this.didSigner) {
       throw new Error(
-        `The credential must have a ${ATTESTATION_PROOF_V1_TYPE} type proof as created by the createProof method`
+        'suite must be configured with a transactionHandler & didSigner for proof generation'
       )
     }
-    const blockHash = base58Decode(proof.block)
-    const timestamp = (
-      await (await this.api.at(blockHash)).query.timestamp.now()
-    ).toNumber()
-    const updated = finalizeProof(credential, attestationProof, {
-      blockHash,
-      timestamp,
-      genesisHash: this.api.genesisHash,
+    const {
+      id: subject,
+      '@context': { '@vocab': vocab },
+      ...claims
+    } = credentialSubject
+    const cType = (credentialSchema?.id ?? vocab.slice(0, -1)) as ICType['$id']
+
+    const credentialStub = credentialFromInput({
+      subject,
+      claims,
+      cType,
+      issuer: this.didSigner.did,
+    } as any)
+
+    const { proof, ...credential } = await issue(credentialStub, {
+      did: this.didSigner.did,
+      didSigner: this.didSigner.signer,
+      submitterAddress: this.transactionHandler.account,
+      txSubmissionHandler: this.transactionHandler.signAndSubmit,
     })
-    return updated
+
+    this.attestationInfo.set(credential.id, proof)
+    return credential
   }
 }
