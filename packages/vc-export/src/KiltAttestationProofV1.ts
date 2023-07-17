@@ -28,7 +28,7 @@ import type {
   Extrinsic,
   Hash,
 } from '@polkadot/types/interfaces/types.js'
-import type { IEventData } from '@polkadot/types/types'
+import type { IEventData, Signer } from '@polkadot/types/types'
 
 import { CType } from '@kiltprotocol/core'
 import {
@@ -39,6 +39,7 @@ import {
 } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
@@ -691,45 +692,67 @@ export type AttestationHandler = (
   timestamp?: number
 }>
 
+export interface DidSigner {
+  did: DidUri
+  signer: SignExtrinsicCallback
+}
+
+export type TxHandler = {
+  account: KiltAddress
+  signAndSubmit?: AttestationHandler
+  signer?: Signer
+}
+
+function makeDefaultTxSubmit(
+  transactionHandler: TxHandler
+): AttestationHandler {
+  return async (tx, api) => {
+    const signed = await api.tx(tx).signAsync(transactionHandler.account, {
+      signer: transactionHandler.signer,
+    })
+    const result = await Blockchain.submitSignedTx(signed, {
+      resolveOn: Blockchain.IS_FINALIZED,
+    })
+    const blockHash = result.status.asFinalized
+    return { blockHash }
+  }
+}
+
 /**
  *
  * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
  *
  * @param credential A [[KiltCredentialV1]] for which a proof shall be created.
  * @param opts Additional parameters.
- * @param opts.did The attester's DID URI.
- * @param opts.didSigner A signing callback to create the attester's signature over the transaction to store an attestation record on-chain.
- * @param opts.submitterAddress The address of the wallet that's going to cover the transaction fees.
- * @param opts.txSubmissionHandler Callback function handling extrinsic submission.
- * It receives an unsigned extrinsic and is expected to return the `blockHash` and `timestamp` when the extrinsic was included in a block.
+ * @param opts.didSigner Object containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+ * @param opts.transactionHandler Object containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
+ * The signAndSubmit callback receives an unsigned extrinsic and is expected to return the `blockHash` and (optionally) `timestamp` when the extrinsic was included in a block.
  * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
- * If no `timestamp` is returned by the callback, the timestamp is queried from the blockchain based on the block hash.
+ * If only the `signer` is given, a default callback will be constructed to take care of submitting the signed extrinsic using the cached blockchain api object.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
   {
-    did,
     didSigner,
-    submitterAddress,
-    txSubmissionHandler,
+    transactionHandler,
     ...otherParams
   }: {
-    didSigner: SignExtrinsicCallback
-    did: DidUri
-    submitterAddress: KiltAddress
-    txSubmissionHandler: AttestationHandler
+    didSigner: DidSigner
+    transactionHandler: TxHandler
   } & Parameters<typeof authorizeTx>[4]
 ): Promise<KiltCredentialV1> {
-  const updatedCredential = { ...credential, issuer: did }
+  const updatedCredential = { ...credential, issuer: didSigner.did }
   const [proof, callArgs] = initializeProof(updatedCredential)
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
+  const txSubmissionHandler =
+    transactionHandler.signAndSubmit ?? makeDefaultTxSubmit(transactionHandler)
   const didSigned = await authorizeTx(
-    did,
+    didSigner.did,
     call,
-    didSigner,
-    submitterAddress,
+    didSigner.signer,
+    transactionHandler.account,
     otherParams
   )
   const {

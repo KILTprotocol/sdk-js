@@ -8,24 +8,17 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-pattern */
 
-import type { Signer } from '@polkadot/types/types'
-
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import { CType } from '@kiltprotocol/core'
-import type {
-  DidUri,
-  ICType,
-  KiltAddress,
-  SignExtrinsicCallback,
-} from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
 
 import { chainIdFromGenesis } from '../../CAIP/caip2.js'
 import {
-  AttestationHandler,
+  DidSigner,
+  TxHandler,
   issue,
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
@@ -65,38 +58,10 @@ interface CallArgs {
 export type CredentialStub = Pick<KiltCredentialV1, 'credentialSubject'> &
   Partial<KiltCredentialV1>
 
-export interface DidSigner {
-  did: DidUri
-  signer: SignExtrinsicCallback
-}
-
-export type TxHandler = {
-  account: KiltAddress
-  signAndSubmit?: AttestationHandler
-  signer?: Signer
-}
-
-function makeDefaultTxSubmit(
-  transactionHandler: TxHandler
-): AttestationHandler {
-  return async (tx, api) => {
-    const signed = await api.tx(tx).signAsync(transactionHandler.account, {
-      signer: transactionHandler.signer,
-    })
-    const result = await Blockchain.submitSignedTx(signed, {
-      resolveOn: Blockchain.IS_FINALIZED,
-    })
-    const blockHash = result.status.asFinalized
-    return { blockHash }
-  }
-}
-
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private ctypes: ICType[]
   private didSigner?: DidSigner
-  private transactionHandler?: TxHandler &
-    Required<Pick<TxHandler, 'signAndSubmit'>>
-
+  private transactionHandler?: TxHandler
   private attestationInfo = new Map<
     KiltCredentialV1['id'],
     KiltAttestationProofV1
@@ -123,14 +88,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
     this.ctypes = ctypes
     this.didSigner = didSigner
-    if (transactionHandler) {
-      this.transactionHandler = {
-        ...transactionHandler,
-        signAndSubmit:
-          transactionHandler.signAndSubmit ??
-          makeDefaultTxSubmit(transactionHandler),
-      }
-    }
+    this.transactionHandler = transactionHandler
   }
 
   // eslint-disable-next-line jsdoc/require-returns
@@ -304,10 +262,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     }
 
     const { proof, ...credential } = await issue(credentialStub, {
-      did: this.didSigner.did,
-      didSigner: this.didSigner.signer,
-      submitterAddress: this.transactionHandler.account,
-      txSubmissionHandler: this.transactionHandler.signAndSubmit,
+      didSigner: this.didSigner,
+      transactionHandler: this.transactionHandler,
     })
 
     this.attestationInfo.set(credential.id, proof)
