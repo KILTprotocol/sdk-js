@@ -703,6 +703,11 @@ export type TxHandler = {
   signer?: Signer
 }
 
+export type IssueOpts = {
+  didSigner: DidSigner
+  transactionHandler: TxHandler
+} & Parameters<typeof authorizeTx>[4]
+
 function makeDefaultTxSubmit(
   transactionHandler: TxHandler
 ): AttestationHandler {
@@ -733,14 +738,7 @@ function makeDefaultTxSubmit(
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
-  {
-    didSigner,
-    transactionHandler,
-    ...otherParams
-  }: {
-    didSigner: DidSigner
-    transactionHandler: TxHandler
-  } & Parameters<typeof authorizeTx>[4]
+  { didSigner, transactionHandler, ...otherParams }: IssueOpts
 ): Promise<KiltCredentialV1> {
   const updatedCredential = { ...credential, issuer: didSigner.did }
   const [proof, callArgs] = initializeProof(updatedCredential)

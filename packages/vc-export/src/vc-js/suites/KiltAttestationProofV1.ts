@@ -60,8 +60,6 @@ export type CredentialStub = Pick<KiltCredentialV1, 'credentialSubject'> &
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private ctypes: ICType[]
-  private didSigner?: DidSigner
-  private transactionHandler?: TxHandler
   private attestationInfo = new Map<
     KiltCredentialV1['id'],
     KiltAttestationProofV1
@@ -78,17 +76,11 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
   constructor({
     ctypes = [],
-    transactionHandler,
-    didSigner,
   }: {
     ctypes?: ICType[]
-    transactionHandler?: TxHandler
-    didSigner?: DidSigner
   } = {}) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
     this.ctypes = ctypes
-    this.didSigner = didSigner
-    this.transactionHandler = transactionHandler
   }
 
   // eslint-disable-next-line jsdoc/require-returns
@@ -224,17 +216,16 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
    * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
+   * @param didSigner Signer interface to be passed to [[issue]], containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+   * @param transactionHandler Transaction handler interface to be passed to [[issue]] containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
    *
    * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
-    input: CredentialStub
+    input: CredentialStub,
+    didSigner: DidSigner,
+    transactionHandler: TxHandler
   ): Promise<Omit<KiltCredentialV1, 'proof'>> {
-    if (!this.transactionHandler || !this.didSigner) {
-      throw new Error(
-        'suite must be configured with a transactionHandler & didSigner for proof generation'
-      )
-    }
     const { credentialSubject, type } = input
 
     let cType = type?.find((str): str is ICType['$id'] =>
@@ -262,8 +253,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     }
 
     const { proof, ...credential } = await issue(credentialStub, {
-      didSigner: this.didSigner,
-      transactionHandler: this.transactionHandler,
+      didSigner,
+      transactionHandler,
     })
 
     this.attestationInfo.set(credential.id, proof)

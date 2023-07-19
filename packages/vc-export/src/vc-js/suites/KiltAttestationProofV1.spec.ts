@@ -36,7 +36,11 @@ import type {
 } from '@kiltprotocol/types'
 
 import { exportICredentialToVc } from '../../fromICredential.js'
-import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
+import {
+  DidSigner,
+  TxHandler,
+  applySelectiveDisclosure,
+} from '../../KiltAttestationProofV1.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
   JsonLdObj,
@@ -450,28 +454,28 @@ describe('issuance', () => {
   let txArgs: any
   let issuanceSuite: KiltAttestationV1Suite
   let toBeSigned: CredentialStub
+
+  const didSigner: DidSigner = {
+    did: attestedVc.issuer,
+    signer: async () => ({
+      signature: new Uint8Array(32),
+      keyType: 'sr25519' as const,
+    }),
+  }
+  const transactionHandler: TxHandler = {
+    account: attester,
+    signAndSubmit: async () => {
+      return {
+        blockHash,
+        timestamp,
+      }
+    },
+  }
   beforeEach(() => {
     toBeSigned = {
       credentialSubject: attestedVc.credentialSubject,
     }
-    issuanceSuite = new KiltAttestationV1Suite({
-      didSigner: {
-        did: attestedVc.issuer,
-        signer: async () => ({
-          signature: new Uint8Array(32),
-          keyType: 'sr25519',
-        }),
-      },
-      transactionHandler: {
-        account: attester,
-        signAndSubmit: async () => {
-          return {
-            blockHash,
-            timestamp,
-          }
-        },
-      },
-    })
+    issuanceSuite = new KiltAttestationV1Suite()
     jest
       .mocked(Did.authorizeTx)
       .mockImplementation(async (...[, extrinsic]) => {
@@ -482,7 +486,11 @@ describe('issuance', () => {
 
   it('issues a credential via vc-js', async () => {
     let newCred: Partial<KiltCredentialV1> =
-      await issuanceSuite.anchorCredential({ ...toBeSigned })
+      await issuanceSuite.anchorCredential(
+        { ...toBeSigned },
+        didSigner,
+        transactionHandler
+      )
     newCred = await vcjs.issue({
       credential: newCred,
       suite: issuanceSuite,
@@ -534,9 +542,13 @@ describe('issuance', () => {
   })
 
   it('adds context if not present', async () => {
-    let newCred = await issuanceSuite.anchorCredential({
-      ...toBeSigned,
-    })
+    let newCred = await issuanceSuite.anchorCredential(
+      {
+        ...toBeSigned,
+      },
+      didSigner,
+      transactionHandler
+    )
     newCred = (await vcjs.issue({
       credential: {
         ...newCred,
@@ -563,16 +575,6 @@ describe('issuance', () => {
       )
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"The document to be signed must contain this suite's @context, \\"https://www.kilt.io/contexts/credentials\\"."`
-    )
-  })
-
-  it('complains if transaction handler not given', async () => {
-    await expect(
-      suite.anchorCredential({
-        ...toBeSigned,
-      })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"suite must be configured with a transactionHandler & didSigner for proof generation"`
     )
   })
 
