@@ -10,6 +10,7 @@
  */
 
 import { randomAsHex } from '@polkadot/util-crypto'
+import type { ApiPromise } from '@polkadot/api'
 
 import type {
   DidDocument,
@@ -22,9 +23,9 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
-import type { ApiPromise } from '@polkadot/api'
-import { disconnect } from '../kilt'
-import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
+import { disconnect } from '@kiltprotocol/core'
+
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise
 

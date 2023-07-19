@@ -28,8 +28,8 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import { UUID } from '@kiltprotocol/utils'
-import * as CType from '../ctype'
-import * as PublicCredential from '../publicCredential'
+import { CType, disconnect, PublicCredential } from '@kiltprotocol/core'
+
 import {
   createEndowedTestAccount,
   devAlice,
@@ -37,8 +37,7 @@ import {
   isCtypeOnChain,
   nftNameCType,
   submitTx,
-} from './utils'
-import { disconnect } from '../kilt'
+} from './utils.js'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument

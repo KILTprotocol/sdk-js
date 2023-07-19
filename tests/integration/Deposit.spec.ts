@@ -29,18 +29,20 @@ import type {
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
+  Attestation,
+  Claim,
+  Credential,
+  disconnect,
+  CType,
+} from '@kiltprotocol/core'
+import {
   devFaucet,
   driversLicenseCTypeForDeposit as driversLicenseCType,
   endowAccounts,
   initializeApi,
   isCtypeOnChain,
   submitTx,
-} from './utils'
-import * as Attestation from '../attestation'
-import * as Claim from '../claim'
-import * as Credential from '../credential'
-import { disconnect } from '../kilt'
-import * as CType from '../ctype'
+} from './utils.js'
 
 let api: ApiPromise
 let tx: SubmittableExtrinsic

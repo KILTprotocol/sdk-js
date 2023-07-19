@@ -25,12 +25,14 @@ import {
 import * as Did from '@kiltprotocol/did'
 import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
-import * as Attestation from '../attestation'
-import * as Claim from '../claim'
-import * as CType from '../ctype'
-import * as Credential from '../credential'
-import { disconnect } from '../kilt'
-import { DelegationNode } from '../delegation/DelegationNode'
+import {
+  Attestation,
+  Claim,
+  CType,
+  Credential,
+  disconnect,
+  DelegationNode,
+} from '@kiltprotocol/core'
 import {
   createEndowedTestAccount,
   devBob,
@@ -38,8 +40,7 @@ import {
   initializeApi,
   isCtypeOnChain,
   submitTx,
-} from './utils'
-import { getAttestationHashes } from '../delegation/DelegationNode.chain'
+} from './utils.js'
 
 let api: ApiPromise
 
@@ -435,7 +436,14 @@ describe('handling queries to data not on chain', () => {
   })
 
   it('getAttestationHashes on empty', async () => {
-    expect(await getAttestationHashes(randomAsHex(32))).toEqual([])
+    expect(
+      await DelegationNode.newNode({
+        permissions: [0],
+        hierarchyId: randomAsHex(32),
+        parentId: randomAsHex(32),
+        account: attester.uri,
+      }).getAttestationHashes()
+    ).toEqual([])
   })
 })
 

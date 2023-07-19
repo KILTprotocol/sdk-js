@@ -15,10 +15,9 @@ import type { ApiPromise } from '@polkadot/api'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { BalanceUtils, disconnect } from '@kiltprotocol/core'
 
-import { toFemtoKilt } from '../balance/Balance.utils'
-import { devCharlie, devFaucet, initializeApi, submitTx } from './utils'
-import { disconnect } from '../kilt'
+import { devCharlie, devFaucet, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -36,7 +35,7 @@ describe('Chain returns specific errors, that we check for', () => {
 
     const transferTx = api.tx.balances.transfer(
       testIdentity.address,
-      toFemtoKilt(10000)
+      BalanceUtils.toFemtoKilt(10000)
     )
     await submitTx(transferTx, faucet)
   }, 40000)

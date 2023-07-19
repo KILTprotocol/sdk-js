@@ -32,16 +32,14 @@ import {
   SignCallback,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
+import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
 
-import * as CType from '../ctype'
-import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
   devBob,
   initializeApi,
   submitTx,
-} from './utils'
-import { DelegationNode } from '../delegation'
+} from './utils.js'
 
 let paymentAccount: KiltKeyringPair
 let api: ApiPromise

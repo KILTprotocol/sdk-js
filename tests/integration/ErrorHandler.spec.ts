@@ -22,13 +22,14 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
-import { disconnect } from '../kilt'
+import { disconnect } from '@kiltprotocol/core'
+
 import {
   addressFromRandom,
   createEndowedTestAccount,
   initializeApi,
   submitTx,
-} from './utils'
+} from './utils.js'
 
 let paymentAccount: KiltKeyringPair
 let someDid: DidDocument

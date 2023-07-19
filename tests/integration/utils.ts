@@ -24,9 +24,7 @@ import type {
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-
-import * as CType from '../ctype'
-import { connect, init } from '../kilt'
+import { connect, init, CType } from '@kiltprotocol/core'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)

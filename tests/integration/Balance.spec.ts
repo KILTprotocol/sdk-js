@@ -14,7 +14,7 @@ import { BN } from '@polkadot/util'
 
 import type { KeyringPair } from '@kiltprotocol/types'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { disconnect } from '../kilt'
+import { disconnect } from '@kiltprotocol/core'
 import {
   addressFromRandom,
   devAlice,
@@ -23,7 +23,7 @@ import {
   EXISTENTIAL_DEPOSIT,
   initializeApi,
   submitTx,
-} from './utils'
+} from './utils.js'
 
 let api: ApiPromise
 beforeAll(async () => {
