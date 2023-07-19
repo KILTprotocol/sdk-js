@@ -104,7 +104,7 @@ function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
 /**
  * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
- * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the [[ConfigService]].
+ * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the {@link ConfigService}.
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
@@ -171,7 +171,7 @@ export const dispatchTx = submitSignedTx
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param signer The [[KiltKeyringPair]] used to sign the tx.
+ * @param signer The {@link KeyringPair} used to sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
@@ -191,8 +191,8 @@ export async function signAndSubmitTx(
 /**
  * Checks wheather the provided extrinsic or call represents a batch.
  *
- * @param extrinsic The input [[Extrinsic]] or [[Call]].
- * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ * @param extrinsic The input {@link Extrinsic} or {@link Call}.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
  *
  * @returns True if it's a batch, false otherwise.
  */
@@ -213,10 +213,10 @@ export function isBatch(
  *
  * For example, given the calls [[N1, N2], [N3, [N4, N5], N6]], the final list will look like [N1, N2, N3, N4, N5, N6].
  *
- * @param call The [[Call]] which can potentially contain nested calls.
- * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ * @param call The {@link Call} which can potentially contain nested calls.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
  *
- * @returns A list of [[Call]] nested according to the rules above.
+ * @returns A list of {@link Call} nested according to the rules above.
  */
 export function flattenCalls(call: Call, api?: ApiPromise): Call[] {
   if (isBatch(call, api)) {
@@ -234,7 +234,7 @@ export function flattenCalls(call: Call, api?: ApiPromise): Call[] {
  *
  * @param blockNumber The number of the block to parse.
  * @param filter The filter to apply to the transactions in the block.
- * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
  *
  * @returns The last extrinsic in the block matching the filter, or null if no extrinsic is found.
  */

@@ -13,14 +13,14 @@ export interface VerificationResult {
 }
 
 /**
- * Aligning with jsonld-signatures (https://github.com/digitalbazaar/jsonld-signatures/blob/0dbe528e2cd2881b276932b503b9598a850ab8d6/lib/ProofSet.js#L153)
+ * Aligning with jsonld-signatures (https://github.com/digitalbazaar/jsonld-signatures/blob/0dbe528e2cd2881b276932b503b9598a850ab8d6/lib/ProofSet.js#L153).
  */
 export interface ProofSetResult extends VerificationResult {
   results: Array<VerificationResult & { proof: Proof }>
 }
 
 /**
- * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L87-L91)
+ * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L87-L91).
  */
 export interface VerifyCredentialResult extends ProofSetResult {
   credential: VerifiableCredential
@@ -28,7 +28,7 @@ export interface VerifyCredentialResult extends ProofSetResult {
 }
 
 /**
- * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L79-L83)
+ * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L79-L83).
  */
 export interface VerifyPresentationResult extends VerificationResult {
   presentationResult: ProofSetResult
