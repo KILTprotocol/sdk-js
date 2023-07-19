@@ -188,9 +188,9 @@ export function validateStructure(
 interface CredentialInput {
   subject: DidUri
   claims: ICredential['claim']['contents']
-  cType: ICType | ICType['$id']
+  cType: ICType['$id']
   issuer: DidUri
-  timestamp: number
+  timestamp?: number
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
   legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
@@ -203,6 +203,9 @@ interface CredentialInputWithRootHash extends CredentialInput {
 export function fromInput(
   input: CredentialInputWithRootHash
 ): Omit<KiltCredentialV1, 'proof'>
+export function fromInput(
+  input: CredentialInput
+): Omit<KiltCredentialV1, 'proof' | 'id' | 'credentialStatus'>
 /**
  * Produces a KiltCredentialV1 from input data.
  *
@@ -219,32 +222,28 @@ export function fromInput(
  * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
  */
 export function fromInput({
-  claimHash,
   subject,
   claims,
   cType,
   issuer,
-  timestamp,
+  timestamp = Date.now(),
   chainGenesisHash = spiritnetGenesisHash,
+  claimHash,
   legitimations,
   delegationId,
 }: CredentialInput): Omit<
   KiltCredentialV1,
   'proof' | 'id' | 'credentialStatus'
 > {
-  // write root hash to id
-  const id = credentialIdFromRootHash(hexToU8a(claimHash))
-
-  const cTypeId = typeof cType === 'object' ? cType.$id : cType
   // transform & annotate claim to be json-ld and VC conformant
   const credentialSubject = {
-    '@context': { '@vocab': `${cTypeId}#` },
+    '@context': { '@vocab': `${cType}#` },
     id: subject,
   }
 
   Object.entries(claims).forEach(([key, claim]) => {
     if (key.startsWith('@') || key === 'id' || key === 'type') {
-      credentialSubject[`${cTypeId}#${key}`] = claim
+      credentialSubject[`${cType}#${key}`] = claim
     } else {
       credentialSubject[key] = claim
     }
@@ -278,19 +277,19 @@ export function fromInput({
 
   return {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cTypeId],
-    ...(id && { id }),
+    type: [...DEFAULT_CREDENTIAL_TYPES, cType],
     nonTransferable: true,
     credentialSubject,
     credentialSchema: {
       id: credentialSchema.$id as string,
       type: JSON_SCHEMA_TYPE,
     },
-    issuer,
-    issuanceDate,
     ...(claimHash && {
       credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
+      id: credentialIdFromRootHash(hexToU8a(claimHash)),
     }),
+    issuer,
+    issuanceDate,
     ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
 }

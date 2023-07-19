@@ -34,7 +34,7 @@ beforeAll(() => {
     issuer: attester,
     blockHash,
     timestamp,
-    cType,
+    cType: cType.$id,
   })
 })
 

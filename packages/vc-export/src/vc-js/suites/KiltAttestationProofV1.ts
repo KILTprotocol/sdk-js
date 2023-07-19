@@ -8,37 +8,41 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-pattern */
 
-import { u8aToHex } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
-
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
+import { ConfigService } from '@kiltprotocol/config'
 import { CType } from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
 
+import { chainIdFromGenesis } from '../../CAIP/caip2.js'
 import {
-  AttestationHandler,
-  calculateRootHash,
-  finalizeProof,
-  initializeProof,
+  DidSigner,
+  TxHandler,
+  issue,
   verify as verifyProof,
 } from '../../KiltAttestationProofV1.js'
+import type { CTypeLoader } from '../../KiltCredentialV1.js'
+import {
+  credentialSchema,
+  validateStructure as validateCredentialStructure,
+} from '../../KiltCredentialV1.js'
 import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
+  DEFAULT_CREDENTIAL_CONTEXTS,
+  DEFAULT_CREDENTIAL_TYPES,
+  JSON_SCHEMA_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
 } from '../../constants.js'
-import { chainIdFromGenesis } from '../../CAIP/caip2.js'
-import { includesContext } from './utils.js'
 import type {
   KiltAttestationProofV1,
-  Proof,
   KiltCredentialV1,
+  Proof,
 } from '../../types.js'
-import type { CTypeLoader } from '../../KiltCredentialV1.js'
-import type { JSigsVerificationResult } from './types.js'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
+import type { JSigsVerificationResult } from './types.js'
+import { includesContext } from './utils.js'
 
 const {
   suites: { LinkedDataProof },
@@ -51,32 +55,32 @@ interface CallArgs {
   [key: string]: unknown
 }
 
+export type CredentialStub = Pick<KiltCredentialV1, 'credentialSubject'> &
+  Partial<KiltCredentialV1>
+
 export class KiltAttestationV1Suite extends LinkedDataProof {
-  private api: ApiPromise
   private ctypes: ICType[]
-  private transactionHandler?: AttestationHandler
-  private pendingSubmissions = new Map<string, ReturnType<AttestationHandler>>()
+  private attestationInfo = new Map<
+    KiltCredentialV1['id'],
+    KiltAttestationProofV1
+  >()
 
   public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
+  // eslint-disable-next-line jsdoc/require-returns
   /**
-   * Placeholder value as @digitalbazaar/vc requires a verificationMethod property on issuance.
+   * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
    */
-  public readonly verificationMethod: string
+  public get verificationMethod(): string {
+    return chainIdFromGenesis(ConfigService.get('api').genesisHash)
+  }
 
   constructor({
-    api,
     ctypes = [],
-    transactionHandler,
   }: {
-    api: ApiPromise
     ctypes?: ICType[]
-    transactionHandler?: AttestationHandler
-  }) {
+  } = {}) {
     super({ type: ATTESTATION_PROOF_V1_TYPE })
-    this.api = api
     this.ctypes = ctypes
-    this.transactionHandler = transactionHandler
-    this.verificationMethod = chainIdFromGenesis(api.genesisHash)
   }
 
   // eslint-disable-next-line jsdoc/require-returns
@@ -86,9 +90,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   public get checkStatus(): (args: {
     credential: KiltCredentialV1
   }) => Promise<{ verified: boolean; error?: unknown }> {
-    const { api } = this
     return async ({ credential }) => {
-      return checkStatus(credential, { api })
+      return checkStatus(credential)
         .then(() => ({ verified: true }))
         .catch((error) => ({ verified: false, error }))
     }
@@ -127,7 +130,6 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         return ctype
       }
       await verifyProof(document, proof, {
-        api: this.api,
         loadCTypes,
         cTypes: this.ctypes,
       })
@@ -182,12 +184,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * Initializes a proof for a [[KiltCredentialV1]] type document.
+   * Adds a proof to a [[KiltCredentialV1]] type document.
    *
-   * _! This is not a complete proof yet !_.
-   *
-   * After adding the proof stub to the credential, the resulting document must be processed
-   * by the `finalizeProof` method to make necessary adjustments to the document itself.
+   * ! __This will fail unless the document has been created with `anchorCredential` by the same class instance prior to calling `createProof`__ !
    *
    * @param input Object containing the function arguments.
    * @param input.document [[KiltCredentialV1]] object to be signed.
@@ -199,63 +198,66 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }: {
     document: object
   }): Promise<KiltAttestationProofV1> {
-    if (!this.transactionHandler) {
+    const credential = document as KiltCredentialV1
+    validateCredentialStructure(credential)
+    const { id } = credential
+    const proof = this.attestationInfo.get(id)
+    if (!proof) {
       throw new Error(
-        'suite must be configured with a transactionHandler for proof generation'
+        `No attestation information available for the credential ${id}. Make sure you have called anchorCredential on the same instance of this class.`
       )
     }
-    const [proof, submissionArgs] = initializeProof(
-      document as KiltCredentialV1
-    )
-    const [rootHash] = submissionArgs
-    this.pendingSubmissions.set(
-      u8aToHex(rootHash as Uint8Array),
-      this.transactionHandler(
-        this.api.tx.attestation.add(...submissionArgs),
-        this.api
-      )
-    )
     return proof
   }
 
   /**
-   * Processes a [[KiltCredentialV1]] with a proof stub created by `createProof` to produce a verifiable credential.
-   * The proof must have been created with the same instance of the [[KiltAttestationProofV1Suite]].
+   * Processes a [[KiltCredentialV1]] stub to produce a verifiable [[KiltCredentialV1]], which is anchored on the Kilt blockchain via an attestation.
+   * The class instance keeps track of attestation-related data.
+   * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
-   * @param credential A [[KiltCredentialV1]] with a proof stub created by `createProof`.
+   * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
+   * @param didSigner Signer interface to be passed to [[issue]], containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+   * @param transactionHandler Transaction handler interface to be passed to [[issue]] containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
    *
-   * @returns An updated copy of the credential with necessary adjustments, containing a complete [[KiltAttestationV1]] proof.
+   * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
-  public async finalizeProof(
-    credential: KiltCredentialV1
-  ): Promise<KiltCredentialV1> {
-    const { proof } = credential
-    const proofStub: KiltAttestationProofV1 | undefined = (
-      Array.isArray(proof) ? proof : [proof]
-    ).find((p) => p?.type === ATTESTATION_PROOF_V1_TYPE)
-    if (!proofStub) {
-      throw new Error(
-        'The credential must have a proof property containing a proof stub as created by the `createProof` method'
-      )
+  public async anchorCredential(
+    input: CredentialStub,
+    didSigner: DidSigner,
+    transactionHandler: TxHandler
+  ): Promise<Omit<KiltCredentialV1, 'proof'>> {
+    const { credentialSubject, type } = input
+
+    let cType = type?.find((str): str is ICType['$id'] =>
+      str.startsWith('kilt:ctype:')
+    )
+    if (!cType) {
+      cType = credentialSubject['@context']['@vocab'].slice(
+        0,
+        -1
+      ) as ICType['$id']
+    } else {
+      credentialSubject['@context']['@vocab'] = `${cType}#`
     }
-    const rootHash = u8aToHex(calculateRootHash(credential, proofStub))
-    const submissionPromise = this.pendingSubmissions.get(rootHash)
-    if (!submissionPromise) {
-      throw new Error('no submission found for this proof')
+
+    const credentialStub = {
+      ...input,
+      '@context': DEFAULT_CREDENTIAL_CONTEXTS,
+      type: [...DEFAULT_CREDENTIAL_TYPES, cType],
+      nonTransferable: true as const,
+      credentialSubject,
+      credentialSchema: {
+        id: credentialSchema.$id as string,
+        type: JSON_SCHEMA_TYPE,
+      } as const,
     }
-    const {
-      blockHash,
-      timestamp = (await this.api.query.timestamp.now.at(blockHash)).toNumber(),
-    } = await submissionPromise.catch((e) => {
-      this.pendingSubmissions.delete(rootHash)
-      throw new Error(`Promise rejected with ${e}`)
+
+    const { proof, ...credential } = await issue(credentialStub, {
+      didSigner,
+      transactionHandler,
     })
-    const updated = finalizeProof(credential, proofStub, {
-      blockHash,
-      timestamp,
-      genesisHash: this.api.genesisHash,
-    })
-    this.pendingSubmissions.delete(rootHash)
-    return updated
+
+    this.attestationInfo.set(credential.id, proof)
+    return credential
   }
 }

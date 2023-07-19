@@ -2083,6 +2083,7 @@ __metadata:
   dependencies:
     "@digitalbazaar/ed25519-signature-2020": ^5.2.0
     "@digitalbazaar/vc": ^6.0.1
+    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"

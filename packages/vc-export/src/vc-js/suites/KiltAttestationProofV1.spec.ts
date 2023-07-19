@@ -23,6 +23,7 @@ import jsigs from 'jsonld-signatures' // cjs module
 import jsonld from 'jsonld' // cjs module
 
 import { Credential } from '@kiltprotocol/core'
+import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
@@ -31,10 +32,15 @@ import type {
   IClaim,
   ICredential,
   KiltKeyringPair,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
 import { exportICredentialToVc } from '../../fromICredential.js'
-import { applySelectiveDisclosure } from '../../KiltAttestationProofV1.js'
+import {
+  DidSigner,
+  TxHandler,
+  applySelectiveDisclosure,
+} from '../../KiltAttestationProofV1.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
   JsonLdObj,
@@ -47,7 +53,10 @@ import {
   W3C_CREDENTIAL_CONTEXT_URL,
 } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
-import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
+import {
+  CredentialStub,
+  KiltAttestationV1Suite,
+} from './KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ICredentialExample.json'
 import {
   cType,
@@ -64,6 +73,7 @@ import { makeFakeDid } from './Sr25519Signature2020.spec'
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
   resolveCompliant: jest.fn(),
+  authorizeTx: jest.fn(),
 }))
 
 // is not needed and imports a dependency that does not work in node 18
@@ -156,8 +166,8 @@ const emailCType: ICType = {
 }
 
 const documentLoader = combineDocumentLoaders([
-  kiltContextsLoader,
   kiltDidLoader,
+  kiltContextsLoader,
   vcjs.defaultDocumentLoader,
 ])
 
@@ -169,12 +179,15 @@ let didDocument: ConformingDidDocument
 
 beforeAll(async () => {
   suite = new KiltAttestationV1Suite({
-    api: mockedApi,
     ctypes: [cType, emailCType],
   })
   purpose = new KiltAttestationProofV1Purpose()
   proof = attestedVc.proof as KiltAttestationProofV1
   ;({ keypair, didDocument } = await makeFakeDid())
+})
+
+beforeEach(() => {
+  ConfigService.set({ api: mockedApi })
 })
 
 describe('jsigs', () => {
@@ -293,20 +306,6 @@ describe('jsigs', () => {
   })
 })
 describe('vc-js', () => {
-  const mockSuite = new KiltAttestationV1Suite({
-    api: {
-      genesisHash,
-      query: {
-        attestation: {
-          attestations: async () =>
-            mockedApi.createType(
-              'Option<AttestationAttestationsAttestationDetails>'
-            ),
-        },
-      },
-    } as any,
-  })
-
   describe('attested', () => {
     it('verifies Kilt Attestation Proof', async () => {
       const result = await vcjs.verifyCredential({
@@ -411,13 +410,26 @@ describe('vc-js', () => {
 
   describe('revoked', () => {
     it('fails to verify credential', async () => {
+      ConfigService.set({
+        api: {
+          genesisHash,
+          query: {
+            attestation: {
+              attestations: async () =>
+                mockedApi.createType(
+                  'Option<AttestationAttestationsAttestationDetails>'
+                ),
+            },
+          },
+        } as any,
+      })
       expect(
         await vcjs.verifyCredential({
           credential: revokedVc,
           suite,
           purpose,
           documentLoader,
-          checkStatus: mockSuite.checkStatus,
+          checkStatus: suite.checkStatus,
         })
       ).toMatchObject({ verified: false })
     })
@@ -441,35 +453,50 @@ describe('vc-js', () => {
 describe('issuance', () => {
   let txArgs: any
   let issuanceSuite: KiltAttestationV1Suite
-  let toBeSigned: Partial<KiltCredentialV1>
+  let toBeSigned: CredentialStub
+
+  const didSigner: DidSigner = {
+    did: attestedVc.issuer,
+    signer: async () => ({
+      signature: new Uint8Array(32),
+      keyType: 'sr25519' as const,
+    }),
+  }
+  const transactionHandler: TxHandler = {
+    account: attester,
+    signAndSubmit: async () => {
+      return {
+        blockHash,
+        timestamp,
+      }
+    },
+  }
   beforeEach(() => {
-    issuanceSuite = new KiltAttestationV1Suite({
-      api: mockedApi,
-      transactionHandler: async (tx) => {
-        txArgs = tx.args
-        return {
-          blockHash,
-          timestamp,
-        }
-      },
-    })
     toBeSigned = {
-      '@context': attestedVc['@context'],
-      type: attestedVc.type,
       credentialSubject: attestedVc.credentialSubject,
-      credentialSchema: attestedVc.credentialSchema,
-      nonTransferable: true,
-      issuer: attestedVc.issuer,
     }
+    issuanceSuite = new KiltAttestationV1Suite()
+    jest
+      .mocked(Did.authorizeTx)
+      .mockImplementation(async (...[, extrinsic]) => {
+        txArgs = extrinsic.args
+        return extrinsic as SubmittableExtrinsic
+      })
   })
 
   it('issues a credential via vc-js', async () => {
-    let newCred = (await vcjs.issue({
-      credential: { ...toBeSigned },
+    let newCred: Partial<KiltCredentialV1> =
+      await issuanceSuite.anchorCredential(
+        { ...toBeSigned },
+        didSigner,
+        transactionHandler
+      )
+    newCred = await vcjs.issue({
+      credential: newCred,
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as KiltCredentialV1
+    })
     expect(newCred.proof).toMatchObject({
       type: 'KiltAttestationProofV1',
       commitments: expect.any(Array),
@@ -477,14 +504,13 @@ describe('issuance', () => {
     })
     expect(newCred).toMatchObject(toBeSigned)
 
-    newCred = await issuanceSuite.finalizeProof(newCred)
     expect(newCred.issuanceDate).toStrictEqual(attestedVc.issuanceDate)
     expect(newCred.proof?.block).toStrictEqual(attestedVc.proof.block)
     expect(newCred.credentialStatus).toMatchObject({
       id: expect.any(String),
       type: 'KiltRevocationStatusV1',
     })
-    expect(newCred.credentialStatus.id).not.toMatch(
+    expect(newCred.credentialStatus?.id).not.toMatch(
       attestedVc.credentialStatus.id
     )
     expect(newCred.id).not.toMatch(attestedVc.id)
@@ -516,9 +542,16 @@ describe('issuance', () => {
   })
 
   it('adds context if not present', async () => {
-    const newCred = (await vcjs.issue({
-      credential: {
+    let newCred = await issuanceSuite.anchorCredential(
+      {
         ...toBeSigned,
+      },
+      didSigner,
+      transactionHandler
+    )
+    newCred = (await vcjs.issue({
+      credential: {
+        ...newCred,
         '@context': [W3C_CREDENTIAL_CONTEXT_URL],
       },
       suite: issuanceSuite,
@@ -530,7 +563,7 @@ describe('issuance', () => {
     await expect(
       jsigs.sign(
         {
-          ...toBeSigned,
+          ...newCred,
           '@context': [W3C_CREDENTIAL_CONTEXT_URL],
         },
         {
@@ -545,39 +578,16 @@ describe('issuance', () => {
     )
   })
 
-  it('complains if transaction handler not given', async () => {
+  it('fails proof creation if credential is unknown', async () => {
     await expect(
       vcjs.issue({
-        credential: toBeSigned,
+        credential: attestedVc,
         suite,
         documentLoader,
         purpose,
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"suite must be configured with a transactionHandler for proof generation"`
-    )
-  })
-
-  it('fails proof finalization if credential does not have proof', async () => {
-    await expect(
-      issuanceSuite.finalizeProof(toBeSigned as KiltCredentialV1)
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The credential must have a proof property containing a proof stub as created by the \`createProof\` method"`
-    )
-  })
-
-  it('fails if proof stub was created by different suite', async () => {
-    const newCred = (await vcjs.issue({
-      credential: toBeSigned,
-      suite: issuanceSuite,
-      documentLoader,
-      purpose,
-    })) as KiltCredentialV1
-
-    await expect(
-      suite.finalizeProof(newCred)
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"no submission found for this proof"`
+      `"No attestation information available for the credential kilt:credential:6N736gaJzLkwZXAgg51eZFjocLHGp2RH3YPpYnvqDHzw. Make sure you have called anchorCredential on the same instance of this class."`
     )
   })
 })

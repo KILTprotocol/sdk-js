@@ -28,7 +28,7 @@ import type {
   Extrinsic,
   Hash,
 } from '@polkadot/types/interfaces/types.js'
-import type { IEventData } from '@polkadot/types/types'
+import type { IEventData, Signer } from '@polkadot/types/types'
 
 import { CType } from '@kiltprotocol/core'
 import {
@@ -39,6 +39,7 @@ import {
 } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
@@ -49,7 +50,7 @@ import type {
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignCallback,
+  SignExtrinsicCallback,
 } from '@kiltprotocol/types'
 
 import { Caip19 } from './CAIP/index.js'
@@ -571,6 +572,11 @@ export function applySelectiveDisclosure(
   }
 }
 
+export type UnissuedCredential = Omit<
+  KiltCredentialV1,
+  'proof' | 'id' | 'credentialStatus' | 'issuanceDate'
+>
+
 /**
  * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
  *
@@ -585,15 +591,27 @@ export function applySelectiveDisclosure(
  * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
  */
 export function initializeProof(
-  credential: Omit<KiltCredentialV1, 'proof'>
+  credential: UnissuedCredential
 ): [
   KiltAttestationProofV1,
   Parameters<ApiPromise['tx']['attestation']['add']>
 ] {
-  const { credentialSubject, nonTransferable, type } = credential
+  const { credentialSubject, nonTransferable } = credential
 
   if (nonTransferable !== true) {
     throw new Error('nonTransferable must be set to true')
+  }
+
+  const type = credential.type.find((str): str is ICType['$id'] =>
+    str.startsWith('kilt:ctype:')
+  )
+  if (!type) {
+    throw new Error('A CType id is required in the set of credential types')
+  }
+  if (`${type}#` !== credentialSubject['@context']['@vocab']) {
+    throw new Error(
+      `The credential type ${type} does not match credentialSubject vocabulary ${credentialSubject['@context']['@vocab']}`
+    )
   }
 
   // 1. json-ld expand credentialSubject
@@ -623,9 +641,7 @@ export function initializeProof(
     proof,
     [
       rootHash,
-      CType.idToHash(
-        type.find((str) => str.startsWith('kilt:ctype:')) as ICType['$id']
-      ),
+      CType.idToHash(type),
       delegationId && { Delegation: delegationId },
     ],
   ]
@@ -650,7 +666,7 @@ export function initializeProof(
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export function finalizeProof(
-  credential: Omit<KiltCredentialV1, 'proof'>,
+  credential: UnissuedCredential,
   proof: KiltAttestationProofV1,
   {
     blockHash,
@@ -676,53 +692,72 @@ export type AttestationHandler = (
   timestamp?: number
 }>
 
+export interface DidSigner {
+  did: DidUri
+  signer: SignExtrinsicCallback
+}
+
+export type TxHandler = {
+  account: KiltAddress
+  signAndSubmit?: AttestationHandler
+  signer?: Signer
+}
+
+export type IssueOpts = {
+  didSigner: DidSigner
+  transactionHandler: TxHandler
+} & Parameters<typeof authorizeTx>[4]
+
+function makeDefaultTxSubmit(
+  transactionHandler: TxHandler
+): AttestationHandler {
+  return async (tx, api) => {
+    const signed = await api.tx(tx).signAsync(transactionHandler.account, {
+      signer: transactionHandler.signer,
+    })
+    const result = await Blockchain.submitSignedTx(signed, {
+      resolveOn: Blockchain.IS_FINALIZED,
+    })
+    const blockHash = result.status.asFinalized
+    return { blockHash }
+  }
+}
+
 /**
  *
  * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
  *
  * @param credential A [[KiltCredentialV1]] for which a proof shall be created.
  * @param opts Additional parameters.
- * @param opts.did The attester's DID URI.
- * @param opts.didSigner A signing callback to create the attester's signature over the transaction to store an attestation record on-chain.
- * @param opts.submitterAddress The address of the wallet that's going to cover the transaction fees.
- * @param opts.txSubmissionHandler Callback function handling extrinsic submission.
- * It receives an unsigned extrinsic and is expected to return the `blockHash` and `timestamp` when the extrinsic was included in a block.
+ * @param opts.didSigner Object containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+ * @param opts.transactionHandler Object containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
+ * The signAndSubmit callback receives an unsigned extrinsic and is expected to return the `blockHash` and (optionally) `timestamp` when the extrinsic was included in a block.
  * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
- * If no `timestamp` is returned by the callback, the timestamp is queried from the blockchain based on the block hash.
- * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
+ * If only the `signer` is given, a default callback will be constructed to take care of submitting the signed extrinsic using the cached blockchain api object.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
-  credential: KiltCredentialV1,
-  {
-    did,
-    didSigner,
-    submitterAddress,
-    txSubmissionHandler,
-    api = ConfigService.get('api'),
-    ...otherParams
-  }: {
-    didSigner: SignCallback
-    did: DidUri
-    submitterAddress: KiltAddress
-    txSubmissionHandler: AttestationHandler
-    api?: ApiPromise
-  } & Parameters<typeof authorizeTx>[4]
+  credential: Omit<UnissuedCredential, 'issuer'>,
+  { didSigner, transactionHandler, ...otherParams }: IssueOpts
 ): Promise<KiltCredentialV1> {
-  const [proof, callArgs] = initializeProof(credential)
+  const updatedCredential = { ...credential, issuer: didSigner.did }
+  const [proof, callArgs] = initializeProof(updatedCredential)
+  const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
+  const txSubmissionHandler =
+    transactionHandler.signAndSubmit ?? makeDefaultTxSubmit(transactionHandler)
   const didSigned = await authorizeTx(
-    did,
+    didSigner.did,
     call,
-    didSigner,
-    submitterAddress,
+    didSigner.signer,
+    transactionHandler.account,
     otherParams
   )
   const {
     blockHash,
     timestamp = (await api.query.timestamp.now.at(blockHash)).toNumber(),
   } = await txSubmissionHandler(didSigned, api)
-  return finalizeProof(credential, proof, {
+  return finalizeProof(updatedCredential, proof, {
     blockHash,
     timestamp,
     genesisHash: api.genesisHash,

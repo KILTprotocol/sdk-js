@@ -158,7 +158,7 @@ it('exports credential to VC', () => {
     chainGenesisHash: mockedApi.genesisHash,
     blockHash,
     timestamp,
-    cType,
+    cType: cType.$id,
   })
   expect(exported).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
@@ -184,7 +184,7 @@ it('VC has correct format (full example)', () => {
       chainGenesisHash: mockedApi.genesisHash,
       blockHash,
       timestamp,
-      cType,
+      cType: cType.$id,
     })
   ).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
