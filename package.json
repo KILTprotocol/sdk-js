@@ -25,7 +25,6 @@
     "test:ci": "yarn test --ci --forceExit",
     "test:integration": "jest -c jest.config.integration.js",
     "test:integration:esm": "tsc -p tests/integration/tsconfig.esm.json && yarn node --experimental-vm-modules $(yarn bin jest) -c jest.config.integration.esm.js",
-    "test:integration:ci": "yarn test:integration -b --testTimeout=60000",
     "test:integration:latest-develop": "TESTCONTAINERS_NODE_IMG=kiltprotocol/mashnet-node:latest-develop yarn test:integration",
     "test:watch": "yarn test --watch",
     "test:bundle": "tsc -p tests/bundle/tsconfig.json && yarn ./tests/bundle playwright test --config playwright.config.ts",

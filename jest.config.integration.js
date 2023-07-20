@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   clearMocks: true,
   // Parachain block time is 12s
-  testTimeout: 30000,
+  testTimeout: 120_000,
   maxWorkers: 3,
   testPathIgnorePatterns: ['dist'],
   transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],

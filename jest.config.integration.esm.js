@@ -2,7 +2,7 @@ module.exports = {
   testEnvironment: 'node',
   clearMocks: true,
   // Parachain block time is 12s
-  testTimeout: 30000,
+  testTimeout: 120_000,
   maxWorkers: 3,
   rootDir: 'tests/integration/dist',
   transform: {},
