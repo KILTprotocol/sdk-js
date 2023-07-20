@@ -9,6 +9,8 @@
  * @group integration/balance
  */
 
+import { jest } from '@jest/globals'
+
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
@@ -66,7 +68,7 @@ describe('when there is a dev chain with a faucet', () => {
   // in the other test cases.
   it('should be able to faucet coins to a new address', async () => {
     const address = addressFromRandom()
-    const spy = jest.fn()
+    const spy = jest.fn<any>()
     api.query.system.account(address, spy)
     const balanceBefore = (await api.query.system.account(faucet.address)).data
     const transferTx = api.tx.balances.transfer(address, EXISTENTIAL_DEPOSIT)
@@ -140,7 +142,7 @@ describe('When there are haves and have-nots', () => {
   }, 30_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
-    const spy = jest.fn()
+    const spy = jest.fn<any>()
     api.query.system.account(faucet.address, spy)
 
     const transferTx1 = api.tx.balances.transfer(
@@ -158,7 +160,7 @@ describe('When there are haves and have-nots', () => {
   }, 30_000)
 
   it('should be able to make multiple transactions at once', async () => {
-    const listener = jest.fn()
+    const listener = jest.fn<any>()
     api.query.system.account(faucet.address, listener)
 
     const batch = api.tx.utility.batchAll([

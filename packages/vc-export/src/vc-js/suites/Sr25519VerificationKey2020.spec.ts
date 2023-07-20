@@ -35,7 +35,7 @@ it('generates a key', async () => {
   expect(
     key.export({ publicKey: true, privateKey: true, includeContext: true })
   ).toMatchInlineSnapshot(`
-    Object {
+    {
       "@context": "https://www.kilt.io/contexts/credentials",
       "controller": "Alice",
       "id": "Alice/key",

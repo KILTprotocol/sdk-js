@@ -97,7 +97,7 @@ describe('helper functions', () => {
     hashed = Crypto.hashStatements(statements, { nonceGenerator: () => '' })
     expect(hashed.map((i) => i.digest)).toEqual(digests)
     expect(hashed.map((i) => i.saltedHash)).toMatchInlineSnapshot(`
-      Array [
+      [
         "0x3d4b9478848e85771d9d678f2d80966bf9ea36f0d05b44fe5b23433e14a3eace",
         "0x56c8f25bc8a9a8921c756c41f47efceb12c8129a9569456f7d80955bfcec2dcf",
         "0x46ee56523ea5289f05709c26f6be6b08f364a3f2d6a5a8b6cfb2839bfe6a506e",
@@ -112,7 +112,7 @@ describe('helper functions', () => {
     })
     expect(hashed.map((i) => i.digest)).toEqual(digests)
     expect(hashed.map((i) => i.saltedHash)).toMatchInlineSnapshot(`
-      Array [
+      [
         "0x7126bd9e273ae6a1b2cfdc5f987b0f862cf2db77fea9b017963fec83b328784d",
         "0xda617d15abd22984c2f1927f4e23a101696b7495c83ac178bbb91818ec102117",
         "0x4e31eef9054d0d8682707880a414b86fafaa963b19220d03273eae764ad0bc1d",

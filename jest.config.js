@@ -1,12 +1,10 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
-  // Parachain block time is 12s
-  testTimeout: 15000,
+  testTimeout: 5000,
   setupFilesAfterEnv: ['../jest-setup/setup.js'],
-  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/|@digitalbazaar|base.+-universal|crypto-ld)'],
+  transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -16,7 +14,7 @@ module.exports = {
     },
   },
   transform: {
-    "\\.js$": "babel-jest",
+    "\\.js$": ["babel-jest", { root: './' }],
     "\\.ts$": "ts-jest"
   },
   collectCoverageFrom: [

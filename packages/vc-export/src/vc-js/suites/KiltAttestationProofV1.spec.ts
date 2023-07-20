@@ -574,7 +574,7 @@ describe('issuance', () => {
         }
       )
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The document to be signed must contain this suite's @context, \\"https://www.kilt.io/contexts/credentials\\"."`
+      `"The document to be signed must contain this suite's @context, "https://www.kilt.io/contexts/credentials"."`
     )
   })
 

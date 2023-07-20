@@ -31,11 +31,11 @@ describe('jsonld', () => {
     // this is what a kilt claim looks like when expressed in expanded JSON-LD
     const jsonld = Claim.toJsonLD(claim, true)
     expect(jsonld).toMatchInlineSnapshot(`
-      Object {
-        "https://www.w3.org/2018/credentials#credentialSchema": Object {
+      {
+        "https://www.w3.org/2018/credentials#credentialSchema": {
           "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
         },
-        "https://www.w3.org/2018/credentials#credentialSubject": Object {
+        "https://www.w3.org/2018/credentials#credentialSubject": {
           "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
           "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#address": "homestreet, home",
           "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#name": "John",
@@ -50,15 +50,15 @@ describe('jsonld', () => {
     // this is what a kilt claim looks like when expressed in compact JSON-LD
     const jsonld = Claim.toJsonLD(claim, false)
     expect(jsonld).toMatchInlineSnapshot(`
-      Object {
-        "@context": Object {
+      {
+        "@context": {
           "@vocab": "https://www.w3.org/2018/credentials#",
         },
-        "credentialSchema": Object {
+        "credentialSchema": {
           "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
         },
-        "credentialSubject": Object {
-          "@context": Object {
+        "credentialSubject": {
+          "@context": {
             "@vocab": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#",
           },
           "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
@@ -93,7 +93,7 @@ describe('jsonld', () => {
     })
     expect(hashed.nonceMap).toEqual(nonceMap)
     expect(hashed.hashes).toMatchInlineSnapshot(`
-      Array [
+      [
         "0x3c2ae125a0baf4ed64a30b7ad012810b4622628a2eb5ad32e769e6a1d356d58d",
         "0x69aae66efd954c3712e91dd2761dab08ea941e6516e7cf6ddf6e3b90ddc5bdf3",
         "0x8d5736197583931c4e4d3dce0503596760f7a13e8187cc440b7de1edd4370d6a",

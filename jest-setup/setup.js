@@ -1,5 +1,4 @@
-import { cryptoWaitReady } from '@polkadot/util-crypto'
-export {}
+const { cryptoWaitReady } = require('@polkadot/util-crypto')
 
 beforeAll(async () => {
   await cryptoWaitReady()

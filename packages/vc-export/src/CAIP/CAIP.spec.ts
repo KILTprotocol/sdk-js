@@ -19,7 +19,7 @@ it('parses a CAIP-2 chain id', () => {
     `"polkadot:411f057b9107718c9624d6aa4a3f23c1"`
   )
   expect(parseCaip2(chainId)).toMatchInlineSnapshot(`
-    Object {
+    {
       "chainNamespace": "polkadot",
       "chainReference": "411f057b9107718c9624d6aa4a3f23c1",
     }
@@ -37,7 +37,7 @@ it('throws if CAIP-2 identifier not valid', () => {
 it('parses a CAIP-19 asset id', () => {
   expect(parseCaip19('polkadot:1234567890abcdef/jabba:dabba/asset10'))
     .toMatchInlineSnapshot(`
-    Object {
+    {
       "assetId": "jabba:dabba/asset10",
       "assetInstance": "asset10",
       "assetNamespace": "jabba",
