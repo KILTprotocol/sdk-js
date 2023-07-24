@@ -1,11 +1,17 @@
 module.exports = {
+  preset: 'ts-jest',
   testEnvironment: 'node',
   clearMocks: true,
   // Parachain block time is 12s
   testTimeout: 120_000,
   maxWorkers: 3,
-  rootDir: 'tests/integration/dist',
-  transform: {},
+  testPathIgnorePatterns: ['dist'],
+  transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
+  transform: {
+    "\\.js$": "babel-jest",
+    "\\.ts$": "ts-jest"
+  },
+  resolver: "ts-jest-resolver",
   coverageDirectory: 'coverage',
   moduleDirectories: [
     "node_modules",
