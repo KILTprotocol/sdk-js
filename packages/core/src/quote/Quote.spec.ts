@@ -9,26 +9,27 @@
  * @group unit/quote
  */
 
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
+  DidResourceUri,
+  ICType,
   IClaim,
   ICostBreakdown,
-  ICType,
+  ICredential,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  ICredential,
-  DidResourceUri,
   ResolvedDidKey,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
+
 import {
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as CType from '../ctype'
+} from '../../../../tests/testUtils'
 import * as Credential from '../credential'
+import * as CType from '../ctype'
 import * as Quote from './Quote'
 import { QuoteSchema } from './QuoteSchema'
 

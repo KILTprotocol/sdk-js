@@ -9,22 +9,22 @@
  * @group integration/web3name
  */
 
-import { randomAsHex } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
+import { randomAsHex } from '@polkadot/util-crypto'
 
+import { disconnect } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import {
-  createFullDidFromSeed,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { disconnect } from '@kiltprotocol/core'
 
+import {
+  KeyTool,
+  createFullDidFromSeed,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise

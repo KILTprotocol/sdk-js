@@ -9,19 +9,21 @@
  * @group unit/delegation
  */
 
-import {
-  IDelegationNode,
-  IDelegationHierarchyDetails,
-  Permission,
-  DidUri,
-  CTypeHash,
-} from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
-import { ApiMocks } from '@kiltprotocol/testing'
+
 import { ConfigService } from '@kiltprotocol/config'
+import {
+  CTypeHash,
+  DidUri,
+  IDelegationHierarchyDetails,
+  IDelegationNode,
+  Permission,
+} from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+
+import { ApiMocks } from '../../../../tests/testUtils'
 import { DelegationNode } from './DelegationNode'
-import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
+import { errorCheck, permissionsAsBitset } from './DelegationNode.utils'
 
 let mockedApi: any
 

@@ -11,6 +11,10 @@
 
 /* eslint-disable dot-notation */
 
+import { randomAsHex } from '@polkadot/util-crypto'
+
+import { ConfigService } from '@kiltprotocol/config'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   DidResourceUri,
@@ -26,20 +30,18 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
+
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import { ConfigService } from '@kiltprotocol/config'
-import { randomAsHex } from '@polkadot/util-crypto'
+} from '../../../../tests/testUtils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as Credential from './Credential'
 import { init } from '../kilt'
+import * as Credential from './Credential'
 
 const testCType = CType.fromProperties('Credential', {
   a: { type: 'string' },

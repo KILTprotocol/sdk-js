@@ -8,15 +8,17 @@
 /**
  * @group integration/deposit
  */
+import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
 
-import * as Did from '@kiltprotocol/did'
 import {
-  createFullDidFromLightDid,
-  createFullDidFromSeed,
-  createMinimalLightDidFromKeypair,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
+  Attestation,
+  Claim,
+  Credential,
+  CType,
+  disconnect,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
@@ -26,15 +28,13 @@ import type {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import type { ApiPromise } from '@polkadot/api'
-import { BN } from '@polkadot/util'
 import {
-  Attestation,
-  Claim,
-  Credential,
-  disconnect,
-  CType,
-} from '@kiltprotocol/core'
+  createFullDidFromLightDid,
+  createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   devFaucet,
   driversLicenseCTypeForDeposit as driversLicenseCType,

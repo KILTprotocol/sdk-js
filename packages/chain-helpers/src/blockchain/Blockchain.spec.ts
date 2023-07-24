@@ -9,11 +9,11 @@
  * @group unit/blockchain
  */
 
-import { ApiMocks } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
+import { ApiMocks } from '../../../../tests/testUtils'
 import {
   IS_FINALIZED,
   IS_IN_BLOCK,

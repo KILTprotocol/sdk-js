@@ -8,7 +8,18 @@
 /**
  * @group integration/delegation
  */
+import { ApiPromise } from '@polkadot/api'
+import { randomAsHex } from '@polkadot/util-crypto'
 
+import {
+  Attestation,
+  CType,
+  Claim,
+  Credential,
+  DelegationNode,
+  disconnect,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   ICType,
@@ -17,22 +28,12 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Permission, PermissionType } from '@kiltprotocol/types'
+
 import {
-  createFullDidFromSeed,
   KeyTool,
+  createFullDidFromSeed,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { ApiPromise } from '@polkadot/api'
-import { randomAsHex } from '@polkadot/util-crypto'
-import {
-  Attestation,
-  Claim,
-  CType,
-  Credential,
-  disconnect,
-  DelegationNode,
-} from '@kiltprotocol/core'
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   devBob,

@@ -8,23 +8,24 @@
 /**
  * @group integration/accountLinking
  */
+import type { ApiPromise } from '@polkadot/api'
+import { Keyring } from '@polkadot/keyring'
+import { BN } from '@polkadot/util'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 
+import { BalanceUtils, disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import {
-  createFullDidFromSeed,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
 import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { Keyring } from '@polkadot/keyring'
-import { BN } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { BalanceUtils, disconnect } from '@kiltprotocol/core'
+
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   fundAccount,

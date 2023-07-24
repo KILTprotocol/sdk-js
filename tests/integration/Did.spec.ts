@@ -12,14 +12,8 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
+import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import {
-  createFullDidFromSeed,
-  createMinimalLightDidFromKeypair,
-  KeyTool,
-  makeEncryptionKeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
 import {
   DidDocument,
   DidResolutionResult,
@@ -32,8 +26,14 @@ import {
   SignCallback,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
-import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
 
+import {
+  createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeEncryptionKeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   devBob,

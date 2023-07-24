@@ -3,7 +3,7 @@ module.exports = {
   clearMocks: true,
   runner: 'groups',
   testTimeout: 5000,
-  setupFilesAfterEnv: ['../jest-setup/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest-setup/setup.js'],
   transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
   coverageThreshold: {
     global: {
@@ -40,7 +40,7 @@ module.exports = {
     '!core/src/utils.ts',
   ],
   resolver: "ts-jest-resolver",
-  rootDir: 'packages',
+  roots: ['<rootDir>/packages', '<rootDir>/tests/breakingChanges'],
   coverageDirectory: 'coverage',
   moduleDirectories: [
     "node_modules",

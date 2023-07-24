@@ -9,14 +9,14 @@
  * @group integration/blockchain
  */
 
-import { BN } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
 
-import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { BalanceUtils, disconnect } from '@kiltprotocol/core'
+import type { KeyringPair } from '@kiltprotocol/types'
 
+import { makeSigningKeyTool } from '../testUtils/index.js'
 import { devCharlie, devFaucet, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise

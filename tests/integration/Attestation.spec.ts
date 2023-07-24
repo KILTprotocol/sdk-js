@@ -9,27 +9,29 @@
  * @group integration/attestation
  */
 
+import type { ApiPromise } from '@polkadot/api'
+
+import {
+  Attestation,
+  Claim,
+  Credential,
+  CType,
+  disconnect,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
   ICredential,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
+
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
-import { ApiPromise } from '@polkadot/api'
-import {
-  Attestation,
-  Credential,
-  disconnect,
-  Claim,
-  CType,
-} from '@kiltprotocol/core'
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   driversLicenseCType,

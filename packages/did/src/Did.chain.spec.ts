@@ -10,8 +10,8 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
-import { ApiMocks } from '@kiltprotocol/testing'
 
+import { ApiMocks } from '../../../tests/testUtils'
 import { serviceToChain } from './Did.chain'
 
 let api: any

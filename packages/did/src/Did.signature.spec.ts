@@ -9,6 +9,8 @@
  * @group unit/did
  */
 
+import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+
 import type {
   DidDocument,
   DidResourceUri,
@@ -18,17 +20,17 @@ import type {
   NewLightDidVerificationKey,
   SignCallback,
 } from '@kiltprotocol/types'
-import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import * as Did from './index.js'
+
+import { makeSigningKeyTool } from '../../../tests/testUtils'
 import {
-  verifyDidSignature,
   isDidSignature,
   signatureFromJson,
   signatureToJson,
+  verifyDidSignature,
 } from './Did.signature'
-import { resolveKey, keyToResolvedKey } from './DidResolver'
+import { keyToResolvedKey, resolveKey } from './DidResolver'
+import * as Did from './index.js'
 
 jest.mock('./DidResolver')
 jest

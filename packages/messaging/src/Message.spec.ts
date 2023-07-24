@@ -9,24 +9,32 @@
  * @group unit/messaging
  */
 
+import { u8aToHex } from '@polkadot/util'
+
+import {
+  Attestation,
+  CType,
+  Claim,
+  Credential,
+  Quote,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   DidResourceUri,
   DidUri,
-  IEncryptedMessage,
-  IQuote,
-  IRequestAttestation,
-  ISubmitAttestation,
-  ISubmitCredential,
-  ResolvedDidKey,
   IAcceptCredential,
   IAttestation,
-  IClaim,
   ICType,
+  IClaim,
+  ICredential,
+  ICredentialPresentation,
   IDelegationData,
+  IEncryptedMessage,
   IInformCreateDelegation,
   IInformDelegationCreation,
   IMessage,
+  IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
   IRejectAcceptDelegation,
@@ -34,40 +42,33 @@ import type {
   IRejectCredential,
   IRejectTerms,
   IRequestAcceptDelegation,
+  IRequestAttestation,
   IRequestAttestationContent,
   IRequestCredential,
   IRequestCredentialContent,
   IRequestDelegationApproval,
-  ICredential,
   IRequestTerms,
   ISubmitAcceptDelegation,
+  ISubmitAttestation,
   ISubmitAttestationContent,
+  ISubmitCredential,
   ISubmitDelegationApproval,
   ISubmitTerms,
   ITerms,
   MessageBody,
   PartialClaim,
-  ICredentialPresentation,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+
 import {
-  Quote,
-  Credential,
-  Attestation,
-  Claim,
-  CType,
-} from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
-import {
+  KeyTool,
+  KeyToolSignCallback,
+  createLocalDemoFullDidFromKeypair,
   createLocalDemoFullDidFromLightDid,
   makeEncryptionKeyTool,
   makeSigningKeyTool,
-  createLocalDemoFullDidFromKeypair,
-  KeyTool,
-  KeyToolSignCallback,
-} from '@kiltprotocol/testing'
-import { u8aToHex } from '@polkadot/util'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-
+} from '../../../tests/testUtils'
 import * as Message from './Message'
 
 describe('Messaging', () => {

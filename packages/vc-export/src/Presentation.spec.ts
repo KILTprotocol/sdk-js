@@ -9,40 +9,40 @@
  * @group unit/vc-export
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { Codec } from '@polkadot/types/types'
 import { hexToU8a } from '@polkadot/util'
 import {
-  secp256k1PairFromSeed,
   ed25519PairFromSeed,
-  randomAsU8a,
   encodeAddress,
+  randomAsU8a,
+  secp256k1PairFromSeed,
 } from '@polkadot/util-crypto'
-import type { ApiPromise } from '@polkadot/api'
 import type { Keypair } from '@polkadot/util-crypto/types'
-import type { Codec } from '@polkadot/types/types'
 
 import { init } from '@kiltprotocol/core'
-import { Crypto } from '@kiltprotocol/utils'
 import { getFullDidUri, getFullDidUriFromKey } from '@kiltprotocol/did'
-import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   DidDocument,
   DidVerificationKey,
   ResolvedDidKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 
+import { ApiMocks } from '../../../tests/testUtils'
+import {
+  create as createJWT,
+  credentialFromPayload,
+  credentialToPayload,
+  verify as verifyJWT,
+} from './DidJwt'
 import {
   create as createPresentation,
   signAsJwt,
   verifySignedAsJwt,
 } from './Presentation'
 import type { VerifiableCredential, VerifiablePresentation } from './types'
-import {
-  create as createJWT,
-  verify as verifyJWT,
-  credentialToPayload,
-  credentialFromPayload,
-} from './DidJwt'
 
 const credential = {
   '@context': [

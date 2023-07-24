@@ -9,27 +9,27 @@
  * @group integration/publicCredentials
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   AssetDidUri,
   DidDocument,
+  HexString,
   IPublicCredential,
   IPublicCredentialInput,
   KiltKeyringPair,
-  HexString,
 } from '@kiltprotocol/types'
-
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
+
+import { CType, disconnect, PublicCredential } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
+import { UUID } from '@kiltprotocol/utils'
+
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import { UUID } from '@kiltprotocol/utils'
-import { CType, disconnect, PublicCredential } from '@kiltprotocol/core'
-
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   devAlice,

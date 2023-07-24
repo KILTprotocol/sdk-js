@@ -11,21 +11,21 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import { ConfigService } from '@kiltprotocol/config'
 import type {
-  IAttestation,
+  CTypeHash,
   DidUri,
+  IAttestation,
   ICType,
   IClaim,
   ICredential,
-  CTypeHash,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { ConfigService } from '@kiltprotocol/config'
 
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as Claim from '../claim'
-import * as CType from '../ctype'
 import * as Credential from '../credential'
+import * as CType from '../ctype'
 import * as Attestation from './Attestation'
 
 let mockedApi: any

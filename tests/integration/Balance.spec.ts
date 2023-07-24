@@ -14,9 +14,10 @@ import { jest } from '@jest/globals'
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import type { KeyringPair } from '@kiltprotocol/types'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { disconnect } from '@kiltprotocol/core'
+import type { KeyringPair } from '@kiltprotocol/types'
+
+import { makeSigningKeyTool } from '../testUtils/index.js'
 import {
   addressFromRandom,
   devAlice,

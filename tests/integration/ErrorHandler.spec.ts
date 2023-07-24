@@ -8,21 +8,22 @@
 /**
  * @group integration/errorhandler
  */
-
-import { BN } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
+
+import { disconnect } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+
 import {
-  createFullDidFromSeed,
   KeyTool,
+  createFullDidFromSeed,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { disconnect } from '@kiltprotocol/core'
+} from '../testUtils/index.js'
 
 import {
   addressFromRandom,
