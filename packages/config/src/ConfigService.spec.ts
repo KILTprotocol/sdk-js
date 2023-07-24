@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/ConfigService
- */
-
 /* eslint-disable dot-notation */
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { LogLevel, Logger } from 'typescript-logging'

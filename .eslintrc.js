@@ -142,7 +142,7 @@ module.exports = {
         'jsdoc/check-tag-names': [
           'warn',
           {
-            definedTags: ['group', 'packageDocumentation'],
+            definedTags: ['packageDocumentation'],
           },
         ],
         '@typescript-eslint/no-var-requires': 'off',

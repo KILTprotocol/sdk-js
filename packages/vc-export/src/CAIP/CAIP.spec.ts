@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/caip
- */
-
 import { spiritnetGenesisHash } from '../constants'
 import { chainIdFromGenesis, parse as parseCaip2 } from './caip2'
 import { parse as parseCaip19 } from './caip19'

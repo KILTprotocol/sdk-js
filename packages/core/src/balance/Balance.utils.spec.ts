@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/balance
- */
-
 import { BN } from '@polkadot/util'
 import type {
   BalanceNumber,

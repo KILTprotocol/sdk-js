@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/claim
- */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, ICType, DidUri } from '@kiltprotocol/types'
 import * as CType from '../ctype'

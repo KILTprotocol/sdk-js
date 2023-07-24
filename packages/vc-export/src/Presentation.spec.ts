@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
-
 import type { ApiPromise } from '@polkadot/api'
 import type { Codec } from '@polkadot/types/types'
 import { hexToU8a } from '@polkadot/util'

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/utils
- */
-
 import * as string from '@polkadot/util/string'
 import nacl from 'tweetnacl'
 import * as Crypto from './Crypto'

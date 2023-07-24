@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/balance
- */
-
 import { jest } from '@jest/globals'
 
 import { ApiPromise } from '@polkadot/api'

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/messaging
- */
-
 import { u8aToHex } from '@polkadot/util'
 
 import {

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/publicCredential
- */
-
 import { BN } from '@polkadot/util'
 
 import { ConfigService } from '@kiltprotocol/config'

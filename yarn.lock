@@ -6571,16 +6571,6 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"jest-runner-groups@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "jest-runner-groups@npm:2.2.0"
-  peerDependencies:
-    jest-docblock: ">= 24"
-    jest-runner: ">= 24"
-  checksum: 4cd69ba7c14b1988ca1e4b15194f5011d3ad3cbb554098afdee336d5c0a78bd27c2bde2a58ce0b68984a8d3d1781e15c020a0db64db059116721b47de1ba5287
-  languageName: node
-  linkType: hard
-
 "jest-runner@npm:^29.6.1":
   version: 29.6.1
   resolution: "jest-runner@npm:29.6.1"
@@ -8332,8 +8322,6 @@ fsevents@^2.3.2:
     eslint-plugin-prettier: ^3.4.1
     husky: ^4.2.5
     jest: ^29.6.1
-    jest-runner: ^29.6.1
-    jest-runner-groups: ^2.2.0
     prettier: ^2.4.1
     rimraf: ^3.0.2
     testcontainers: ^9.0.0

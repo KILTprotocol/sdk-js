@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
-
 import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
 

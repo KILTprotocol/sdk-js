@@ -9,10 +9,6 @@ import { DidDocument, DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
 
 import { getService, getKey, getKeys } from './DidDetails'
 
-/**
- * @group unit/did
- */
-
 const minimalDid: DidDocument = {
   uri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   authentication: [

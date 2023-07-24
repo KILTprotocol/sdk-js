@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/credential
- */
-
 /* eslint-disable dot-notation */
 
 import { randomAsHex } from '@polkadot/util-crypto'

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
-
 import { hexToU8a } from '@polkadot/util'
 import { ed25519PairFromSeed } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'

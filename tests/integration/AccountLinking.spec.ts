@@ -5,9 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/accountLinking
- */
 import type { ApiPromise } from '@polkadot/api'
 import { Keyring } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'

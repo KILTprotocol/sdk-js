@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-js
- */
-
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a } from '@polkadot/util'
 import { randomAsU8a, signatureVerify } from '@polkadot/util-crypto'

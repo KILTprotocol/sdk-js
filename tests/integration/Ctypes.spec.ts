@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/ctype
- */
-
 import type { ApiPromise } from '@polkadot/api'
 
 import { CType, disconnect } from '@kiltprotocol/core'

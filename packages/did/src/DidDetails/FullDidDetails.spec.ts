@@ -24,10 +24,6 @@ import {
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
 import * as Did from './index.js'
 
-/**
- * @group unit/did
- */
-
 const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })

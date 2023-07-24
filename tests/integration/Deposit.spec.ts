@@ -5,9 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/deposit
- */
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/delegation
- */
-
 import { encodeAddress } from '@polkadot/keyring'
 
 import { ConfigService } from '@kiltprotocol/config'

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/ctype
- */
-
 import { ConfigService } from '@kiltprotocol/config'
 import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'

@@ -40,10 +40,6 @@ import {
   resolveService,
 } from './index.js'
 
-/**
- * @group unit/did
- */
-
 const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 const didWithAuthenticationKey: DidUri = `did:kilt:${addressWithAuthenticationKey}`

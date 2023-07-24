@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/quote
- */
-
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,

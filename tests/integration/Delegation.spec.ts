@@ -5,9 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/delegation
- */
 import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 
