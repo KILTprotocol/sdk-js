@@ -1,7 +1,7 @@
 const common = {
   testEnvironment: 'node',
   clearMocks: true,
-  setupFilesAfterEnv: ['<rootDir>/jest-setup/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/jest-setup.js'],
   transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
   transform: {
     "\\.js$": ["babel-jest", { root: './' }],
