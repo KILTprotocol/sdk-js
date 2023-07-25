@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
-  "include": ["packages/**/*", "jest-setup/*", "docs/*", "tests/**/*"],
+  "include": ["packages/**/*", "docs/*", "tests/**/*"],
   "compilerOptions": {
     "baseUrl": "./packages",
     "sourceMap": true,
