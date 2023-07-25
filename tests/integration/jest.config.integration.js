@@ -6,11 +6,6 @@ module.exports = {
   testTimeout: 120_000,
   maxWorkers: 3,
   testPathIgnorePatterns: ['dist'],
-  transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
-  transform: {
-    "\\.js$": "babel-jest",
-    "\\.ts$": "ts-jest"
-  },
   resolver: "ts-jest-resolver",
   coverageDirectory: 'coverage',
   moduleDirectories: [
