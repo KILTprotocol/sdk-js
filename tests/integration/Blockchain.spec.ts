@@ -143,7 +143,6 @@ describe('Chain returns specific errors, that we check for', () => {
         resolve(Blockchain.dispatchTx(errorTx))
       }, 50)
     })
-    Blockchain.dispatchTx(errorTx)
     await Promise.all([
       expect(promiseToFail).rejects.toHaveProperty('status.isUsurped', true),
       promiseToUsurp,
