@@ -25,23 +25,24 @@ const common = {
     'packages/*/src/**',
   ],
   coveragePathIgnorePatterns: [
+    // test and library code
     '/node_modules/',
     '/lib/',
     '/tests/',
+    // not properly testable
     'packages/types/',
     'packages/augment-api/',
     'packages/type-definitions/',
-    'packages/utils/src/json-schema/',
     'packages/core/src/kilt/',
     'index.ts',
     'types.ts',
     '.chain.ts',
     'SDKErrors.ts',
-    'Did.chain.ts',
     'Did.rpc.ts',
-    'Did.utils.ts',
-    'jsonabc.ts',
     'packages/core/src/utils.ts',
+    // third party code copied to this repo
+    'packages/utils/src/json-schema/',
+    'jsonabc.ts',
   ],
 }
 
