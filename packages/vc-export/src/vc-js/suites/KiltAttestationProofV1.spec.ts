@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-js
- */
-
 import { hexToU8a, u8aEq } from '@polkadot/util'
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
@@ -574,7 +570,7 @@ describe('issuance', () => {
         }
       )
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The document to be signed must contain this suite's @context, \\"https://www.kilt.io/contexts/credentials\\"."`
+      `"The document to be signed must contain this suite's @context, "https://www.kilt.io/contexts/credentials"."`
     )
   })
 

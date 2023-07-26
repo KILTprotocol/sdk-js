@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/util
- */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
 

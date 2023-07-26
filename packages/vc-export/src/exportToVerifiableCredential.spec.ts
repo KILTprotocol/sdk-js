@@ -5,27 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
-
-import { randomAsU8a } from '@polkadot/util-crypto'
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+import { randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/core'
-import { ApiMocks } from '@kiltprotocol/testing'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
+import { ApiMocks } from '../../../tests/testUtils'
 import {
   credentialSchema,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1'
-import { exportICredentialToVc } from './fromICredential'
+import { credentialIdFromRootHash } from './common'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
-import { credentialIdFromRootHash } from './common'
+import { exportICredentialToVc } from './fromICredential'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 

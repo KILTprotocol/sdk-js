@@ -5,30 +5,28 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/errorhandler
- */
-
-import { BN } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
+
+import { disconnect } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+
 import {
-  createFullDidFromSeed,
   KeyTool,
+  createFullDidFromSeed,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { disconnect } from '../kilt'
+} from '../testUtils/index.js'
+
 import {
   addressFromRandom,
   createEndowedTestAccount,
   initializeApi,
   submitTx,
-} from './utils'
+} from './utils.js'
 
 let paymentAccount: KiltKeyringPair
 let someDid: DidDocument
@@ -46,11 +44,29 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const transferTx = api.tx.balances.transfer(addressFromRandom(), new BN(1))
-  await expect(submitTx(transferTx, paymentAccount)).rejects.toMatchObject({
-    section: 'balances',
-    name: 'ExistentialDeposit',
-  })
+  const transferTx = api.tx.balances.transfer(addressFromRandom(), 1)
+  const promise = submitTx(transferTx, paymentAccount)
+  if (api.runtimeVersion.specVersion.toBigInt() > 11_000n) {
+    await expect(promise).rejects.toMatchInlineSnapshot(`
+      {
+        "token": "BelowMinimum",
+      }
+    `)
+  } else {
+    await expect(promise).rejects.toMatchInlineSnapshot(`
+      {
+        "args": [],
+        "docs": [
+          "Value too low to create account due to existential deposit",
+        ],
+        "fields": [],
+        "index": 3,
+        "method": "ExistentialDeposit",
+        "name": "ExistentialDeposit",
+        "section": "balances",
+      }
+    `)
+  }
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {

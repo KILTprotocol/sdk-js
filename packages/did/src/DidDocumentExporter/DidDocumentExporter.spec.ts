@@ -21,10 +21,6 @@ import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from '../index.js'
 
-/**
- * @group unit/did
- */
-
 const did: DidUri = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
 function generateAuthenticationKey(): DidVerificationKey {
@@ -231,42 +227,42 @@ describe('When exporting a DID Document from a light DID', () => {
     const didDoc = exportToDidDocument(lightDid, 'application/json')
 
     expect(didDoc).toMatchInlineSnapshot(`
-      Object {
-        "authentication": Array [
+      {
+        "authentication": [
           "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
         ],
         "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
-        "keyAgreement": Array [
+        "keyAgreement": [
           "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
         ],
-        "service": Array [
-          Object {
+        "service": [
+          {
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-1",
-            "serviceEndpoint": Array [
+            "serviceEndpoint": [
               "x:url-id-1",
             ],
-            "type": Array [
+            "type": [
               "type-id-1",
             ],
           },
-          Object {
+          {
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-2",
-            "serviceEndpoint": Array [
+            "serviceEndpoint": [
               "x:url-id-2",
             ],
-            "type": Array [
+            "type": [
               "type-id-2",
             ],
           },
         ],
-        "verificationMethod": Array [
-          Object {
+        "verificationMethod": [
+          {
             "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
-          Object {
+          {
             "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",
@@ -281,46 +277,46 @@ describe('When exporting a DID Document from a light DID', () => {
     const didDoc = exportToDidDocument(lightDid, 'application/ld+json')
 
     expect(didDoc).toMatchInlineSnapshot(`
-      Object {
-        "@context": Array [
+      {
+        "@context": [
           "https://www.w3.org/ns/did/v1",
           "ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW",
         ],
-        "authentication": Array [
+        "authentication": [
           "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
         ],
         "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
-        "keyAgreement": Array [
+        "keyAgreement": [
           "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
         ],
-        "service": Array [
-          Object {
+        "service": [
+          {
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-1",
-            "serviceEndpoint": Array [
+            "serviceEndpoint": [
               "x:url-id-1",
             ],
-            "type": Array [
+            "type": [
               "type-id-1",
             ],
           },
-          Object {
+          {
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-2",
-            "serviceEndpoint": Array [
+            "serviceEndpoint": [
               "x:url-id-2",
             ],
-            "type": Array [
+            "type": [
               "type-id-2",
             ],
           },
         ],
-        "verificationMethod": Array [
-          Object {
+        "verificationMethod": [
+          {
             "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
-          Object {
+          {
             "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
             "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",

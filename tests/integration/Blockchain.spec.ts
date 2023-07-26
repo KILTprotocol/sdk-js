@@ -5,20 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/blockchain
- */
-
-import { BN } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
 
-import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { BalanceUtils, disconnect } from '@kiltprotocol/core'
+import type { KeyringPair } from '@kiltprotocol/types'
 
-import { toFemtoKilt } from '../balance/Balance.utils'
-import { devCharlie, devFaucet, initializeApi, submitTx } from './utils'
-import { disconnect } from '../kilt'
+import { makeSigningKeyTool } from '../testUtils/index.js'
+import { devCharlie, devFaucet, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -36,7 +31,7 @@ describe('Chain returns specific errors, that we check for', () => {
 
     const transferTx = api.tx.balances.transfer(
       testIdentity.address,
-      toFemtoKilt(10000)
+      BalanceUtils.toFemtoKilt(10000)
     )
     await submitTx(transferTx, faucet)
   }, 40000)
@@ -143,7 +138,11 @@ describe('Chain returns specific errors, that we check for', () => {
     )
 
     const promiseToFail = Blockchain.dispatchTx(tx)
-    const promiseToUsurp = Blockchain.dispatchTx(errorTx)
+    const promiseToUsurp = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(Blockchain.dispatchTx(errorTx))
+      }, 50)
+    })
     await Promise.all([
       expect(promiseToFail).rejects.toHaveProperty('status.isUsurped', true),
       promiseToUsurp,

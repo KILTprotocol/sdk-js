@@ -8,13 +8,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-console */
 
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
+
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Crypto } from '@kiltprotocol/utils'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { CType, connect, init } from '@kiltprotocol/core'
 import type {
   ICType,
   KeyringPair,
@@ -23,10 +24,9 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
+import { Crypto } from '@kiltprotocol/utils'
 
-import * as CType from '../ctype'
-import { connect, init } from '../kilt'
+import { makeSigningKeyTool } from '../testUtils/index.js'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)

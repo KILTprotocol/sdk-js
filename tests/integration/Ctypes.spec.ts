@@ -5,22 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/ctype
- */
+import type { ApiPromise } from '@polkadot/api'
 
-import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
+import { CType, disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import {
-  createFullDidFromSeed,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
+import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
-import { ApiPromise } from '@polkadot/api'
-import * as CType from '../ctype'
-import { disconnect } from '../kilt'
-import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
+
+import {
+  KeyTool,
+  createFullDidFromSeed,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise
 // we skip fetching CTypes from chain for the old pallet version, where the necessary information was not yet on chain.

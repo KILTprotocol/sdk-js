@@ -5,21 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/did
- */
-
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
+import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import {
-  createFullDidFromSeed,
-  createMinimalLightDidFromKeypair,
-  KeyTool,
-  makeEncryptionKeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
 import {
   DidDocument,
   DidResolutionResult,
@@ -33,15 +23,19 @@ import {
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
-import * as CType from '../ctype'
-import { disconnect } from '../kilt'
+import {
+  createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeEncryptionKeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   devBob,
   initializeApi,
   submitTx,
-} from './utils'
-import { DelegationNode } from '../delegation'
+} from './utils.js'
 
 let paymentAccount: KiltKeyringPair
 let api: ApiPromise
