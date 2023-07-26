@@ -5,26 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/web3name
- */
-
+import type { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 
+import { disconnect } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+
 import {
-  createFullDidFromSeed,
   KeyTool,
+  createFullDidFromSeed,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import type { ApiPromise } from '@polkadot/api'
-import { disconnect } from '../kilt'
-import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
+} from '../testUtils/index.js'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise
 

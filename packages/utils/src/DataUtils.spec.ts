@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/utils
- */
-
 import { encodeAddress } from '@polkadot/keyring'
 import type { KiltAddress } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from './index'

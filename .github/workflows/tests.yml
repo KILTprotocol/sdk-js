@@ -161,9 +161,14 @@ jobs:
         with:
           image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
 
-      - name: run integration tests
+      - name: run integration tests (cjs)
         timeout-minutes: 60
-        run: yarn test:integration:ci
+        run: yarn test:integration -b
+      
+      - name: run integration tests (esm)
+        timeout-minutes: 60
+        run: yarn test:integration:esm -b
+
 
   bundle_cache:
     runs-on: ubuntu-latest

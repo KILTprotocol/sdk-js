@@ -9,9 +9,9 @@ import { readFileSync } from 'fs'
 import path from 'path'
 import type { HexString } from '@kiltprotocol/types'
 
-const META_PATH = '../../../../augment-api/metadata/spiritnet.json'
+const META_PATH = 'packages/augment-api/metadata/spiritnet.json'
 const { result: metaHex } = JSON.parse(
-  readFileSync(path.join(__dirname, META_PATH), { encoding: 'utf-8' })
+  readFileSync(path.resolve(META_PATH), { encoding: 'utf-8' })
 )
 
 /* eslint-disable import/no-default-export */

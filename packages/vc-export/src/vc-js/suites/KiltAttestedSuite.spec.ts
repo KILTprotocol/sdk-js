@@ -5,16 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-js
- */
-
-import { ApiMocks } from '@kiltprotocol/testing'
 import jsigs from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
 import type { IAttestation } from '@kiltprotocol/types'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
+import { ApiMocks } from '../../../../../tests/testUtils'
 import { KiltAttestedSuite as AttestationSuite } from './KiltAttestedSuite'
 import credential from '../examples/example-vc.json'
 import { documentLoader } from '../documentLoader'

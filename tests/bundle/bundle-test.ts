@@ -149,7 +149,9 @@ async function createFullDidFromKeypair(
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
-  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  const encodedDidDetails = await queryFunction(
+    Did.toChain(Did.getFullDidUriFromKey(keypair))
+  )
   return Did.linkedInfoFromChain(encodedDidDetails).document
 }
 
@@ -223,7 +225,9 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
-  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  const encodedDidDetails = await queryFunction(
+    Did.toChain(Did.getFullDidUriFromKey(keypair))
+  )
   const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
   const resolved = await Did.resolve(fullDid.uri)
 

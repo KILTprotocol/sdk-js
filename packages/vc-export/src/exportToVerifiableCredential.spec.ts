@@ -5,33 +5,31 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
+import { base58Encode } from '@polkadot/util-crypto'
+import type { DocumentLoader } from 'jsonld-signatures'
 
-import {
+import { Attestation } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
+import type {
   DidUri,
   IAttestation,
   ICType,
   ICredential,
   ICredentialPresentation,
 } from '@kiltprotocol/types'
-import { Attestation } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { ApiMocks } from '@kiltprotocol/testing'
-import type { DocumentLoader } from 'jsonld-signatures'
-import { base58Encode } from '@polkadot/util-crypto'
-import * as toVC from './exportToVerifiableCredential'
-import * as verificationUtils from './verificationUtils'
-import * as presentationUtils from './presentationUtils'
-import type { IPublicKeyRecord, VerifiableCredential } from './types'
+
+import { ApiMocks } from '../../../tests/testUtils'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
+import * as toVC from './exportToVerifiableCredential'
+import * as presentationUtils from './presentationUtils'
+import type { IPublicKeyRecord, VerifiableCredential } from './types'
+import * as verificationUtils from './verificationUtils'
 
 jest.mock('@kiltprotocol/core', () => ({
   ...jest.requireActual('@kiltprotocol/core'),

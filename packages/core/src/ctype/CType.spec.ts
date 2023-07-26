@@ -5,14 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/ctype
- */
-
-import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { ApiMocks } from '@kiltprotocol/testing'
 import type { ICType } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as Claim from '../claim'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeModelDraft01 } from './CType.schemas'

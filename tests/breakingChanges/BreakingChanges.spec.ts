@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group breaking
- */
-
 import {
   Attestation,
   Claim,
@@ -26,7 +22,8 @@ import {
 } from '@kiltprotocol/sdk-js'
 import nacl from 'tweetnacl'
 import { v4 } from 'uuid'
-import { makeEncryptionKeyTool } from './TestUtils'
+
+import { makeEncryptionKeyTool } from '../testUtils/index.js'
 
 jest.mock('uuid')
 jest.mocked(v4).mockReturnValue('1ee1307c-9e65-475d-9061-0b5bfd86d2f7')
