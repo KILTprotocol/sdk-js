@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H256, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, PalletMultisigTimepoint, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -198,18 +198,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ExternalTabled: AugmentedEvent<ApiType, []>;
       /**
-       * Metadata for a proposal or a referendum has been cleared.
-       **/
-      MetadataCleared: AugmentedEvent<ApiType, [owner: PalletDemocracyMetadataOwner, hash_: H256], { owner: PalletDemocracyMetadataOwner, hash_: H256 }>;
-      /**
-       * Metadata for a proposal or a referendum has been set.
-       **/
-      MetadataSet: AugmentedEvent<ApiType, [owner: PalletDemocracyMetadataOwner, hash_: H256], { owner: PalletDemocracyMetadataOwner, hash_: H256 }>;
-      /**
-       * Metadata has been transferred to new owner.
-       **/
-      MetadataTransferred: AugmentedEvent<ApiType, [prevOwner: PalletDemocracyMetadataOwner, owner: PalletDemocracyMetadataOwner, hash_: H256], { prevOwner: PalletDemocracyMetadataOwner, owner: PalletDemocracyMetadataOwner, hash_: H256 }>;
-      /**
        * A proposal has been rejected by referendum.
        **/
       NotPassed: AugmentedEvent<ApiType, [refIndex: u32], { refIndex: u32 }>;
@@ -300,10 +288,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       InvalidFormat: AugmentedEvent<ApiType, [messageId: U8aFixed], { messageId: U8aFixed }>;
       /**
-       * The maximum number of downward messages was.
-       **/
-      MaxMessagesExhausted: AugmentedEvent<ApiType, [messageId: U8aFixed], { messageId: U8aFixed }>;
-      /**
        * Downward message is overweight and was placed in the overweight queue.
        **/
       OverweightEnqueued: AugmentedEvent<ApiType, [messageId: U8aFixed, overweightIndex: u64, requiredWeight: SpWeightsWeightV2Weight], { messageId: U8aFixed, overweightIndex: u64, requiredWeight: SpWeightsWeightV2Weight }>;
@@ -333,24 +317,6 @@ declare module '@polkadot/api-base/types/events' {
        * A account index has been frozen to its current account ID.
        **/
       IndexFrozen: AugmentedEvent<ApiType, [index: u64, who: AccountId32], { index: u64, who: AccountId32 }>;
-    };
-    multisig: {
-      /**
-       * A multisig operation has been approved by someone.
-       **/
-      MultisigApproval: AugmentedEvent<ApiType, [approving: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed], { approving: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed }>;
-      /**
-       * A multisig operation has been cancelled.
-       **/
-      MultisigCancelled: AugmentedEvent<ApiType, [cancelling: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed], { cancelling: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed }>;
-      /**
-       * A multisig operation has been executed.
-       **/
-      MultisigExecuted: AugmentedEvent<ApiType, [approving: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed, result: Result<Null, SpRuntimeDispatchError>], { approving: AccountId32, timepoint: PalletMultisigTimepoint, multisig: AccountId32, callHash: U8aFixed, result: Result<Null, SpRuntimeDispatchError> }>;
-      /**
-       * A new multisig operation has begun.
-       **/
-      NewMultisig: AugmentedEvent<ApiType, [approving: AccountId32, multisig: AccountId32, callHash: U8aFixed], { approving: AccountId32, multisig: AccountId32, callHash: U8aFixed }>;
     };
     parachainStaking: {
       /**
