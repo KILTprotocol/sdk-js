@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-js
- */
-
 import jsigs from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'

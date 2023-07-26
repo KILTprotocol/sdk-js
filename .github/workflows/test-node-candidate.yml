@@ -90,7 +90,7 @@ jobs:
 
       - name: run integration tests
         timeout-minutes: 60
-        run: yarn test:integration:ci
+        run: yarn test:integration -b
 
   bundle_cache:
     runs-on: ubuntu-latest

@@ -5,18 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/deposit
- */
+import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
 
-import * as Did from '@kiltprotocol/did'
 import {
-  createFullDidFromLightDid,
-  createFullDidFromSeed,
-  createMinimalLightDidFromKeypair,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
+  Attestation,
+  Claim,
+  Credential,
+  CType,
+  disconnect,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
@@ -26,8 +25,13 @@ import type {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import type { ApiPromise } from '@polkadot/api'
-import { BN } from '@polkadot/util'
+import {
+  createFullDidFromLightDid,
+  createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   devFaucet,
   driversLicenseCTypeForDeposit as driversLicenseCType,
@@ -35,12 +39,7 @@ import {
   initializeApi,
   isCtypeOnChain,
   submitTx,
-} from './utils'
-import * as Attestation from '../attestation'
-import * as Claim from '../claim'
-import * as Credential from '../credential'
-import { disconnect } from '../kilt'
-import * as CType from '../ctype'
+} from './utils.js'
 
 let api: ApiPromise
 let tx: SubmittableExtrinsic

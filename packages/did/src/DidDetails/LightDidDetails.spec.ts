@@ -10,10 +10,6 @@ import { Crypto } from '@kiltprotocol/utils'
 
 import * as Did from '../index.js'
 
-/**
- * @group unit/did
- */
-
 /*
  * Functions tested:
  * - createLightDidDocument

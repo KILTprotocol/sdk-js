@@ -8,25 +8,21 @@
 import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDocument,
   KiltKeyringPair,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import { ConfigService } from '@kiltprotocol/config'
-
-import * as Did from './index.js'
+} from '../../../../tests/testUtils'
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
-
-/**
- * @group unit/did
- */
+import * as Did from './index.js'
 
 const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()

@@ -8,6 +8,7 @@
 import { BN } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
 
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   ConformingDidKey,
   ConformingDidServiceEndpoint,
@@ -26,23 +27,18 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
-import { ConfigService } from '@kiltprotocol/config'
 
-import { getFullDidUriFromKey } from '../Did.utils'
+import { ApiMocks, makeSigningKeyTool } from '../../../../tests/testUtils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
+import { getFullDidUriFromKey } from '../Did.utils'
 
+import * as Did from '../index.js'
 import {
   resolve,
   resolveCompliant,
   resolveKey,
   resolveService,
 } from './index.js'
-import * as Did from '../index.js'
-
-/**
- * @group unit/did
- */
 
 const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'

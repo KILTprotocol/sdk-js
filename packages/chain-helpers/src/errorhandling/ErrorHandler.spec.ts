@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/errorhandling
- */
-
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import type { EventRecord } from '@polkadot/types/interfaces'
 import { ErrorHandler } from './index'

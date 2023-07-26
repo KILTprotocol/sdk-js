@@ -5,36 +5,36 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/attestation
- */
+import type { ApiPromise } from '@polkadot/api'
 
+import {
+  Attestation,
+  Claim,
+  Credential,
+  CType,
+  disconnect,
+} from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
   IAttestation,
   ICredential,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
+
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
-} from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
-import { ApiPromise } from '@polkadot/api'
-import * as Attestation from '../attestation'
-import * as Credential from '../credential'
-import { disconnect } from '../kilt'
-import * as Claim from '../claim'
-import * as CType from '../ctype'
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   driversLicenseCType,
   initializeApi,
   isCtypeOnChain,
   submitTx,
-} from './utils'
+} from './utils.js'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument

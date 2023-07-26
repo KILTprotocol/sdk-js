@@ -5,33 +5,30 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group integration/accountLinking
- */
+import type { ApiPromise } from '@polkadot/api'
+import { Keyring } from '@polkadot/keyring'
+import { BN } from '@polkadot/util'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 
+import { BalanceUtils, disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import {
-  createFullDidFromSeed,
-  KeyTool,
-  makeSigningKeyTool,
-} from '@kiltprotocol/testing'
 import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { Keyring } from '@polkadot/keyring'
-import { BN } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { convertToTxUnit } from '../balance/Balance.utils'
+
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
   fundAccount,
   initializeApi,
   submitTx,
-} from './utils'
-import { disconnect } from '../kilt'
+} from './utils.js'
 
 let paymentAccount: KiltKeyringPair
 let linkDeposit: BN
@@ -289,7 +286,10 @@ describe('When there is an on-chain DID', () => {
       genericAccount = new Keyring({ type: 'ecdsa' }).addFromMnemonic(
         mnemonicGenerate()
       )
-      await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
+      await fundAccount(
+        genericAccount.address,
+        BalanceUtils.convertToTxUnit(new BN(10), 1)
+      )
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
