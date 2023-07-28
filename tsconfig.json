@@ -8,7 +8,6 @@
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
       "@kiltprotocol/config": ["config/src"],
       "@kiltprotocol/core": ["core/src"],
-      "@kiltprotocol/messaging": ["messaging/src"],
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
