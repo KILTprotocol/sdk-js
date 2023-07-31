@@ -5,33 +5,32 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
+import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
-import { Credential } from '@kiltprotocol/core'
 import { parse } from '@kiltprotocol/did'
 import type { DidUri } from '@kiltprotocol/types'
 
 import {
+  applySelectiveDisclosure,
+  finalizeProof,
+  initializeProof,
+  verify as verifyOriginal,
+} from './KiltAttestationProofV1'
+import { fromICredential } from './KiltCredentialV1'
+import { check as checkStatus } from './KiltRevocationStatusV1'
+import {
   attestation,
   blockHash,
+  cType,
   credential,
+  iCredential,
   makeAttestationCreatedEvents,
   mockedApi,
   timestamp,
-  cType,
-} from './exportToVerifiableCredential.spec'
-import { exportICredentialToVc } from './fromICredential'
-import {
-  finalizeProof,
-  initializeProof,
-  applySelectiveDisclosure,
-  verify as verifyOriginal,
-} from './KiltAttestationProofV1'
-import { check as checkStatus } from './KiltRevocationStatusV1'
-import { fromICredential } from './KiltCredentialV1'
-import { credentialIdFromRootHash } from './common'
+} from './testData.spec'
 import type { KiltCredentialV1 } from './types'
+import { credentialIdFromRootHash } from './utils'
 
 // the original verify implementation but with a mocked CType loader
 const verify: typeof verifyOriginal = async (cred, proof, options) =>
@@ -45,58 +44,46 @@ const verify: typeof verifyOriginal = async (cred, proof, options) =>
     },
   })
 
-let VC: KiltCredentialV1
 describe('proofs', () => {
-  beforeAll(() => {
-    VC = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-  })
-
   it('it verifies proof', async () => {
     // verify
-    const { proof, ...cred } = VC
+    const { proof, ...cred } = credential
     await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
   })
 
   it('it verifies status', async () => {
     // verify
-    await expect(checkStatus(VC, { api: mockedApi })).resolves.not.toThrow()
+    await expect(
+      checkStatus(credential, { api: mockedApi })
+    ).resolves.not.toThrow()
   })
 
   it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof?.salt).toHaveLength(4)
-    const { proof, ...cred } = VC
+    expect(credential.proof?.salt).toHaveLength(4)
+    const { proof, ...cred } = credential
     await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
   })
 
   it('it verifies credential with selected properties revealed', async () => {
-    const reducedCredential = Credential.removeClaimProperties(credential, [
-      'name',
-      'birthday',
-    ])
-    const { proof, ...reducedVC } = exportICredentialToVc(reducedCredential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
+    const { credential: reducedCredential, proof } = applySelectiveDisclosure(
+      credential,
+      credential.proof,
+      ['name', 'birthday']
+    )
 
     await expect(
-      verify(reducedVC, proof, { api: mockedApi })
+      verify(reducedCredential, proof, { api: mockedApi })
     ).resolves.not.toThrow()
   })
 
   it('applies selective disclosure to proof', async () => {
-    const updated = applySelectiveDisclosure(VC, VC.proof, ['name'])
-    const { contents, owner } = credential.claim
+    const updated = applySelectiveDisclosure(credential, credential.proof, [
+      'name',
+    ])
     expect(updated.credential).toHaveProperty('credentialSubject', {
       '@context': expect.any(Object),
-      id: owner,
-      name: contents.name,
+      id: credential.credentialSubject.id,
+      name: credential.credentialSubject.name,
     })
     expect(Object.entries(updated.proof.salt)).toHaveLength(2)
     await expect(
@@ -107,8 +94,8 @@ describe('proofs', () => {
   it('checks delegation node owners', async () => {
     const delegator: DidUri = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
     const credentialWithDelegators: KiltCredentialV1 = {
-      ...VC,
-      federatedTrustModel: VC.federatedTrustModel?.map((i) => {
+      ...credential,
+      federatedTrustModel: credential.federatedTrustModel?.map((i) => {
         if (i.type === 'KiltAttesterDelegationV1') {
           return { ...i, delegators: [attestation.owner, delegator] }
         }
@@ -120,7 +107,7 @@ describe('proofs', () => {
     mockedApi.query.delegation = {
       delegationNodes: jest.fn(async (nodeId: string | Uint8Array) => {
         switch (u8aToHex(u8aToU8a(nodeId))) {
-          case credential.delegationId:
+          case attestation.delegationId:
             return mockedApi.createType(
               'Option<DelegationDelegationHierarchyDelegationNode>',
               {
@@ -157,7 +144,7 @@ describe('proofs', () => {
 })
 
 describe('issuance', () => {
-  const unsigned = fromICredential(credential, {
+  const unsigned = fromICredential(iCredential, {
     issuer: attestation.owner,
     timestamp: 0,
   })
@@ -199,36 +186,42 @@ describe('issuance', () => {
 })
 
 describe('negative tests', () => {
+  let testCredential: KiltCredentialV1
   beforeEach(() => {
-    VC = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
+    testCredential = JSON.parse(JSON.stringify(credential))
   })
 
   it('errors on proof mismatch', async () => {
     // @ts-ignore
-    delete VC.proof
+    delete testCredential.proof
     await expect(
-      verify(VC, { type: 'SomeOtherProof' } as any, { api: mockedApi })
+      verify(testCredential, { type: 'SomeOtherProof' } as any, {
+        api: mockedApi,
+      })
     ).rejects.toThrow()
   })
 
   it('it detects tampering with credential digest', async () => {
     // @ts-ignore
-    VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-    const { proof, ...cred } = VC
+    testCredential.id = `${credential.id.slice(0, 10)}1${credential.id.slice(
+      11
+    )}`
+    const { proof, ...cred } = testCredential
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
   })
 
-  it.skip('rejects selecting non-existent properties for presentation', async () => {
+  it('rejects selecting non-existent properties for presentation', async () => {
     expect(() =>
-      applySelectiveDisclosure(VC, VC.proof, ['name', 'age', 'profession'])
+      applySelectiveDisclosure(credential, credential.proof, [
+        'name',
+        'age',
+        'profession',
+      ])
     ).toThrow()
 
-    const updated = applySelectiveDisclosure(VC, VC.proof, ['name'])
+    const updated = applySelectiveDisclosure(credential, credential.proof, [
+      'name',
+    ])
 
     expect(() =>
       applySelectiveDisclosure(updated.credential, updated.proof, ['premium'])
@@ -236,19 +229,19 @@ describe('negative tests', () => {
   })
 
   it('it detects tampering with credential fields', async () => {
-    VC.federatedTrustModel = [
+    testCredential.federatedTrustModel = [
       {
         type: 'KiltAttesterLegitimationV1',
         id: credentialIdFromRootHash(randomAsU8a(32)),
       },
     ]
-    const { proof, ...cred } = VC
+    const { proof, ...cred } = testCredential
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
   })
 
   it('it detects tampering on claimed properties', async () => {
-    VC.credentialSubject.name = 'Kort'
-    const { proof, ...cred } = VC
+    testCredential.credentialSubject.name = 'Kort'
+    const { proof, ...cred } = testCredential
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
   })
 
@@ -265,7 +258,7 @@ describe('negative tests', () => {
       .mockResolvedValueOnce(
         mockedApi.createType('Vec<FrameSystemEventRecord>', []) as any
       )
-    const { proof, ...cred } = VC
+    const { proof, ...cred } = credential
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
     await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
   })
@@ -282,7 +275,7 @@ describe('negative tests', () => {
     jest
       .mocked(mockedApi.query.system.events)
       .mockResolvedValueOnce(makeAttestationCreatedEvents([]) as any)
-    const { proof, ...cred } = VC
+    const { proof, ...cred } = credential
     await expect(verify(cred, proof, { api: mockedApi })).rejects.toThrow()
     await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
   })
@@ -304,7 +297,7 @@ describe('negative tests', () => {
       ) as any
     )
 
-    const { proof, ...cred } = VC
+    const { proof, ...cred } = credential
     await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
     await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
   })

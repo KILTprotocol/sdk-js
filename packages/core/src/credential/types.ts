@@ -8,11 +8,11 @@
 /* eslint-disable no-use-before-define */
 
 import type {
+  Caip2ChainId,
   ConformingDidKey,
   DidUri,
-  Caip2ChainId,
-  IClaimContents,
   ICType,
+  IClaimContents,
 } from '@kiltprotocol/types'
 
 import type {
@@ -28,8 +28,6 @@ import type {
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from './constants.js'
-
-export * from './vc-js/types.js'
 
 export type IPublicKeyRecord = ConformingDidKey
 

@@ -5,6 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { QueryableStorageEntry } from '@polkadot/api/types'
+import type { Option, Vec, u64 } from '@polkadot/types'
+import type { AccountId, Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { IEventData, Signer } from '@polkadot/types/types'
 import {
   hexToU8a,
   stringToU8a,
@@ -20,40 +25,37 @@ import {
   encodeAddress,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import type { ApiPromise } from '@polkadot/api'
-import type { QueryableStorageEntry } from '@polkadot/api/types'
-import type { Option, u64, Vec } from '@polkadot/types'
-import type {
-  AccountId,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces/types.js'
-import type { IEventData, Signer } from '@polkadot/types/types'
 
-import { CType } from '@kiltprotocol/core'
-import {
-  authorizeTx,
-  getFullDidUri,
-  validateUri,
-  fromChain as didFromChain,
-} from '@kiltprotocol/did'
-import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { CType } from '@kiltprotocol/core'
+import {
+  authorizeTx,
+  fromChain as didFromChain,
+  getFullDidUri,
+  validateUri,
+} from '@kiltprotocol/did'
 import type {
   DidUri,
-  ICredential,
   ICType,
+  ICredential,
   IDelegationNode,
   KiltAddress,
   SignExtrinsicCallback,
 } from '@kiltprotocol/types'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
-import { Caip19 } from './CAIP/index.js'
+import { Caip19 } from '../CAIP/index.js'
+import {
+  CTypeLoader,
+  validateStructure as validateCredentialStructure,
+  validateSubject,
+} from './KiltCredentialV1.js'
+import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -63,28 +65,21 @@ import {
   KILT_REVOCATION_STATUS_V1_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
-import {
-  validateStructure as validateCredentialStructure,
-  CTypeLoader,
-  validateSubject,
-} from './KiltCredentialV1.js'
-import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
-import {
-  jsonLdExpandCredentialSubject,
-  ExpandedContents,
-  delegationIdFromAttesterDelegation,
-  getDelegationNodeIdForCredential,
-  assertMatchingConnection,
-  credentialIdFromRootHash,
-  credentialIdToRootHash,
-} from './common.js'
-import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
+import {
+  ExpandedContents,
+  assertMatchingConnection,
+  credentialIdFromRootHash,
+  credentialIdToRootHash,
+  delegationIdFromAttesterDelegation,
+  getDelegationNodeIdForCredential,
+  jsonLdExpandCredentialSubject,
+} from './utils.js'
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
@@ -158,7 +153,7 @@ const schemaValidator = new JsonSchema.Validator(proofSchema, '7')
 export function validateStructure(proof: KiltAttestationProofV1): void {
   const { errors, valid } = schemaValidator.validate(proof)
   if (!valid)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       `Object not matching ${ATTESTATION_PROOF_V1_TYPE} data model`,
       {
         cause: errors,
@@ -235,7 +230,7 @@ export function calculateRootHash(
         // get on-chain id from delegation id
         return delegationIdFromAttesterDelegation(entry)
       }
-      throw new CredentialMalformedError(
+      throw new SDKErrors.CredentialMalformedError(
         `unknown type ${
           (entry as { type: string }).type
         } in federatedTrustModel`
@@ -384,10 +379,10 @@ export async function verify(
   await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)
-    throw new CredentialMalformedError('nonTransferable must be true')
+    throw new SDKErrors.CredentialMalformedError('nonTransferable must be true')
   // 5. check credentialStatus
   if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
     )
   const { assetInstance, assetNamespace, assetReference } = Caip19.parse(
@@ -401,7 +396,7 @@ export async function verify(
     assetReference !== 'attestation' ||
     assetInstance !== expectedAttestationId
   ) {
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `credentialStatus.id must end on 'kilt:attestation/${expectedAttestationId} in order to be verifiable with this proof`
     )
   }
@@ -410,7 +405,7 @@ export async function verify(
   // 7. Transform to normalized statments and hash
   const { statements, digests } = normalizeClaims(expandedContents)
   if (statements.length !== proof.salt.length)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 8-9. Re-compute commitments
@@ -493,7 +488,7 @@ export async function verify(
           break
         }
         default: {
-          throw new CredentialMalformedError(
+          throw new SDKErrors.CredentialMalformedError(
             `unknown type ${
               (i as { type: string }).type
             } in federatedTrustModel`
@@ -539,7 +534,7 @@ export function applySelectiveDisclosure(
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
   if (statementsOriginal.length !== proofInput.salt.length)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 2. Filter credentialSubject for claims to be revealed

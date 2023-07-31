@@ -5,23 +5,22 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
 import { u8aEq, u8aToHex, u8aToU8a } from '@polkadot/util'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
-import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
 
-import { Caip2 } from './CAIP/index.js'
+import { Caip2 } from '../CAIP/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
+import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 import {
   assertMatchingConnection,
   getDelegationNodeIdForCredential,
-} from './common.js'
-import { CredentialMalformedError } from './errors.js'
-import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
+} from './utils.js'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -49,7 +48,7 @@ export async function check(
     )
   }
   if (!assetInstance) {
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
     )
   }

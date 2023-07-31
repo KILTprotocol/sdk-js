@@ -6,3 +6,8 @@
  */
 
 export * from './Credential.js'
+export * from './constants.js'
+export type * as Types from './types.js'
+export * as KiltCredentialV1 from './KiltCredentialV1.js'
+export * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
+export * as KiltRevocationStatusV1 from './KiltRevocationStatusV1.js'

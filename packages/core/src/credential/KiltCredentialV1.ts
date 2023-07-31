@@ -8,16 +8,15 @@
 import { hexToU8a } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
 
-import { JsonSchema } from '@kiltprotocol/utils'
 import { CType } from '@kiltprotocol/core'
 import type {
+  DidUri,
   ICType,
   ICredential,
-  DidUri,
   IDelegationNode,
 } from '@kiltprotocol/types'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
-import { CredentialMalformedError } from './errors.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -37,7 +36,7 @@ import type {
 import {
   credentialIdFromRootHash,
   jsonLdExpandCredentialSubject,
-} from './common.js'
+} from './utils.js'
 
 export const credentialSchema: JsonSchema.Schema = {
   $id: 'ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z',
@@ -177,7 +176,7 @@ export function validateStructure(
   }
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `Object not matching ${KILT_CREDENTIAL_TYPE} data model`,
       {
         cause: errors,
