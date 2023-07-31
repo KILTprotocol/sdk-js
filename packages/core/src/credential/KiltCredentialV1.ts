@@ -184,7 +184,7 @@ export function validateStructure(
     )
 }
 
-interface CredentialInput {
+export interface CredentialInput {
   subject: DidUri
   claims: ICredential['claim']['contents']
   cType: ICType['$id']
@@ -291,55 +291,6 @@ export function fromInput({
     issuanceDate,
     ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
-}
-
-/**
- * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
- *
- * @param input An [[ICredential]] object.
- * @param options Additional required and optional parameters for producing a VC from an [[ICredential]].
- * @param options.issuer The issuer of the attestation to this credential (attester).
- * @param options.timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
- * @param options.cType Optional: The CType object referenced by the [[ICredential]].
- * @param options.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
- * @returns A KiltCredentialV1 with embedded KiltAttestationProofV1 proof.
- */
-export function fromICredential(
-  input: ICredential,
-  {
-    issuer,
-    timestamp,
-    cType: ctype,
-    chainGenesisHash = spiritnetGenesisHash,
-  }: Pick<CredentialInput, 'chainGenesisHash' | 'timestamp' | 'issuer'> &
-    Partial<Pick<CredentialInput, 'cType'>>
-): Omit<KiltCredentialV1, 'proof'> {
-  const {
-    legitimations: legitimationsInput,
-    delegationId,
-    rootHash: claimHash,
-    claim,
-  } = input
-  const { cTypeHash, owner: subject, contents: claims } = claim
-  const cType = ctype ?? CType.hashToId(cTypeHash)
-
-  const legitimations = legitimationsInput.map(({ rootHash: legHash }) =>
-    credentialIdFromRootHash(hexToU8a(legHash))
-  )
-
-  const vc = fromInput({
-    claimHash,
-    subject,
-    claims,
-    chainGenesisHash,
-    cType,
-    issuer,
-    timestamp,
-    legitimations,
-    ...(delegationId && { delegationId }),
-  })
-
-  return vc
 }
 
 export type CTypeLoader = (id: ICType['$id']) => Promise<ICType>

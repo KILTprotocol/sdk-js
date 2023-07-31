@@ -11,7 +11,6 @@ import type { Option, Vec, u64 } from '@polkadot/types'
 import type { AccountId, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { IEventData, Signer } from '@polkadot/types/types'
 import {
-  hexToU8a,
   stringToU8a,
   u8aCmp,
   u8aConcatStrict,
@@ -42,7 +41,6 @@ import {
 import type {
   DidUri,
   ICType,
-  ICredential,
   IDelegationNode,
   KiltAddress,
   SignExtrinsicCallback,
@@ -80,37 +78,6 @@ import {
   getDelegationNodeIdForCredential,
   jsonLdExpandCredentialSubject,
 } from './utils.js'
-
-/**
- * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
- *
- * @param credential Input credential.
- * @param opts Additional parameters required for creating a proof from an [[ICredential]].
- * @param opts.blockHash Hash of a block at which the proof must be verifiable.
- * @returns An embedded proof for a verifiable credential derived from the input.
- */
-export function fromICredential(
-  credential: ICredential,
-  { blockHash }: { blockHash: Uint8Array }
-): KiltAttestationProofV1 {
-  // `block` field is base58 encoding of block hash
-  const block = base58Encode(blockHash)
-  // `commitments` (claimHashes) are base58 encoded in new format
-  const commitments = credential.claimHashes.map((i) =>
-    base58Encode(hexToU8a(i))
-  )
-  // salt/nonces must be sorted by statement digest (keys) and base58 encoded
-  const salt = Object.entries(credential.claimNonceMap)
-    .map(([hsh, slt]) => [hexToU8a(hsh), stringToU8a(slt)])
-    .sort((a, b) => u8aCmp(a[0], b[0]))
-    .map((i) => base58Encode(i[1]))
-  return {
-    type: ATTESTATION_PROOF_V1_TYPE,
-    block,
-    commitments,
-    salt,
-  }
-}
 
 export const proofSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',

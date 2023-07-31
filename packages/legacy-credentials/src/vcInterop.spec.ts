@@ -11,17 +11,9 @@ import { randomAsU8a } from '@polkadot/util-crypto'
 import { Credential } from '@kiltprotocol/core'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
+import { credentialIdFromRootHash } from 'core/src/credential/utils'
 import { ApiMocks } from '../../../tests/testUtils'
-import {
-  credentialSchema,
-  validateStructure as validateCredentialStructure,
-} from './KiltCredentialV1'
-import { credentialIdFromRootHash } from './common'
-import {
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
-} from './constants'
-import { exportICredentialToVc } from './fromICredential'
+import { ICredentialToVC } from './vcInterop'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
@@ -149,7 +141,7 @@ mockedApi.query.system = {
 } as any
 
 it('exports credential to VC', () => {
-  const exported = exportICredentialToVc(credential, {
+  const exported = ICredentialToVC(credential, {
     issuer: attestation.owner,
     chainGenesisHash: mockedApi.genesisHash,
     blockHash,
@@ -157,8 +149,8 @@ it('exports credential to VC', () => {
     cType: cType.$id,
   })
   expect(exported).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': Credential.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...Credential.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
@@ -170,12 +162,14 @@ it('exports credential to VC', () => {
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     nonTransferable: true,
   })
-  expect(() => validateCredentialStructure(exported)).not.toThrow()
+  expect(() =>
+    Credential.KiltCredentialV1.validateStructure(exported)
+  ).not.toThrow()
 })
 
 it('VC has correct format (full example)', () => {
   expect(
-    exportICredentialToVc(credential, {
+    ICredentialToVC(credential, {
       issuer: attestation.owner,
       chainGenesisHash: mockedApi.genesisHash,
       blockHash,
@@ -183,10 +177,10 @@ it('VC has correct format (full example)', () => {
       cType: cType.$id,
     })
   ).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': Credential.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...Credential.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSchema: {
-      id: credentialSchema.$id,
+      id: Credential.KiltCredentialV1.credentialSchema.$id,
       type: 'JsonSchema2023',
     },
     credentialSubject: {
