@@ -16,7 +16,6 @@ export * as Claim from './claim/index.js'
 export * as CType from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export * as PublicCredential from './publicCredential/index.js'
-export * as Quote from './quote/index.js'
 
 export { connect, disconnect, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'
