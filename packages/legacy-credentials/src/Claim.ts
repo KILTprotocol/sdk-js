@@ -17,17 +17,17 @@
  * @packageDocumentation
  */
 
-import { hexToBn } from '@polkadot/util'
+import { CType } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
 import type {
   DidUri,
-  IClaim,
-  ICType,
-  PartialClaim,
   HexString,
+  ICType,
+  IClaim,
+  PartialClaim,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
-import * as CType from '../ctype/index.js'
+import { hexToBn } from '@polkadot/util'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 

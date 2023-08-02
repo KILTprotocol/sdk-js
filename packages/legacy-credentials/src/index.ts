@@ -6,3 +6,5 @@
  */
 
 export { ICredentialToVC } from './vcInterop.js'
+export * as Claim from './Claim.js'
+export * as Credential from './Credential.js'
