@@ -5,18 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a } from '@polkadot/util'
+import { hexToU8a, u8aToHex, u8aToU8a } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
 
-import { CType } from '@kiltprotocol/core'
 import type {
   DidUri,
+  HexString,
   ICType,
   ICredential,
   IDelegationNode,
 } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
+import * as CType from '../ctype/index.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -35,6 +36,8 @@ import type {
 } from './types.js'
 import {
   credentialIdFromRootHash,
+  credentialIdToRootHash,
+  getDelegationNodeIdForCredential,
   jsonLdExpandCredentialSubject,
 } from './utils.js'
 
@@ -385,4 +388,29 @@ export async function validateSubject(
   }, {})
   // validates against CType (also validates CType schema itself)
   CType.verifyClaimAgainstSchema(claims, cType)
+}
+
+/**
+ * @param rootHash
+ */
+export function idFromRootHash(
+  rootHash: Uint8Array | HexString
+): KiltCredentialV1['id'] {
+  return credentialIdFromRootHash(u8aToU8a(rootHash))
+}
+
+/**
+ * @param root0
+ * @param root0.id
+ */
+export function idToRootHash({ id }: Pick<KiltCredentialV1, 'id'>): HexString {
+  return u8aToHex(credentialIdToRootHash(id))
+}
+
+/**
+ * @param credential
+ */
+export function getDelegation(credential: KiltCredentialV1): HexString | null {
+  const delegation = getDelegationNodeIdForCredential(credential)
+  return delegation ? u8aToHex(delegation) : null
 }

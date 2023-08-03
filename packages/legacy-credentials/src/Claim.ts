@@ -85,7 +85,10 @@ export function toJsonLD(
   return result
 }
 
-function makeStatementsJsonLD(claim: PartialClaim): string[] {
+/**
+ * @param claim
+ */
+export function makeStatementsJsonLD(claim: PartialClaim): string[] {
   const normalized = jsonLDcontents(claim, true)
   return Object.entries(normalized).map(([key, value]) =>
     JSON.stringify({ [key]: value })

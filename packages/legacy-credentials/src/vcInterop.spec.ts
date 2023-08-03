@@ -5,15 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+import { u8aConcat, u8aToU8a } from '@polkadot/util'
 import { randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/core'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
-import { credentialIdFromRootHash } from 'core/src/credential/utils'
 import { ApiMocks } from '../../../tests/testUtils'
-import { ICredentialToVC } from './vcInterop'
+import { ICredentialToVC, VcToICredential } from './vcInterop'
+import { calculateRootHash } from './Credential'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
@@ -87,7 +87,7 @@ export const credential: ICredential = {
     '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
   rootHash: '0x',
 }
-credential.rootHash = Credential.calculateRootHash(credential)
+credential.rootHash = calculateRootHash(credential)
 
 export const attestation: IAttestation = {
   claimHash: credential.rootHash,
@@ -146,7 +146,6 @@ it('exports credential to VC', () => {
     chainGenesisHash: mockedApi.genesisHash,
     blockHash,
     timestamp,
-    cType: cType.$id,
   })
   expect(exported).toMatchObject({
     '@context': Credential.DEFAULT_CREDENTIAL_CONTEXTS,
@@ -157,7 +156,7 @@ it('exports credential to VC', () => {
       name: 'Kurt',
       premium: true,
     },
-    id: credentialIdFromRootHash(hexToU8a(credential.rootHash)),
+    id: Credential.KiltCredentialV1.idFromRootHash(credential.rootHash),
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     nonTransferable: true,
@@ -174,7 +173,6 @@ it('VC has correct format (full example)', () => {
       chainGenesisHash: mockedApi.genesisHash,
       blockHash,
       timestamp,
-      cType: cType.$id,
     })
   ).toMatchObject({
     '@context': Credential.DEFAULT_CREDENTIAL_CONTEXTS,
@@ -203,4 +201,14 @@ it('VC has correct format (full example)', () => {
       block: expect.any(String),
     },
   })
+})
+
+it('reproduces credential in round trip', () => {
+  const VC = ICredentialToVC(credential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
+    blockHash,
+    timestamp,
+  })
+  expect(VcToICredential(VC)).toMatchObject(credential)
 })
