@@ -118,8 +118,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-master', 'latest-develop', 'latest']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
+        include:
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -198,11 +201,11 @@ jobs:
     needs: [cache_imgs, bundle_cache]
     strategy:
       matrix:
-        image: ['latest-master', 'latest']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
         include:
           - image: 'latest-develop'
-            required: 'required'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
