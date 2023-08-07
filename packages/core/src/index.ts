@@ -12,7 +12,6 @@
 export * as Attestation from './attestation/index.js'
 export * as Credential from './credential/index.js'
 export { BalanceUtils } from './balance/index.js'
-export * as Claim from './claim/index.js'
 export * as CType from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export * as PublicCredential from './publicCredential/index.js'

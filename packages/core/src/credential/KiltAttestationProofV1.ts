@@ -31,7 +31,6 @@ import type {
 } from '@kiltprotocol/augment-api'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { CType } from '@kiltprotocol/core'
 import {
   authorizeTx,
   fromChain as didFromChain,
@@ -46,6 +45,7 @@ import type {
   SignExtrinsicCallback,
 } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import * as CType from '../ctype/index.js'
 
 import { Caip19 } from '../CAIP/index.js'
 import {

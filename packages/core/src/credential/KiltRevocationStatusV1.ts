@@ -11,10 +11,12 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { Caip2 } from '../CAIP/index.js'
+import { fromChain as AttestationFromChain } from '../attestation/index.js'
+import { hashToId as CTypeHashToId } from '../ctype/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 import {
@@ -59,8 +61,8 @@ export async function check(
       `Attestation data not found at latest block ${encoded.createdAtHash}`
     )
 
-  const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
-  const onChainCType = CType.hashToId(decoded.cTypeHash)
+  const decoded = AttestationFromChain(encoded, u8aToHex(rootHash))
+  const onChainCType = CTypeHashToId(decoded.cTypeHash)
   const delegationId = getDelegationNodeIdForCredential(credential)
   if (
     decoded.owner !== credential.issuer ||
