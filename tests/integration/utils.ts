@@ -39,7 +39,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
       process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
     console.log(`using testcontainer with image ${image}`)
     const testcontainer = new GenericContainer(image)
-      .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+      .withCommand(['--dev', `--rpc-port=${WS_PORT}`, '--rpc-external'])
       .withExposedPorts(WS_PORT)
       .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     const started = await testcontainer.start()

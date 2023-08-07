@@ -27,7 +27,7 @@ test.beforeAll(async () => {
   testcontainer = await new GenericContainer(
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node:latest'
   )
-    .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+    .withCommand(['--dev', `--rpc-port=${WS_PORT}`, '--rpc-external'])
     .withExposedPorts({ container: WS_PORT, host: WS_PORT })
     .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     .start()
