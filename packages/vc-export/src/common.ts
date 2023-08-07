@@ -10,8 +10,8 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
 
 import type { HexString } from '@kiltprotocol/types'
+import { Caip19, Caip2 } from '@kiltprotocol/utils'
 
-import { Caip19, Caip2 } from './CAIP/index.js'
 import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,

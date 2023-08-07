@@ -15,7 +15,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { CType } from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
 
-import { chainIdFromGenesis } from '../../CAIP/caip2.js'
+import { Caip2 } from '@kiltprotocol/utils'
 import {
   DidSigner,
   TxHandler,
@@ -71,7 +71,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
    */
   public get verificationMethod(): string {
-    return chainIdFromGenesis(ConfigService.get('api').genesisHash)
+    return Caip2.chainIdFromGenesis(ConfigService.get('api').genesisHash)
   }
 
   constructor({

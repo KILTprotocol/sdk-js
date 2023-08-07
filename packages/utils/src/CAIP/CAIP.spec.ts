@@ -5,9 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { spiritnetGenesisHash } from '../constants'
-import { chainIdFromGenesis, parse as parseCaip2 } from './caip2'
 import { parse as parseCaip19 } from './caip19'
+import { chainIdFromGenesis, parse as parseCaip2 } from './caip2'
+
+const spiritnetGenesisHash = new Uint8Array([
+  65, 31, 5, 123, 145, 7, 113, 140, 150, 36, 214, 170, 74, 63, 35, 193, 101, 56,
+  152, 41, 127, 61, 77, 82, 157, 155, 182, 81, 26, 57, 221, 33,
+])
 
 it('parses a CAIP-2 chain id', () => {
   const chainId = chainIdFromGenesis(spiritnetGenesisHash)

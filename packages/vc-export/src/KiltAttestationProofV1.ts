@@ -36,7 +36,7 @@ import {
   validateUri,
   fromChain as didFromChain,
 } from '@kiltprotocol/did'
-import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import { JsonSchema, SDKErrors, Caip19 } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
@@ -51,7 +51,6 @@ import type {
   SignExtrinsicCallback,
 } from '@kiltprotocol/types'
 
-import { Caip19 } from './CAIP/index.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,

@@ -13,8 +13,8 @@ import type { U8aLike } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
+import { Caip2 } from '@kiltprotocol/utils'
 
-import { Caip2 } from './CAIP/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
 import {
   assertMatchingConnection,
