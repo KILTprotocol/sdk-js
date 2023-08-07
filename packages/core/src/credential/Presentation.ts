@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri } from '@kiltprotocol/types'
+import type { DidUri, SignCallback } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
 import {
@@ -13,7 +13,17 @@ import {
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from './constants.js'
-import type { VerifiableCredential, VerifiablePresentation } from './types.js'
+import type {
+  VerifiableCredential,
+  VerifiablePresentation,
+  KiltCredentialV1,
+} from './types.js'
+import {
+  VerifiedCredential,
+  VerifyOptions,
+  removeClaimProperties,
+  verifyCredential,
+} from './Credential.js'
 
 export const presentationSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -191,5 +201,92 @@ export function create(
 
   validateStructure(presentation)
   assertHolderCanPresentCredentials(presentation)
+  return presentation
+}
+
+/**
+ * Type Guard to determine input being of type [[ICredentialPresentation]].
+ *
+ * @param input - An [[ICredential]], [[ICredentialPresentation]], or other object.
+ *
+ * @returns  Boolean whether input is of type ICredentialPresentation.
+ */
+export function isPresentation(
+  input: unknown
+): input is VerifiablePresentation {
+  return schemaValidator.validate(input).valid
+}
+
+/**
+ * Performs all steps to verify a credential presentation (signed).
+ * In addition to verifying data structure, data integrity, and looking up the attestation record on the KILT blockchain,
+ * this involves verifying the claimer's signature over the credential.
+ *
+ * This is the function verifiers would typically call upon receiving a credential presentation from a third party.
+ * The attester's identity and the credential revocation status returned by this function would then be either displayed to an end user
+ * or processed in application logic deciding whether to accept or reject a credential submission
+ * (e.g., by matching the attester DID against an allow-list of trusted attesters).
+ *
+ * @param presentation - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
+ * @param options.cTypes
+ * @returns A [[VerifiedCredential]] object, which is the orignal credential presentation with two additional properties:
+ * a boolean `revoked` status flag and the `attester` DID.
+ */
+export async function verifyPresentation(
+  presentation: VerifiablePresentation,
+  { cTypes, challenge }: VerifyOptions = {}
+): Promise<VerifiedCredential[]> {
+  validateStructure(presentation)
+  // TODO: implement verify
+  assertHolderCanPresentCredentials(presentation)
+  return Promise.all(
+    [presentation.verifiableCredential]
+      .flat()
+      .map((credential) =>
+        verifyCredential(credential as KiltCredentialV1, { cTypes })
+      )
+  )
+}
+
+/**
+ * Creates a public presentation which can be sent to a verifier.
+ * This presentation is signed.
+ *
+ * @param presentationOptions The additional options to use upon presentation generation.
+ * @param presentationOptions.credential The credential to create the presentation for.
+ * @param presentationOptions.signCallback The callback to sign the presentation.
+ * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+ * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
+ * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
+ * @param presentationOptions.verifier
+ * @returns A deep copy of the Credential with all but `publicAttributes` removed.
+ */
+export async function fromCredential({
+  credential,
+  signCallback,
+  selectedAttributes,
+  challenge,
+  verifier,
+}: {
+  credential: KiltCredentialV1
+  signCallback: SignCallback
+  selectedAttributes?: string[]
+  challenge?: string
+  verifier?: DidUri
+}): Promise<VerifiablePresentation> {
+  const copyForPresentation = selectedAttributes
+    ? removeClaimProperties(credential, selectedAttributes)
+    : { ...credential }
+  const presentation = create(
+    [copyForPresentation],
+    copyForPresentation.credentialSubject.id,
+    { verifier }
+  )
+  // TODO: sign
+
   return presentation
 }
