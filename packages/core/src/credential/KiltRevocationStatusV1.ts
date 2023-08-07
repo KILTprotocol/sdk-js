@@ -12,9 +12,8 @@ import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import type { Caip2ChainId } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { Caip2, SDKErrors } from '@kiltprotocol/utils'
 
-import { Caip2 } from '../CAIP/index.js'
 import { fromChain as AttestationFromChain } from '../attestation/index.js'
 import { hashToId as CTypeHashToId } from '../ctype/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'

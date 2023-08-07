@@ -44,10 +44,9 @@ import type {
   KiltAddress,
   SignExtrinsicCallback,
 } from '@kiltprotocol/types'
-import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import { Caip19, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import * as CType from '../ctype/index.js'
 
-import { Caip19 } from '../CAIP/index.js'
 import {
   CTypeLoader,
   validateStructure as validateCredentialStructure,

@@ -8,9 +8,8 @@
 import type { ApiPromise } from '@polkadot/api'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
-import { SDKErrors } from '@kiltprotocol/utils'
+import { Caip19, Caip2, SDKErrors } from '@kiltprotocol/utils'
 
-import { Caip19, Caip2 } from '../CAIP/index.js'
 import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
