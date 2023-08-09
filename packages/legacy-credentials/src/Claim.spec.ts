@@ -24,50 +24,6 @@ describe('jsonld', () => {
     owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   }
 
-  it('exports claim as json-ld', () => {
-    // this is what a kilt claim looks like when expressed in expanded JSON-LD
-    const jsonld = Claim.toJsonLD(claim, true)
-    expect(jsonld).toMatchInlineSnapshot(`
-      {
-        "https://www.w3.org/2018/credentials#credentialSchema": {
-          "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
-        },
-        "https://www.w3.org/2018/credentials#credentialSubject": {
-          "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
-          "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#address": "homestreet, home",
-          "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#name": "John",
-          "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#number": 26,
-          "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#optIn": true,
-        },
-      }
-    `)
-  })
-
-  it('exports claim as json-ld', () => {
-    // this is what a kilt claim looks like when expressed in compact JSON-LD
-    const jsonld = Claim.toJsonLD(claim, false)
-    expect(jsonld).toMatchInlineSnapshot(`
-      {
-        "@context": {
-          "@vocab": "https://www.w3.org/2018/credentials#",
-        },
-        "credentialSchema": {
-          "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
-        },
-        "credentialSubject": {
-          "@context": {
-            "@vocab": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#",
-          },
-          "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
-          "address": "homestreet, home",
-          "name": "John",
-          "number": 26,
-          "optIn": true,
-        },
-      }
-    `)
-  })
-
   it('validates hashes from snapshot', () => {
     // given some nonces...
     const nonces = [

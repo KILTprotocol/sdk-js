@@ -19,7 +19,7 @@ import { KiltCredentialV1, Types, constants } from '@kiltprotocol/vc-export'
 
 import type { ICType, IClaim, ICredential } from '@kiltprotocol/types'
 
-import { makeStatementsJsonLD } from './Claim.js'
+import { makeStatementsJsonLD } from './utils.js'
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].

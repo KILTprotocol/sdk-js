@@ -29,74 +29,7 @@ import type {
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { hexToBn } from '@polkadot/util'
 
-const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
-
-/**
- * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
- * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed into predicates by prepending the [[CType]][schema][$id].
- *
- * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
- * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
- * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]]'s ['contents'].
- */
-function jsonLDcontents(
-  claim: PartialClaim,
-  expanded = true
-): Record<string, unknown> {
-  const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
-  const vocabulary = `${CType.hashToId(cTypeHash)}#`
-  const result: Record<string, unknown> = {}
-  if (owner) result['@id'] = owner
-  if (!expanded) {
-    return {
-      ...result,
-      '@context': { '@vocab': vocabulary },
-      ...contents,
-    }
-  }
-  Object.entries(contents || {}).forEach(([key, value]) => {
-    result[vocabulary + key] = value
-  })
-  return result
-}
-
-/**
- * Produces JSON-LD readable representations of KILT claims. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
- * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed into predicates by prepending the [[CType]][schema][$id].
- *
- * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
- * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
- * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]].
- */
-export function toJsonLD(
-  claim: PartialClaim,
-  expanded = true
-): Record<string, unknown> {
-  const credentialSubject = jsonLDcontents(claim, expanded)
-  const prefix = expanded ? VC_VOCAB : ''
-  const result = {
-    [`${prefix}credentialSubject`]: credentialSubject,
-  }
-  result[`${prefix}credentialSchema`] = {
-    '@id': CType.hashToId(claim.cTypeHash),
-  }
-  if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
-  return result
-}
-
-/**
- * Produces canonical statements for selective disclosure based on a JSON-LD expanded representation of the claims.
- *
- * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
- * @returns An array of stringified statements.
- */
-export function makeStatementsJsonLD(claim: PartialClaim): string[] {
-  const normalized = jsonLDcontents(claim, true)
-  return Object.entries(normalized).map(([key, value]) =>
-    JSON.stringify({ [key]: value })
-  )
-}
+import { makeStatementsJsonLD } from './utils.js'
 
 /**
  * Produces salted hashes of individual statements comprising a (partial) [[IClaim]] to enable selective disclosure of contents. Can also be used to reproduce hashes for the purpose of validation.
