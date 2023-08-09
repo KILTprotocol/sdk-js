@@ -9,13 +9,12 @@
  * @module @kiltprotocol/vc-export
  */
 
-export * from './fromICredential.js'
 export * as KiltCredentialV1 from './KiltCredentialV1.js'
 export * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
 export * as KiltRevocationStatusV1 from './KiltRevocationStatusV1.js'
 export * as Presentation from './Presentation.js'
 export * as DidJWT from './DidJwt.js'
 export * as vcjs from './vc-js/index.js'
-export * from './types.js'
+export * as Types from './types.js'
 export * as constants from './constants.js'
 export * from './errors.js'

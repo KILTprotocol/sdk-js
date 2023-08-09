@@ -85,7 +85,13 @@ export function toJsonLD(
   return result
 }
 
-function makeStatementsJsonLD(claim: PartialClaim): string[] {
+/**
+ * Produces canonical statements for selective disclosure based on a JSON-LD expanded representation of the claims.
+ *
+ * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
+ * @returns An array of stringified statements.
+ */
+export function makeStatementsJsonLD(claim: PartialClaim): string[] {
   const normalized = jsonLDcontents(claim, true)
   return Object.entries(normalized).map(([key, value]) =>
     JSON.stringify({ [key]: value })

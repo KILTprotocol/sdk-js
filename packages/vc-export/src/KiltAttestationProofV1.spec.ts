@@ -8,20 +8,19 @@
 import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
 
-import { Credential } from '@kiltprotocol/core'
 import { parse } from '@kiltprotocol/did'
 import type { DidUri } from '@kiltprotocol/types'
 
 import {
   attestation,
   blockHash,
-  credential,
+  credential as VC,
   makeAttestationCreatedEvents,
   mockedApi,
   timestamp,
   cType,
-} from './exportToVerifiableCredential.spec'
-import { exportICredentialToVc } from './fromICredential'
+  legacyCredential,
+} from './__mocks__/testData.js'
 import {
   finalizeProof,
   initializeProof,
@@ -29,9 +28,9 @@ import {
   verify as verifyOriginal,
 } from './KiltAttestationProofV1'
 import { check as checkStatus } from './KiltRevocationStatusV1'
-import { fromICredential } from './KiltCredentialV1'
 import { credentialIdFromRootHash } from './common'
 import type { KiltCredentialV1 } from './types'
+import { fromInput } from './KiltCredentialV1'
 
 // the original verify implementation but with a mocked CType loader
 const verify: typeof verifyOriginal = async (cred, proof, options) =>
@@ -45,17 +44,7 @@ const verify: typeof verifyOriginal = async (cred, proof, options) =>
     },
   })
 
-let VC: KiltCredentialV1
 describe('proofs', () => {
-  beforeAll(() => {
-    VC = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-  })
-
   it('it verifies proof', async () => {
     // verify
     const { proof, ...cred } = VC
@@ -73,30 +62,13 @@ describe('proofs', () => {
     await expect(verify(cred, proof, { api: mockedApi })).resolves.not.toThrow()
   })
 
-  it('it verifies credential with selected properties revealed', async () => {
-    const reducedCredential = Credential.removeClaimProperties(credential, [
-      'name',
-      'birthday',
-    ])
-    const { proof, ...reducedVC } = exportICredentialToVc(reducedCredential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-
-    await expect(
-      verify(reducedVC, proof, { api: mockedApi })
-    ).resolves.not.toThrow()
-  })
-
   it('applies selective disclosure to proof', async () => {
     const updated = applySelectiveDisclosure(VC, VC.proof, ['name'])
-    const { contents, owner } = credential.claim
+    const { name, id } = VC.credentialSubject
     expect(updated.credential).toHaveProperty('credentialSubject', {
       '@context': expect.any(Object),
-      id: owner,
-      name: contents.name,
+      id,
+      name,
     })
     expect(Object.entries(updated.proof.salt)).toHaveLength(2)
     await expect(
@@ -120,7 +92,7 @@ describe('proofs', () => {
     mockedApi.query.delegation = {
       delegationNodes: jest.fn(async (nodeId: string | Uint8Array) => {
         switch (u8aToHex(u8aToU8a(nodeId))) {
-          case credential.delegationId:
+          case legacyCredential.delegationId:
             return mockedApi.createType(
               'Option<DelegationDelegationHierarchyDelegationNode>',
               {
@@ -157,7 +129,12 @@ describe('proofs', () => {
 })
 
 describe('issuance', () => {
-  const unsigned = fromICredential(credential, {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: subject, '@context': _, ...claims } = VC.credentialSubject
+  const unsigned = fromInput({
+    claims,
+    subject,
+    cType: cType.$id,
     issuer: attestation.owner,
     timestamp: 0,
   })
@@ -199,15 +176,6 @@ describe('issuance', () => {
 })
 
 describe('negative tests', () => {
-  beforeEach(() => {
-    VC = exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-  })
-
   it('errors on proof mismatch', async () => {
     // @ts-ignore
     delete VC.proof

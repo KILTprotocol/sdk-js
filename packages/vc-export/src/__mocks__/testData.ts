@@ -5,23 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
-import { randomAsU8a } from '@polkadot/util-crypto'
+import {
+  hexToU8a,
+  stringToU8a,
+  u8aCmp,
+  u8aConcat,
+  u8aToU8a,
+} from '@polkadot/util'
+import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/core'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
-import { ApiMocks } from '../../../tests/testUtils'
-import {
-  credentialSchema,
-  validateStructure as validateCredentialStructure,
-} from './KiltCredentialV1'
-import { credentialIdFromRootHash } from './common'
-import {
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
-} from './constants'
-import { exportICredentialToVc } from './fromICredential'
+import { ApiMocks } from '../../../../tests/testUtils'
+
+import { fromInput } from '../KiltCredentialV1'
+import { ATTESTATION_PROOF_V1_TYPE } from '../constants'
+import { KiltCredentialV1 } from '../types'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
@@ -63,7 +63,7 @@ export const cType: ICType = {
   $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-export const credential: ICredential = {
+const _legacyCredential: ICredential = {
   claim: {
     contents: {
       birthday: '1991-01-01',
@@ -95,12 +95,20 @@ export const credential: ICredential = {
     '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
   rootHash: '0x',
 }
-credential.rootHash = Credential.calculateRootHash(credential)
+_legacyCredential.rootHash = Credential.calculateRootHash(_legacyCredential)
+
+// eslint-disable-next-line import/no-mutable-exports
+export let legacyCredential: ICredential = JSON.parse(
+  JSON.stringify(_legacyCredential)
+)
+beforeEach(() => {
+  legacyCredential = JSON.parse(JSON.stringify(_legacyCredential))
+})
 
 export const attestation: IAttestation = {
-  claimHash: credential.rootHash,
-  cTypeHash: credential.claim.cTypeHash,
-  delegationId: credential.delegationId,
+  claimHash: _legacyCredential.rootHash,
+  cTypeHash: _legacyCredential.claim.cTypeHash,
+  delegationId: _legacyCredential.delegationId,
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   revoked: false,
 }
@@ -108,6 +116,40 @@ export const attestation: IAttestation = {
 export const timestamp = 1234567
 export const blockHash = randomAsU8a(32)
 export const genesisHash = randomAsU8a(32)
+
+const _credential = JSON.stringify({
+  ...fromInput({
+    claims: _legacyCredential.claim.contents,
+    claimHash: _legacyCredential.rootHash,
+    subject: _legacyCredential.claim.owner,
+    delegationId: _legacyCredential.delegationId ?? undefined,
+    cType: cType.$id,
+    issuer: attestation.owner,
+    chainGenesisHash: genesisHash,
+    timestamp,
+  }),
+  proof: {
+    type: ATTESTATION_PROOF_V1_TYPE,
+    // `block` field is base58 encoding of block hash
+    block: base58Encode(blockHash),
+    // `commitments` (claimHashes) are base58 encoded in new format
+    commitments: _legacyCredential.claimHashes.map((i) =>
+      base58Encode(hexToU8a(i))
+    ),
+    // salt/nonces must be sorted by statement digest (keys) and base58 encoded
+    salt: Object.entries(_legacyCredential.claimNonceMap)
+      .map(([hsh, slt]) => [hexToU8a(hsh), stringToU8a(slt)])
+      .sort((a, b) => u8aCmp(a[0], b[0]))
+      .map((i) => base58Encode(i[1])),
+  },
+})
+
+// eslint-disable-next-line import/no-mutable-exports
+export let credential: KiltCredentialV1 = JSON.parse(_credential)
+beforeEach(() => {
+  credential = JSON.parse(_credential)
+})
+
 jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))
 jest
   .spyOn(mockedApi, 'queryMulti')
@@ -147,66 +189,3 @@ mockedApi.query.system = {
       ])
     ),
 } as any
-
-it('exports credential to VC', () => {
-  const exported = exportICredentialToVc(credential, {
-    issuer: attestation.owner,
-    chainGenesisHash: mockedApi.genesisHash,
-    blockHash,
-    timestamp,
-    cType: cType.$id,
-  })
-  expect(exported).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
-    credentialSubject: {
-      id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-      birthday: '1991-01-01',
-      name: 'Kurt',
-      premium: true,
-    },
-    id: credentialIdFromRootHash(hexToU8a(credential.rootHash)),
-    issuanceDate: expect.any(String),
-    issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-    nonTransferable: true,
-  })
-  expect(() => validateCredentialStructure(exported)).not.toThrow()
-})
-
-it('VC has correct format (full example)', () => {
-  expect(
-    exportICredentialToVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-      cType: cType.$id,
-    })
-  ).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
-    credentialSchema: {
-      id: credentialSchema.$id,
-      type: 'JsonSchema2023',
-    },
-    credentialSubject: {
-      '@context': {
-        '@vocab': expect.any(String),
-      },
-      id: expect.any(String),
-      birthday: '1991-01-01',
-      name: 'Kurt',
-      premium: true,
-    },
-    id: expect.any(String),
-    issuanceDate: expect.any(String),
-    issuer: expect.any(String),
-    nonTransferable: true,
-    proof: {
-      type: 'KiltAttestationProofV1',
-      commitments: expect.any(Array),
-      salt: expect.any(Array),
-      block: expect.any(String),
-    },
-  })
-})
