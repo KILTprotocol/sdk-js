@@ -8,9 +8,7 @@
 /// <reference lib="dom" />
 
 import type {
-  DecryptCallback,
   DidDocument,
-  EncryptCallback,
   KeyringPair,
   KiltEncryptionKeypair,
   KiltKeyringPair,
@@ -29,7 +27,6 @@ const {
   Did,
   Blockchain,
   Utils: { Crypto, ss58Format },
-  Message,
   BalanceUtils,
 } = kilt
 
@@ -95,39 +92,6 @@ function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
   }
 }
 
-function makeEncryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
-  return (didDocument) => {
-    return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0].id
-      if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
-      }
-      const { box, nonce } = Crypto.encryptAsymmetric(
-        data,
-        peerPublicKey,
-        secretKey
-      )
-      return { nonce, data: box, keyUri: `${didDocument.uri}${keyId}` }
-    }
-  }
-}
-
-function makeDecryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey }) {
-    const decrypted = Crypto.decryptAsymmetric(
-      { box: data, nonce },
-      peerPublicKey,
-      secretKey
-    )
-    if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted }
-  }
-}
-
 async function createFullDidFromKeypair(
   payer: KiltKeyringPair,
   keypair: KiltKeyringPair,
@@ -168,7 +132,6 @@ async function runAll() {
   const { keypair: aliceKeypair, getSignCallback: aliceSign } =
     makeSigningKeypair('//Alice')
   const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
-  const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
   const alice = await createFullDidFromKeypair(
     payer,
     aliceKeypair,
@@ -181,7 +144,6 @@ async function runAll() {
   const { keypair: bobKeypair, getSignCallback: bobSign } =
     makeSigningKeypair('//Bob')
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
-  const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
   const bob = await createFullDidFromKeypair(
     payer,
     bobKeypair,
@@ -302,31 +264,6 @@ async function runAll() {
     throw new Error('Not a valid Presentation')
   await Credential.verifySignature(presentation)
   console.info('Presentation signature verified')
-
-  console.log('Test Messaging with encryption + decryption')
-  const message = Message.fromBody(
-    {
-      content: {
-        credential,
-      },
-      type: 'request-attestation',
-    },
-    bob.uri,
-    alice.uri
-  )
-  const encryptedMessage = await Message.encrypt(
-    message,
-    bobEncryptCallback(bob),
-    `${alice.uri}${alice.keyAgreement[0].id}`
-  )
-
-  const decryptedMessage = await Message.decrypt(
-    encryptedMessage,
-    aliceDecryptCallback
-  )
-  if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
-    throw new Error('Original and decrypted message are not the same')
-  }
 
   const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
   Attestation.verifyAgainstCredential(attestation, credential)
