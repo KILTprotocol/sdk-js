@@ -36,7 +36,6 @@ import {
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import { init } from '../kilt'
 import * as Credential from './Credential'
 
 const testCType = CType.fromProperties('Credential', {
@@ -75,7 +74,7 @@ beforeAll(async () => {
       } as any)
     ),
   } as any
-  await init({ api })
+  ConfigService.set({ api })
 })
 
 describe('Credential', () => {

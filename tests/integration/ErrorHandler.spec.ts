@@ -7,8 +7,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import { disconnect } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
+import { disconnect, Did } from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   IAttestation,

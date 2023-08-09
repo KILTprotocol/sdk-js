@@ -18,8 +18,7 @@ import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import { PublicCredentials } from '@kiltprotocol/asset-credentials'
-import { CType, disconnect } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
+import { CType, Did, disconnect } from '@kiltprotocol/sdk-js'
 import { UUID } from '@kiltprotocol/utils'
 
 import {

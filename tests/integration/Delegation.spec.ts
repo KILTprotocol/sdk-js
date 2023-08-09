@@ -14,17 +14,18 @@ import {
   Claim,
   Credential,
   DelegationNode,
+  Did,
   disconnect,
-} from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
-import type {
+} from '@kiltprotocol/sdk-js'
+import {
   DidDocument,
   ICType,
   IDelegationNode,
   KiltKeyringPair,
+  Permission,
+  PermissionType,
   SignCallback,
 } from '@kiltprotocol/types'
-import { Permission, PermissionType } from '@kiltprotocol/types'
 
 import {
   KeyTool,

@@ -8,8 +8,7 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
+import { CType, DelegationNode, Did, disconnect } from '@kiltprotocol/sdk-js'
 import {
   DidDocument,
   DidResolutionResult,

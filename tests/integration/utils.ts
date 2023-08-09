@@ -13,9 +13,13 @@ import { BN } from '@polkadot/util'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { ConfigService } from '@kiltprotocol/config'
-import { CType, connect, init } from '@kiltprotocol/core'
+import {
+  Blockchain,
+  CType,
+  ConfigService,
+  connect,
+  init,
+} from '@kiltprotocol/sdk-js'
 import type {
   ICType,
   KeyringPair,

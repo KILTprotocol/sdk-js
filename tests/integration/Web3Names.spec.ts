@@ -8,8 +8,7 @@
 import type { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import { disconnect } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
+import { Did, disconnect } from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   KeyringPair,

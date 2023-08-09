@@ -9,7 +9,6 @@ import { hexToU8a } from '@polkadot/util'
 import { ed25519PairFromSeed } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
-import { init } from '@kiltprotocol/core'
 import {
   exportToDidDocument,
   getFullDidUriFromKey,
@@ -22,8 +21,8 @@ import type {
 } from '@kiltprotocol/types'
 
 import * as JWT from './DidJwt'
-import * as Presentation from './Presentation'
 import { credentialSchema } from './KiltCredentialV1'
+import * as Presentation from './Presentation'
 import type { KiltCredentialV1 } from './types'
 
 jest.mock('@kiltprotocol/did', () => ({
@@ -71,10 +70,6 @@ jest.mocked(resolveCompliant).mockImplementation(async (d) => {
     },
     didDocumentMetadata: {},
   }
-})
-
-beforeAll(async () => {
-  await init({})
 })
 
 it('produces and reverses JWT payload representations of a credential and presentation', () => {

@@ -8,25 +8,24 @@
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
-import { init } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
 import type {
   ConformingDidDocument,
   DidUri,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 
+import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+import type { VerifiableCredential } from '../../types.js'
 import {
   combineDocumentLoaders,
   kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
-import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+import ingosCredential from '../examples/ICredentialExample.json'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
-import ingosCredential from '../examples/ICredentialExample.json'
-import type { VerifiableCredential } from '../../types.js'
 
 // is not needed and imports a dependency that does not work in node 18
 jest.mock('@digitalbazaar/http-client', () => ({}))
@@ -43,7 +42,6 @@ const documentLoader = combineDocumentLoaders([
 ])
 
 export async function makeFakeDid() {
-  await init()
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument = Did.exportToDidDocument(
     {

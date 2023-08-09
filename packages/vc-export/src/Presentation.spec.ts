@@ -16,7 +16,7 @@ import {
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
-import { init } from '@kiltprotocol/core'
+import { ConfigService } from '@kiltprotocol/config'
 import { getFullDidUri, getFullDidUriFromKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -114,7 +114,7 @@ beforeAll(async () => {
   api.query.did = {
     didBlacklist: jest.fn().mockResolvedValue(api.createType('Option<Null>')),
   } as any
-  await init({ api })
+  ConfigService.set({ api })
 })
 
 it('verifies a presentation signed by an ecdsa key', async () => {

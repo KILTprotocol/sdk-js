@@ -12,9 +12,9 @@ import {
   Claim,
   Credential,
   CType,
+  Did,
   disconnect,
-} from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
+} from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   IAttestation,
