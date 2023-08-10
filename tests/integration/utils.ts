@@ -31,7 +31,7 @@ import { makeSigningKeyTool } from '../testUtils/index.js'
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
-const WS_PORT = 9944
+const RPC_PORT = 9944
 
 async function getStartedTestContainer(): Promise<StartedTestContainer> {
   try {
@@ -39,9 +39,9 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
       process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
     console.log(`using testcontainer with image ${image}`)
     const testcontainer = new GenericContainer(image)
-      .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
-      .withExposedPorts(WS_PORT)
-      .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
+      .withCommand(['--dev', `--rpc-port=${RPC_PORT}`, '--rpc-external'])
+      .withExposedPorts(RPC_PORT)
+      .withWaitStrategy(Wait.forLogMessage(`:${RPC_PORT}`))
     const started = await testcontainer.start()
     return started
   } catch (error) {
