@@ -30,7 +30,7 @@ import type {
 } from '@polkadot/types/interfaces/types.js'
 import type { IEventData, Signer } from '@polkadot/types/types'
 
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import {
   authorizeTx,
   getFullDidUri,

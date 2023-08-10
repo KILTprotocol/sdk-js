@@ -9,7 +9,7 @@ import { hexToU8a } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
 
 import { JsonSchema } from '@kiltprotocol/utils'
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import type {
   ICType,
   ICredential,

@@ -31,7 +31,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/core": "workspace:*",
+    "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",

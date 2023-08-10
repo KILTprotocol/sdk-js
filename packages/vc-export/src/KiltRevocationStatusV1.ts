@@ -11,7 +11,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
+import { Attestation, CType, SDKErrors } from '@kiltprotocol/credentials'
 import type { Caip2ChainId } from '@kiltprotocol/types'
 
 import { Caip2 } from './CAIP/index.js'

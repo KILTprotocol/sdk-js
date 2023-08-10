@@ -3,10 +3,10 @@
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
-# KILT Core
+# KILT Credentials
 
 This package provides the KILT credential core features and objects to make claims, build credentials and make attestations.
-It also includes ctypes, quotes, delegations and balance utilities.
+It also includes ctypes and delegations utilities.
 
 For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).
 
@@ -15,11 +15,11 @@ For more information, please visit our [official SDK documentation](https://docs
 NPM:
 
 ```
-npm install @kiltprotocol/core
+npm install @kiltprotocol/credentials
 ```
 
 YARN:
 
 ```
-yarn add @kiltprotocol/core
+yarn add @kiltprotocol/credentials
 ```

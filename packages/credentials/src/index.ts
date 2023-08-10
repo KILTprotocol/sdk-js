@@ -6,7 +6,7 @@
  */
 
 /**
- * @module @kiltprotocol/core
+ * @module @kiltprotocol/credentials
  */
 
 export * as Attestation from './attestation/index.js'

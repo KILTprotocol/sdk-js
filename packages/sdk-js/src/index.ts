@@ -9,7 +9,7 @@
  * @module @kiltprotocol/sdk-js
  */
 
-export * from '@kiltprotocol/core'
+export * from '@kiltprotocol/credentials'
 export { ConfigService } from '@kiltprotocol/config'
 export { Blockchain } from '@kiltprotocol/chain-helpers'
 export * from './balance/index.js'

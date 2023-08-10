@@ -18,7 +18,7 @@ import jsigs from 'jsonld-signatures' // cjs module
 // @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
-import { Credential } from '@kiltprotocol/core'
+import { Credential } from '@kiltprotocol/credentials'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'

@@ -12,7 +12,7 @@
 import jsigs from 'jsonld-signatures' // cjs module
 
 import { ConfigService } from '@kiltprotocol/config'
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import type { ICType } from '@kiltprotocol/types'
 
 import { chainIdFromGenesis } from '../../CAIP/caip2.js'

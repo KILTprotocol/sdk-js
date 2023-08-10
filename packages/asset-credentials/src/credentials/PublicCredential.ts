@@ -18,7 +18,7 @@ import type {
   PartialAssetClaim,
 } from '@kiltprotocol/types'
 
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import { blake2AsHex } from '@polkadot/util-crypto'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'

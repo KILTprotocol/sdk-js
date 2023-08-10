@@ -8,7 +8,7 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
 import { randomAsU8a } from '@polkadot/util-crypto'
 
-import { Credential } from '@kiltprotocol/core'
+import { Credential } from '@kiltprotocol/credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
 import { ApiMocks } from '../../../tests/testUtils'

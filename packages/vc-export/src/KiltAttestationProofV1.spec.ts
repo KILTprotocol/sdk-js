@@ -8,7 +8,7 @@
 import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
 
-import { Credential } from '@kiltprotocol/core'
+import { Credential } from '@kiltprotocol/credentials'
 import { parse } from '@kiltprotocol/did'
 import type { DidUri } from '@kiltprotocol/types'
 
