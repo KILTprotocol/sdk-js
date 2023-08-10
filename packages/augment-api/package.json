@@ -42,7 +42,7 @@
   "devDependencies": {
     "@polkadot/api": "^10.4.0",
     "@polkadot/typegen": "^10.4.0",
-    "@types/node": "^20.4.9",
+    "@types/node": "^16.11.7",
     "glob": "^7.1.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",

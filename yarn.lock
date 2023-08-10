@@ -1946,7 +1946,7 @@ __metadata:
     "@kiltprotocol/type-definitions": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/typegen": ^10.4.0
-    "@types/node": ^20.4.9
+    "@types/node": ^16.11.7
     glob: ^7.1.1
     rimraf: ^3.0.2
     ts-node: ^10.4.0
@@ -3008,10 +3008,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.4.9":
-  version: 20.4.9
-  resolution: "@types/node@npm:20.4.9"
-  checksum: 504e3da96274f3865c1251830f4750bb0a8f6ef6f8648902cd3bba33370c5f219235471bfbf55cce726b25c8eacfcc8e2aad0ec3b13e27ea6708b00d4a9a46c8
+"@types/node@npm:*":
+  version: 17.0.22
+  resolution: "@types/node@npm:17.0.22"
+  checksum: 72d1fc8bdc37f0c18b1160e7207b52fb569d0e2b459ac9a4cbd3ca40e478ffe1455efc2c6a253c81e0a7a7c7a899716535d9970cd9521f87d6050b7de04b9ba3
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^16.11.7":
+  version: 16.18.40
+  resolution: "@types/node@npm:16.18.40"
+  checksum: a683930491b4fd7cb2dc7684e32bbeedc4a83fb1949a7b15ea724fbfaa9988cec59091f169a3f1090cb91992caba8c1a7d50315b2c67c6e2579a3788bb09eec4
   languageName: node
   linkType: hard
 
