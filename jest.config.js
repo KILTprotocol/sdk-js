@@ -39,7 +39,7 @@ const common = {
     '.chain.ts',
     'SDKErrors.ts',
     'Did.rpc.ts',
-    'packages/core/src/utils.ts',
+    'packages/utils/src/Chain.ts',
     // third party code copied to this repo
     'packages/utils/src/json-schema/',
     'jsonabc.ts',
