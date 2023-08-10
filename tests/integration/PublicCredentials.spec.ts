@@ -50,7 +50,7 @@ async function issueCredential(
 ): Promise<void> {
   const authorizedStoreTx = await Did.authorizeTx(
     attester.uri,
-    api.tx.PublicCredentials.add(PublicCredentials.toChain(credential)),
+    api.tx.publicCredentials.add(PublicCredentials.toChain(credential)),
     attesterKey.getSignCallback(attester),
     tokenHolder.address
   )
