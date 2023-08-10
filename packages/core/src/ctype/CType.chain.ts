@@ -29,11 +29,11 @@ import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
  *
- * @param ctype The CType to write on the blockchain.
+ * @param cType The CType to write on the blockchain.
  * @returns Encoded CType.
  */
-export function toChain(ctype: ICType): string {
-  return serializeForHash(ctype)
+export function toChain(cType: ICType): string {
+  return serializeForHash(cType)
 }
 
 /**
@@ -83,7 +83,7 @@ export interface CTypeChainDetails {
   createdAt: BN
 }
 
-export type ICTypeDetails = { ctype: ICType } & CTypeChainDetails
+export type ICTypeDetails = { cType: ICType } & CTypeChainDetails
 
 /**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
@@ -226,7 +226,7 @@ export async function fetchFromChain(
   const [ctypeInput, creator] = lastRightCTypeCreationCall
 
   return {
-    ctype: {
+    cType: {
       ...ctypeInput,
       $id: cTypeId,
     },

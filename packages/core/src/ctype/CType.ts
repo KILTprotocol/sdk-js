@@ -166,11 +166,11 @@ export function verifyClaimAgainstSchema(
 /**
  * Checks on the KILT blockchain whether a CType is registered.
  *
- * @param ctype CType data.
+ * @param cType CType data.
  */
-export async function verifyStored(ctype: ICType): Promise<void> {
+export async function verifyStored(cType: ICType): Promise<void> {
   const api = ConfigService.get('api')
-  const hash = idToHash(ctype.$id)
+  const hash = idToHash(cType.$id)
   const encoded = await api.query.ctype.ctypes(hash)
   if (encoded.isNone)
     throw new SDKErrors.CTypeHashMissingError(
@@ -250,9 +250,9 @@ export function fromProperties(
   if (version === 'V1') {
     schema.additionalProperties = false
   }
-  const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
-  verifyDataStructure(ctype)
-  return ctype
+  const cType = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
+  verifyDataStructure(cType)
+  return cType
 }
 
 /**
