@@ -5,12 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-// Import needed to turn off TS build issue where `call.args[0].flatMap` cannot be called on a generic `Codec` type.
-import '@kiltprotocol/augment-api'
-
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
-import type { GenericCall, GenericExtrinsic } from '@polkadot/types'
+import type { GenericCall, GenericExtrinsic, Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 
@@ -25,17 +22,7 @@ import type { BN } from '@polkadot/util'
 export function isBatch(
   api: ApiPromise,
   extrinsic: Extrinsic | Call
-): extrinsic is
-  | GenericExtrinsic<
-      | typeof api.tx.utility.batch.args
-      | typeof api.tx.utility.batchAll.args
-      | typeof api.tx.utility.forceBatch.args
-    >
-  | GenericCall<
-      | typeof api.tx.utility.batch.args
-      | typeof api.tx.utility.batchAll.args
-      | typeof api.tx.utility.forceBatch.args
-    > {
+): extrinsic is GenericExtrinsic<[Vec<Call>]> | GenericCall<[Vec<Call>]> {
   return (
     api.tx.utility.batch.is(extrinsic) ||
     api.tx.utility.batchAll.is(extrinsic) ||
