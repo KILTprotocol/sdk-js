@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/asset-did",
-  "version": "0.34.0-rc.0",
+  "version": "0.34.0-rc.1",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
