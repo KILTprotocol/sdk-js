@@ -18,13 +18,13 @@ import type {
   PartialAssetClaim,
 } from '@kiltprotocol/types'
 
+import { CType } from '@kiltprotocol/core'
 import { blake2AsHex } from '@polkadot/util-crypto'
 import { ConfigService } from '@kiltprotocol/config'
-import * as AssetDid from '@kiltprotocol/asset-did'
 import * as Did from '@kiltprotocol/did'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import { verifyClaimAgainstSchema } from '../ctype/CType.js'
+import * as AssetDid from '../dids/index.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
 /**
@@ -110,7 +110,7 @@ export function verifyAgainstCType(
   credential: IPublicCredential,
   cType: ICType
 ): void {
-  verifyClaimAgainstSchema(credential.claims, cType)
+  CType.verifyClaimAgainstSchema(credential.claims, cType)
 }
 
 type VerifyOptions = {

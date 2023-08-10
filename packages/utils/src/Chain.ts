@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// Import needed to turn off TS build issue where call.args[0].flatMap cannot be called on a generic `Codec` type.
+import '@kiltprotocol/augment-api'
+
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
 import type { GenericCall, GenericExtrinsic } from '@polkadot/types'

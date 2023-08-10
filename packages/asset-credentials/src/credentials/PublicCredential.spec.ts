@@ -8,6 +8,7 @@
 import { BN } from '@polkadot/util'
 
 import { ConfigService } from '@kiltprotocol/config'
+import { CType } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import type {
   AssetDidUri,
@@ -19,9 +20,7 @@ import type {
 import { Crypto } from '@kiltprotocol/utils'
 
 import { ApiMocks } from '../../../../tests/testUtils'
-import * as CType from '../ctype'
-import * as PublicCredential from '../publicCredential'
-import { verifyAgainstCType } from './PublicCredential'
+import * as PublicCredential from './PublicCredential.js'
 
 const devAlice = Crypto.makeKeypairFromUri('//Alice')
 const nftNameCType = CType.fromProperties('NFT collection name', {
@@ -64,9 +63,13 @@ describe('Public credential fromClaim', () => {
     const builtCredential = buildCredential(assetIdentifier, {
       name: 'test-name',
     })
-    expect(() => verifyAgainstCType(builtCredential, testCType)).not.toThrow()
+    expect(() =>
+      PublicCredential.verifyAgainstCType(builtCredential, testCType)
+    ).not.toThrow()
     builtCredential.claims.name = 123
-    expect(() => verifyAgainstCType(builtCredential, testCType)).toThrow()
+    expect(() =>
+      PublicCredential.verifyAgainstCType(builtCredential, testCType)
+    ).toThrow()
   })
 
   it('should fail to build a credential from missing claim contents', async () => {

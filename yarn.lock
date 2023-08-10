@@ -1924,12 +1924,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/asset-did@workspace:*, @kiltprotocol/asset-did@workspace:packages/asset-did":
+"@kiltprotocol/asset-credentials@workspace:packages/asset-credentials":
   version: 0.0.0-use.local
-  resolution: "@kiltprotocol/asset-did@workspace:packages/asset-did"
+  resolution: "@kiltprotocol/asset-credentials@workspace:packages/asset-credentials"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^10.4.0
+    "@polkadot/types": ^10.4.0
+    "@polkadot/util": ^12.0.0
+    "@polkadot/util-crypto": ^12.0.0
   languageName: unknown
   linkType: soft
 
@@ -1979,7 +1986,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
-    "@kiltprotocol/asset-did": "workspace:*"
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
@@ -2064,9 +2070,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
+    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
+    "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     cbor-web: ^9.0.0
@@ -9328,11 +9336,11 @@ typescript@^4.8.3:
 
 "typescript@patch:typescript@^4.8.3#~builtin<compat/typescript>":
   version: 4.8.3
-  resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=aae4e6"
+  resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=3b564f"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 2222d2382fb3146089b1d27ce2b55e9d1f99cc64118f1aba75809b693b856c5d3c324f052f60c75b577947fc538bc1c27bad0eb76cbdba9a63a253489504ba7e
+  checksum: dfe2ee3b9da1d74b9e06784ae90c20c435db9ad6ab23172911f6cdbfd7ab7213ae3611c4254c5a2c6dc2e89f05a658b95493890bf62d218267033b3d8a2e4dd6
   languageName: node
   linkType: hard
 
