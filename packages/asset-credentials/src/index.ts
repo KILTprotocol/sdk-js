@@ -5,4 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './AssetDid.js'
+/**
+ * @module @kiltprotocol/asset-credentials
+ */
+
+export * as AssetDids from './dids/index.js'
+export * as PublicCredentials from './credentials/index.js'
