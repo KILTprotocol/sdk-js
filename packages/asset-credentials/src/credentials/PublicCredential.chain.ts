@@ -25,7 +25,7 @@ import type {
 
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
-import { Chain, SDKErrors, cbor } from '@kiltprotocol/utils'
+import { Chain as ChainUtils, SDKErrors, cbor } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
 import { validateUri } from '../dids/index.js'
@@ -129,7 +129,7 @@ function extractPublicCredentialCreationCallsFromDidCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.publicCredentials.add.args>> {
-  const extrinsicCalls = Chain.flattenCalls(api, call)
+  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.publicCredentials.add.args> =>
       api.tx.publicCredentials.add.is(c)
@@ -141,7 +141,7 @@ function extractDidCallsFromBatchCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
-  const extrinsicCalls = Chain.flattenCalls(api, call)
+  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
       api.tx.did.submitDidCall.is(c)
@@ -166,7 +166,7 @@ export async function fetchCredentialFromChain(
   )
   const { blockNumber, revoked } = publicCredentialEntry.unwrap()
 
-  const extrinsic = await Chain.retrieveExtrinsicFromBlock(
+  const extrinsic = await ChainUtils.retrieveExtrinsicFromBlock(
     api,
     blockNumber,
     ({ events }) =>
@@ -184,7 +184,7 @@ export async function fetchCredentialFromChain(
   }
 
   if (
-    !Chain.isBatch(api, extrinsic) &&
+    !ChainUtils.isBatch(api, extrinsic) &&
     !api.tx.did.submitDidCall.is(extrinsic)
   ) {
     throw new SDKErrors.PublicCredentialError(
@@ -194,7 +194,7 @@ export async function fetchCredentialFromChain(
 
   // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
   // otherwise the extrinsic is itself a submit_did_call, so just take it.
-  const didCalls = Chain.isBatch(api, extrinsic)
+  const didCalls = ChainUtils.isBatch(api, extrinsic)
     ? extrinsic.args[0].flatMap((batchCall) =>
         extractDidCallsFromBatchCall(api, batchCall)
       )

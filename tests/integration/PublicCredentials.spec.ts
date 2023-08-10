@@ -50,7 +50,7 @@ async function issueCredential(
 ): Promise<void> {
   const authorizedStoreTx = await Did.authorizeTx(
     attester.uri,
-    api.tx.publicCredentials.add(PublicCredentials.toChain(credential)),
+    api.tx.PublicCredentials.add(PublicCredentials.toChain(credential)),
     attesterKey.getSignCallback(attester),
     tokenHolder.address
   )
@@ -141,8 +141,9 @@ describe('When there is an attester and ctype NFT name', () => {
         delegationId: null,
         subject: assetId,
       }
-      const encodedPublicCredential = PublicCredentials.toChain(latestCredential)
-      return api.tx.publicCredentials.add(encodedPublicCredential)
+      const encodedPublicCredential =
+        PublicCredentials.toChain(latestCredential)
+      return api.tx.PublicCredentials.add(encodedPublicCredential)
     })
     const authorizedBatch = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
@@ -173,7 +174,7 @@ describe('When there is an attester and ctype NFT name', () => {
       await PublicCredentials.fetchCredentialsFromChain(assetId)
     // Verify that credential was not revoked before revocation
     expect(assetCredential.revoked).toBe(false)
-    const revocationTx = api.tx.publicCredentials.revoke(credentialId, null)
+    const revocationTx = api.tx.PublicCredentials.revoke(credentialId, null)
     const authorizedTx = await Did.authorizeTx(
       attester.uri,
       revocationTx,
@@ -208,7 +209,7 @@ describe('When there is an attester and ctype NFT name', () => {
     // Verify that credential was revoked before un-revocation
     expect(assetCredential.revoked).toBe(true)
 
-    const unrevocationTx = api.tx.publicCredentials.unrevoke(credentialId, null)
+    const unrevocationTx = api.tx.PublicCredentials.unrevoke(credentialId, null)
     const authorizedTx = await Did.authorizeTx(
       attester.uri,
       unrevocationTx,
@@ -243,7 +244,7 @@ describe('When there is an attester and ctype NFT name', () => {
     // Verify that credential existed before removal
     expect(encodedAssetCredential.isNone).toBe(false)
 
-    const removalTx = api.tx.publicCredentials.remove(credentialId, null)
+    const removalTx = api.tx.PublicCredentials.remove(credentialId, null)
     const authorizedTx = await Did.authorizeTx(
       attester.uri,
       removalTx,
@@ -430,7 +431,7 @@ describe('When there is an issued public credential', () => {
 
   it('should not be verified when another party receives it if it has a different revocation info', async () => {
     // Revoke first
-    const revocationTx = api.tx.publicCredentials.revoke(credential.id, null)
+    const revocationTx = api.tx.PublicCredentials.revoke(credential.id, null)
     const authorizedTx = await Did.authorizeTx(
       attester.uri,
       revocationTx,
@@ -489,7 +490,7 @@ describe('When there is a batch which contains a credential creation', () => {
     const batchTx = api.tx.utility.batchAll([
       await Did.authorizeTx(
         attester.uri,
-        api.tx.publicCredentials.add(PublicCredentials.toChain(credential1)),
+        api.tx.PublicCredentials.add(PublicCredentials.toChain(credential1)),
         attesterKey.getSignCallback(attester),
         tokenHolder.address,
         { txCounter: currentAttesterNonce.addn(1) }
@@ -497,7 +498,7 @@ describe('When there is a batch which contains a credential creation', () => {
       api.tx.utility.batch([
         await Did.authorizeTx(
           attester.uri,
-          api.tx.publicCredentials.add(PublicCredentials.toChain(credential2)),
+          api.tx.PublicCredentials.add(PublicCredentials.toChain(credential2)),
           attesterKey.getSignCallback(attester),
           tokenHolder.address,
           { txCounter: currentAttesterNonce.addn(2) }
@@ -505,7 +506,9 @@ describe('When there is a batch which contains a credential creation', () => {
         api.tx.utility.forceBatch([
           await Did.authorizeTx(
             attester.uri,
-            api.tx.publicCredentials.add(PublicCredentials.toChain(credential3)),
+            api.tx.PublicCredentials.add(
+              PublicCredentials.toChain(credential3)
+            ),
             attesterKey.getSignCallback(attester),
             tokenHolder.address,
             { txCounter: currentAttesterNonce.addn(3) }
