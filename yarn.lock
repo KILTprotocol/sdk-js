@@ -2070,7 +2070,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
