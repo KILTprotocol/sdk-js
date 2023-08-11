@@ -1951,7 +1951,7 @@ __metadata:
     glob: ^7.1.1
     rimraf: ^3.0.2
     ts-node: ^10.4.0
-    typescript: ^4.9.5
+    typescript: ^4.8.3
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -1967,7 +1967,7 @@ __metadata:
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -1978,7 +1978,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
     typescript-logging: ^1.0.0
   languageName: unknown
   linkType: soft
@@ -2002,7 +2002,7 @@ __metadata:
     "@types/uuid": ^8.0.0
     rimraf: ^3.0.2
     testcontainers: ^9.0.0
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -2022,7 +2022,7 @@ __metadata:
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -2038,7 +2038,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     terser-webpack-plugin: ^5.1.1
-    typescript: ^4.9.5
+    typescript: ^4.8.3
     webpack: ^5.76.0
     webpack-cli: ^4.9.2
   languageName: unknown
@@ -2049,7 +2049,7 @@ __metadata:
   resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
   dependencies:
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -2063,7 +2063,7 @@ __metadata:
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -2080,7 +2080,7 @@ __metadata:
     cbor-web: ^9.0.0
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
-    typescript: ^4.9.5
+    typescript: ^4.8.3
     uuid: ^9.0.0
   languageName: unknown
   linkType: soft
@@ -2104,7 +2104,7 @@ __metadata:
     crypto-ld: ^6.0.0
     did-jwt: ^7.0.0
     rimraf: ^3.0.2
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   peerDependencies:
     "@digitalbazaar/vc": ^2.1.0 || ^6.0.1
     jsonld: ^5.2.0 || ^8.1.0
@@ -8322,7 +8322,7 @@ fsevents@^2.3.2:
     ts-jest: ^29.1.1
     ts-jest-resolver: ^2.0.1
     typedoc: ^0.23.0
-    typescript: ^4.9.5
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -9325,23 +9325,23 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.9.5":
-  version: 4.9.5
-  resolution: "typescript@npm:4.9.5"
+typescript@^4.8.3:
+  version: 4.8.3
+  resolution: "typescript@npm:4.8.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: ee000bc26848147ad423b581bd250075662a354d84f0e06eb76d3b892328d8d4440b7487b5a83e851b12b255f55d71835b008a66cbf8f255a11e4400159237db
+  checksum: 8286a5edcaf3d68e65c451aa1e7150ad1cf53ee0813c07ec35b7abdfdb10f355ecaa13c6a226a694ae7a67785fd7eeebf89f845da0b4f7e4a35561ddc459aba0
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.9.5#~builtin<compat/typescript>":
-  version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
+"typescript@patch:typescript@^4.8.3#~builtin<compat/typescript>":
+  version: 4.8.3
+  resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=aae4e6"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 1f8f3b6aaea19f0f67cba79057674ba580438a7db55057eb89cc06950483c5d632115c14077f6663ea76fd09fce3c190e6414bb98582ec80aa5a4eaf345d5b68
+  checksum: 2222d2382fb3146089b1d27ce2b55e9d1f99cc64118f1aba75809b693b856c5d3c324f052f60c75b577947fc538bc1c27bad0eb76cbdba9a63a253489504ba7e
   languageName: node
   linkType: hard
 

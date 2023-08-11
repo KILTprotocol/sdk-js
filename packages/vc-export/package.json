@@ -33,7 +33,7 @@
     "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
     "@digitalbazaar/vc": "^6.0.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.9.5"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@kiltprotocol/chain-helpers": "workspace:*",

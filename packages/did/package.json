@@ -31,7 +31,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "typescript": "^4.9.5"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@digitalbazaar/security-context": "^1.0.0",
