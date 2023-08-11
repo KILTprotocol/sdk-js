@@ -35,8 +35,6 @@ export class CTypeIdMismatchError extends SDKError {
   }
 }
 
-export class CTypeUnknownPropertiesError extends SDKError {}
-
 export class UnsupportedKeyError extends SDKError {
   constructor(keyType: string) {
     super(`The provided key type "${keyType}" is currently not supported`)
@@ -103,8 +101,6 @@ export class ClaimContentsMalformedError extends SDKError {}
 
 export class ObjectUnverifiableError extends SDKError {}
 
-export class QuoteUnverifiableError extends SDKError {}
-
 export class ClaimNonceMapMalformedError extends SDKError {
   constructor(statement?: string) {
     if (statement) {
@@ -114,8 +110,6 @@ export class ClaimNonceMapMalformedError extends SDKError {
     }
   }
 }
-
-export class UnknownMessageBodyTypeError extends SDKError {}
 
 export class SignatureMalformedError extends SDKError {}
 
@@ -159,18 +153,6 @@ export class CredentialUnverifiableError extends SDKError {}
 
 export class ClaimUnverifiableError extends SDKError {}
 
-export class IdentityMismatchError extends SDKError {
-  constructor(context?: string, type?: string) {
-    if (type && context) {
-      super(`${type} is not owner of the ${context}`)
-    } else if (context) {
-      super(`Identity is not owner of the ${context}`)
-    } else {
-      super('Addresses expected to be equal mismatched')
-    }
-  }
-}
-
 export class SubscriptionsNotSupportedError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(
@@ -181,8 +163,6 @@ export class SubscriptionsNotSupportedError extends SDKError {
 }
 
 export class RootHashUnverifiableError extends SDKError {}
-
-export class DecodingMessageError extends SDKError {}
 
 export class TimeoutError extends SDKError {}
 
