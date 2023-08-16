@@ -27,7 +27,7 @@ import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
   KeyTool,
-  makeEncryptionKeyTool,
+  makeKeyAgreement,
   makeSigningKeyTool,
 } from '../testUtils/index.js'
 import {
@@ -309,7 +309,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
     const { storeDidCallback, authentication } = makeSigningKeyTool('ed25519')
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const keyAgreement = makeKeyAgreement(
       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     )
     const lightDid = Did.createLightDidDocument({
@@ -405,7 +405,7 @@ describe('DID migration', () => {
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
     const { storeDidCallback, authentication } = makeSigningKeyTool('ed25519')
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const keyAgreement = makeKeyAgreement(
       '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     )
     const service: DidServiceEndpoint[] = [

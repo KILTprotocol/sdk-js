@@ -27,22 +27,14 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
-export interface EncryptionKeyTool {
-  keyAgreement: [KiltEncryptionKeypair]
-}
-
 /**
  * Generates a keypair suitable for encryption.
  *
  * @param seed {string} Input to generate the keypair from.
  * @returns Object with secret and public key and the key type.
  */
-export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
-  const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
-
-  return {
-    keyAgreement: [keypair],
-  }
+export function makeKeyAgreement(seed: string): [KiltEncryptionKeypair] {
+  return [Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))]
 }
 
 export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
@@ -133,8 +125,7 @@ export async function createMinimalLightDidFromKeypair(
   const type = keypair.type as LightDidSupportedVerificationKeyType
   return Did.createLightDidDocument({
     authentication: [{ publicKey: keypair.publicKey, type }],
-    keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement,
+    keyAgreement: makeKeyAgreement(`${keypair.publicKey}//enc`),
   })
 }
 
@@ -188,8 +179,7 @@ export async function createLocalDemoFullDidFromKeypair(
   }
 
   if (keyRelationships.has('keyAgreement')) {
-    const encryptionKeypair = makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement[0]
+    const encryptionKeypair = makeKeyAgreement(`${keypair.publicKey}//enc`)[0]
     const encKey = {
       ...encryptionKeypair,
       id: computeKeyId(encryptionKeypair.publicKey),
