@@ -8,12 +8,10 @@
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
 import type {
-  DecryptCallback,
   DidDocument,
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
-  EncryptCallback,
   KeyRelationship,
   KeyringPair,
   KiltEncryptionKeypair,
@@ -29,65 +27,8 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
-export type EncryptionKeyToolCallback = (
-  didDocument: DidDocument
-) => EncryptCallback
-
-/**
- * Generates a callback that can be used for encryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for encryption.
- * @returns The callback.
- */
-export function makeEncryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
-  return (didDocument) => {
-    return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0].id
-      if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
-      }
-      const { box, nonce } = Crypto.encryptAsymmetric(
-        data,
-        peerPublicKey,
-        secretKey
-      )
-      return {
-        nonce,
-        data: box,
-        keyUri: `${didDocument.uri}${keyId}`,
-      }
-    }
-  }
-}
-
-/**
- * Generates a callback that can be used for decryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for decryption.
- * @returns The callback.
- */
-export function makeDecryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey }) {
-    const decrypted = Crypto.decryptAsymmetric(
-      { box: data, nonce },
-      peerPublicKey,
-      secretKey
-    )
-    if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted }
-  }
-}
-
 export interface EncryptionKeyTool {
   keyAgreement: [KiltEncryptionKeypair]
-  encrypt: EncryptionKeyToolCallback
-  decrypt: DecryptCallback
 }
 
 /**
@@ -99,13 +40,8 @@ export interface EncryptionKeyTool {
 export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
 
-  const encrypt = makeEncryptCallback(keypair)
-  const decrypt = makeDecryptCallback(keypair)
-
   return {
     keyAgreement: [keypair],
-    encrypt,
-    decrypt,
   }
 }
 

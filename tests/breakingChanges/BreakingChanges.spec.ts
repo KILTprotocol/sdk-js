@@ -19,7 +19,7 @@ jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
 
 function makeLightDidFromSeed(seed: string) {
   const keypair = Utils.Crypto.makeKeypairFromUri(seed, 'sr25519')
-  const { keyAgreement, encrypt, decrypt } = makeEncryptionKeyTool(seed)
+  const { keyAgreement } = makeEncryptionKeyTool(seed)
 
   const did = Did.createLightDidDocument({
     authentication: [keypair],
@@ -35,7 +35,7 @@ function makeLightDidFromSeed(seed: string) {
     ],
   })
 
-  return { did, encrypt, decrypt }
+  return { did }
 }
 
 describe('Breaking Changes', () => {
