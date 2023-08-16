@@ -10,7 +10,6 @@
 import type {
   DidDocument,
   KeyringPair,
-  KiltEncryptionKeypair,
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
@@ -81,14 +80,13 @@ function makeSigningKeypair(
   }
 }
 
-function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
-  const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
-    Crypto.hash(seed, 256)
-  )
+function makeEncryptionKeypair(seed: string) {
+  const publicKey = Crypto.hash(`${seed}public`, 256)
+  const secretKey = Crypto.hash(`${seed}secret`, 256)
   return {
     secretKey,
     publicKey,
-    type: 'x25519',
+    type: 'x25519' as const,
   }
 }
 

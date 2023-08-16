@@ -5,7 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
+import {
+  DidDocument,
+  DidServiceEndpoint,
+  DidUri,
+  KiltEncryptionKeypair,
+} from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
 import * as Did from '../index.js'
@@ -20,12 +25,20 @@ import * as Did from '../index.js'
  * - authorizeExtrinsic
  */
 
+function makeEncryptionKeypair(): KiltEncryptionKeypair {
+  const publicKey = Crypto.hash('public', 256)
+  const secretKey = Crypto.hash('secret', 256)
+  return {
+    secretKey,
+    publicKey,
+    type: 'x25519',
+  }
+}
+
 describe('When creating an instance from the details', () => {
   it('correctly assign the right sr25519 authentication key, x25519 encryption key, and service endpoints', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
-    const encKey = Crypto.makeEncryptionKeypairFromSeed(
-      new Uint8Array(32).fill(1)
-    )
+    const encKey = makeEncryptionKeypair()
     const service: DidServiceEndpoint[] = [
       {
         id: '#service-1',
@@ -46,7 +59,7 @@ describe('When creating an instance from the details', () => {
     })
 
     expect(lightDid).toEqual(<DidDocument>{
-      uri: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
+      uri: `did:kilt:light:00${authKey.address}:z17GNCdxLqak5QojTgsFXFzCtSPh9ihEZKDYxcgUb5yjRAz1VtgWiDrRhVLwjgV6cKdPgPpEMFwCfpjjS88gh34Y4Yb7M6aQA1rk62hL15BKtiAdJYieDEaEsYu1Uj7tDUVXFPyEq6j9tKA6xNpT92uYbvveaD9egUdY2htCQN6cL9xvdbCS4Ywrx1vz38NqY1ke3o59zVUw6jahvppwdtqhGiowQhKcHC3d7n2eNtW2rcZ2VmWk63AXkGzmaQUrkkPTqq6erZRXmwk3rmb7tsDuziC44RH22Lbyv9Zp6DddZykmWnHVP7SprWAxmSpQZF`,
       authentication: [
         {
           id: '#authentication',
@@ -78,9 +91,7 @@ describe('When creating an instance from the details', () => {
 
   it('correctly assign the right ed25519 authentication key and encryption key', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeypairFromSeed(
-      new Uint8Array(32).fill(1)
-    )
+    const encKey = makeEncryptionKeypair()
 
     const lightDid = Did.createLightDidDocument({
       authentication: [authKey],
@@ -90,7 +101,7 @@ describe('When creating an instance from the details', () => {
     expect(Did.parse(lightDid.uri).address).toStrictEqual(authKey.address)
 
     expect(lightDid).toEqual({
-      uri: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
+      uri: `did:kilt:light:01${authKey.address}:z15dZSRuzEZGdAF16HajRyxeLdQCfuYguX3isTjKFteYDVTKCgjbAVK6w4LLjyZxz1BJNMgVYNHBYipdNsKNaNwTcQdE8SueHHdt731pjToNiw56MZyk2Fh3g7xbGNvccLfPfn8MeTWjE9Aw79d8Fr`,
       authentication: [
         {
           id: '#authentication',
@@ -123,7 +134,7 @@ describe('When creating an instance from the details', () => {
 
   it('throws for unsupported encryption key type', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeypairFromSeed()
+    const encKey = makeEncryptionKeypair()
     const invalidInput = {
       authentication: [authKey],
       // Not an encryption key type
@@ -140,9 +151,7 @@ describe('When creating an instance from the details', () => {
 describe('When creating an instance from a URI', () => {
   it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
-    const encKey = Crypto.makeEncryptionKeypairFromSeed(
-      new Uint8Array(32).fill(1)
-    )
+    const encKey = makeEncryptionKeypair()
     const endpoints: DidServiceEndpoint[] = [
       {
         id: '#service-1',
@@ -167,7 +176,7 @@ describe('When creating an instance from a URI', () => {
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
     expect(builtLightDid).toStrictEqual(<DidDocument>{
-      uri: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7` as DidUri,
+      uri: `did:kilt:light:00${address}:z17GNCdxLqak5QojTgsFXFzCtSPh9ihEZKDYxcgUb5yjRAz1VtgWiDrRhVLwjgV6cKdPgPpEMFwCfpjjS88gh34Y4Yb7M6aQA1rk62hL15BKtiAdJYieDEaEsYu1Uj7tDUVXFPyEq6j9tKA6xNpT92uYbvveaD9egUdY2htCQN6cL9xvdbCS4Ywrx1vz38NqY1ke3o59zVUw6jahvppwdtqhGiowQhKcHC3d7n2eNtW2rcZ2VmWk63AXkGzmaQUrkkPTqq6erZRXmwk3rmb7tsDuziC44RH22Lbyv9Zp6DddZykmWnHVP7SprWAxmSpQZF` as DidUri,
       authentication: [
         {
           id: '#authentication',
@@ -199,7 +208,7 @@ describe('When creating an instance from a URI', () => {
 
   it('fail if a fragment is present according to the options', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeypairFromSeed()
+    const encKey = makeEncryptionKeypair()
     const service: DidServiceEndpoint[] = [
       {
         id: '#service-1',

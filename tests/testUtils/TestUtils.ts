@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
+import { blake2AsHex } from '@polkadot/util-crypto'
 
 import type {
   DidDocument,
@@ -34,7 +34,13 @@ import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
  * @returns Object with secret and public key and the key type.
  */
 export function makeKeyAgreement(seed: string): [KiltEncryptionKeypair] {
-  return [Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))]
+  return [
+    {
+      secretKey: Crypto.hash(`${seed}secret`, 256),
+      publicKey: Crypto.hash(`${seed}public`, 256),
+      type: 'x25519',
+    },
+  ]
 }
 
 export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback

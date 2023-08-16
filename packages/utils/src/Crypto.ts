@@ -17,7 +17,6 @@ import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
   HexString,
   KeyringPair,
-  KiltEncryptionKeypair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 import {
@@ -25,7 +24,6 @@ import {
   stringToU8a,
   u8aConcat,
   u8aToHex,
-  u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
 import {
@@ -35,7 +33,6 @@ import {
   signatureVerify,
 } from '@polkadot/util-crypto'
 import { Keyring } from '@polkadot/api'
-import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import jsonabc from './jsonabc.js'
 import * as SDKErrors from './SDKErrors.js'
@@ -44,16 +41,6 @@ import { ss58Format } from './ss58Format.js'
 export { mnemonicGenerate, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
-
-/**
- * Creates a new public/secret box keypair from a secret.
- *
- * @param secret The secret.
- * @returns An object containing a box `publicKey` & `secretKey` generated from the supplied secret.
- */
-export function naclBoxPairFromSecret(secret: Uint8Array): nacl.BoxKeyPair {
-  return nacl.box.keyPair.fromSecretKey(secret)
-}
 
 /**
  * Types accepted by hashing and crypto functions.
@@ -180,91 +167,6 @@ export function encodeObjectAsStr(
 }
 
 /**
- * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
- *
- * @param message String or byte array to be encrypted.
- * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
- * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
- * @returns Encrypted message and nonce used for encryption.
- */
-export function encryptAsymmetric(
-  message: CryptoInput,
-  publicKeyA: CryptoInput,
-  secretKeyB: CryptoInput
-): EncryptedAsymmetric {
-  const nonce = nacl.randomBytes(24)
-  const box = nacl.box(
-    coToUInt8(message, true),
-    nonce,
-    coToUInt8(publicKeyA),
-    coToUInt8(secretKeyB)
-  )
-  return { box, nonce }
-}
-
-/**
- * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
- *
- * @param message String or byte array to be encrypted.
- * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
- * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
- * @returns Encrypted message and nonce used for encryption as hex strings.
- */
-export function encryptAsymmetricAsStr(
-  message: CryptoInput,
-  publicKeyA: CryptoInput,
-  secretKeyB: CryptoInput
-): EncryptedAsymmetricString {
-  const encrypted = encryptAsymmetric(message, publicKeyA, secretKeyB)
-  const box = u8aToHex(encrypted.box)
-  const nonce = u8aToHex(encrypted.nonce)
-  return { box, nonce }
-}
-
-/**
- * Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.
- *
- * @param data Object containing encrypted message and nonce used for encryption.
- * @param publicKeyB Public key of the sender. Necessary to authenticate the message during decryption.
- * @param secretKeyA Private key of the recipient. Required for decryption.
- * @returns Decrypted message or false if decryption is unsuccessful.
- */
-export function decryptAsymmetric(
-  data: EncryptedAsymmetric | EncryptedAsymmetricString,
-  publicKeyB: CryptoInput,
-  secretKeyA: CryptoInput
-): Uint8Array | false {
-  const decrypted = nacl.box.open(
-    coToUInt8(data.box),
-    coToUInt8(data.nonce),
-    coToUInt8(publicKeyB),
-    coToUInt8(secretKeyA)
-  )
-  return decrypted || false
-}
-
-/**
- * Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.
- *
- * @param data Object containing encrypted message and nonce used for encryption.
- * @param publicKeyB Public key of the sender. Necessary to authenticate the message during decryption.
- * @param secretKeyA Private key of the recipient. Required for decryption.
- * @returns Decrypted message as string or false if decryption is unsuccessful.
- */
-export function decryptAsymmetricAsStr(
-  data: EncryptedAsymmetric | EncryptedAsymmetricString,
-  publicKeyB: CryptoInput,
-  secretKeyA: CryptoInput
-): string | false {
-  const result = decryptAsymmetric(
-    data,
-    coToUInt8(publicKeyB),
-    coToUInt8(secretKeyA)
-  )
-  return result !== false ? u8aToString(result) : false
-}
-
-/**
  * Signature of hashing function accepted by [[hashStatements]].
  *
  * @param value String to be hashed.
@@ -364,19 +266,4 @@ export function makeKeypairFromUri<
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
   const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
-}
-
-/**
- * Generate from a seed a x25519 keypair to be used as DID encryption key.
- *
- * @param seed The keypair seed, only optional in the tests.
- * @returns The keypair.
- */
-export function makeEncryptionKeypairFromSeed(
-  seed = randomAsU8a(32)
-): KiltEncryptionKeypair {
-  return {
-    ...naclBoxPairFromSecret(seed),
-    type: 'x25519',
-  }
 }

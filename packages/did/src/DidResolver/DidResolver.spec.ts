@@ -440,7 +440,7 @@ describe('When resolving a full DID', () => {
 
 describe('When resolving a light DID', () => {
   const authKey = Crypto.makeKeypairFromSeed()
-  const encryptionKey = Crypto.makeEncryptionKeypairFromSeed()
+  const encryptionPublicKey = Crypto.hash('', 256)
 
   beforeEach(() => {
     // RPC call changed to not return anything by default.
@@ -477,7 +477,7 @@ describe('When resolving a light DID', () => {
   it('correctly resolves the document with authentication key, encryption key, and two service endpoints', async () => {
     const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
-      keyAgreement: [{ publicKey: encryptionKey.publicKey, type: 'x25519' }],
+      keyAgreement: [{ publicKey: encryptionPublicKey, type: 'x25519' }],
       service: [
         generateServiceEndpoint('#service-1'),
         generateServiceEndpoint('#service-2'),
@@ -500,7 +500,7 @@ describe('When resolving a light DID', () => {
       {
         id: '#encryption',
         type: 'x25519',
-        publicKey: encryptionKey.publicKey,
+        publicKey: encryptionPublicKey,
       },
     ])
     expect(lightDid.service).toStrictEqual<DidServiceEndpoint[]>([

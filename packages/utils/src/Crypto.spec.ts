@@ -6,7 +6,6 @@
  */
 
 import * as string from '@polkadot/util/string'
-import nacl from 'tweetnacl'
 import * as Crypto from './Crypto'
 
 const messageStr = 'This is a test'
@@ -114,50 +113,5 @@ describe('helper functions', () => {
         "0x4e31eef9054d0d8682707880a414b86fafaa963b19220d03273eae764ad0bc1d",
       ]
     `)
-  })
-})
-
-describe('asymmetric crypto', () => {
-  let alice: nacl.BoxKeyPair
-  let bob: nacl.BoxKeyPair
-
-  beforeAll(() => {
-    alice = nacl.box.keyPair()
-    bob = nacl.box.keyPair()
-  })
-
-  it('should encrypt and decrypt asymmetrical (string)', () => {
-    const encrypted = Crypto.encryptAsymmetricAsStr(
-      messageStr,
-      alice.publicKey,
-      bob.secretKey
-    )
-    expect(encrypted).not.toEqual(messageStr)
-    const decrypted = Crypto.decryptAsymmetricAsStr(
-      encrypted,
-      bob.publicKey,
-      alice.secretKey
-    )
-    expect(decrypted).toEqual(messageStr)
-    const decryptedFalse = Crypto.decryptAsymmetricAsStr(
-      encrypted,
-      bob.publicKey,
-      bob.secretKey
-    )
-    expect(decryptedFalse).toEqual(false)
-  })
-  it('should encrypt and decrypt asymmetrical (UInt8Array)', () => {
-    const encrypted = Crypto.encryptAsymmetric(
-      message,
-      alice.publicKey,
-      bob.secretKey
-    )
-    expect(encrypted).not.toEqual(message)
-    const decrypted = Crypto.decryptAsymmetric(
-      encrypted,
-      bob.publicKey,
-      alice.secretKey
-    )
-    expect(decrypted).toEqual(message)
   })
 })

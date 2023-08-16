@@ -20,7 +20,7 @@
     "set:version": "npm version --no-git-tag-version --no-workspaces-update --workspaces --include-workspace-root",
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
-    "test": "jest --coverage --selectProjects=unit",
+    "test": "env LANG=C jest --coverage --selectProjects=unit",
     "test:breaking": "jest --selectProjects=breaking",
     "test:ci": "yarn test --ci --forceExit",
     "test:integration": "jest -c tests/integration/jest.config.integration.js",

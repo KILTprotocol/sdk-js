@@ -6,16 +6,12 @@
  */
 
 import { Did, Utils } from '@kiltprotocol/sdk-js'
-import nacl from 'tweetnacl'
 import { v4 } from 'uuid'
 
 import { makeKeyAgreement } from '../testUtils/index.js'
 
 jest.mock('uuid')
 jest.mocked(v4).mockReturnValue('1ee1307c-9e65-475d-9061-0b5bfd86d2f7')
-
-// Mock nacl randombytes, so that the nonce and ciphertext stay the same between runs
-jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
 
 function makeLightDidFromSeed(seed: string) {
   const keypair = Utils.Crypto.makeKeypairFromUri(seed, 'sr25519')
