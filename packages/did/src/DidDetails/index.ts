@@ -5,6 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DidDetails.js'
-export * from './LightDidDetails.js'
-export * from './FullDidDetails.js'
+export * from './DidDocument.js'
+export * from './LightDid.js'
+export * from './FullDid.js'

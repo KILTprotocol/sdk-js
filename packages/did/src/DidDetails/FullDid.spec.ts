@@ -43,13 +43,13 @@ describe('When creating an instance from the chain', () => {
   describe('authorizeBatch', () => {
     let keypair: KiltKeyringPair
     let sign: SignCallback
-    let fullDid: DidDocument
+    let fullDidDocument: DidDocument
 
     beforeAll(async () => {
       const keyTool = makeSigningKeyTool()
       keypair = keyTool.keypair
-      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
-      sign = keyTool.getSignCallback(fullDid)
+      fullDidDocument = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
+      sign = keyTool.getSignCallback(fullDidDocument)
     })
 
     describe('.addSingleTx()', () => {
@@ -57,7 +57,7 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid.uri,
+            did: fullDidDocument.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
@@ -75,7 +75,7 @@ describe('When creating an instance from the chain', () => {
         const batchFunction =
           jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
         await Did.authorizeBatch({
-          did: fullDid.uri,
+          did: fullDidDocument.id,
           batchFunction,
           extrinsics: [extrinsic, extrinsic],
           sign,
@@ -112,7 +112,7 @@ describe('When creating an instance from the chain', () => {
           ctype4Extrinsic,
         ]
         await Did.authorizeBatch({
-          did: fullDid.uri,
+          did: fullDidDocument.id,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
@@ -140,7 +140,7 @@ describe('When creating an instance from the chain', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid.uri,
+            did: fullDidDocument.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
             sign,

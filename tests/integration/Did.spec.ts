@@ -13,7 +13,7 @@ import * as Did from '@kiltprotocol/did'
 import {
   DidDocument,
   DidResolutionResult,
-  DidServiceEndpoint,
+  DidService,
   KiltKeyringPair,
   NewDidEncryptionKey,
   NewDidVerificationKey,
@@ -73,8 +73,9 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
+    const authenticationKeyId = did!.authentication![0]
     const newDid = Did.createLightDidDocument({
-      authentication: did.authentication as [NewLightDidVerificationKey],
+      authentication: Did.getKey(did, authenticationKeyId),
       service: [
         {
           id: '#test-id-1',

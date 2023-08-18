@@ -13,17 +13,25 @@ import {
 
 import type {
   DidDocument,
-  DidServiceEndpoint,
+  DidService,
   Did,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   NewLightDidVerificationKey,
+  RelativeDidUrl,
 } from '@kiltprotocol/types'
-import { encryptionKeyTypes } from '@kiltprotocol/types'
+import {
+  encryptionKeyTypes,
+  verificationKeyTypesMap,
+} from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format, cbor } from '@kiltprotocol/utils'
 
-import { getAddressByKey, parse } from '../Did.utils.js'
+import {
+  encodeKeyToBase58Multibase,
+  getAddressByKey,
+  parse,
+} from '../Did.utils.js'
 import { resourceIdToChain, validateService } from '../Did.chain.js'
 
 const authenticationKeyId = '#authentication'
@@ -47,6 +55,7 @@ const lightDidEncodingToVerificationKeyType: Record<
   '01': 'ed25519',
 }
 
+export type NewService = Omit<DidService, 'id'> & { id: RelativeDidUrl }
 /**
  * The options that can be used to create a light DID.
  */
@@ -65,7 +74,7 @@ export type CreateDocumentInput = {
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
    */
-  service?: DidServiceEndpoint[]
+  service?: NewService[]
 }
 
 function validateCreateDocumentInput({
@@ -110,7 +119,7 @@ const SERVICES_MAP_KEY = 's'
 interface SerializableStructure {
   [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
   [SERVICES_MAP_KEY]?: Array<
-    Partial<Omit<DidServiceEndpoint, 'id'>> & {
+    Partial<Omit<DidService, 'id'>> & {
       id: string
     } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their service endpoints.
   >
@@ -214,30 +223,52 @@ export function createLightDidDocument({
   const address = getAddressByKey(authentication[0])
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
-  const uri =
+  const id =
     `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as Did
+  const authVerificationMethodType =
+    verificationKeyTypesMap[authentication[0].type]
+  if (authVerificationMethodType === undefined) {
+    throw new SDKErrors.DidError(
+      `The provided type "${authentication[0].type}" cannot be represented in a DID Document.`
+    )
+  }
 
   const did: DidDocument = {
-    uri,
-    authentication: [
+    id,
+    authentication: [authenticationKeyId],
+    verificationMethod: [
       {
-        id: authenticationKeyId, // Authentication key always has the #authentication ID.
-        type: authentication[0].type,
-        publicKey: authentication[0].publicKey,
+        id: `${id}${authenticationKeyId}`,
+        controller: id,
+        type: verificationKeyTypesMap[authentication[0].type],
+        publicKeyMultibase: encodeKeyToBase58Multibase(authentication[0]),
       },
     ],
-    service,
   }
 
   if (keyAgreement !== undefined) {
-    did.keyAgreement = [
-      {
-        id: encryptionKeyId, // Encryption key always has the #encryption ID.
-        type: keyAgreement[0].type,
-        publicKey: keyAgreement[0].publicKey,
-      },
-    ]
+    const keyAgrVerificationMethodType =
+      verificationKeyTypesMap[authentication[0].type]
+    if (keyAgrVerificationMethodType === undefined) {
+      throw new SDKErrors.DidError(
+        `The provided type "${keyAgreement[0].type}" cannot be represented in a DID Document.`
+      )
+    }
+    did.verificationMethod?.push({
+      id: `${id}${encryptionKeyId}`,
+      controller: id,
+      type: keyAgrVerificationMethodType,
+      publicKeyMultibase: encodeKeyToBase58Multibase(keyAgreement[0]),
+    })
+    did.keyAgreement = [encryptionKeyId]
   }
+
+  service?.forEach(({ id: serviceId, ...s }) => {
+    did.service?.push({
+      ...s,
+      id: `${id}${serviceId}`,
+    })
+  })
 
   return did
 }
@@ -250,13 +281,13 @@ export function createLightDidDocument({
  * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
  *
- * @param uri The DID URI to parse.
+ * @param did The DID to parse.
  * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
  *
  * @returns The resulting [[DidDocument]].
  */
 export function parseDocumentFromLightDid(
-  uri: Did,
+  did: Did,
   failIfFragmentPresent = true
 ): DidDocument {
   const {
@@ -266,16 +297,16 @@ export function parseDocumentFromLightDid(
     fragment,
     type,
     authKeyTypeEncoding,
-  } = parse(uri)
+  } = parse(did)
 
   if (type !== 'light') {
     throw new SDKErrors.DidError(
-      `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
+      `Cannot build a light DID from the provided URI "${did}" because it does not refer to a light DID`
     )
   }
-  if (fragment && failIfFragmentPresent) {
+  if (fragment !== undefined && failIfFragmentPresent) {
     throw new SDKErrors.DidError(
-      `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
+      `Cannot build a light DID from the provided URI "${did}" because it has a fragment`
     )
   }
   const keyType =

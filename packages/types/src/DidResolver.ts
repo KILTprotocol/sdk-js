@@ -5,14 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  ConformingDidKey,
-  ConformingDidServiceEndpoint,
-} from './DidDocumentExporter.js'
 import type {
   DidDocument,
-  DidKey,
-  DidResourceUri,
+  DidVerificationMethod,
+  DidUrl,
   Did,
   KeyRelationship,
 } from './DidDocument.js'
@@ -49,6 +45,21 @@ export type DidResolutionResult = {
    * The DID's web3Name, if any.
    */
   web3Name?: string
+}
+
+export interface DidResolutionMetadata {
+  error?: 'notFound' | 'invalidDid'
+  errorMessage?: string
+}
+
+/**
+ * Object containing the return values of the DID `resolve` function as described by DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ */
+export interface ConformingDidResolutionResult {
+  didDocumentMetadata: Partial<DidResolutionDocumentMetadata>
+  didResolutionMetadata: DidResolutionMetadata
+  didDocument?: Partial<ConformingDidDocument> &
+    Pick<ConformingDidDocument, 'id'>
 }
 
 export type ResolvedDidKey = Pick<ConformingDidKey, 'id' | 'controller'> &

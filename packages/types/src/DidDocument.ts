@@ -21,9 +21,15 @@ export type Did =
   | `did:kilt:light:${DidVersion}${AuthenticationKeyType}${KiltAddress}${LightDidEncodedData}`
 
 /**
- * A string containing a KILT DID URL according to the [DID URL syntax](https://www.w3.org/TR/did-core/#did-url-syntax).
+ * The fragment part of the DID URI including the `#` character.
  */
-export type DidUrl = string
+export type RelativeDidUrl = `#${string}`
+
+/**
+ * A string containing a KILT DID URL according to the [DID URL syntax](https://www.w3.org/TR/did-core/#did-url-syntax).
+ * In out case, this is just `DID#fragment`.
+ */
+export type DidUrl = `${Did}${RelativeDidUrl}`
 
 /**
  * A string containing a URI according to [RFC3986](https://www.rfc-editor.org/rfc/rfc3986).
@@ -31,44 +37,9 @@ export type DidUrl = string
 export type Uri = string
 
 /**
- * The fragment part of the DID URI including the `#` character.
- */
-export type UriFragment = `#${string}`
-/**
- * URI for DID resources like keys or service endpoints.
- */
-export type DidResourceUri = `${Did}${UriFragment}`
-
-/**
  * A KILT Web3name.
  */
 export type Web3Name = `w3n:${string}`
-
-export type DidVerificationMethod = {
-  id: DidUrl
-  controller: Did
-  type: string
-  publicKeyMultibase: string
-}
-
-export type DidService = {
-  id: Uri
-  type: string[]
-  serviceEndpoint: Uri[]
-}
-
-export interface DidDocument {
-  id: Did
-  alsoKnownAs?: Uri[]
-  controller?: Did[]
-  verificationMethod?: DidVerificationMethod[]
-  authentication?: DidResourceUri[]
-  assertionMethod?: DidResourceUri[]
-  keyAgreement?: DidResourceUri[]
-  capabilityInvocation?: DidResourceUri[]
-  capabilityDelegation?: DidResourceUri[]
-  service?: DidService[]
-}
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -141,6 +112,65 @@ export type NewLightDidVerificationKey = NewDidVerificationKey & {
  * Type of a new encryption key to add under a DID.
  */
 export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
+
+export type DidVerificationMethodType =
+  | 'Ed25519VerificationKey2018'
+  | 'Sr25519VerificationKey2020'
+  | 'EcdsaSecp256k1VerificationKey2019'
+  | 'X25519KeyAgreementKey2019'
+
+export const verificationKeyTypesMap: Record<
+  VerificationKeyType,
+  DidVerificationMethodType
+> = {
+  // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
+  sr25519: 'Sr25519VerificationKey2020',
+  // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
+  ed25519: 'Ed25519VerificationKey2018',
+  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
+}
+
+export const reverseVerificationKeyTypesMap: Record<
+  DidVerificationMethodType,
+  VerificationKeyType | EncryptionKeyType
+> = {
+  Sr25519VerificationKey2020: 'sr25519',
+  Ed25519VerificationKey2018: 'ed25519',
+  EcdsaSecp256k1VerificationKey2019: 'ecdsa',
+  X25519KeyAgreementKey2019: 'x25519',
+}
+
+export type DidVerificationMethod = {
+  id: DidUrl
+  controller: Did
+  type: DidVerificationMethodType
+  publicKeyMultibase: string
+}
+
+export type DidService = {
+  id: DidUrl
+  type: string[]
+  serviceEndpoint: Uri[]
+}
+
+export interface DidDocument {
+  id: Did
+  alsoKnownAs?: Uri[]
+  verificationMethod?: DidVerificationMethod[]
+  authentication?: RelativeDidUrl[]
+  assertionMethod?: RelativeDidUrl[]
+  keyAgreement?: RelativeDidUrl[]
+  capabilityInvocation?: RelativeDidUrl[]
+  capabilityDelegation?: RelativeDidUrl[]
+  service?: DidService[]
+}
+
+/**
+ * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
+ */
+export interface JsonLDDidDocument extends DidDocument {
+  '@context': string[]
+}
 
 /**
  * A signature issued with a DID associated key, indicating which key was used to sign.

@@ -8,11 +8,11 @@
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
-  DidResourceUri,
   Did,
-  DidVerificationKey,
+  DidUrl,
+  DidVerificationMethod,
   KiltAddress,
-  UriFragment,
+  RelativeDidUrl,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -43,7 +43,7 @@ type IDidParsingResult = {
   version: number
   type: 'light' | 'full'
   address: KiltAddress
-  fragment?: UriFragment
+  fragment?: RelativeDidUrl
   authKeyTypeEncoding?: string
   encodedDetails?: string
 }
@@ -54,7 +54,7 @@ type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parse(didUri: Did | DidResourceUri): IDidParsingResult {
+export function parse(didUri: Did | DidUrl): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -67,7 +67,7 @@ export function parse(didUri: Did | DidResourceUri): IDidParsingResult {
       version,
       type: 'full',
       address,
-      fragment: fragment === '#' ? undefined : (fragment as UriFragment),
+      fragment: fragment === '#' ? undefined : (fragment as RelativeDidUrl),
     }
   }
 
@@ -89,7 +89,7 @@ export function parse(didUri: Did | DidResourceUri): IDidParsingResult {
       version,
       type: 'light',
       address,
-      fragment: fragment === '#' ? undefined : (fragment as UriFragment),
+      fragment: fragment === '#' ? undefined : (fragment as RelativeDidUrl),
       encodedDetails,
       authKeyTypeEncoding: authKeyType,
     }
@@ -156,6 +156,16 @@ export function validateUri(
   DataUtils.verifyKiltAddress(address)
 }
 
+// TODO: Proper encoding
+export function encodeKeyToBase58Multibase(key: Uint8Array): string {
+  return 'zad'
+}
+
+// TODO: Proper encoding
+export function decodeKeyFromBase58Multibase(encoded: string): Uint8Array {
+  return new Uint8Array(32)
+}
+
 /**
  * Internal: derive the address part of the DID when it is created from authentication key.
  *
@@ -165,16 +175,26 @@ export function validateUri(
  * @returns The expected address of the DID.
  */
 export function getAddressByKey({
-  publicKey,
+  publicKeyMultibase,
   type,
-}: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
-  if (type === 'ed25519' || type === 'sr25519') {
-    return encodeAddress(publicKey, ss58Format)
+}: Pick<DidVerificationMethod, 'publicKeyMultibase' | 'type'>): KiltAddress {
+  const decodedPublicKey = decodeKeyFromBase58Multibase(publicKeyMultibase)
+  if (
+    type === 'Ed25519VerificationKey2018' ||
+    type === 'Sr25519VerificationKey2020'
+  ) {
+    return encodeAddress(
+      decodeKeyFromBase58Multibase(publicKeyMultibase as `z${string}`),
+      ss58Format
+    )
   }
 
   // Otherwise it’s ecdsa.
   // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
-  const address = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+  const address =
+    decodedPublicKey.length > 32
+      ? blake2AsU8a(decodedPublicKey)
+      : decodedPublicKey
   return encodeAddress(address, ss58Format)
 }
 
@@ -203,7 +223,7 @@ export function getFullDidUri(
  * @returns The expected full DID URI.
  */
 export function getFullDidUriFromKey(
-  key: Pick<DidVerificationKey, 'publicKey' | 'type'>
+  key: Pick<DidVerificationMethod, 'publicKeyMultibase' | 'type'>
 ): Did {
   const address = getAddressByKey(key)
   return getFullDidUri(address)

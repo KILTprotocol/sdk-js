@@ -7,12 +7,12 @@
 
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
-import type {
+import {
   DecryptCallback,
   DidDocument,
-  DidKey,
-  DidServiceEndpoint,
-  DidVerificationKey,
+  DidVerificationMethod,
+  DidService,
+  Did as DidIdentifier,
   EncryptCallback,
   KeyRelationship,
   KeyringPair,
@@ -21,13 +21,17 @@ import type {
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
   SignCallback,
+  reverseVerificationKeyTypesMap,
+  RelativeDidUrl,
+  verificationKeyTypesMap,
+  NewDidVerificationKey,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
+import { decodeKeyFromBase58Multibase, encodeKeyToBase58Multibase, linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
@@ -45,9 +49,9 @@ export function makeEncryptCallback({
 }: KiltEncryptionKeypair): EncryptionKeyToolCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0].id
+      const keyId = didDocument.keyAgreement?.[0]
       if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
+        throw new Error(`Encryption key not found in did "${didDocument.id}"`)
       }
       const { box, nonce } = Crypto.encryptAsymmetric(
         data,
@@ -57,7 +61,7 @@ export function makeEncryptCallback({
       return {
         nonce,
         data: box,
-        keyUri: `${didDocument.uri}${keyId}`,
+        keyUri: `${didDocument.id}${keyId}`,
       }
     }
   }
@@ -120,19 +124,24 @@ export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
 export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
   return (didDocument) =>
     async function sign({ data, keyRelationship }) {
-      const keyId = didDocument[keyRelationship]?.[0].id
-      const keyType = didDocument[keyRelationship]?.[0].type
-      if (keyId === undefined || keyType === undefined) {
+      const keyId = didDocument[keyRelationship]?.[0]
+      if (keyId === undefined) {
         throw new Error(
-          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
+          `Key for purpose "${keyRelationship}" not found in did "${didDocument.id}"`
+        )
+      }
+      const verificationMethod = Did.getKey(didDocument, keyId)
+      if (verificationMethod === undefined) {
+        throw new Error(
+          `Key for purpose "${keyRelationship}" not found in did "${didDocument.id}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })
 
       return {
         signature,
-        keyUri: `${didDocument.uri}${keyId}`,
-        keyType,
+        keyUri: verificationMethod.id,
+        keyType: reverseVerificationKeyTypesMap[verificationMethod.type],
       }
     }
 }
@@ -203,19 +212,8 @@ export async function createMinimalLightDidFromKeypair(
 }
 
 // Mock function to generate a key ID without having to rely on a real chain metadata.
-export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
+export function computeKeyId(key: Uint8Array): RelativeDidUrl {
   return `#${blake2AsHex(key, 256)}`
-}
-
-function makeDidKeyFromKeypair({
-  publicKey,
-  type,
-}: KiltKeyringPair): DidVerificationKey {
-  return {
-    id: computeKeyId(publicKey),
-    publicKey,
-    type,
-  }
 }
 
 /**
@@ -239,15 +237,20 @@ export async function createLocalDemoFullDidFromKeypair(
     endpoints = [],
   }: {
     keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
-    endpoints?: DidServiceEndpoint[]
+    endpoints?: DidService[]
   } = {}
 ): Promise<DidDocument> {
-  const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.getFullDidUriFromKey(authKey)
+  const authInfo = {
+    publicKeyMultibase: encodeKeyToBase58Multibase(keypair.publicKey),
+    type: reverseVerificationKeyTypesMap[keypair.type],
+  }
+  const uri = Did.getFullDidUriFromKey(authInfo)
 
   const result: DidDocument = {
     uri,
-    authentication: [authKey],
+    authentication: [
+      computeKeyId(decodeKeyFromBase58Multibase(authInfo.publicKeyMultibase)),
+    ],
     service: endpoints,
   }
 
