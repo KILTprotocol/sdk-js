@@ -7,7 +7,7 @@
 
 import type {
   DidResourceUri,
-  DidUri,
+  Did,
   DidVerificationKey,
   VerificationKeyRelationship,
 } from './DidDocument.js'
@@ -29,7 +29,7 @@ export interface SignRequestData {
   /**
    * The DID to be used for signing.
    */
-  did: DidUri
+  did: Did
 }
 
 /**
@@ -79,7 +79,7 @@ export interface EncryptRequestData {
   /**
    * The DID to be used for encryption.
    */
-  did: DidUri
+  did: Did
 }
 
 /**

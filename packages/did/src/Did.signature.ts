@@ -11,7 +11,7 @@ import {
   DidResolveKey,
   DidResourceUri,
   DidSignature,
-  DidUri,
+  Did,
   SignResponseData,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -24,7 +24,7 @@ export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
   keyUri: DidResourceUri
-  expectedSigner?: DidUri
+  expectedSigner?: Did
   allowUpgraded?: boolean
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
@@ -33,7 +33,7 @@ export type DidSignatureVerificationInput = {
 // Used solely for retro-compatibility with previously-generated DID signatures.
 // It is reasonable to think that it will be removed at some point in the future.
 type OldDidSignature = Pick<DidSignature, 'signature'> & {
-  keyId: DidSignature['keyUri']
+  keyId: DidSignature['verificationMethodUrl']
 }
 
 /**
@@ -45,7 +45,7 @@ type OldDidSignature = Pick<DidSignature, 'signature'> & {
 function verifyDidSignatureDataStructure(
   input: DidSignature | OldDidSignature
 ): void {
-  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  const keyUri = 'keyUri' in input ? input.verificationMethodUrl : input.keyId
   if (!isHex(input.signature)) {
     throw new SDKErrors.SignatureMalformedError(
       `Expected signature as a hex string, got ${input.signature}`
@@ -131,7 +131,7 @@ export function signatureToJson({
   signature,
   keyUri,
 }: SignResponseData): DidSignature {
-  return { signature: Crypto.u8aToHex(signature), keyUri }
+  return { signature: Crypto.u8aToHex(signature), verificationMethodUrl: keyUri }
 }
 
 /**
@@ -144,7 +144,7 @@ export function signatureToJson({
 export function signatureFromJson(
   input: DidSignature | OldDidSignature
 ): Pick<SignResponseData, 'keyUri' | 'signature'> {
-  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  const keyUri = 'keyUri' in input ? input.verificationMethodUrl : input.keyId
   const signature = Crypto.coToUInt8(input.signature)
   return { signature, keyUri }
 }

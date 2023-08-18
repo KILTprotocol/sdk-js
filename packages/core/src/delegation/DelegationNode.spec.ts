@@ -10,7 +10,7 @@ import { encodeAddress } from '@polkadot/keyring'
 import { ConfigService } from '@kiltprotocol/config'
 import {
   CTypeHash,
-  DidUri,
+  Did,
   IDelegationHierarchyDetails,
   IDelegationNode,
   Permission,
@@ -54,7 +54,7 @@ describe('DelegationNode', () => {
   let hierarchyId: string
   let parentId: string
   let hashList: string[]
-  let addresses: DidUri[]
+  let addresses: Did[]
 
   beforeAll(() => {
     jest
@@ -85,7 +85,7 @@ describe('DelegationNode', () => {
       .map<string>((_val, index) => Crypto.hashStr(`${index + 1}`))
     addresses = Array(10002)
       .fill('')
-      .map<DidUri>(
+      .map<Did>(
         (_val, index) =>
           `did:kilt:${encodeAddress(Crypto.hash(`${index}`, 256), ss58Format)}`
       )
@@ -448,7 +448,7 @@ describe('DelegationNode', () => {
     })
 
     it('returns null if looking for non-existent account', async () => {
-      const noOnesAddress: DidUri = `did:kilt:${encodeAddress(
+      const noOnesAddress: Did = `did:kilt:${encodeAddress(
         Crypto.hash('-1', 256),
         ss58Format
       )}`

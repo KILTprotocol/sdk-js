@@ -13,7 +13,7 @@ import type {
   DidDocument,
   DidKey,
   DidResourceUri,
-  DidUri,
+  Did,
   KeyRelationship,
 } from './DidDocument.js'
 
@@ -24,7 +24,7 @@ export type DidResolutionDocumentMetadata = {
   /**
    * If present, it indicates that the resolved by DID should be treated as if it were the DID as specified in this property.
    */
-  canonicalId?: DidUri
+  canonicalId?: Did
   /**
    * A boolean flag indicating whether the resolved DID has been deactivated.
    */
@@ -63,7 +63,7 @@ export type ResolvedDidServiceEndpoint = ConformingDidServiceEndpoint
  * @returns A promise of a [[DidResolutionResult]] object representing the DID document or null if the DID
  * cannot be resolved.
  */
-export type DidResolve = (did: DidUri) => Promise<DidResolutionResult | null>
+export type DidResolve = (did: Did) => Promise<DidResolutionResult | null>
 
 /**
  * Resolves a DID URI identifying a public key associated with a DID.

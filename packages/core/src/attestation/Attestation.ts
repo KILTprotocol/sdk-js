@@ -9,7 +9,7 @@ import type {
   IAttestation,
   IDelegationHierarchyDetails,
   ICredential,
-  DidUri,
+  Did,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -66,7 +66,7 @@ export function verifyDataStructure(input: IAttestation): void {
  */
 export function fromCredentialAndDid(
   credential: ICredential,
-  attesterDid: DidUri
+  attesterDid: Did
 ): IAttestation {
   const attestation = {
     claimHash: credential.rootHash,

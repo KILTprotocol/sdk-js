@@ -10,7 +10,7 @@ import type {
   DidKey,
   DidResolutionResult,
   DidResourceUri,
-  DidUri,
+  Did,
   KeyRelationship,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
@@ -34,7 +34,7 @@ import { exportToDidDocument } from '../DidDocumentExporter/DidDocumentExporter.
  * @returns The details associated with the DID subject.
  */
 export async function resolve(
-  did: DidUri
+  did: Did
 ): Promise<DidResolutionResult | null> {
   const { type } = parse(did)
   const api = ConfigService.get('api')
@@ -106,7 +106,7 @@ export async function resolve(
  * @returns An object with the properties `didDocument` (a spec-conforming DID document or `undefined`), `didDocumentMetadata` (equivalent to `metadata` returned by [[resolve]]), as well as `didResolutionMetadata` (indicating an `error` if any).
  */
 export async function resolveCompliant(
-  did: DidUri
+  did: Did
 ): Promise<ConformingDidResolutionResult> {
   const result: ConformingDidResolutionResult = {
     didDocumentMetadata: {},
@@ -148,7 +148,7 @@ export async function resolveCompliant(
  * @param did The DID the key belongs to.
  * @returns The key in the resolveKey-format.
  */
-export function keyToResolvedKey(key: DidKey, did: DidUri): ResolvedDidKey {
+export function keyToResolvedKey(key: DidKey, did: Did): ResolvedDidKey {
   const { id, publicKey, includedAt, type } = key
   return {
     controller: did,

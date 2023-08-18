@@ -14,7 +14,7 @@ import {
 import type {
   DidDocument,
   DidServiceEndpoint,
-  DidUri,
+  Did,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   NewLightDidVerificationKey,
@@ -215,7 +215,7 @@ export function createLightDidDocument({
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const uri =
-    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
+    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as Did
 
   const did: DidDocument = {
     uri,
@@ -256,7 +256,7 @@ export function createLightDidDocument({
  * @returns The resulting [[DidDocument]].
  */
 export function parseDocumentFromLightDid(
-  uri: DidUri,
+  uri: Did,
   failIfFragmentPresent = true
 ): DidDocument {
   const {

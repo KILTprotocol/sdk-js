@@ -20,7 +20,7 @@ import type { DIDResolutionResult, Resolvable } from 'did-resolver'
 
 import { resolveCompliant } from '@kiltprotocol/did'
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { DidResourceUri, DidUri } from '@kiltprotocol/types'
+import type { DidResourceUri, Did } from '@kiltprotocol/types'
 
 import type { UnsignedVc, VerifiablePresentation } from './types.js'
 
@@ -87,7 +87,7 @@ const kiltDidResolver: Resolvable = {
       didDocument = null,
       didDocumentMetadata,
       didResolutionMetadata,
-    } = await resolveCompliant(did as DidUri)
+    } = await resolveCompliant(did as Did)
 
     return {
       didDocument,
@@ -236,10 +236,10 @@ export function presentationFromPayload(
   }
 
   if (typeof iss === 'string') {
-    decoded.holder = iss as DidUri
+    decoded.holder = iss as Did
   }
   if (typeof aud === 'string') {
-    decoded.verifier = aud as DidUri
+    decoded.verifier = aud as Did
   }
 
   return decoded as VerifiablePresentation
@@ -263,11 +263,11 @@ export function credentialFromPayload(payload: JWTPayload): UnsignedVc {
   }
 
   if (typeof iss === 'string') {
-    decoded.issuer = iss as DidUri
+    decoded.issuer = iss as Did
   }
   if (typeof sub === 'string') {
     if (typeof decoded.credentialSubject === 'object') {
-      decoded.credentialSubject.id = sub as DidUri
+      decoded.credentialSubject.id = sub as Did
     } else {
       decoded.credentialSubject = sub as any
     }

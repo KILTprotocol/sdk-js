@@ -13,7 +13,7 @@ import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
   ConformingDidDocument,
-  DidUri,
+  Did,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 
@@ -47,7 +47,7 @@ export async function makeFakeDid() {
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument = Did.exportToDidDocument(
     {
-      uri: ingosCredential.claim.owner as DidUri,
+      uri: ingosCredential.claim.owner as Did,
       authentication: [
         {
           ...keypair,

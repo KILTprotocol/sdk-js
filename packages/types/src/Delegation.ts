@@ -6,7 +6,7 @@
  */
 
 import type { CTypeHash } from './CType'
-import type { DidUri } from './DidDocument'
+import type { Did } from './DidDocument'
 
 /* eslint-disable no-bitwise */
 export const Permission = {
@@ -20,7 +20,7 @@ export interface IDelegationNode {
   hierarchyId: IDelegationNode['id']
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
-  account: DidUri
+  account: Did
   permissions: PermissionType[]
   revoked: boolean
 }

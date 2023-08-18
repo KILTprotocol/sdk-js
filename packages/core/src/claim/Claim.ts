@@ -19,7 +19,7 @@
 
 import { hexToBn } from '@polkadot/util'
 import type {
-  DidUri,
+  Did,
   IClaim,
   ICType,
   PartialClaim,
@@ -245,7 +245,7 @@ export function fromNestedCTypeClaim(
   cTypeInput: ICType,
   nestedCType: ICType[],
   claimContents: IClaim['contents'],
-  claimOwner: DidUri
+  claimOwner: Did
 ): IClaim {
   CType.verifyClaimAgainstNestedSchemas(cTypeInput, nestedCType, claimContents)
 
@@ -269,7 +269,7 @@ export function fromNestedCTypeClaim(
 export function fromCTypeAndClaimContents(
   cType: ICType,
   claimContents: IClaim['contents'],
-  claimOwner: DidUri
+  claimOwner: Did
 ): IClaim {
   CType.verifyDataStructure(cType)
   CType.verifyClaimAgainstSchema(claimContents, cType)

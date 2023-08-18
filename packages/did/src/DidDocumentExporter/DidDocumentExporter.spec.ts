@@ -14,14 +14,14 @@ import type {
   DidVerificationKey,
   DidEncryptionKey,
   UriFragment,
-  DidUri,
+  Did,
 } from '@kiltprotocol/types'
 
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from '../index.js'
 
-const did: DidUri = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+const did: Did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
 function generateAuthenticationKey(): DidVerificationKey {
   return {

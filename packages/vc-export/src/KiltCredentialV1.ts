@@ -13,7 +13,7 @@ import { CType } from '@kiltprotocol/core'
 import type {
   ICType,
   ICredential,
-  DidUri,
+  Did,
   IDelegationNode,
 } from '@kiltprotocol/types'
 
@@ -186,10 +186,10 @@ export function validateStructure(
 }
 
 interface CredentialInput {
-  subject: DidUri
+  subject: Did
   claims: ICredential['claim']['contents']
   cType: ICType['$id']
-  issuer: DidUri
+  issuer: Did
   timestamp?: number
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']

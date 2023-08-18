@@ -6,7 +6,7 @@
  */
 
 import type { CTypeHash } from './CType'
-import type { DidUri } from './DidDocument'
+import type { Did } from './DidDocument'
 
 type ClaimPrimitives = string | number | boolean
 
@@ -20,7 +20,7 @@ export interface IClaimContents {
 export interface IClaim {
   cTypeHash: CTypeHash
   contents: IClaimContents
-  owner: DidUri
+  owner: Did
 }
 
 /**

@@ -27,7 +27,7 @@ import {
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
-  DidUri,
+  Did,
   Hash,
   IAttestation,
   IClaim,
@@ -312,7 +312,7 @@ export function verifyWellFormed(
  * @returns An object containing the `attester` DID and `revoked` status of the on-chain attestation.
  */
 export async function verifyAttested(credential: ICredential): Promise<{
-  attester: DidUri
+  attester: Did
   revoked: boolean
 }> {
   const api = ConfigService.get('api')
@@ -332,7 +332,7 @@ export async function verifyAttested(credential: ICredential): Promise<{
 
 export interface VerifiedCredential extends ICredential {
   revoked: boolean
-  attester: DidUri
+  attester: Did
 }
 
 /**

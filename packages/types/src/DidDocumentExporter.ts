@@ -8,7 +8,7 @@
 import {
   DidResourceUri,
   DidServiceEndpoint,
-  DidUri,
+  Did,
   EncryptionKeyType,
   VerificationKeyType,
 } from './DidDocument.js'
@@ -49,7 +49,7 @@ export type ConformingDidKey = {
   /**
    * The key controller, in the form of <did_subject>.
    */
-  controller: DidUri
+  controller: Did
   /**
    * The base58-encoded public component of the key.
    */
@@ -74,7 +74,7 @@ export type ConformingDidServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
 export type ConformingDidDocument = {
-  id: DidUri
+  id: Did
   verificationMethod: ConformingDidKey[]
   authentication: [ConformingDidKey['id']]
   assertionMethod?: [ConformingDidKey['id']]

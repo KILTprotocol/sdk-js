@@ -15,7 +15,7 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidUri,
+  Did,
   DidVerificationKey,
   KiltAddress,
   NewDidEncryptionKey,
@@ -63,7 +63,7 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
  * @param did The DID to format.
  * @returns The blockchain-formatted DID.
  */
-export function toChain(did: DidUri): KiltAddress {
+export function toChain(did: Did): KiltAddress {
   return parse(did).address
 }
 
@@ -122,7 +122,7 @@ function didPublicKeyDetailsFromChain(
  * @param encoded The chain-formatted DID.
  * @returns The DID URI.
  */
-export function fromChain(encoded: AccountId32): DidUri {
+export function fromChain(encoded: AccountId32): Did {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
@@ -283,7 +283,7 @@ export function serviceFromChain(
 // ### EXTRINSICS types
 
 export type AuthorizeCallInput = {
-  did: DidUri
+  did: Did
   txCounter: AnyNumber
   call: Extrinsic
   submitter: KiltAddress

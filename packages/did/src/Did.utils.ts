@@ -9,7 +9,7 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DidResourceUri,
-  DidUri,
+  Did,
   DidVerificationKey,
   KiltAddress,
   UriFragment,
@@ -39,7 +39,7 @@ const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
 type IDidParsingResult = {
-  did: DidUri
+  did: Did
   version: number
   type: 'light' | 'full'
   address: KiltAddress
@@ -54,7 +54,7 @@ type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
+export function parse(didUri: Did | DidResourceUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -63,7 +63,7 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
       ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: didUri.replace(fragment || '', '') as DidUri,
+      did: didUri.replace(fragment || '', '') as Did,
       version,
       type: 'full',
       address,
@@ -85,7 +85,7 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
     return {
-      did: didUri.replace(fragment || '', '') as DidUri,
+      did: didUri.replace(fragment || '', '') as Did,
       version,
       type: 'light',
       address,
@@ -105,7 +105,7 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
  * @param didB A second KILT DID uri as a string.
  * @returns Whether didA and didB refer to the same DID subject.
  */
-export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
+export function isSameSubject(didA: Did, didB: Did): boolean {
   return parse(didA).address === parse(didB).address
 }
 
@@ -134,7 +134,7 @@ export function validateUri(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parse(input as DidUri)
+  const { address, fragment } = parse(input as Did)
 
   if (
     fragment &&
@@ -186,14 +186,14 @@ export function getAddressByKey({
  * @returns The expected full DID URI.
  */
 export function getFullDidUri(
-  didOrAddress: DidUri | KiltAddress,
+  didOrAddress: Did | KiltAddress,
   version = FULL_DID_LATEST_VERSION
-): DidUri {
+): Did {
   const address = DataUtils.isKiltAddress(didOrAddress)
     ? didOrAddress
-    : parse(didOrAddress as DidUri).address
+    : parse(didOrAddress as Did).address
   const versionString = version === 1 ? '' : `v${version}`
-  return `did:kilt:${versionString}${address}` as DidUri
+  return `did:kilt:${versionString}${address}` as Did
 }
 
 /**
@@ -204,7 +204,7 @@ export function getFullDidUri(
  */
 export function getFullDidUriFromKey(
   key: Pick<DidVerificationKey, 'publicKey' | 'type'>
-): DidUri {
+): Did {
   const address = getAddressByKey(key)
   return getFullDidUri(address)
 }

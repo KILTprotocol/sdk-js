@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
+import { DidDocument, DidServiceEndpoint, Did } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
 import * as Did from '../index.js'
@@ -167,7 +167,7 @@ describe('When creating an instance from a URI', () => {
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
     expect(builtLightDid).toStrictEqual(<DidDocument>{
-      uri: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7` as DidUri,
+      uri: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7` as Did,
       authentication: [
         {
           id: '#authentication',
@@ -220,7 +220,7 @@ describe('When creating an instance from a URI', () => {
       service,
     })
 
-    const uriWithFragment: DidUri = `${expectedLightDid.uri}#authentication`
+    const uriWithFragment: Did = `${expectedLightDid.uri}#authentication`
 
     expect(() => Did.parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
     expect(() =>
@@ -244,7 +244,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
-      expect(() => Did.parseDocumentFromLightDid(uri as DidUri)).toThrow()
+      expect(() => Did.parseDocumentFromLightDid(uri as Did)).toThrow()
     })
   })
 })

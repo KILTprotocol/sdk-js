@@ -21,7 +21,7 @@ import { ApiPromise } from '@polkadot/api'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
-  DidUri,
+  Did,
   HexString,
   KeyringPair,
   KiltAddress,
@@ -134,7 +134,7 @@ function getUnprefixedSignature(
 }
 
 async function getLinkingChallengeV1(
-  did: DidUri,
+  did: Did,
   validUntil: BN
 ): Promise<Uint8Array> {
   const api = ConfigService.get('api')
@@ -156,7 +156,7 @@ async function getLinkingChallengeV1(
     .toU8a()
 }
 
-function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
+function getLinkingChallengeV2(did: Did, validUntil: BN): Uint8Array {
   return stringToU8a(
     `Publicly link the signing address to ${did} before block number ${validUntil}`
   )
@@ -172,7 +172,7 @@ function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
  * @returns The encoded challenge.
  */
 export async function getLinkingChallenge(
-  did: DidUri,
+  did: Did,
   validUntil: BN
 ): Promise<Uint8Array> {
   const api = ConfigService.get('api')
@@ -261,7 +261,7 @@ export function getWrappedChallenge(
  */
 export async function associateAccountToChainArgs(
   accountAddress: Address,
-  did: DidUri,
+  did: Did,
   sign: (encodedLinkingDetails: HexString) => Promise<Uint8Array>,
   nBlocksValid = 10
 ): Promise<AssociateAccountToChainResult> {

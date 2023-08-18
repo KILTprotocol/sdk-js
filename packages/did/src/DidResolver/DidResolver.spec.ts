@@ -19,7 +19,7 @@ import type {
   DidResolutionResult,
   DidResourceUri,
   DidServiceEndpoint,
-  DidUri,
+  Did,
   DidVerificationKey,
   KiltAddress,
   ResolvedDidKey,
@@ -42,13 +42,13 @@ import {
 
 const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const didWithAuthenticationKey: DidUri = `did:kilt:${addressWithAuthenticationKey}`
+const didWithAuthenticationKey: Did = `did:kilt:${addressWithAuthenticationKey}`
 const addressWithAllKeys = `4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp`
-const didWithAllKeys: DidUri = `did:kilt:${addressWithAllKeys}`
+const didWithAllKeys: Did = `did:kilt:${addressWithAllKeys}`
 const addressWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN`
-const didWithServiceEndpoints: DidUri = `did:kilt:${addressWithServiceEndpoints}`
+const didWithServiceEndpoints: Did = `did:kilt:${addressWithServiceEndpoints}`
 const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
-const deletedDid: DidUri = `did:kilt:${deletedAddress}`
+const deletedDid: Did = `did:kilt:${deletedAddress}`
 
 const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
   'did',
@@ -260,7 +260,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
+    expect(document.uri).toStrictEqual<Did>(fullDidWithAuthenticationKey)
     expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#auth',
@@ -296,7 +296,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document.uri).toStrictEqual<DidUri>(fullDidWithAllKeys)
+    expect(document.uri).toStrictEqual<Did>(fullDidWithAllKeys)
     expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#auth',
@@ -350,7 +350,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document.uri).toStrictEqual<DidUri>(fullDidWithServiceEndpoints)
+    expect(document.uri).toStrictEqual<Did>(fullDidWithServiceEndpoints)
     expect(document.service).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: '#id-1',
@@ -388,7 +388,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document.uri).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(document.uri).toStrictEqual<Did>(didWithAuthenticationKey)
     expect(web3Name).toStrictEqual('w3nick')
   })
 
@@ -426,7 +426,7 @@ describe('When resolving a full DID', () => {
 
   it('correctly resolves DID document given a fragment', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
-    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
+    const keyIdUri: Did = `${fullDidWithAuthenticationKey}#auth`
     const { document, metadata } = (await resolve(
       keyIdUri
     )) as DidResolutionResult
@@ -434,7 +434,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
+    expect(document?.uri).toStrictEqual<Did>(fullDidWithAuthenticationKey)
   })
 })
 
@@ -462,7 +462,7 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(
+    expect(document?.uri).toStrictEqual<Did>(
       lightDidWithAuthenticationKey.uri
     )
     expect(Did.getKeys(lightDidWithAuthenticationKey)).toStrictEqual<DidKey[]>([
@@ -490,7 +490,7 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
+    expect(document?.uri).toStrictEqual<Did>(lightDid.uri)
     expect(Did.getKeys(lightDid)).toStrictEqual<DidKey[]>([
       {
         id: '#authentication',
@@ -538,7 +538,7 @@ describe('When resolving a light DID', () => {
         },
       })
     )
-    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
+    const migratedDid: Did = `did:kilt:light:00${addressWithAuthenticationKey}`
     const { document, metadata } = (await resolve(
       migratedDid
     )) as DidResolutionResult
@@ -554,7 +554,7 @@ describe('When resolving a light DID', () => {
     // Mock the resolved DID as deleted.
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
-    const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
+    const migratedDid: Did = `did:kilt:light:00${deletedAddress}`
     const { document, metadata } = (await resolve(
       migratedDid
     )) as DidResolutionResult
@@ -569,7 +569,7 @@ describe('When resolving a light DID', () => {
     const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
-    const keyIdUri: DidUri = `${lightDid.uri}#auth`
+    const keyIdUri: Did = `${lightDid.uri}#auth`
     const { document, metadata } = (await resolve(
       keyIdUri
     )) as DidResolutionResult
@@ -577,7 +577,7 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
+    expect(document?.uri).toStrictEqual<Did>(lightDid.uri)
   })
 })
 
@@ -620,7 +620,7 @@ describe('When resolving with the spec compliant resolver', () => {
 
     expect(didResolutionMetadata).toStrictEqual({})
 
-    expect(didDocument.id).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(didDocument.id).toStrictEqual<Did>(didWithAuthenticationKey)
     expect(didDocument.authentication).toStrictEqual([`${didDocument.id}#auth`])
     expect(didDocument.verificationMethod).toContainEqual<ConformingDidKey>({
       id: `${didWithAuthenticationKey}${'#auth'}`,
@@ -699,7 +699,7 @@ describe('When resolving with the spec compliant resolver', () => {
 
   it('does not dereference a DID URL (with fragment)', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
-    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
+    const keyIdUri: Did = `${fullDidWithAuthenticationKey}#auth`
     const { didDocument, didDocumentMetadata, didResolutionMetadata } =
       await resolveCompliant(keyIdUri)
 

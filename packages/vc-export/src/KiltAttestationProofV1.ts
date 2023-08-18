@@ -45,7 +45,7 @@ import type {
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
 import type {
-  DidUri,
+  Did,
   ICredential,
   ICType,
   IDelegationNode,
@@ -253,7 +253,7 @@ async function verifyAttestedAt(
 ): Promise<{
   verified: boolean
   timestamp: number
-  attester: DidUri
+  attester: Did
   cTypeId: ICType['$id']
   delegationId: IDelegationNode['id'] | null
 }> {
@@ -309,7 +309,7 @@ async function verifyAttestedAt(
 async function verifyAuthoritiesInHierarchy(
   api: ApiPromise,
   nodeId: Uint8Array | string,
-  delegators: Set<DidUri>
+  delegators: Set<Did>
 ): Promise<void> {
   const node = (await api.query.delegation.delegationNodes(nodeId)).unwrapOr(
     null
@@ -693,7 +693,7 @@ export type AttestationHandler = (
 }>
 
 export interface DidSigner {
-  did: DidUri
+  did: Did
   signer: SignExtrinsicCallback
 }
 

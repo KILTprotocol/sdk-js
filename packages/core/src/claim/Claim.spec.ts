@@ -6,7 +6,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IClaim, ICType, DidUri } from '@kiltprotocol/types'
+import type { IClaim, ICType, Did } from '@kiltprotocol/types'
 import * as CType from '../ctype'
 import * as Claim from './Claim'
 
@@ -147,7 +147,7 @@ describe('compute hashes & validate by reproducing them', () => {
 })
 
 describe('Claim', () => {
-  let did: DidUri
+  let did: Did
   let claimContents: any
   let testCType: ICType
   let claim: IClaim

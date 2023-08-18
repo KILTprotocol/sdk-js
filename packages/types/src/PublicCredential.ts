@@ -9,7 +9,7 @@ import type { HexString, BN } from './Imported'
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IClaimContents } from './Claim'
-import type { DidUri } from './DidDocument'
+import type { Did } from './DidDocument'
 import type { AssetDidUri } from './AssetDid'
 
 /*
@@ -47,7 +47,7 @@ export interface IPublicCredential extends IPublicCredentialInput {
   /*
    * The KILT DID uri of the credential attester.
    */
-  attester: DidUri
+  attester: Did
   /*
    * The block number at which the credential was issued.
    */

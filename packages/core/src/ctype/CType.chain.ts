@@ -11,7 +11,7 @@ import type { AccountId, Call } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
-import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
+import type { CTypeHash, Did, ICType } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
@@ -75,7 +75,7 @@ export interface CTypeChainDetails {
   /**
    * The DID of the CType's creator.
    */
-  creator: DidUri
+  creator: Did
   /**
    * The block number in which the CType was created.
    */

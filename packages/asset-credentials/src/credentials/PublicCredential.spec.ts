@@ -12,7 +12,7 @@ import { CType } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import type {
   AssetDidUri,
-  DidUri,
+  Did,
   IAssetClaim,
   IClaimContents,
   IPublicCredential,
@@ -48,7 +48,7 @@ function buildCredential(
     subject: assetDid,
   }
   const credential = PublicCredential.fromClaim(claim)
-  const attester: DidUri = Did.getFullDidUri(devAlice.address)
+  const attester: Did = Did.getFullDidUri(devAlice.address)
   return {
     ...credential,
     attester,

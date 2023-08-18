@@ -8,7 +8,7 @@
 import type { JWTOptions, JWTVerified } from 'did-jwt'
 
 import { JsonSchema } from '@kiltprotocol/utils'
-import type { DidResourceUri, DidUri } from '@kiltprotocol/types'
+import type { DidResourceUri, Did } from '@kiltprotocol/types'
 
 import {
   supportedKeys,
@@ -141,7 +141,7 @@ export function assertHolderCanPresentCredentials({
   holder,
   verifiableCredential,
 }: {
-  holder: DidUri
+  holder: Did
   verifiableCredential: VerifiableCredential[] | VerifiableCredential
 }): void {
   const credentials = Array.isArray(verifiableCredential)
@@ -171,7 +171,7 @@ export function assertHolderCanPresentCredentials({
  */
 export function create(
   VCs: VerifiableCredential[],
-  holder: DidUri,
+  holder: Did,
   {
     validFrom,
     validUntil,

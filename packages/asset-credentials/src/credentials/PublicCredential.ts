@@ -9,7 +9,7 @@ import type { AccountId } from '@polkadot/types/interfaces'
 import type { PublicCredentialsCredentialsCredential } from '@kiltprotocol/augment-api'
 import type {
   HexString,
-  DidUri,
+  Did,
   IAssetClaim,
   ICType,
   IDelegationNode,
@@ -38,7 +38,7 @@ import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
  */
 export function getIdForCredential(
   credential: IPublicCredentialInput,
-  attester: DidUri
+  attester: Did
 ): HexString {
   const api = ConfigService.get('api')
 

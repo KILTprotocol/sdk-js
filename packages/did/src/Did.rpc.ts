@@ -22,7 +22,7 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidUri,
+  Did,
   DidVerificationKey,
   KiltAddress,
   UriFragment,
@@ -37,7 +37,7 @@ import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
 import { getFullDidUri } from './Did.utils.js'
 
-function fromChain(encoded: AccountId32): DidUri {
+function fromChain(encoded: AccountId32): Did {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 

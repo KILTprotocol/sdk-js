@@ -18,7 +18,7 @@ import {
 import type {
   ConformingDidDocument,
   ConformingDidKey,
-  DidUri,
+  Did,
   ICType,
 } from '@kiltprotocol/types'
 
@@ -79,7 +79,7 @@ export const kiltContextsLoader: DocumentLoader = async (url) => {
 }
 
 export const kiltDidLoader: DocumentLoader = async (url) => {
-  const { did } = parse(url as DidUri)
+  const { did } = parse(url as Did)
   const { didDocument, didResolutionMetadata } = await resolveCompliant(did)
   if (didResolutionMetadata.error) {
     throw new Error(

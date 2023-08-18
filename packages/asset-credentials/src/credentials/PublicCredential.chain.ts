@@ -11,7 +11,7 @@ import type {
   IDelegationNode,
   IPublicCredentialInput,
   IPublicCredential,
-  DidUri,
+  Did,
   HexString,
 } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
@@ -87,7 +87,7 @@ export interface PublicCredentialEntry {
   /**
    * DID URI of the attester.
    */
-  attester: DidUri
+  attester: Did
   /**
    * Flag indicating whether the credential is currently revoked.
    */

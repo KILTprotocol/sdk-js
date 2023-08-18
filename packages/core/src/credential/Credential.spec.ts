@@ -15,7 +15,7 @@ import type {
   DidDocument,
   DidResourceUri,
   DidSignature,
-  DidUri,
+  Did,
   DidVerificationKey,
   IAttestation,
   IClaim,
@@ -46,7 +46,7 @@ const testCType = CType.fromProperties('Credential', {
 })
 
 function buildCredential(
-  claimerDid: DidUri,
+  claimerDid: Did,
   contents: IClaimContents,
   legitimations: ICredential[]
 ): ICredential {
@@ -456,7 +456,7 @@ describe('Presentations', () => {
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
   async function buildPresentation(
     claimer: DidDocument,
-    attesterDid: DidUri,
+    attesterDid: Did,
     contents: IClaim['contents'],
     legitimations: ICredential[],
     sign: SignCallback
@@ -629,7 +629,7 @@ describe('Presentations', () => {
       signCallback: keyAlice.getSignCallback(identityAlice),
     })
     // but replace signer key reference with authentication key of light did
-    presentation.claimerSignature.keyUri = `${identityDave.uri}${identityDave.authentication[0].id}`
+    presentation.claimerSignature.verificationMethodUrl = `${identityDave.uri}${identityDave.authentication[0].id}`
 
     // signature would check out but mismatch should be detected
     await expect(
