@@ -7,10 +7,11 @@
 
 /// <reference lib="dom" />
 
-import { GenericContainer, Wait, StartedTestContainer } from 'testcontainers'
+import type { StartedTestContainer } from 'testcontainers'
 import { test, expect } from '@playwright/test'
 import url from 'url'
 import path from 'path'
+import { getStartedTestContainer } from '../integration/utils.js'
 
 declare global {
   interface Window {
@@ -24,13 +25,7 @@ const WS_PORT = 9944
 
 test.beforeAll(async () => {
   // start dev node with testcontainers
-  testcontainer = await new GenericContainer(
-    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node:latest'
-  )
-    .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
-    .withExposedPorts({ container: WS_PORT, host: WS_PORT })
-    .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
-    .start()
+  testcontainer = await getStartedTestContainer(WS_PORT)
 })
 
 test('html bundle integration test', async ({ page }) => {
