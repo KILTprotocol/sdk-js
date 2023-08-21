@@ -34,22 +34,36 @@ const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 const WS_PORT = 9944
 
 async function getStartedTestContainer(): Promise<StartedTestContainer> {
-  try {
-    const image =
-      process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
-    console.log(`using testcontainer with image ${image}`)
-    const testcontainer = new GenericContainer(image)
-      .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
-      .withExposedPorts(WS_PORT)
-      .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
-    const started = await testcontainer.start()
-    return started
-  } catch (error) {
-    console.error(
-      'Could not start the docker container via testcontainers, run with DEBUG=testcontainers* to debug'
-    )
-    throw error
+  const image =
+    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+  console.log(`using testcontainer with image ${image}`)
+  const strategies = [
+    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
+    ['--dev', '--rpc-external', `--rpc-port=${WS_PORT}`],
+  ]
+  // eslint-disable-next-line no-plusplus
+  for (let strategy = 0; strategy < strategies.length; strategy++) {
+    console.log(`attempting to launch container using strategy ${strategy}`)
+    try {
+      const testcontainer = new GenericContainer(image)
+        .withCommand(strategies[strategy])
+        .withExposedPorts(WS_PORT)
+        .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
+      // eslint-disable-next-line no-await-in-loop
+      const started = await testcontainer.start()
+      console.log('container started and ready')
+      return started
+    } catch (error) {
+      console.warn(
+        'Failed to start container due to the following error:\n',
+        error
+      )
+    }
   }
+  console.error(
+    'Could not start the docker container via testcontainers, run with DEBUG=testcontainers* to debug'
+  )
+  throw new Error('CONTAINER LAUNCH ERROR')
 }
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
@@ -69,7 +83,7 @@ export async function initializeApi(): Promise<ApiPromise> {
     return buildConnection(TEST_WS_ADDRESS)
   }
   const started = await getStartedTestContainer()
-  const port = started.getMappedPort(9944)
+  const port = started.getMappedPort(WS_PORT)
   const host = started.getHost()
   const WS_ADDRESS = `ws://${host}:${port}`
   console.log(`connecting to test container at ${WS_ADDRESS}`)
