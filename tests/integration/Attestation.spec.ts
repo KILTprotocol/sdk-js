@@ -363,7 +363,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       })
 
       expect(() =>
-        Attestation.verifyAgainstCredential(attestation, fakeCredential)
+        Credential.verifyAgainstAttestation(attestation, fakeCredential)
       ).toThrow()
     }, 15_000)
 
@@ -541,10 +541,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       expect(storedAttAuthorized.revoked).toBe(false)
 
       expect(() =>
-        Attestation.verifyAgainstCredential(licenseGranted, credential2)
+        Credential.verifyAgainstAttestation(licenseGranted, credential2)
       ).not.toThrow()
       expect(() =>
-        Attestation.verifyAgainstCredential(
+        Credential.verifyAgainstAttestation(
           licenseAuthorizationGranted,
           credential1
         )

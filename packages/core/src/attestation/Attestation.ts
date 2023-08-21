@@ -14,7 +14,6 @@ import type {
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import * as Credential from '../credential/index.js'
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
@@ -121,38 +120,4 @@ export function isIAttestation(input: unknown): input is IAttestation {
     return false
   }
   return true
-}
-
-/**
- * Verifies whether the data of the given attestation matches the one from the corresponding credential. It is valid if:
- * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
- * and
- * * the hash of the [[Credential]] object, and the hash of the [[Attestation]].
- *
- * @param attestation - The attestation to verify.
- * @param credential - The credential to verify against.
- */
-export function verifyAgainstCredential(
-  attestation: IAttestation,
-  credential: ICredential
-): void {
-  const credentialMismatch =
-    credential.claim.cTypeHash !== attestation.cTypeHash
-  const ctypeMismatch = credential.rootHash !== attestation.claimHash
-  const delegationMismatch =
-    credential.delegationId !== attestation.delegationId
-  if (credentialMismatch || ctypeMismatch || delegationMismatch) {
-    throw new SDKErrors.CredentialUnverifiableError(
-      `Some attributes of the on-chain attestation diverge from the credential: ${[
-        'cTypeHash',
-        'delegationId',
-        'claimHash',
-      ]
-        .filter(
-          (_, i) => [ctypeMismatch, delegationMismatch, credentialMismatch][i]
-        )
-        .join(', ')}`
-    )
-  }
-  Credential.verifyDataIntegrity(credential)
 }
