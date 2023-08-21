@@ -26,14 +26,16 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
-import { makeSigningKeyTool } from '../testUtils/index.js'
+import { makeSigningKeyTool } from '../testUtils/TestUtils.js'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
 const WS_PORT = 9944
 
-async function getStartedTestContainer(): Promise<StartedTestContainer> {
+export async function getStartedTestContainer(
+  hostPort?: number
+): Promise<StartedTestContainer> {
   const image =
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
   console.log(`using testcontainer with image ${image}`)
@@ -47,7 +49,11 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
     try {
       const testcontainer = new GenericContainer(image)
         .withCommand(strategies[strategy])
-        .withExposedPorts(WS_PORT)
+        .withExposedPorts(
+          typeof hostPort === 'number'
+            ? { host: hostPort, container: WS_PORT }
+            : WS_PORT
+        )
         .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
       // eslint-disable-next-line no-await-in-loop
       const started = await testcontainer.start()
