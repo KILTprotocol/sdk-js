@@ -509,8 +509,8 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
-    const ctype = CType.fromProperties(UUID.generate(), {})
-    const call = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = CType.fromProperties(UUID.generate(), {})
+    const call = api.tx.ctype.add(CType.toChain(cType))
     const tx = await Did.authorizeTx(
       did.uri,
       call,
@@ -519,7 +519,7 @@ describe('DID authorization', () => {
     )
     await submitTx(tx, paymentAccount)
 
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+    await expect(CType.verifyStored(cType)).resolves.not.toThrow()
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
@@ -536,8 +536,8 @@ describe('DID authorization', () => {
     )
     await submitTx(tx, paymentAccount)
 
-    const ctype = CType.fromProperties(UUID.generate(), {})
-    const call = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = CType.fromProperties(UUID.generate(), {})
+    const call = api.tx.ctype.add(CType.toChain(cType))
     const tx2 = await Did.authorizeTx(
       did.uri,
       call,
@@ -549,7 +549,7 @@ describe('DID authorization', () => {
       name: expect.stringMatching(/^(DidNotPresent|NotFound)$/),
     })
 
-    await expect(CType.verifyStored(ctype)).rejects.toThrow()
+    await expect(CType.verifyStored(cType)).rejects.toThrow()
   }, 60_000)
 })
 
@@ -1007,12 +1007,12 @@ describe('DID extrinsics batching', () => {
   }, 50_000)
 
   it('simple batch succeeds despite failures of some extrinsics', async () => {
-    const ctype = CType.fromProperties(UUID.generate(), {})
-    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = CType.fromProperties(UUID.generate(), {})
+    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(cType))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
-      cTypeHash: CType.idToHash(ctype.$id),
+      cTypeHash: CType.idToHash(cType.$id),
     })
     const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
@@ -1033,16 +1033,16 @@ describe('DID extrinsics batching', () => {
     await submitTx(tx, paymentAccount)
 
     // The ctype has been created, even though the delegation operations failed.
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+    await expect(CType.verifyStored(cType)).resolves.not.toThrow()
   })
 
   it('batchAll fails if any extrinsics fail', async () => {
-    const ctype = CType.fromProperties(UUID.generate(), {})
-    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = CType.fromProperties(UUID.generate(), {})
+    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(cType))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
-      cTypeHash: CType.idToHash(ctype.$id),
+      cTypeHash: CType.idToHash(cType.$id),
     })
     const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
@@ -1066,7 +1066,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The ctype has not been created, since atomicity ensures the whole batch is reverted in case of failure.
-    await expect(CType.verifyStored(ctype)).rejects.toThrow()
+    await expect(CType.verifyStored(cType)).rejects.toThrow()
   })
 
   it('can batch extrinsics for the same required key type', async () => {

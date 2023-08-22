@@ -346,7 +346,7 @@ export function fromICredential(
 export type CTypeLoader = (id: ICType['$id']) => Promise<ICType>
 
 const loadCType: CTypeLoader = async (id) => {
-  return (await CType.fetchFromChain(id)).ctype
+  return (await CType.fetchFromChain(id)).cType
 }
 
 /**

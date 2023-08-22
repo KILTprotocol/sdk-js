@@ -112,9 +112,9 @@ export function addressFromRandom(): KiltAddress {
   return makeSigningKeyTool('ed25519').keypair.address
 }
 
-export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
+export async function isCtypeOnChain(cType: ICType): Promise<boolean> {
   try {
-    await CType.verifyStored(ctype)
+    await CType.verifyStored(cType)
     return true
   } catch {
     return false

@@ -159,7 +159,7 @@ module.exports = {
       },
     },
     {
-      files: ['tests/**/*', 'packages/testing/**/*'],
+      files: ['tests/**/*'],
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',
