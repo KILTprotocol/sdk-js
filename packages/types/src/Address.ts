@@ -5,10 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Prefix } from '@polkadot/util-crypto/address/types'
-import type { HexString } from '@polkadot/util/types'
 import '@polkadot/keyring' // TS needs this for the augmentation below
-import type { KeyringPair } from './index.js'
+
+import type { HexString, KeyringPair, Prefix } from './Imported'
 
 export interface KiltEncryptionKeypair {
   secretKey: Uint8Array

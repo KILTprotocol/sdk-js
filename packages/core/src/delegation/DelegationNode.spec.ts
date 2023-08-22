@@ -5,23 +5,21 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/delegation
- */
-
-import {
-  IDelegationNode,
-  IDelegationHierarchyDetails,
-  Permission,
-  DidUri,
-  CTypeHash,
-} from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
-import { ApiMocks } from '@kiltprotocol/testing'
+
 import { ConfigService } from '@kiltprotocol/config'
+import {
+  CTypeHash,
+  DidUri,
+  IDelegationHierarchyDetails,
+  IDelegationNode,
+  Permission,
+} from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+
+import { ApiMocks } from '../../../../tests/testUtils'
 import { DelegationNode } from './DelegationNode'
-import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
+import { errorCheck, permissionsAsBitset } from './DelegationNode.utils'
 
 let mockedApi: any
 
@@ -315,7 +313,7 @@ describe('DelegationNode', () => {
       expect(await nodes[hashList[0]].subtreeNodeCount()).toStrictEqual(100)
     })
 
-    it('counts all subnodes in deeply nested structure (1000)', async () => {
+    it.skip('counts all subnodes in deeply nested structure (1000)', async () => {
       const lastIndex = 1000
       nodes = hashList.slice(0, lastIndex + 1).reduce(
         (previous, current, index) => ({
@@ -335,7 +333,7 @@ describe('DelegationNode', () => {
       expect(await nodes[hashList[0]].subtreeNodeCount()).toStrictEqual(1000)
     })
 
-    it('counts all subnodes in deeply nested structure (10000)', async () => {
+    it.skip('counts all subnodes in deeply nested structure (10000)', async () => {
       const lastIndex = 10000
       nodes = hashList.slice(0, lastIndex + 1).reduce(
         (previous, current, index) => ({

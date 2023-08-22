@@ -72,13 +72,13 @@ export function toCredentialIRI(rootHash: string): string {
  *
  * @param input The credential to transform.
  * @param attestation The attestation corresponding to the credential.
- * @param ctype (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
+ * @param cType (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
  * @returns The VC representation of the KILT credential and optionally its CType.
  */
 export function fromCredentialAndAttestation(
   input: ICredential | ICredentialPresentation,
   attestation: IAttestation,
-  ctype?: ICType
+  cType?: ICType
 ): VerifiableCredential {
   const { claimHashes, legitimations, delegationId, rootHash, claim } = input
 
@@ -99,12 +99,12 @@ export function fromCredentialAndAttestation(
 
   // if ctype is given, add as credential schema
   let credentialSchema: CredentialSchema | undefined
-  if (ctype) {
+  if (cType) {
     credentialSchema = {
-      '@id': ctype.$id,
+      '@id': cType.$id,
       '@type': JSON_SCHEMA_TYPE,
-      name: ctype.title,
-      schema: ctype,
+      name: cType.title,
+      schema: cType,
     }
   }
 

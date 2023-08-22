@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/ConfigService
- */
-
 /* eslint-disable dot-notation */
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { LogLevel, Logger } from 'typescript-logging'
@@ -24,7 +20,7 @@ describe('Log Configuration', () => {
   it('Tests the default Log Level', () => {
     if (process.env.DEBUG === 'true') {
       expect(testLogger.getLogLevel()).toEqual(LogLevel.Debug)
-    } else expect(testLogger.getLogLevel()).toEqual(LogLevel.Error)
+    } else expect(testLogger.getLogLevel()).toEqual(LogLevel.Warn)
   })
 
   it('modifies the Log Level of all Loggers to the desired Level', () => {
@@ -44,7 +40,7 @@ describe('Log Configuration', () => {
 
 describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
-    expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
+    expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
     expect(() => ConfigService.get('api')).toThrowErrorMatchingInlineSnapshot(
       `"The blockchain API is not set. Did you forget to call \`Kilt.connect(…)\` or \`Kilt.init(…)\`?"`
     )

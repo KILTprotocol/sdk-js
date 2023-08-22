@@ -118,8 +118,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-master', 'latest-develop', 'latest']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
+        include:
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -161,9 +164,14 @@ jobs:
         with:
           image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
 
-      - name: run integration tests
+      - name: run integration tests (cjs)
         timeout-minutes: 60
-        run: yarn test:integration:ci
+        run: yarn test:integration -b
+      
+      - name: run integration tests (esm)
+        timeout-minutes: 60
+        run: yarn test:integration:esm -b
+
 
   bundle_cache:
     runs-on: ubuntu-latest
@@ -193,11 +201,11 @@ jobs:
     needs: [cache_imgs, bundle_cache]
     strategy:
       matrix:
-        image: ['latest-master', 'latest']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
         include:
           - image: 'latest-develop'
-            required: 'required'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:

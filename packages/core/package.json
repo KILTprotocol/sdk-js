@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/core",
-  "version": "0.33.1",
+  "version": "0.34.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -30,7 +30,6 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@kiltprotocol/testing": "workspace:*",
     "@types/uuid": "^8.0.0",
     "rimraf": "^3.0.2",
     "testcontainers": "^9.0.0",

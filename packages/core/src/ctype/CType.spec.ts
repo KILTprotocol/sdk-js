@@ -5,14 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/ctype
- */
-
-import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { ApiMocks } from '@kiltprotocol/testing'
 import type { ICType } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as Claim from '../claim'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeModelDraft01 } from './CType.schemas'
@@ -441,13 +438,13 @@ describe.each([[cTypeDraft01], [cTypeV1]])(
 )
 
 describe('CType registration verification', () => {
-  const ctype = CType.fromProperties('CtypeModel 2', {
+  const cType = CType.fromProperties('CtypeModel 2', {
     name: { type: 'string' },
   })
 
   describe('when CType is not registered', () => {
     it('does not verify registration when not registered', async () => {
-      await expect(CType.verifyStored(ctype)).rejects.toThrow()
+      await expect(CType.verifyStored(cType)).rejects.toThrow()
     })
   })
 
@@ -457,15 +454,15 @@ describe('CType registration verification', () => {
     })
 
     it('verifies registration when owner not set', async () => {
-      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+      await expect(CType.verifyStored(cType)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner matches', async () => {
-      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+      await expect(CType.verifyStored(cType)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner does not match', async () => {
-      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+      await expect(CType.verifyStored(cType)).resolves.not.toThrow()
     })
   })
 })

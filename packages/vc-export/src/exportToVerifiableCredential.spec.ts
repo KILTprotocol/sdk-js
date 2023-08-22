@@ -5,33 +5,31 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/vc-export
- */
+import { base58Encode } from '@polkadot/util-crypto'
+import type { DocumentLoader } from 'jsonld-signatures'
 
-import {
+import { Attestation } from '@kiltprotocol/core'
+import * as Did from '@kiltprotocol/did'
+import type {
   DidUri,
   IAttestation,
   ICType,
   ICredential,
   ICredentialPresentation,
 } from '@kiltprotocol/types'
-import { Attestation } from '@kiltprotocol/core'
-import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { ApiMocks } from '@kiltprotocol/testing'
-import type { DocumentLoader } from 'jsonld-signatures'
-import { base58Encode } from '@polkadot/util-crypto'
-import * as toVC from './exportToVerifiableCredential'
-import * as verificationUtils from './verificationUtils'
-import * as presentationUtils from './presentationUtils'
-import type { IPublicKeyRecord, VerifiableCredential } from './types'
+
+import { ApiMocks } from '../../../tests/testUtils'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
+import * as toVC from './exportToVerifiableCredential'
+import * as presentationUtils from './presentationUtils'
+import type { IPublicKeyRecord, VerifiableCredential } from './types'
+import * as verificationUtils from './verificationUtils'
 
 jest.mock('@kiltprotocol/core', () => ({
   ...jest.requireActual('@kiltprotocol/core'),
@@ -40,7 +38,7 @@ jest.mock('@kiltprotocol/core', () => ({
 
 const mockedApi: any = ApiMocks.getMockedApi()
 
-const ctype: ICType = {
+const cType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'membership',
   properties: {
@@ -144,20 +142,20 @@ it('exports credential to VC', () => {
 
 it('exports includes ctype as schema', () => {
   expect(
-    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+    toVC.fromCredentialAndAttestation(credential, attestation, cType)
   ).toMatchObject({
     credentialSchema: {
-      '@id': ctype.$id,
-      name: ctype.title,
+      '@id': cType.$id,
+      name: cType.title,
       '@type': 'JsonSchemaValidator2018',
-      schema: ctype,
+      schema: cType,
     },
   })
 })
 
 it('VC has correct format (full example)', () => {
   expect(
-    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+    toVC.fromCredentialAndAttestation(credential, attestation, cType)
   ).toMatchObject({
     '@context': [
       DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -263,7 +261,7 @@ describe('proofs', () => {
     const VCWithSchema = toVC.fromCredentialAndAttestation(
       credential,
       attestation,
-      ctype
+      cType
     )
     const result = verificationUtils.validateSchema(VCWithSchema)
     expect(result.errors).toEqual([])
@@ -348,7 +346,7 @@ describe('proofs', () => {
 
   describe('negative tests', () => {
     beforeEach(() => {
-      VC = toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+      VC = toVC.fromCredentialAndAttestation(credential, attestation, cType)
     })
 
     it('errors on proof mismatch', async () => {

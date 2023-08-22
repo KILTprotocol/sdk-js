@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["packages/**/*", "jest-setup/*"],
+  "include": ["packages/**/*"],
   "typedocOptions": {
     "entryPointStrategy": "resolve",
     "entryPoints": [
@@ -31,7 +31,6 @@
     "excludePrivate": true,
     "hideGenerator": true,
     "name": "API Documentation",
-    "listInvalidSymbolLinks": true,
     "readme": "README.md"
   }
 }

@@ -5,10 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/publicCredential
- */
+import { BN } from '@polkadot/util'
 
+import { ConfigService } from '@kiltprotocol/config'
+import * as Did from '@kiltprotocol/did'
 import type {
   AssetDidUri,
   DidUri,
@@ -16,12 +16,9 @@ import type {
   IClaimContents,
   IPublicCredential,
 } from '@kiltprotocol/types'
-
-import { BN } from '@polkadot/util'
-import { ApiMocks } from '@kiltprotocol/testing'
 import { Crypto } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import * as Did from '@kiltprotocol/did'
+
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
 import { verifyAgainstCType } from './PublicCredential'

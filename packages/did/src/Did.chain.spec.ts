@@ -5,13 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @group unit/did
- */
-
 import { ConfigService } from '@kiltprotocol/config'
-import { ApiMocks } from '@kiltprotocol/testing'
 
+import { ApiMocks } from '../../../tests/testUtils'
 import { serviceToChain } from './Did.chain'
 
 let api: any
