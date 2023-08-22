@@ -32,10 +32,12 @@ test('html bundle integration test', async ({ page }) => {
   const fileUrl = url.pathToFileURL(
     path.join(__dirname, 'bundle-test.html')
   ).href
+
   page.on('pageerror', (exception) => {
     console.error(exception)
     throw new Error('-1')
   })
+
   page.on('console', async (msg) => {
     console.log(msg.text())
   })

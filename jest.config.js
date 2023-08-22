@@ -2,7 +2,7 @@ const common = {
   testEnvironment: 'node',
   clearMocks: true,
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
-  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
   transform: {
     "\\.js$": ["babel-jest", { root: './' }],
     "\\.ts$": "ts-jest"
@@ -39,7 +39,7 @@ const common = {
     '.chain.ts',
     'SDKErrors.ts',
     'Did.rpc.ts',
-    'packages/core/src/utils.ts',
+    'packages/utils/src/Chain.ts',
     // third party code copied to this repo
     'packages/utils/src/json-schema/',
     'jsonabc.ts',

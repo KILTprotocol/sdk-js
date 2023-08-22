@@ -34,6 +34,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@digitalbazaar/security-context": "^1.0.0",
     "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",

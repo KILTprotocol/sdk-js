@@ -112,10 +112,18 @@ describe('When exporting a DID Document from a full DID', () => {
           publicKeyBase58: '11111111111111111111111111111111',
         },
       ],
-      authentication: ['#auth'],
-      keyAgreement: ['#enc'],
-      assertionMethod: ['#att'],
-      capabilityDelegation: ['#del'],
+      authentication: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
+      ],
+      keyAgreement: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
+      ],
+      assertionMethod: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#att',
+      ],
+      capabilityDelegation: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#del',
+      ],
       service: [
         {
           id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1',
@@ -167,10 +175,18 @@ describe('When exporting a DID Document from a full DID', () => {
           publicKeyBase58: '11111111111111111111111111111111',
         },
       ],
-      authentication: ['#auth'],
-      keyAgreement: ['#enc'],
-      assertionMethod: ['#att'],
-      capabilityDelegation: ['#del'],
+      authentication: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
+      ],
+      keyAgreement: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
+      ],
+      assertionMethod: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#att',
+      ],
+      capabilityDelegation: [
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#del',
+      ],
       service: [
         {
           id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1',
@@ -213,11 +229,11 @@ describe('When exporting a DID Document from a light DID', () => {
     expect(didDoc).toMatchInlineSnapshot(`
       {
         "authentication": [
-          "#authentication",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
         ],
         "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
         "keyAgreement": [
-          "#encryption",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
         ],
         "service": [
           {
@@ -267,11 +283,11 @@ describe('When exporting a DID Document from a light DID', () => {
           "ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW",
         ],
         "authentication": [
-          "#authentication",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
         ],
         "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
         "keyAgreement": [
-          "#encryption",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
         ],
         "service": [
           {

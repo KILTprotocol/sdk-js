@@ -5,77 +5,156 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+
 export const context = {
   '@context': {
     '@version': 1.1,
     '@protected': true,
+
+    kilt: `${KILT_CREDENTIAL_CONTEXT_URL}#`,
     cred: 'https://www.w3.org/2018/credentials#',
-    kiltCred: 'https://www.kilt.io/contexts/credentials#',
     sec: 'https://w3id.org/security#',
     xsd: 'http://www.w3.org/2001/XMLSchema#',
-    verificationMethod: {
-      '@id': 'sec:verificationMethod',
-      '@type': '@id',
-    },
-    publicKeyHex: {
-      '@id': 'sec:publicKeyHex',
-    },
-    proofPurpose: {
-      '@id': 'sec:proofPurpose',
-      '@type': '@vocab',
-      '@context': {
-        '@vocab': 'sec',
-      },
-    },
-    KiltCredential2020: {
-      '@id': 'kiltCred:KiltCredential',
+    KiltCredentialV1: {
+      '@id': 'kilt:KiltCredentialV1',
       '@context': {
         '@version': 1.1,
         '@protected': true,
-        delegationId: {
-          '@id': 'kiltCred:delegationId',
-        },
-        legitimationIds: {
-          '@id': 'kiltCred:legitimationIds',
-          '@type': '@id',
-          '@container': '@set',
-        },
         nonTransferable: {
           '@id': 'cred:nonTransferable',
           '@type': 'xsd:boolean',
         },
       },
     },
-    KILTSelfSigned2020: {
-      '@id': 'kiltCred:KILTSelfSigned2020',
+    KiltAttestationProofV1: {
+      '@id': 'kilt:KiltAttestationProofV1',
       '@context': {
         '@version': 1.1,
         '@protected': true,
-        signature: 'sec:proofValue',
+
+        id: '@id',
+        type: '@type',
+
+        block: { '@id': 'kilt:blockHash' },
+        commitments: { '@id': 'kilt:commitments', '@container': '@set' },
+        salt: { '@id': 'kilt:salt', '@container': '@list' },
       },
     },
-    Ed25519VerificationKey2018: 'sec:Ed25519VerificationKey2018',
-    KILTAttestation2020: {
-      '@id': 'kiltCred:KILTAttestation2020',
+    KiltRevocationStatusV1: {
+      '@id': 'kilt:KiltRevocationStatusV1',
       '@context': {
         '@version': 1.1,
         '@protected': true,
-        attester: 'cred:issuer',
+
+        id: '@id',
+        type: '@type',
       },
     },
-    KILTCredentialDigest2020: {
-      '@id': 'kiltCred:KILTCredentialDigest2020',
+    federatedTrustModel: {
+      '@id': 'kilt:federatedTrustModel',
+      '@type': '@id',
+      '@container': '@set',
+    },
+    KiltAttesterLegitimationV1: {
+      '@id': 'kilt:KiltAttesterLegitimationV1',
       '@context': {
         '@version': 1.1,
         '@protected': true,
-        claimHashes: {
-          '@id': 'kiltCred:KILTCredentialDigest2020#claimHashes',
-          '@container': '@set',
+
+        id: '@id',
+        type: '@type',
+
+        verifiableCredential: {
+          '@id': 'cred:verifiableCredential',
+          '@type': '@id',
+          '@container': '@graph',
         },
-        nonces: {
-          '@id': 'kiltCred:KILTCredentialDigest2020#nonces',
-          '@container': '@index',
+      },
+    },
+    KiltAttesterDelegationV1: {
+      '@id': 'kilt:KiltAttesterDelegationV1',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
+        type: '@type',
+
+        delegators: {
+          '@id': 'kilt:delegators',
+          '@type': '@id',
+          '@container': '@list',
         },
+      },
+    },
+    Sr25519Signature2020: {
+      '@id': 'kilt:Sr25519Signature2020',
+      '@context': {
+        '@protected': true,
+        id: '@id',
+        type: '@type',
+        challenge: 'https://w3id.org/security#challenge',
+        created: {
+          '@id': 'http://purl.org/dc/terms/created',
+          '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+        },
+        domain: 'https://w3id.org/security#domain',
+        expires: {
+          '@id': 'https://w3id.org/security#expiration',
+          '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+        },
+        nonce: 'https://w3id.org/security#nonce',
+        proofPurpose: {
+          '@id': 'https://w3id.org/security#proofPurpose',
+          '@type': '@vocab',
+          '@context': {
+            '@protected': true,
+            id: '@id',
+            type: '@type',
+            assertionMethod: {
+              '@id': 'https://w3id.org/security#assertionMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            authentication: {
+              '@id': 'https://w3id.org/security#authenticationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            capabilityInvocation: {
+              '@id': 'https://w3id.org/security#capabilityInvocationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            capabilityDelegation: {
+              '@id': 'https://w3id.org/security#capabilityDelegationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            keyAgreement: {
+              '@id': 'https://w3id.org/security#keyAgreementMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+          },
+        },
+        jws: {
+          '@id': 'https://w3id.org/security#jws',
+        },
+        verificationMethod: {
+          '@id': 'https://w3id.org/security#verificationMethod',
+          '@type': '@id',
+        },
+      },
+    },
+    JsonSchema2023: {
+      '@id': 'https://www.w3.org/ns/credentials#JsonSchema2023',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
       },
     },
   },

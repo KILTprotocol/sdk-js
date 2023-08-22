@@ -15,7 +15,7 @@ import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { Chain as ChainUtils, SDKErrors } from '@kiltprotocol/utils'
 
 import {
   getHashForSchema,
@@ -24,7 +24,6 @@ import {
   serializeForHash,
   verifyDataStructure,
 } from './CType.js'
-import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -123,7 +122,7 @@ function extractCTypeCreationCallsFromDidCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.ctype.add.args>> {
-  const extrinsicCalls = flattenCalls(api, call)
+  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
       api.tx.ctype.add.is(c)
@@ -135,7 +134,7 @@ function extractDidCallsFromBatchCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
-  const extrinsicCalls = flattenCalls(api, call)
+  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
       api.tx.did.submitDidCall.is(c)
@@ -162,7 +161,7 @@ export async function fetchFromChain(
       'Cannot fetch CType definitions on a chain that does not store the createdAt block'
     )
 
-  const extrinsic = await retrieveExtrinsicFromBlock(
+  const extrinsic = await ChainUtils.retrieveExtrinsicFromBlock(
     api,
     createdAt,
     ({ events }) =>
@@ -179,7 +178,10 @@ export async function fetchFromChain(
     )
   }
 
-  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
+  if (
+    !ChainUtils.isBatch(api, extrinsic) &&
+    !api.tx.did.submitDidCall.is(extrinsic)
+  ) {
     throw new SDKErrors.PublicCredentialError(
       'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
     )
@@ -187,7 +189,7 @@ export async function fetchFromChain(
 
   // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
   // otherwise the extrinsic is itself a submit_did_call, so just take it.
-  const didCalls = isBatch(api, extrinsic)
+  const didCalls = ChainUtils.isBatch(api, extrinsic)
     ? extrinsic.args[0].flatMap((batchCall) =>
         extractDidCallsFromBatchCall(api, batchCall)
       )
