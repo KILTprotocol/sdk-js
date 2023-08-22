@@ -43,12 +43,12 @@ export async function getStartedTestContainer(
     ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
     ['--dev', '--rpc-external', `--rpc-port=${WS_PORT}`],
   ]
-  // eslint-disable-next-line no-plusplus
-  for (let strategy = 0; strategy < strategies.length; strategy++) {
-    console.log(`attempting to launch container using strategy ${strategy}`)
+  // eslint-disable-next-line no-restricted-syntax
+  for (const args of strategies) {
+    console.log(`attempting to launch container with arguments ${args}`)
     try {
       const testcontainer = new GenericContainer(image)
-        .withCommand(strategies[strategy])
+        .withCommand(args)
         .withExposedPorts(
           typeof hostPort === 'number'
             ? { host: hostPort, container: WS_PORT }
