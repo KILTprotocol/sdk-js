@@ -10,7 +10,7 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { Types, constants } from '@kiltprotocol/core'
+import { KiltCredentialV1, Types } from '@kiltprotocol/core'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'
@@ -33,7 +33,7 @@ const LinkedDataSignature = jsigs.suites.LinkedDataSignature as {
   }
 }
 
-const SUITE_CONTEXT_URL = constants.KILT_CREDENTIAL_CONTEXT_URL
+const SUITE_CONTEXT_URL = KiltCredentialV1.CONTEXT_URL
 // multibase base58-btc header
 const MULTIBASE_BASE58BTC_HEADER = 'z'
 

@@ -8,7 +8,7 @@
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
-import { Types, constants, init } from '@kiltprotocol/core'
+import { Types, init, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
@@ -97,7 +97,7 @@ it('issues and verifies a signed credential', async () => {
   const attestationSigner = new Sr25519Signature2020({ signer })
 
   const credential = {
-    '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL] as any,
+    '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
     type: ['VerifiableCredential'],
     credentialSubject: ingosCredential.credentialSubject,
     issuer: ingosCredential.credentialSubject.id,

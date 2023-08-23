@@ -16,12 +16,13 @@ import { Caip2, SDKErrors } from '@kiltprotocol/utils'
 
 import * as CType from '../ctype/index.js'
 import * as Attestation from '../attestation/index.js'
-import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
 import {
   assertMatchingConnection,
   getDelegationNodeIdForCredential,
 } from './common.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
+
+export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -36,9 +37,9 @@ export async function check(
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   const { credentialStatus } = credential
-  if (credentialStatus?.type !== KILT_REVOCATION_STATUS_V1_TYPE)
+  if (credentialStatus?.type !== STATUS_TYPE)
     throw new TypeError(
-      `The credential must have a credentialStatus of type ${KILT_REVOCATION_STATUS_V1_TYPE}`
+      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
     )
   const { api = ConfigService.get('api') } = opts
   const { assetNamespace, assetReference, assetInstance } =
@@ -99,6 +100,6 @@ export function fromGenesisAndRootHash(
 
   return {
     id: `${chainId}/kilt:attestation/${base58Encode(rootHash)}`,
-    type: KILT_REVOCATION_STATUS_V1_TYPE,
+    type: STATUS_TYPE,
   }
 }

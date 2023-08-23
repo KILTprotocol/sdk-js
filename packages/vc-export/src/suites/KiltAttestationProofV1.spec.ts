@@ -34,7 +34,7 @@ import {
   KiltAttestationProofV1,
   KiltCredentialV1,
   Types,
-  constants,
+  W3C_CREDENTIAL_CONTEXT_URL,
 } from '@kiltprotocol/core'
 
 import {
@@ -543,19 +543,19 @@ describe('issuance', () => {
     newCred = (await vcjs.issue({
       credential: {
         ...newCred,
-        '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL],
+        '@context': [W3C_CREDENTIAL_CONTEXT_URL],
       },
       suite: issuanceSuite,
       documentLoader,
       purpose,
     })) as Types.KiltCredentialV1
-    expect(newCred['@context']).toContain(constants.KILT_CREDENTIAL_CONTEXT_URL)
+    expect(newCred['@context']).toContain(KiltCredentialV1.CONTEXT_URL)
 
     await expect(
       jsigs.sign(
         {
           ...newCred,
-          '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL],
+          '@context': [W3C_CREDENTIAL_CONTEXT_URL],
         },
         {
           suite: issuanceSuite,

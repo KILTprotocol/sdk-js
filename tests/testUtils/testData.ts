@@ -16,7 +16,11 @@ import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import { KiltCredentialV1, Types, constants } from '@kiltprotocol/core'
+import {
+  KiltCredentialV1,
+  Types,
+  KiltAttestationProofV1,
+} from '@kiltprotocol/core'
 
 import { createAugmentedApi } from './mocks/index.js'
 
@@ -139,7 +143,7 @@ const _credential = JSON.stringify({
     timestamp,
   }),
   proof: {
-    type: constants.ATTESTATION_PROOF_V1_TYPE,
+    type: KiltAttestationProofV1.PROOF_TYPE,
     // `block` field is base58 encoding of block hash
     block: base58Encode(blockHash),
     // `commitments` (claimHashes) are base58 encoded in new format

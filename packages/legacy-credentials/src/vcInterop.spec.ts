@@ -9,11 +9,7 @@ import { u8aConcat, u8aToU8a } from '@polkadot/util'
 import { randomAsU8a } from '@polkadot/util-crypto'
 
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import {
-  KiltAttestationProofV1,
-  KiltCredentialV1,
-  constants,
-} from '@kiltprotocol/core'
+import { KiltAttestationProofV1, KiltCredentialV1 } from '@kiltprotocol/core'
 
 import { ApiMocks } from '../../../tests/testUtils'
 import { calculateRootHash, removeClaimProperties } from './Credential'
@@ -155,8 +151,8 @@ it('exports credential to VC', () => {
     timestamp,
   })
   expect(exported).toMatchObject({
-    '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': KiltCredentialV1.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...KiltCredentialV1.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
@@ -180,8 +176,8 @@ it('VC has correct format (full example)', () => {
       timestamp,
     })
   ).toMatchObject({
-    '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': KiltCredentialV1.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...KiltCredentialV1.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSchema: {
       id: KiltCredentialV1.credentialSchema.$id,
       type: 'JsonSchema2023',

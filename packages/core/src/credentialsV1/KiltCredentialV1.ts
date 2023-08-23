@@ -18,24 +18,18 @@ import type {
 
 import * as CType from '../ctype/index.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
-import {
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
-  JSON_SCHEMA_TYPE,
-  KILT_ATTESTER_DELEGATION_V1_TYPE,
-  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-  KILT_CREDENTIAL_TYPE,
-  W3C_CREDENTIAL_TYPE,
-  spiritnetGenesisHash,
-} from './constants.js'
+import { W3C_CREDENTIAL_CONTEXT_URL, W3C_CREDENTIAL_TYPE } from './constants.js'
 import type {
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
 import {
+  KILT_ATTESTER_DELEGATION_V1_TYPE,
+  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   credentialIdFromRootHash,
   jsonLdExpandCredentialSubject,
+  spiritnetGenesisHash,
 } from './common.js'
 import { CTypeLoader, newCachingCTypeLoader } from '../ctype/CTypeLoader.js'
 
@@ -44,6 +38,35 @@ export {
   credentialIdToRootHash as idToRootHash,
   getDelegationNodeIdForCredential as getDelegationId,
 } from './common.js'
+
+/**
+ * Credential context URL required for Kilt credentials.
+ */
+export const CONTEXT_URL = 'https://www.kilt.io/contexts/credentials'
+/**
+ * Ordered set of credential contexts required on every Kilt VC.
+ */
+export const DEFAULT_CREDENTIAL_CONTEXTS: [
+  typeof W3C_CREDENTIAL_CONTEXT_URL,
+  typeof CONTEXT_URL
+] = [W3C_CREDENTIAL_CONTEXT_URL, CONTEXT_URL]
+/**
+ * Credential type required for Kilt credentials.
+ */
+export const CREDENTIAL_TYPE = 'KiltCredentialV1'
+/**
+ * Set of credential types required on every Kilt VC.
+ */
+export const DEFAULT_CREDENTIAL_TYPES: Array<
+  typeof W3C_CREDENTIAL_TYPE | typeof CREDENTIAL_TYPE
+> = [W3C_CREDENTIAL_TYPE, CREDENTIAL_TYPE]
+
+export const CREDENTIAL_SCHEMA_TYPE = 'JsonSchema2023'
+
+export {
+  KILT_ATTESTER_DELEGATION_V1_TYPE as DELEGATION_TYPE,
+  KILT_ATTESTER_LEGITIMATION_V1_TYPE as LEGITIMATION_TYPE,
+}
 
 export const credentialSchema: JsonSchema.Schema = {
   $id: 'ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z',
@@ -63,7 +86,7 @@ export const credentialSchema: JsonSchema.Schema = {
       maxItems: 3,
       allOf: [
         { contains: { const: W3C_CREDENTIAL_TYPE } },
-        { contains: { const: KILT_CREDENTIAL_TYPE } },
+        { contains: { const: CREDENTIAL_TYPE } },
         { contains: { type: 'string', pattern: '^kilt:ctype:0x[0-9a-f]+$' } },
       ],
     },
@@ -131,7 +154,7 @@ export const credentialSchema: JsonSchema.Schema = {
         },
         type: {
           type: 'string',
-          const: JSON_SCHEMA_TYPE,
+          const: CREDENTIAL_SCHEMA_TYPE,
         },
       },
       required: ['id', 'type'],
@@ -174,17 +197,17 @@ export function validateStructure(
   credential: Omit<KiltCredentialV1, 'proof'>
 ): void {
   if (
-    credential?.credentialSchema?.type !== JSON_SCHEMA_TYPE ||
+    credential?.credentialSchema?.type !== CREDENTIAL_SCHEMA_TYPE ||
     credential?.credentialSchema?.id !== credentialSchema.$id
   ) {
     throw new Error(
-      `A ${KILT_CREDENTIAL_TYPE} type credential must have a credentialSchema of type ${JSON_SCHEMA_TYPE} and id ${credentialSchema.$id}`
+      `A ${CREDENTIAL_TYPE} type credential must have a credentialSchema of type ${CREDENTIAL_SCHEMA_TYPE} and id ${credentialSchema.$id}`
     )
   }
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new SDKErrors.CredentialMalformedError(
-      `Object not matching ${KILT_CREDENTIAL_TYPE} data model`,
+      `Object not matching ${CREDENTIAL_TYPE} data model`,
       {
         cause: errors,
       }
@@ -288,7 +311,7 @@ export function fromInput({
     credentialSubject,
     credentialSchema: {
       id: credentialSchema.$id as string,
-      type: JSON_SCHEMA_TYPE,
+      type: CREDENTIAL_SCHEMA_TYPE,
     },
     ...(claimHash && {
       credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),

@@ -16,18 +16,22 @@ import type {
 } from '@kiltprotocol/types'
 
 import type {
-  ATTESTATION_PROOF_V1_TYPE,
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  JSON_SCHEMA_TYPE,
-  KILT_ATTESTER_DELEGATION_V1_TYPE,
-  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-  KILT_CREDENTIAL_IRI_PREFIX,
-  KILT_CREDENTIAL_TYPE,
-  KILT_REVOCATION_STATUS_V1_TYPE,
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from './constants.js'
+import type { PROOF_TYPE } from './KiltAttestationProofV1.js'
+import type {
+  CREDENTIAL_TYPE,
+  DEFAULT_CREDENTIAL_CONTEXTS,
+  CREDENTIAL_SCHEMA_TYPE,
+} from './KiltCredentialV1.js'
+import type { STATUS_TYPE } from './KiltRevocationStatusV1.js'
+import type {
+  KILT_CREDENTIAL_IRI_PREFIX,
+  KILT_ATTESTER_DELEGATION_V1_TYPE,
+  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+} from './common.js'
 
 export type IPublicKeyRecord = ConformingDidKey
 
@@ -100,7 +104,7 @@ export interface VerifiablePresentation {
 }
 
 export interface KiltAttestationProofV1 extends Proof {
-  type: typeof ATTESTATION_PROOF_V1_TYPE
+  type: typeof PROOF_TYPE
   block: string
   commitments: string[]
   salt: string[]
@@ -108,12 +112,12 @@ export interface KiltAttestationProofV1 extends Proof {
 
 export interface JsonSchema2023 {
   id: string
-  type: typeof JSON_SCHEMA_TYPE
+  type: typeof CREDENTIAL_SCHEMA_TYPE
 }
 
 export interface KiltRevocationStatusV1 {
   id: Caip2ChainId
-  type: typeof KILT_REVOCATION_STATUS_V1_TYPE
+  type: typeof STATUS_TYPE
 }
 
 interface IssuerBacking {
@@ -153,7 +157,7 @@ export interface KiltCredentialV1 extends VerifiableCredential {
    * The credential types, which declare what data to expect in the credential.
    */
   type: Array<
-    typeof W3C_CREDENTIAL_TYPE | typeof KILT_CREDENTIAL_TYPE | ICType['$id']
+    typeof W3C_CREDENTIAL_TYPE | typeof CREDENTIAL_TYPE | ICType['$id']
   >
   /**
    * Claims about the subjects of the credential.

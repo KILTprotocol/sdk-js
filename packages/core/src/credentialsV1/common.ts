@@ -12,11 +12,14 @@ import { hexToU8a } from '@polkadot/util'
 import type { HexString } from '@kiltprotocol/types'
 import { Caip19, Caip2, SDKErrors } from '@kiltprotocol/utils'
 
-import {
-  KILT_ATTESTER_DELEGATION_V1_TYPE,
-  KILT_CREDENTIAL_IRI_PREFIX,
-} from './constants.js'
 import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
+
+export const spiritnetGenesisHash = hexToU8a(
+  '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
+)
+export const KILT_ATTESTER_LEGITIMATION_V1_TYPE = 'KiltAttesterLegitimationV1'
+
+export const KILT_ATTESTER_DELEGATION_V1_TYPE = 'KiltAttesterDelegationV1'
 
 export type ExpandedContents<T extends KiltCredentialV1['credentialSubject']> =
   {
@@ -114,6 +117,8 @@ export function assertMatchingConnection(
   }
   return parsed
 }
+
+export const KILT_CREDENTIAL_IRI_PREFIX = 'kilt:credential:'
 
 /**
  * Extracts the credential root hash from a KILT VC's id.

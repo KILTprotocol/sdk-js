@@ -5,9 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { constants } from '@kiltprotocol/core'
+import { KiltCredentialV1 } from '@kiltprotocol/core'
 import { context } from './context.js'
 
 export const validationContexts = {
-  [constants.KILT_CREDENTIAL_CONTEXT_URL]: context,
+  [KiltCredentialV1.CONTEXT_URL]: context,
 }

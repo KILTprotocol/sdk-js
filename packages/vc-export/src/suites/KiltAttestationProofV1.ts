@@ -16,7 +16,6 @@ import {
   CType,
   KiltAttestationProofV1,
   KiltRevocationStatusV1,
-  constants,
   Types,
   KiltCredentialV1,
 } from '@kiltprotocol/core'
@@ -48,7 +47,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     Types.KiltAttestationProofV1
   >()
 
-  public readonly contextUrl = constants.KILT_CREDENTIAL_CONTEXT_URL
+  public readonly contextUrl = KiltCredentialV1.CONTEXT_URL
   // eslint-disable-next-line jsdoc/require-returns
   /**
    * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
@@ -62,7 +61,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }: {
     ctypes?: ICType[]
   } = {}) {
-    super({ type: constants.ATTESTATION_PROOF_V1_TYPE })
+    super({ type: KiltAttestationProofV1.PROOF_TYPE })
     this.ctypes = ctypes
   }
 
@@ -225,13 +224,13 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
     const credentialStub = {
       ...input,
-      '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
-      type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType],
+      '@context': KiltCredentialV1.DEFAULT_CREDENTIAL_CONTEXTS,
+      type: [...KiltCredentialV1.DEFAULT_CREDENTIAL_TYPES, cType],
       nonTransferable: true as const,
       credentialSubject,
       credentialSchema: {
         id: KiltCredentialV1.credentialSchema.$id as string,
-        type: constants.JSON_SCHEMA_TYPE,
+        type: KiltCredentialV1.CREDENTIAL_SCHEMA_TYPE,
       } as const,
     }
 

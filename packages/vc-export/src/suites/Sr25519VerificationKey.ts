@@ -15,7 +15,7 @@ import {
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
-import { constants } from '@kiltprotocol/core'
+import { KiltCredentialV1 } from '@kiltprotocol/core'
 
 // @ts-expect-error not a typescript module
 import cryptold from 'crypto-ld' // cjs module
@@ -53,7 +53,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   // Used by CryptoLD harness for dispatching.
   public static readonly suite = SUITE_ID
   // Used by CryptoLD harness's fromKeyId() method.
-  public static readonly SUITE_CONTEXT = constants.KILT_CREDENTIAL_CONTEXT_URL
+  public static readonly SUITE_CONTEXT = KiltCredentialV1.CONTEXT_URL
 
   public type: string
   public publicKeyBase58: string

@@ -52,15 +52,7 @@ import type {
 import * as CType from '../ctype/index.js'
 
 import {
-  ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,
-  KILT_ATTESTER_DELEGATION_V1_TYPE,
-  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-  KILT_CREDENTIAL_IRI_PREFIX,
-  KILT_REVOCATION_STATUS_V1_TYPE,
-  spiritnetGenesisHash,
-} from './constants.js'
-import {
   validateStructure as validateCredentialStructure,
   validateSubject,
 } from './KiltCredentialV1.js'
@@ -73,6 +65,10 @@ import {
   assertMatchingConnection,
   credentialIdFromRootHash,
   credentialIdToRootHash,
+  KILT_CREDENTIAL_IRI_PREFIX,
+  KILT_ATTESTER_DELEGATION_V1_TYPE,
+  KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+  spiritnetGenesisHash,
 } from './common.js'
 import type {
   CredentialSubject,
@@ -81,6 +77,12 @@ import type {
   KiltCredentialV1,
 } from './types.js'
 import { CTypeLoader } from '../ctype/CTypeLoader.js'
+import { KiltRevocationStatusV1 } from './index.js'
+
+/**
+ * Type for backwards-compatible Kilt proof suite.
+ */
+export const PROOF_TYPE = 'KiltAttestationProofV1'
 
 export const proofSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -92,7 +94,7 @@ export const proofSchema: JsonSchema.Schema = {
     },
     type: {
       type: 'string',
-      const: ATTESTATION_PROOF_V1_TYPE,
+      const: PROOF_TYPE,
     },
     block: {
       type: 'string',
@@ -124,7 +126,7 @@ export function validateStructure(proof: KiltAttestationProofV1): void {
   const { errors, valid } = schemaValidator.validate(proof)
   if (!valid)
     throw new SDKErrors.ProofMalformedError(
-      `Object not matching ${ATTESTATION_PROOF_V1_TYPE} data model`,
+      `Object not matching ${PROOF_TYPE} data model`,
       {
         cause: errors,
       }
@@ -351,9 +353,9 @@ export async function verify(
   if (nonTransferable !== true)
     throw new SDKErrors.CredentialMalformedError('nonTransferable must be true')
   // 5. check credentialStatus
-  if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
+  if (credentialStatus.type !== KiltRevocationStatusV1.STATUS_TYPE)
     throw new SDKErrors.CredentialMalformedError(
-      `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
+      `credentialStatus must have type ${KiltRevocationStatusV1.STATUS_TYPE}`
     )
   const { assetInstance, assetNamespace, assetReference } = Caip19.parse(
     credentialStatus.id
@@ -593,7 +595,7 @@ export function initializeProof(
   // 4. Create proof object
   const salt = entropy.map((e) => base58Encode(e))
   const proof: KiltAttestationProofV1 = {
-    type: ATTESTATION_PROOF_V1_TYPE,
+    type: PROOF_TYPE,
     block: '',
     commitments: commitments.sort(u8aCmp).map((i) => base58Encode(i)),
     salt,
