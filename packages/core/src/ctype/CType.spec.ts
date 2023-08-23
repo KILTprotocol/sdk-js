@@ -8,7 +8,6 @@
 import { ConfigService } from '@kiltprotocol/config'
 import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Claim } from '@kiltprotocol/legacy-credentials'
 
 import { ApiMocks } from '../../../../tests/testUtils'
 import * as CType from './CType.js'
@@ -22,7 +21,6 @@ const encodedAliceDid = ApiMocks.mockChainQueryReturn(
   'cTYPEs',
   '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 )
-const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 
 it('consistent CType id generation', () => {
   const ctypeV1 = CType.fromProperties('CtypeModel 1', {
@@ -84,198 +82,178 @@ describe('value constraints', () => {
 
   it('constrains array length', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['critical'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['important', 'critical'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['important', 'critical', 'essential'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: [],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['important', 'vital', 'critical', 'essential'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
 
   it('constrains array contents via enum', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['important', 'critical', 'essential'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: ['niceToHave'],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           labels: [12],
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
 
   it('constrains string length', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           w3n: 'juergen',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           w3n: 'jo',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           w3n: 'Peter der Große, Zar von Russland',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
 
   it('constrains numeric range', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           age: 22,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           age: -12,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           age: 1000,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
 
   it('constrains to numbers in enum', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           multiplier: 1.2,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           multiplier: 1,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           multiplier: 0.14,
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
 
   it('constrains string to date format', () => {
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           date: '2022-01-22',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).not.toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           date: '11:30',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
     expect(() =>
-      Claim.fromCTypeAndClaimContents(
-        cTypeWithConstraints,
+      CType.verifyClaimAgainstSchema(
         {
           date: 'fried fish',
         },
-        didAlice
+        cTypeWithConstraints
       )
     ).toThrow()
   })
@@ -290,18 +268,13 @@ it('e2e', () => {
     name: 'Bob',
   }
 
-  const claim = Claim.fromCTypeAndClaimContents(
-    claimCtype,
-    claimContents,
-    didAlice
-  )
-
   expect(() =>
-    CType.verifyClaimAgainstSchema(claim.contents, claimCtype)
+    CType.verifyClaimAgainstSchema(claimContents, claimCtype)
   ).not.toThrow()
-  claim.contents.name = 123
+  // @ts-expect-error
+  claimContents.name = 123
   expect(() =>
-    CType.verifyClaimAgainstSchema(claim.contents, claimCtype)
+    CType.verifyClaimAgainstSchema(claimContents, claimCtype)
   ).toThrow()
 })
 
