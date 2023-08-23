@@ -8,7 +8,7 @@
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
-import { init } from '@kiltprotocol/core'
+import { Types, constants, init } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
@@ -22,11 +22,9 @@ import {
   kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
-import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import ingosCredential from '../examples/KiltCredentialV1.json'
-import type { VerifiableCredential } from '../../types.js'
 
 // is not needed and imports a dependency that does not work in node 18
 jest.mock('@digitalbazaar/http-client', () => ({}))
@@ -99,11 +97,11 @@ it('issues and verifies a signed credential', async () => {
   const attestationSigner = new Sr25519Signature2020({ signer })
 
   const credential = {
-    '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
+    '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL] as any,
     type: ['VerifiableCredential'],
     credentialSubject: ingosCredential.credentialSubject,
     issuer: ingosCredential.credentialSubject.id,
-  } as Partial<VerifiableCredential>
+  } as Partial<Types.VerifiableCredential>
 
   const verifiableCredential = await vcjs.issue({
     credential,

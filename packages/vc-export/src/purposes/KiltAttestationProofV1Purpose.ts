@@ -11,8 +11,7 @@
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { ATTESTATION_PROOF_V1_TYPE } from '../../constants.js'
-import type { Proof } from '../../types.js'
+import { Types, constants } from '@kiltprotocol/core'
 import type { JsonLdObj } from '../documentLoader.js'
 
 export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
@@ -24,7 +23,7 @@ export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   }
 
   async validate(
-    proof: Proof,
+    proof: Types.Proof,
     {
       document,
     }: /* suite, verificationMethod,
@@ -37,20 +36,20 @@ export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {
   }
 
   async update(
-    proof: Proof,
+    proof: Types.Proof,
     {
       /* document, suite, documentLoader, expansionMap */
     }
-  ): Promise<Proof> {
-    return { ...proof, type: ATTESTATION_PROOF_V1_TYPE }
+  ): Promise<Types.Proof> {
+    return { ...proof, type: constants.ATTESTATION_PROOF_V1_TYPE }
   }
 
   async match(
-    proof: Proof,
+    proof: Types.Proof,
     {
       /* document, documentLoader, expansionMap */
     }
   ): Promise<boolean> {
-    return proof.type === ATTESTATION_PROOF_V1_TYPE
+    return proof.type === constants.ATTESTATION_PROOF_V1_TYPE
   }
 }

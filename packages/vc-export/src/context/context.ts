@@ -5,14 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+import { constants } from '@kiltprotocol/core'
 
 export const context = {
   '@context': {
     '@version': 1.1,
     '@protected': true,
 
-    kilt: `${KILT_CREDENTIAL_CONTEXT_URL}#`,
+    kilt: `${constants.KILT_CREDENTIAL_CONTEXT_URL}#`,
     cred: 'https://www.w3.org/2018/credentials#',
     sec: 'https://w3id.org/security#',
     xsd: 'http://www.w3.org/2001/XMLSchema#',

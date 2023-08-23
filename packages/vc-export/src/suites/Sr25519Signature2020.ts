@@ -10,13 +10,12 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
+import { Types, constants } from '@kiltprotocol/core'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'
 import type { JSigsSigner, JSigsVerifier } from './types.js'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
-import type { Proof } from '../../types.js'
 
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-use-before-define */
@@ -34,7 +33,7 @@ const LinkedDataSignature = jsigs.suites.LinkedDataSignature as {
   }
 }
 
-const SUITE_CONTEXT_URL = KILT_CREDENTIAL_CONTEXT_URL
+const SUITE_CONTEXT_URL = constants.KILT_CREDENTIAL_CONTEXT_URL
 // multibase base58-btc header
 const MULTIBASE_BASE58BTC_HEADER = 'z'
 
@@ -42,7 +41,7 @@ interface VerificationMethod {
   verificationMethod: Record<string, unknown>
 }
 interface Options extends VerificationMethod {
-  proof: Proof & Partial<VerificationMethod>
+  proof: Types.Proof & Partial<VerificationMethod>
   document: JsonLdObj
   purpose: any
   documentLoader: DocumentLoader
@@ -94,7 +93,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     key?: Sr25519VerificationKey2020
     signer?: JSigsSigner
     verifier?: JSigsVerifier
-    proof?: Proof
+    proof?: Types.Proof
     date?: string | Date
     useNativeCanonize?: boolean
   } = {}) {
@@ -118,7 +117,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
    * @param options - The options to use.
    * @param options.verifyData - Data to be signed (extracted
    *   from document, according to the suite's spec).
-   * @param options.proof - Proof object (containing the proofPurpose,
+   * @param options.proof - Types.Proof object (containing the proofPurpose,
    *   verificationMethod, etc).
    *
    * @returns Resolves with the proof containing the signature
@@ -128,7 +127,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     verifyData,
     proof,
   }: Pick<Options, 'proof' | 'verifyData'>): Promise<
-    { proofValue: string } & Proof
+    { proofValue: string } & Types.Proof
   > {
     if (!(this.signer && typeof this.signer.sign === 'function')) {
       throw new Error('A signer API has not been specified.')
@@ -158,7 +157,7 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     Options,
     'proof' | 'verifyData' | 'verificationMethod'
   >): Promise<boolean> {
-    const { proofValue } = proof as Proof & { proofValue: string }
+    const { proofValue } = proof as Types.Proof & { proofValue: string }
     if (!(Boolean(proofValue) && typeof proofValue === 'string')) {
       throw new TypeError(
         'The proof does not include a valid "proofValue" property.'

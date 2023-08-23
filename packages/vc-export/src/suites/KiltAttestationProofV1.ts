@@ -12,34 +12,17 @@
 import jsigs from 'jsonld-signatures' // cjs module
 
 import { ConfigService } from '@kiltprotocol/config'
-import { CType } from '@kiltprotocol/core'
+import {
+  CType,
+  KiltAttestationProofV1,
+  KiltRevocationStatusV1,
+  constants,
+  Types,
+  KiltCredentialV1,
+} from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
-import {
-  DidSigner,
-  TxHandler,
-  issue,
-  verify as verifyProof,
-} from '../../KiltAttestationProofV1.js'
-import type { CTypeLoader } from '../../KiltCredentialV1.js'
-import {
-  credentialSchema,
-  validateStructure as validateCredentialStructure,
-} from '../../KiltCredentialV1.js'
-import { check as checkStatus } from '../../KiltRevocationStatusV1.js'
-import {
-  ATTESTATION_PROOF_V1_TYPE,
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
-  JSON_SCHEMA_TYPE,
-  KILT_CREDENTIAL_CONTEXT_URL,
-} from '../../constants.js'
-import type {
-  KiltAttestationProofV1,
-  KiltCredentialV1,
-  Proof,
-} from '../../types.js'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
 import type { JSigsVerificationResult } from './types.js'
 import { includesContext } from './utils.js'
@@ -49,23 +32,23 @@ const {
 } = jsigs
 
 interface CallArgs {
-  proof: Proof
+  proof: Types.Proof
   document?: JsonLdObj
   documentLoader?: DocumentLoader
   [key: string]: unknown
 }
 
-export type CredentialStub = Pick<KiltCredentialV1, 'credentialSubject'> &
-  Partial<KiltCredentialV1>
+export type CredentialStub = Pick<Types.KiltCredentialV1, 'credentialSubject'> &
+  Partial<Types.KiltCredentialV1>
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private ctypes: ICType[]
   private attestationInfo = new Map<
-    KiltCredentialV1['id'],
-    KiltAttestationProofV1
+    Types.KiltCredentialV1['id'],
+    Types.KiltAttestationProofV1
   >()
 
-  public readonly contextUrl = KILT_CREDENTIAL_CONTEXT_URL
+  public readonly contextUrl = constants.KILT_CREDENTIAL_CONTEXT_URL
   // eslint-disable-next-line jsdoc/require-returns
   /**
    * Placeholder value as \@digitalbazaar/vc requires a verificationMethod property on issuance.
@@ -79,7 +62,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }: {
     ctypes?: ICType[]
   } = {}) {
-    super({ type: ATTESTATION_PROOF_V1_TYPE })
+    super({ type: constants.ATTESTATION_PROOF_V1_TYPE })
     this.ctypes = ctypes
   }
 
@@ -88,10 +71,10 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the [[KiltRevocationStatusV1]] method.
    */
   public get checkStatus(): (args: {
-    credential: KiltCredentialV1
+    credential: Types.KiltCredentialV1
   }) => Promise<{ verified: boolean; error?: unknown }> {
     return async ({ credential }) => {
-      return checkStatus(credential)
+      return KiltRevocationStatusV1.check(credential)
         .then(() => ({ verified: true }))
         .catch((error) => ({ verified: false, error }))
     }
@@ -118,9 +101,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         throw new TypeError('document is required for verification')
       }
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
-      const proof = options.proof as KiltAttestationProofV1
-      const document = options.document as unknown as KiltCredentialV1
-      const loadCTypes: CTypeLoader = async (id) => {
+      const proof = options.proof as Types.KiltAttestationProofV1
+      const document = options.document as unknown as Types.KiltCredentialV1
+      const loadCTypes: CType.CTypeLoader = async (id) => {
         const { document: ctype } = (await options.documentLoader?.(id)) ?? {}
         if (!CType.isICType(ctype)) {
           throw new Error(
@@ -129,7 +112,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         }
         return ctype
       }
-      await verifyProof(document, proof, {
+      await KiltAttestationProofV1.verify(document, proof, {
         loadCTypes,
         cTypes: this.ctypes,
       })
@@ -197,9 +180,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     document,
   }: {
     document: object
-  }): Promise<KiltAttestationProofV1> {
-    const credential = document as KiltCredentialV1
-    validateCredentialStructure(credential)
+  }): Promise<Types.KiltAttestationProofV1> {
+    const credential = document as Types.KiltCredentialV1
+    KiltCredentialV1.validateStructure(credential)
     const { id } = credential
     const proof = this.attestationInfo.get(id)
     if (!proof) {
@@ -223,9 +206,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    */
   public async anchorCredential(
     input: CredentialStub,
-    didSigner: DidSigner,
-    transactionHandler: TxHandler
-  ): Promise<Omit<KiltCredentialV1, 'proof'>> {
+    didSigner: KiltAttestationProofV1.DidSigner,
+    transactionHandler: KiltAttestationProofV1.TxHandler
+  ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
     const { credentialSubject, type } = input
 
     let cType = type?.find((str): str is ICType['$id'] =>
@@ -242,20 +225,23 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
     const credentialStub = {
       ...input,
-      '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-      type: [...DEFAULT_CREDENTIAL_TYPES, cType],
+      '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
+      type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType],
       nonTransferable: true as const,
       credentialSubject,
       credentialSchema: {
-        id: credentialSchema.$id as string,
-        type: JSON_SCHEMA_TYPE,
+        id: KiltCredentialV1.credentialSchema.$id as string,
+        type: constants.JSON_SCHEMA_TYPE,
       } as const,
     }
 
-    const { proof, ...credential } = await issue(credentialStub, {
-      didSigner,
-      transactionHandler,
-    })
+    const { proof, ...credential } = await KiltAttestationProofV1.issue(
+      credentialStub,
+      {
+        didSigner,
+        transactionHandler,
+      }
+    )
 
     this.attestationInfo.set(credential.id, proof)
     return credential

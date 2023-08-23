@@ -30,29 +30,18 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import {
+  KiltAttestationProofV1,
+  KiltCredentialV1,
+  Types,
+  constants,
+} from '@kiltprotocol/core'
 
-import {
-  DidSigner,
-  TxHandler,
-  applySelectiveDisclosure,
-  finalizeProof,
-  initializeProof,
-} from '../../KiltAttestationProofV1.js'
-import { idToRootHash } from '../../KiltCredentialV1.js'
-import {
-  KILT_CREDENTIAL_CONTEXT_URL,
-  W3C_CREDENTIAL_CONTEXT_URL,
-} from '../../constants.js'
 import {
   cType,
   makeAttestationCreatedEvents,
   mockedApi,
-} from '../../__mocks__/testData.js'
-import type {
-  KiltAttestationProofV1,
-  KiltCredentialV1,
-  Proof,
-} from '../../types.js'
+} from '../../../../tests/testUtils/testData.js'
 import {
   JsonLdObj,
   combineDocumentLoaders,
@@ -83,28 +72,32 @@ const blockHash = base58Decode(ingosCredential.proof.block)
 const { genesisHash } = mockedApi
 const ctypeHash = ingosCredential.type[2].split(':')[2] as HexString
 
-const attestedVc = finalizeProof(
-  { ...ingosCredential } as unknown as KiltCredentialV1,
-  ingosCredential.proof as KiltAttestationProofV1,
+const attestedVc = KiltAttestationProofV1.finalizeProof(
+  { ...ingosCredential } as unknown as Types.KiltCredentialV1,
+  ingosCredential.proof as Types.KiltAttestationProofV1,
   { blockHash, timestamp, genesisHash }
 )
 
-const notAttestedVc = finalizeProof(
+const notAttestedVc = KiltAttestationProofV1.finalizeProof(
   attestedVc,
-  initializeProof(attestedVc)[0],
+  KiltAttestationProofV1.initializeProof(attestedVc)[0],
   { blockHash, timestamp, genesisHash }
 )
 
-const revokedVc = finalizeProof(attestedVc, initializeProof(attestedVc)[0], {
-  blockHash,
-  timestamp,
-  genesisHash,
-})
+const revokedVc = KiltAttestationProofV1.finalizeProof(
+  attestedVc,
+  KiltAttestationProofV1.initializeProof(attestedVc)[0],
+  {
+    blockHash,
+    timestamp,
+    genesisHash,
+  }
+)
 
 jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
   // @ts-expect-error
   async (claimHash) => {
-    if (u8aEq(claimHash, idToRootHash(attestedVc.id))) {
+    if (u8aEq(claimHash, KiltCredentialV1.idToRootHash(attestedVc.id))) {
       return mockedApi.createType(
         'Option<AttestationAttestationsAttestationDetails>',
         {
@@ -114,7 +107,7 @@ jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
         }
       )
     }
-    if (u8aEq(claimHash, idToRootHash(revokedVc.id))) {
+    if (u8aEq(claimHash, KiltCredentialV1.idToRootHash(revokedVc.id))) {
       return mockedApi.createType(
         'Option<AttestationAttestationsAttestationDetails>',
         {
@@ -131,8 +124,8 @@ jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
 )
 jest.mocked(mockedApi.query.system.events).mockResolvedValue(
   makeAttestationCreatedEvents([
-    [attester, idToRootHash(attestedVc.id), ctypeHash, null],
-    [attester, idToRootHash(revokedVc.id), ctypeHash, null],
+    [attester, KiltCredentialV1.idToRootHash(attestedVc.id), ctypeHash, null],
+    [attester, KiltCredentialV1.idToRootHash(revokedVc.id), ctypeHash, null],
   ]) as any
 )
 jest
@@ -159,7 +152,7 @@ const documentLoader = combineDocumentLoaders([
 
 let suite: KiltAttestationV1Suite
 let purpose: KiltAttestationProofV1Purpose
-let proof: KiltAttestationProofV1
+let proof: Types.KiltAttestationProofV1
 let keypair: KiltKeyringPair
 let didDocument: ConformingDidDocument
 
@@ -168,7 +161,7 @@ beforeAll(async () => {
     ctypes: [cType, emailCType],
   })
   purpose = new KiltAttestationProofV1Purpose()
-  proof = attestedVc.proof as KiltAttestationProofV1
+  proof = attestedVc.proof as Types.KiltAttestationProofV1
   ;({ keypair, didDocument } = await makeFakeDid())
 })
 
@@ -183,7 +176,7 @@ describe('jsigs', () => {
         { ...proof, '@context': attestedVc['@context'] },
         attestedVc['@context'],
         { documentLoader, compactToRelative: false }
-      )) as Proof
+      )) as Types.Proof
       expect(await purpose.match(compactedProof, {})).toBe(true)
       expect(
         await purpose.match(compactedProof, {
@@ -223,7 +216,11 @@ describe('jsigs', () => {
   })
 
   it('verifies proof with props removed', async () => {
-    const derived = applySelectiveDisclosure(attestedVc, proof, [])
+    const derived = KiltAttestationProofV1.applySelectiveDisclosure(
+      attestedVc,
+      proof,
+      []
+    )
     expect(derived.credential.credentialSubject).not.toHaveProperty('Email')
     expect(
       await jsigs.verify(
@@ -259,7 +256,9 @@ describe('jsigs', () => {
 
   it('detects tampering on claims', async () => {
     // make a copy
-    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
+    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+      JSON.stringify(attestedVc)
+    )
     tamperCred.credentialSubject.Email = 'macgyver@google.com'
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -267,7 +266,9 @@ describe('jsigs', () => {
   })
 
   it('detects tampering on credential', async () => {
-    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
+    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+      JSON.stringify(attestedVc)
+    )
     tamperCred.id = tamperCred.id.replace('1', '2') as any
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -275,7 +276,9 @@ describe('jsigs', () => {
   })
 
   it('detects signer mismatch', async () => {
-    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
+    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+      JSON.stringify(attestedVc)
+    )
     tamperCred.issuer =
       'did:kilt:4oFNEgM6ibgEW1seCGXk3yCM6o7QTnDGrqGtgSRSspVMDg4c'
     expect(
@@ -284,7 +287,9 @@ describe('jsigs', () => {
   })
 
   it('detects proof mismatch', async () => {
-    const tamperCred: KiltCredentialV1 = JSON.parse(JSON.stringify(attestedVc))
+    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+      JSON.stringify(attestedVc)
+    )
     tamperCred.proof!.type = 'Sr25519Signature2020' as any
     expect(
       await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
@@ -441,14 +446,14 @@ describe('issuance', () => {
   let issuanceSuite: KiltAttestationV1Suite
   let toBeSigned: CredentialStub
 
-  const didSigner: DidSigner = {
+  const didSigner: KiltAttestationProofV1.DidSigner = {
     did: attestedVc.issuer,
     signer: async () => ({
       signature: new Uint8Array(32),
       keyType: 'sr25519' as const,
     }),
   }
-  const transactionHandler: TxHandler = {
+  const transactionHandler: KiltAttestationProofV1.TxHandler = {
     account: attester,
     signAndSubmit: async () => {
       return {
@@ -471,7 +476,7 @@ describe('issuance', () => {
   })
 
   it('issues a credential via vc-js', async () => {
-    let newCred: Partial<KiltCredentialV1> =
+    let newCred: Partial<Types.KiltCredentialV1> =
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
         didSigner,
@@ -538,19 +543,19 @@ describe('issuance', () => {
     newCred = (await vcjs.issue({
       credential: {
         ...newCred,
-        '@context': [W3C_CREDENTIAL_CONTEXT_URL],
+        '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL],
       },
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as KiltCredentialV1
-    expect(newCred['@context']).toContain(KILT_CREDENTIAL_CONTEXT_URL)
+    })) as Types.KiltCredentialV1
+    expect(newCred['@context']).toContain(constants.KILT_CREDENTIAL_CONTEXT_URL)
 
     await expect(
       jsigs.sign(
         {
           ...newCred,
-          '@context': [W3C_CREDENTIAL_CONTEXT_URL],
+          '@context': [constants.W3C_CREDENTIAL_CONTEXT_URL],
         },
         {
           suite: issuanceSuite,

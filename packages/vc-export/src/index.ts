@@ -5,10 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @module @kiltprotocol/vc-export
- */
-
-export * as Presentation from './Presentation.js'
-export * as DidJWT from './DidJwt.js'
-export * as vcjs from './vc-js/index.js'
+export * from './suites/index.js'
+export * from './purposes/index.js'
+export * from './documentLoader.js'
+export { validationContexts as contexts } from './context/index.js'

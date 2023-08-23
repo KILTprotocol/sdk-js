@@ -22,9 +22,9 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 
+import { CType } from '@kiltprotocol/core'
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
-import { newCachingCTypeLoader } from '../KiltCredentialV1.js'
 
 export type JsonLdObj = Record<string, unknown>
 export interface RemoteDocument {
@@ -130,7 +130,7 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
   return { contextUrl: undefined, documentUrl: url, document }
 }
 
-const loader = newCachingCTypeLoader()
+const loader = CType.newCachingCTypeLoader()
 export const kiltCTypeLoader: DocumentLoader = async (id) => {
   const document = (await loader(id as ICType['$id'])) as JsonLdObj & ICType
   return { contextUrl: undefined, documentUrl: id, document }
