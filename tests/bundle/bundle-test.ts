@@ -28,6 +28,7 @@ const {
   KiltCredentialV1,
   KiltAttestationProofV1,
   KiltRevocationStatusV1,
+  Presentation,
 } = kilt
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
@@ -289,6 +290,12 @@ async function runAll() {
 
   await KiltRevocationStatusV1.check(issued)
   console.info('Credential status verified')
+
+  const presentation = Presentation.create([issued], bob.uri)
+  console.info('Presentation created')
+
+  Presentation.validateStructure(presentation)
+  console.info('Presentation structure validated')
 }
 
 window.runAll = runAll
