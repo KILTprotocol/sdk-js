@@ -5,14 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { CType } from '@kiltprotocol/core'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { credential as VC, cType } from './__mocks__/testData.js'
+
+import * as CType from '../ctype/index.js'
+import {
+  credential as VC,
+  cType,
+} from '../../../../tests/testUtils/testData.js'
 import {
   credentialSchema,
   validateStructure,
   validateSubject,
-} from './KiltCredentialV1'
+} from './KiltCredentialV1.js'
 
 it('exports to VC including ctype as schema', async () => {
   expect(VC).toMatchObject({

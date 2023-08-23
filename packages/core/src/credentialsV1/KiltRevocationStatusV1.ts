@@ -11,16 +11,16 @@ import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
-import { Caip2 } from '@kiltprotocol/utils'
+import { Caip2, SDKErrors } from '@kiltprotocol/utils'
 
+import * as CType from '../ctype/index.js'
+import * as Attestation from '../attestation/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
 import {
   assertMatchingConnection,
   getDelegationNodeIdForCredential,
 } from './common.js'
-import { CredentialMalformedError } from './errors.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 
 /**
@@ -49,7 +49,7 @@ export async function check(
     )
   }
   if (!assetInstance) {
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
     )
   }

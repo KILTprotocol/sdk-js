@@ -16,14 +16,11 @@ import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
+import { KiltCredentialV1, Types, constants } from '@kiltprotocol/core'
 
-import { ApiMocks } from '../../../../tests/testUtils'
+import { createAugmentedApi } from './mocks/index.js'
 
-import { fromInput } from '../KiltCredentialV1'
-import { ATTESTATION_PROOF_V1_TYPE } from '../constants'
-import { KiltCredentialV1 } from '../types'
-
-export const mockedApi = ApiMocks.createAugmentedApi()
+export const mockedApi = createAugmentedApi()
 
 // index of the attestation pallet, according to the metadata used
 const attestationPalletIndex = 62
@@ -131,7 +128,7 @@ export const blockHash = randomAsU8a(32)
 export const genesisHash = randomAsU8a(32)
 
 const _credential = JSON.stringify({
-  ...fromInput({
+  ...KiltCredentialV1.fromInput({
     claims: _legacyCredential.claim.contents,
     claimHash: _legacyCredential.rootHash,
     subject: _legacyCredential.claim.owner,
@@ -142,7 +139,7 @@ const _credential = JSON.stringify({
     timestamp,
   }),
   proof: {
-    type: ATTESTATION_PROOF_V1_TYPE,
+    type: constants.ATTESTATION_PROOF_V1_TYPE,
     // `block` field is base58 encoding of block hash
     block: base58Encode(blockHash),
     // `commitments` (claimHashes) are base58 encoded in new format
@@ -158,7 +155,7 @@ const _credential = JSON.stringify({
 })
 
 // eslint-disable-next-line import/no-mutable-exports
-export let credential: KiltCredentialV1 = JSON.parse(_credential)
+export let credential: Types.KiltCredentialV1 = JSON.parse(_credential)
 beforeEach(() => {
   credential = JSON.parse(_credential)
 })

@@ -8,8 +8,7 @@
 import { hexToU8a } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
 
-import { JsonSchema } from '@kiltprotocol/utils'
-import { CType } from '@kiltprotocol/core'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import type {
   ICType,
   ICredential,
@@ -17,7 +16,7 @@ import type {
   IDelegationNode,
 } from '@kiltprotocol/types'
 
-import { CredentialMalformedError } from './errors.js'
+import * as CType from '../ctype/index.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -38,6 +37,7 @@ import {
   credentialIdFromRootHash,
   jsonLdExpandCredentialSubject,
 } from './common.js'
+import { CTypeLoader, newCachingCTypeLoader } from '../ctype/CTypeLoader.js'
 
 export {
   credentialIdFromRootHash as idFromRootHash,
@@ -183,7 +183,7 @@ export function validateStructure(
   }
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `Object not matching ${KILT_CREDENTIAL_TYPE} data model`,
       {
         cause: errors,
@@ -298,36 +298,6 @@ export function fromInput({
     issuanceDate,
     ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
-}
-
-export type CTypeLoader = (id: ICType['$id']) => Promise<ICType>
-
-const loadCType: CTypeLoader = async (id) => {
-  return (await CType.fetchFromChain(id)).cType
-}
-
-/**
- * A factory for a CType loader that caches a CType definition once it has been loaded.
- * Used in validating the credentialSubject of a [[KiltCredentialV1]] against the Claim Type referenced in its `type` field.
- *
- * @param initialCTypes An array of CTypes with which the cache is to be initialized.
- * @returns A function that takes a CType id and looks up a CType definition in an internal cache, and if not found, tries to fetch it from the KILT blochchain.
- */
-export function newCachingCTypeLoader(
-  initialCTypes: ICType[] = []
-): CTypeLoader {
-  const ctypes: Map<string, ICType> = new Map()
-
-  initialCTypes.forEach((ctype) => {
-    ctypes.set(ctype.$id, ctype)
-  })
-
-  async function getCType(id: ICType['$id']): Promise<ICType> {
-    const ctype: ICType = ctypes.get(id) ?? (await loadCType(id))
-    ctypes.set(ctype.$id, ctype)
-    return ctype
-  }
-  return getCType
 }
 
 const cachingCTypeLoader = newCachingCTypeLoader()

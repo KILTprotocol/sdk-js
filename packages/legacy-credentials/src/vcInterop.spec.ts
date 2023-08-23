@@ -13,7 +13,7 @@ import {
   KiltAttestationProofV1,
   KiltCredentialV1,
   constants,
-} from '@kiltprotocol/vc-export'
+} from '@kiltprotocol/core'
 
 import { ApiMocks } from '../../../tests/testUtils'
 import { calculateRootHash, removeClaimProperties } from './Credential'

@@ -10,6 +10,7 @@
  */
 
 export * as Attestation from './attestation/index.js'
+export * from './credentialsV1/index.js'
 export { BalanceUtils } from './balance/index.js'
 export * as CType from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'

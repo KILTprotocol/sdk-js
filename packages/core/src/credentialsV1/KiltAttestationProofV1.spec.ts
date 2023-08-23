@@ -20,17 +20,17 @@ import {
   timestamp,
   cType,
   legacyCredential,
-} from './__mocks__/testData.js'
+} from '../../../../tests/testUtils/testData.js'
 import {
   finalizeProof,
   initializeProof,
   applySelectiveDisclosure,
   verify as verifyOriginal,
-} from './KiltAttestationProofV1'
-import { check as checkStatus } from './KiltRevocationStatusV1'
-import { credentialIdFromRootHash } from './common'
-import type { KiltCredentialV1 } from './types'
-import { fromInput } from './KiltCredentialV1'
+} from './KiltAttestationProofV1.js'
+import { check as checkStatus } from './KiltRevocationStatusV1.js'
+import { credentialIdFromRootHash } from './common.js'
+import type { KiltCredentialV1 } from './types.js'
+import { fromInput } from './KiltCredentialV1.js'
 
 // the original verify implementation but with a mocked CType loader
 const verify: typeof verifyOriginal = async (cred, proof, options) =>

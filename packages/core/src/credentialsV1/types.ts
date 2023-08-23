@@ -29,8 +29,6 @@ import type {
   W3C_PRESENTATION_TYPE,
 } from './constants.js'
 
-export * from './vc-js/types.js'
-
 export type IPublicKeyRecord = ConformingDidKey
 
 export interface Proof {

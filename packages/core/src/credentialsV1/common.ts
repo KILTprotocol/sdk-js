@@ -10,13 +10,12 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
 
 import type { HexString } from '@kiltprotocol/types'
-import { Caip19, Caip2 } from '@kiltprotocol/utils'
+import { Caip19, Caip2, SDKErrors } from '@kiltprotocol/utils'
 
 import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
 } from './constants.js'
-import { CredentialMalformedError } from './errors.js'
 import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
 
 export type ExpandedContents<T extends KiltCredentialV1['credentialSubject']> =
@@ -69,7 +68,7 @@ export function delegationIdFromAttesterDelegation(
   }
   const match = delegationIdPattern.exec(delegation.id)
   if (!match || !match.groups?.delegationId)
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `Not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${delegation.id}`
     )
   return base58Decode(match.groups.delegationId)
@@ -131,7 +130,7 @@ export function credentialIdToRootHash(
   try {
     return base58Decode(base58String, false)
   } catch (cause) {
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       'Credential id is not a valid identifier (could not extract base58 encoded string)',
       { cause }
     )

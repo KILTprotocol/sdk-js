@@ -14,8 +14,7 @@ import {
 } from '@polkadot/util'
 import { base58Decode, base58Encode, blake2AsU8a } from '@polkadot/util-crypto'
 
-import { CType } from '@kiltprotocol/core'
-import { KiltCredentialV1, Types, constants } from '@kiltprotocol/vc-export'
+import { CType, KiltCredentialV1, Types, constants } from '@kiltprotocol/core'
 
 import type { ICType, IClaim, ICredential } from '@kiltprotocol/types'
 

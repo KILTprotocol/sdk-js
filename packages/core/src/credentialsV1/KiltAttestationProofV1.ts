@@ -29,7 +29,6 @@ import type {
 } from '@polkadot/types/interfaces/types.js'
 import type { IEventData, Signer } from '@polkadot/types/types'
 
-import { CType } from '@kiltprotocol/core'
 import {
   authorizeTx,
   getFullDidUri,
@@ -50,6 +49,7 @@ import type {
   KiltAddress,
   SignExtrinsicCallback,
 } from '@kiltprotocol/types'
+import * as CType from '../ctype/index.js'
 
 import {
   ATTESTATION_PROOF_V1_TYPE,
@@ -62,7 +62,6 @@ import {
 } from './constants.js'
 import {
   validateStructure as validateCredentialStructure,
-  CTypeLoader,
   validateSubject,
 } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
@@ -75,13 +74,13 @@ import {
   credentialIdFromRootHash,
   credentialIdToRootHash,
 } from './common.js'
-import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
+import { CTypeLoader } from '../ctype/CTypeLoader.js'
 
 export const proofSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -124,7 +123,7 @@ const schemaValidator = new JsonSchema.Validator(proofSchema, '7')
 export function validateStructure(proof: KiltAttestationProofV1): void {
   const { errors, valid } = schemaValidator.validate(proof)
   if (!valid)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       `Object not matching ${ATTESTATION_PROOF_V1_TYPE} data model`,
       {
         cause: errors,
@@ -201,7 +200,7 @@ export function calculateRootHash(
         // get on-chain id from delegation id
         return delegationIdFromAttesterDelegation(entry)
       }
-      throw new CredentialMalformedError(
+      throw new SDKErrors.CredentialMalformedError(
         `unknown type ${
           (entry as { type: string }).type
         } in federatedTrustModel`
@@ -350,10 +349,10 @@ export async function verify(
   await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)
-    throw new CredentialMalformedError('nonTransferable must be true')
+    throw new SDKErrors.CredentialMalformedError('nonTransferable must be true')
   // 5. check credentialStatus
   if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
     )
   const { assetInstance, assetNamespace, assetReference } = Caip19.parse(
@@ -367,7 +366,7 @@ export async function verify(
     assetReference !== 'attestation' ||
     assetInstance !== expectedAttestationId
   ) {
-    throw new CredentialMalformedError(
+    throw new SDKErrors.CredentialMalformedError(
       `credentialStatus.id must end on 'kilt:attestation/${expectedAttestationId} in order to be verifiable with this proof`
     )
   }
@@ -376,7 +375,7 @@ export async function verify(
   // 7. Transform to normalized statments and hash
   const { statements, digests } = normalizeClaims(expandedContents)
   if (statements.length !== proof.salt.length)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 8-9. Re-compute commitments
@@ -459,7 +458,7 @@ export async function verify(
           break
         }
         default: {
-          throw new CredentialMalformedError(
+          throw new SDKErrors.CredentialMalformedError(
             `unknown type ${
               (i as { type: string }).type
             } in federatedTrustModel`
@@ -505,7 +504,7 @@ export function applySelectiveDisclosure(
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
   if (statementsOriginal.length !== proofInput.salt.length)
-    throw new ProofMalformedError(
+    throw new SDKErrors.ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 2. Filter credentialSubject for claims to be revealed
