@@ -14,7 +14,7 @@ import {
 } from '@polkadot/util'
 import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
-import { Credential } from '@kiltprotocol/core'
+import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 
 import { ApiMocks } from '../../../../tests/testUtils'

@@ -8,9 +8,9 @@
 import { ConfigService } from '@kiltprotocol/config'
 import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { Claim } from '@kiltprotocol/legacy-credentials'
 
 import { ApiMocks } from '../../../../tests/testUtils'
-import * as Claim from '../claim'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeModelDraft01 } from './CType.schemas'
 

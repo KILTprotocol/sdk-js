@@ -7,8 +7,8 @@
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { Claim } from '@kiltprotocol/legacy-credentials'
 import * as CType from './CType'
-import * as Claim from '../claim'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
