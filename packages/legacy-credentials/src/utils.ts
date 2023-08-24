@@ -22,15 +22,24 @@ export function jsonLDcontents(
   expanded = true
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
+  if (!cTypeHash) {
+    throw new SDKErrors.CTypeHashMissingError()
+  }
   const vocabulary = `${CType.hashToId(cTypeHash)}#`
   const result: Record<string, unknown> = {}
-  if (owner) result['@id'] = owner
+  if (owner) {
+    result['@id'] = owner
+  }
   if (!expanded) {
+    if (contents && ('@context' in contents || '@id' in contents)) {
+      throw new Error(
+        'This claim contains @-prefixed restricted properties and thus cannot be properly expressed as JSON-LD'
+      )
+    }
     return {
+      ...contents,
       ...result,
       '@context': { '@vocab': vocabulary },
-      ...contents,
     }
   }
   Object.entries(contents || {}).forEach(([key, value]) => {

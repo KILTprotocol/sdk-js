@@ -26,7 +26,9 @@ import { KiltCredentialV1 } from '../types'
 export const mockedApi = ApiMocks.createAugmentedApi()
 
 const attestationCreatedIndex = u8aToU8a([
-  62,
+  mockedApi.runtimeMetadata.asLatest.pallets
+    .find((x) => x.name.match(/attestation/i))!
+    .index.toNumber(),
   mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
 ])
 export function makeAttestationCreatedEvents(events: unknown[][]) {

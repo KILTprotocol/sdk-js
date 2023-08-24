@@ -29,7 +29,7 @@ import { makeStatementsJsonLD } from './utils.js'
  * @param opts.blockHash Hash of a block at which the proof must be verifiable.
  * @returns An embedded proof for a verifiable credential derived from the input.
  */
-export function proofFromICredential(
+function proofFromICredential(
   credential: ICredential,
   { blockHash }: { blockHash: Uint8Array }
 ): Types.KiltAttestationProofV1 {
@@ -62,7 +62,7 @@ export function proofFromICredential(
  * @param options.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
  * @returns A KiltCredentialV1 with embedded KiltAttestationProofV1 proof.
  */
-export function vcFromICredential(
+function vcFromICredential(
   input: ICredential,
   {
     issuer,

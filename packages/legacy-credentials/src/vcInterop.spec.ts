@@ -218,7 +218,7 @@ it('reproduces credential in round trip', () => {
   expect(fromVC(VC)).toMatchObject(credential)
 })
 
-it.skip('it verifies credential with selected properties revealed', async () => {
+it('it verifies credential with selected properties revealed', async () => {
   const reducedCredential = removeClaimProperties(credential, [
     'name',
     'birthday',
@@ -231,6 +231,9 @@ it.skip('it verifies credential with selected properties revealed', async () => 
   })
 
   await expect(
-    KiltAttestationProofV1.verify(reducedVC, proof, { api: mockedApi })
+    KiltAttestationProofV1.verify(reducedVC, proof, {
+      api: mockedApi,
+      cTypes: [cType],
+    })
   ).resolves.not.toThrow()
 })
