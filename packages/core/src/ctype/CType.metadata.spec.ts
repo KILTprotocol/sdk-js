@@ -11,12 +11,12 @@ import * as CType from './CType'
 import { MetadataModel } from './CType.schemas'
 
 describe('CType', () => {
-  let ctype: ICType
+  let cType: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
   let metadata: ICTypeMetadata
 
   beforeAll(async () => {
-    ctype = CType.fromProperties('CtypeMetaData', {
+    cType = CType.fromProperties('CtypeMetaData', {
       'first-property': { type: 'integer' },
       'second-property': { type: 'string' },
     })
@@ -32,11 +32,11 @@ describe('CType', () => {
 
     metadata = {
       metadata: ctypeMetadata,
-      cTypeId: ctype.$id,
+      cTypeId: cType.$id,
     }
   })
 
-  it('verifies the metadata of a ctype', async () => {
+  it('verifies the metadata of a cType', async () => {
     expect(() => CType.verifyCTypeMetadata(metadata)).not.toThrow()
     expect(metadata.cTypeId).not.toHaveLength(0)
     expect(() =>
@@ -46,13 +46,13 @@ describe('CType', () => {
       CType.verifyObjectAgainstSchema(ctypeMetadata, MetadataModel)
     ).toThrow()
   })
-  it('checks if the metadata matches corresponding ctype hash', async () => {
-    expect(metadata.cTypeId).toEqual(ctype.$id)
+  it('checks if the metadata matches corresponding cType hash', async () => {
+    expect(metadata.cTypeId).toEqual(cType.$id)
   })
   it('throws error when supplied malformed constructor input', () => {
     const faultyMetadata: ICTypeMetadata = {
       metadata: ctypeMetadata,
-      cTypeId: ctype.$id,
+      cTypeId: cType.$id,
     }
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
