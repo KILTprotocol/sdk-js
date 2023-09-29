@@ -25,14 +25,14 @@ type UriFragment = `#${string}`
 /**
  * URI for DID resources like keys or service endpoints.
  */
-type DidResourceUri = `${DidUri}${UriFragment}`
+export type DidResourceUri = `${DidUri}${UriFragment}`
 
 type Base58BtcMultibaseString = `z${string}`
 
 /*
  * The verification method map MUST include the id, type, controller, and specific verification material properties that are determined by the value of type and are defined in 5.2.1 Verification Material. A verification method MAY include additional properties. Verification methods SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
  */
-type VerificationMethod = {
+export type VerificationMethod = {
   /*
    * The value of the id property for a verification method MUST be a string that conforms to the rules in Section 3.2 DID URL Syntax.
    */
@@ -54,7 +54,7 @@ type VerificationMethod = {
 /*
  * Each service map MUST contain id, type, and serviceEndpoint properties. Each service extension MAY include additional properties and MAY further restrict the properties associated with the extension.
  */
-type Service = {
+export type Service = {
   /*
    * The value of the id property MUST be a URI conforming to [RFC3986]. A conforming producer MUST NOT produce multiple service entries with the same id. A conforming consumer MUST produce an error if it detects multiple service entries with the same id.
    */
