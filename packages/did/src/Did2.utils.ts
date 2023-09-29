@@ -5,12 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { decode as multibaseDecode } from 'multibase'
+
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import type { DidDocumentV2, KiltAddress } from '@kiltprotocol/types'
 
-import type { VerificationKeyType } from './DidDetailsv2/DidDetailsV2.js'
+import type {
+  DidKeyType,
+  VerificationKeyType,
+  VerificationMethodRelationship,
+} from './DidDetailsv2/DidDetailsV2.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -98,6 +104,48 @@ export function parse(
   throw new SDKErrors.InvalidDidFormatError(didUri)
 }
 
+type DecodedVerificationMethod = {
+  publicKey: Uint8Array
+  keyType: DidKeyType
+}
+
+const multicodecPrefixes: Record<number, [DidKeyType, number]> = {
+  0xe7: ['ecdsa', 33],
+  0xec: ['x25519', 32],
+  0xed: ['ed25519', 32],
+  0xef: ['sr25519', 32],
+}
+
+/**
+ * Decode a multibase, multicodec representation of a verification method into its fundamental components: the public key and the key type.
+ *
+ * @param verificationMethod The verification method.
+ * @returns The decoded public key and [DidKeyType].
+ */
+export function decodeMulticodecVerificationMethod(
+  verificationMethod: Pick<
+    DidDocumentV2.VerificationMethod,
+    'publicKeyMultibase'
+  >
+): DecodedVerificationMethod {
+  const decodedMulticodecPublicKey = multibaseDecode(
+    verificationMethod.publicKeyMultibase
+  )
+  const [keyTypeFlag, publicKey] = [
+    decodedMulticodecPublicKey.subarray(0, 1)[0],
+    decodedMulticodecPublicKey.subarray(1),
+  ]
+  const [keyType, expectedPublicKeyLength] = multicodecPrefixes[keyTypeFlag]
+  if (keyType !== undefined && publicKey.length === expectedPublicKeyLength) {
+    return {
+      keyType,
+      publicKey,
+    }
+  }
+  // TODO: Change to proper error
+  throw new Error('Invalid encoding of the verification method.')
+}
+
 /**
  * Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
  *
@@ -148,21 +196,15 @@ export function validateUri(
   DataUtils.verifyKiltAddress(address)
 }
 
-/**
- * Internal: derive the address part of the DID when it is created from authentication key.
- *
- * @param input The authentication key.
- * @param input.publicKey The public key.
- * @param input.type The type of the key.
- * @returns The expected address of the DID.
- */
-export function getAddressByKey({
-  publicKey,
-  type,
-}: {
-  publicKey: Uint8Array
-  type: VerificationKeyType
-}): KiltAddress {
+// TODO: Fix JSDoc
+export function getAddressByVerificationMethod(
+  verificationMethod: Pick<
+    DidDocumentV2.VerificationMethod,
+    'publicKeyMultibase'
+  >
+): KiltAddress {
+  const { keyType: type, publicKey } =
+    decodeMulticodecVerificationMethod(verificationMethod)
   if (type === 'ed25519' || type === 'sr25519') {
     return encodeAddress(publicKey, ss58Format)
   }

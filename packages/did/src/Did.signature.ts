@@ -129,7 +129,7 @@ export function isDidSignature(
  */
 export function signatureToJson({
   signature,
-  keyUri,
+  verificationMethodUri: keyUri,
 }: SignResponseData): DidSignature {
   return { signature: Crypto.u8aToHex(signature), keyUri }
 }
@@ -146,5 +146,5 @@ export function signatureFromJson(
 ): Pick<SignResponseData, 'keyUri' | 'signature'> {
   const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
   const signature = Crypto.coToUInt8(input.signature)
-  return { signature, keyUri }
+  return { signature, verificationMethodUri: keyUri }
 }

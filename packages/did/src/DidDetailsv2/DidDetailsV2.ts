@@ -7,10 +7,14 @@
 
 import type { BN, DidDocumentV2, KeyRelationship } from '@kiltprotocol/types'
 
-export type VerificationMethodRelationship =
+export type SignatureVerificationMethodRelationship =
   | 'authentication'
   | 'capabilityDelegation'
   | 'assertionMethod'
+export type EncryptionMethodRelationship = 'keyAgreementKey'
+
+export type VerificationMethodRelationship =
+  SignatureVerificationMethodRelationship & EncryptionMethodRelationship
 
 /**
  * Possible types for a DID verification key.
@@ -40,66 +44,74 @@ const encryptionKeyTypesC = ['x25519'] as const
 export const encryptionKeyTypes = encryptionKeyTypesC as unknown as string[]
 export type EncryptionKeyType = typeof encryptionKeyTypesC[number]
 
-/**
- * The SDK-specific base details of a DID key.
- */
-export type BaseDidKey = {
-  /**
-   * Relative key URI: `#` sign followed by fragment part of URI.
-   */
+export type DidKeyType = VerificationKeyType | EncryptionKeyType
+
+// /**
+//  * The SDK-specific base details of a DID key.
+//  */
+// export type BaseDidKey = {
+//   /**
+//    * Relative key URI: `#` sign followed by fragment part of URI.
+//    */
+//   id: DidDocumentV2.UriFragment
+//   /**
+//    * The public key material.
+//    */
+//   publicKey: Uint8Array
+//   /**
+//    * The inclusion block of the key, if stored on chain.
+//    */
+//   includedAt?: BN
+//   /**
+//    * The type of the key.
+//    */
+//   type: string
+// }
+
+// /**
+//  * Type of a new key material to add under a DID.
+//  */
+// export type BaseNewDidKey = {
+//   publicKey: Uint8Array
+//   type: string
+// }
+
+// /**
+//  * Type of a new verification key to add under a DID.
+//  */
+// export type NewDidVerificationKey = BaseNewDidKey & {
+//   type: VerificationKeyType
+// }
+// /**
+//  * A new public key specified when creating a new light DID.
+//  */
+// export type NewLightDidVerificationKey = NewDidVerificationKey & {
+//   type: LightDidSupportedVerificationKeyType
+// }
+// /**
+//  * Type of a new encryption key to add under a DID.
+//  */
+// export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
+// /**
+//  * The SDK-specific details of a DID verification key.
+//  */
+// export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
+// /**
+//  * The SDK-specific details of a DID encryption key.
+//  */
+// export type DidEncryptionKey = BaseDidKey & { type: EncryptionKeyType }
+// /**
+//  * The SDK-specific details of a DID key.
+//  */
+// export type DidKey = DidVerificationKey | DidEncryptionKey
+
+export type NewVerificationMethod = Omit<
+  DidDocumentV2.VerificationMethod,
+  'controller'
+> & {
   id: DidDocumentV2.UriFragment
-  /**
-   * The public key material.
-   */
-  publicKey: Uint8Array
-  /**
-   * The inclusion block of the key, if stored on chain.
-   */
-  includedAt?: BN
-  /**
-   * The type of the key.
-   */
-  type: string
 }
 
-/**
- * Type of a new key material to add under a DID.
- */
-export type BaseNewDidKey = {
-  publicKey: Uint8Array
-  type: string
+export type NewServiceEndpoint = DidDocumentV2.Service & {
+  id: DidDocumentV2.UriFragment
 }
-
-/**
- * Type of a new verification key to add under a DID.
- */
-export type NewDidVerificationKey = BaseNewDidKey & {
-  type: VerificationKeyType
-}
-/**
- * A new public key specified when creating a new light DID.
- */
-export type NewLightDidVerificationKey = NewDidVerificationKey & {
-  type: LightDidSupportedVerificationKeyType
-}
-/**
- * Type of a new encryption key to add under a DID.
- */
-export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
-/**
- * The SDK-specific details of a DID verification key.
- */
-export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
-/**
- * The SDK-specific details of a DID encryption key.
- */
-export type DidEncryptionKey = BaseDidKey & { type: EncryptionKeyType }
-/**
- * The SDK-specific details of a DID key.
- */
-export type DidKey = DidVerificationKey | DidEncryptionKey
-
-export type NewServiceEndpoint = Pick<
-  DidDocumentV2.Service,
-  'serviceEndpoint' | 'type'
-> & { id: DidDocumentV2.UriFragment }
