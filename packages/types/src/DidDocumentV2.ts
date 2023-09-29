@@ -21,7 +21,7 @@ export type DidUri =
 /**
  * The fragment part of the DID URI including the `#` character.
  */
-type UriFragment = `#${string}`
+export type UriFragment = `#${string}`
 /**
  * URI for DID resources like keys or service endpoints.
  */
@@ -62,7 +62,7 @@ export type Service = {
   /*
    * The value of the type property MUST be a string or a set of strings. In order to maximize interoperability, the service type and its associated properties SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
    */
-  type: string
+  type: string[]
   /*
    * The value of the serviceEndpoint property MUST be a string, a map, or a set composed of one or more strings and/or maps. All string values MUST be valid URIs conforming to [RFC3986] and normalized according to the Normalization and Comparison rules in RFC3986 and to any normalization rules in its applicable URI scheme specification.
    */

@@ -24,7 +24,7 @@ export interface SignRequestData {
   /**
    * The did key relationship to be used.
    */
-  keyRelationship: VerificationKeyRelationship
+  verificationMethodRelationship: VerificationKeyRelationship
 
   /**
    * The DID to be used for signing.

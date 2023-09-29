@@ -11,7 +11,7 @@ import type {
   DidResourceUri,
   VerificationMethod,
   Service,
-} from './DidV2.js'
+} from './DidDocumentV2'
 
 type DidContentType = 'application/did+ld+json' | 'application/did+json'
 

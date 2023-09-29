@@ -27,3 +27,6 @@ export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
 export * from './PublicCredential.js'
 export * from './Imported.js'
+
+export * as DidDocumentV2 from './DidDocumentV2.js'
+export * as DidResolverV2 from './DidResolverV2.js'
