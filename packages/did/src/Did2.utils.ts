@@ -112,17 +112,6 @@ export function isSameSubject(
   return parse(didA).address === parse(didB).address
 }
 
-export type EncodedVerificationKey =
-  | { sr25519: Uint8Array }
-  | { ed25519: Uint8Array }
-  | { ecdsa: Uint8Array }
-
-export type EncodedEncryptionKey = { x25519: Uint8Array }
-
-export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
-
-export type EncodedSignature = EncodedVerificationKey
-
 /**
  * Checks that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
  * Throws otherwise.

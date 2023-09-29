@@ -19,16 +19,14 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import type {
+  BN,
   Deposit,
   DidDocumentV2,
   KiltAddress,
-  BN,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
+  SignExtrinsicCallback,
   SignRequestData,
   SignResponseData,
   SubmittableExtrinsic,
-  SignExtrinsicCallback,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
@@ -36,26 +34,32 @@ import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import {
   EncryptionKeyType,
-  RelativeServiceEndpoint,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewServiceEndpoint,
   VerificationKeyType,
   verificationKeyTypes,
   VerificationMethodRelationship,
 } from './DidDetailsv2/DidDetailsV2.js'
 
-import {
-  EncodedEncryptionKey,
-  EncodedKey,
-  EncodedSignature,
-  EncodedVerificationKey,
-  getAddressByKey,
-  getFullDidUri,
-  parse,
-} from './Did2.utils.js'
+import { getAddressByKey, getFullDidUri, parse } from './Did2.utils.js'
 
 // ### Chain type definitions
 
+export type ChainDidIdentifier = KiltAddress
 export type ChainDidPublicKey = DidDidDetailsDidPublicKey
 export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
+
+export type EncodedVerificationKey =
+  | { sr25519: Uint8Array }
+  | { ed25519: Uint8Array }
+  | { ecdsa: Uint8Array }
+
+export type EncodedEncryptionKey = { x25519: Uint8Array }
+
+export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
+
+export type EncodedSignature = EncodedVerificationKey
 
 // ### RAW QUERYING (lowest layer)
 
@@ -65,7 +69,7 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
  * @param did The DID to format.
  * @returns The blockchain-formatted DID.
  */
-export function toChain(did: DidDocumentV2.DidUri): KiltAddress {
+export function toChain(did: DidDocumentV2.DidUri): ChainDidIdentifier {
   return parse(did).address
 }
 
@@ -75,8 +79,18 @@ export function toChain(did: DidDocumentV2.DidUri): KiltAddress {
  * @param id The DID resource ID to format.
  * @returns The blockchain-formatted ID.
  */
-export function resourceIdToChain(id: DidDocumentV2.UriFragment): string {
+export function fragmentIdToChain(id: DidDocumentV2.UriFragment): string {
   return id.replace(/^#/, '')
+}
+
+/**
+ * Convert the DID data from blockchain format to the DID URI.
+ *
+ * @param encoded The chain-formatted DID.
+ * @returns The DID URI.
+ */
+export function fromChain(encoded: AccountId32): DidDocumentV2.DidUri {
+  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 /**
@@ -92,7 +106,7 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   }
 }
 
-type ChainBaseDidVerificationMethod = {
+export type ChainDidBaseKey = {
   /**
    * Relative key URI: `#` sign followed by fragment part of URI.
    */
@@ -110,13 +124,13 @@ type ChainBaseDidVerificationMethod = {
    */
   type: string
 }
-export type ChainDidVerificationKey = ChainBaseDidVerificationMethod & {
+export type ChainDidVerificationKey = ChainDidBaseKey & {
   type: VerificationKeyType
 }
-export type ChainDidEncryptionKey = ChainBaseDidVerificationMethod & {
+export type ChainDidEncryptionKey = ChainDidBaseKey & {
   type: EncryptionKeyType
 }
-type ChainDidKey = ChainDidVerificationKey | ChainDidEncryptionKey
+export type ChainDidKey = ChainDidVerificationKey | ChainDidEncryptionKey
 
 export type ChainDidService = {
   id: string
@@ -124,9 +138,7 @@ export type ChainDidService = {
   urls: string[]
 }
 
-// ### DECODED QUERYING types
-
-type ChainDidDetails = {
+export type ChainDidDetails = {
   authentication: [ChainDidVerificationKey]
   assertionMethod?: [ChainDidVerificationKey]
   capabilityDelegation?: [ChainDidVerificationKey]
@@ -138,30 +150,20 @@ type ChainDidDetails = {
   deposit: Deposit
 }
 
-// ### DECODED QUERYING (builds on top of raw querying)
-
 function didPublicKeyDetailsFromChain(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
-): ChainDidVerificationKey {
+): ChainDidKey {
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
     : keyDetails.key.asPublicVerificationKey
   return {
     id: `#${keyId.toHex()}`,
-    type: key.type.toLowerCase() as ChainDidVerificationKey['type'],
     publicKey: key.value.toU8a(),
+    type: key.type.toLowerCase() as
+      | ChainDidVerificationKey['type']
+      | ChainDidEncryptionKey['type'],
   }
-}
-
-/**
- * Convert the DID data from blockchain format to the DID URI.
- *
- * @param encoded The chain-formatted DID.
- * @returns The DID URI.
- */
-export function fromChain(encoded: AccountId32): DidDocumentV2.DidUri {
-  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 /**
@@ -188,7 +190,7 @@ export function documentFromChain(
       didPublicKeyDetailsFromChain(keyId, keyDetails)
     )
     .reduce((res, key) => {
-      res[resourceIdToChain(key.id)] = key
+      res[fragmentIdToChain(key.id)] = key
       return res
     }, {})
 
@@ -237,7 +239,7 @@ function isUri(str: string): boolean {
   }
 }
 
-const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+const uriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
 
 /**
  * Checks if a string is a valid URI fragment according to RFC#3986.
@@ -247,7 +249,7 @@ const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
  */
 function isUriFragment(str: string): boolean {
   try {
-    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
+    return uriFragmentRegex.test(str) && !!decodeURIComponent(str)
   } catch {
     return false
   }
@@ -260,14 +262,14 @@ function isUriFragment(str: string): boolean {
  *
  * @param endpoint A service endpoint object to check.
  */
-export function validateService(endpoint: RelativeServiceEndpoint): void {
+export function validateNewService(endpoint: NewServiceEndpoint): void {
   const { id, serviceEndpoint } = endpoint
   if (id.startsWith('did:kilt')) {
     throw new SDKErrors.DidError(
       `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
     )
   }
-  if (!isUriFragment(resourceIdToChain(id))) {
+  if (!isUriFragment(fragmentIdToChain(id))) {
     throw new SDKErrors.DidError(
       `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
     )
@@ -287,13 +289,11 @@ export function validateService(endpoint: RelativeServiceEndpoint): void {
  * @param service The DID service to format.
  * @returns The blockchain-formatted DID service.
  */
-export function serviceToChain(
-  service: RelativeServiceEndpoint
-): ChainDidService {
-  validateService(service)
+export function serviceToChain(service: NewServiceEndpoint): ChainDidService {
+  validateNewService(service)
   const { id, type, serviceEndpoint } = service
   return {
-    id: resourceIdToChain(id),
+    id: fragmentIdToChain(id),
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -316,7 +316,7 @@ export function serviceFromChain(
   }
 }
 
-// ### EXTRINSICS types
+// ### EXTRINSICS
 
 export type AuthorizeCallInput = {
   did: DidDocumentV2.DidUri
@@ -325,8 +325,6 @@ export type AuthorizeCallInput = {
   submitter: KiltAddress
   blockNumber?: AnyNumber
 }
-
-// ### EXTRINSICS
 
 export function publicKeyToChain(
   key: NewDidVerificationKey
@@ -352,7 +350,7 @@ interface GetStoreTxInput {
   capabilityDelegation?: [NewDidVerificationKey]
   keyAgreement?: NewDidEncryptionKey[]
 
-  service?: RelativeServiceEndpoint[]
+  service?: NewServiceEndpoint[]
 }
 
 export type GetStoreTxSignCallback = (

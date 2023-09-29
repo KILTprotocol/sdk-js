@@ -144,10 +144,10 @@ type DereferenceResult = {
   contentMetadata: DereferenceContentMetadata
 }
 
-export interface DidResolver {
-  /*
-   * The resolve function returns the DID document in its abstract form (a map).
-   */
+/*
+ * The resolve function returns the DID document in its abstract form (a map).
+ */
+export interface ResolveDid {
   resolve: (
     /*
      * This is the DID to resolve.
@@ -160,7 +160,9 @@ export interface DidResolver {
      */
     resolutionOptions: ResolutionOptions
   ) => Promise<ResolutionResult>
+}
 
+export interface DereferenceDidUrl {
   dereference: (
     /*
      * A conformant DID URL as a single string.
@@ -176,3 +178,5 @@ export interface DidResolver {
     dereferenceOptions: DereferenceOptions
   ) => Promise<DereferenceResult>
 }
+
+export interface DidResolver extends ResolveDid, DereferenceDidUrl {}
