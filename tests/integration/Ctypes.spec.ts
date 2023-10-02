@@ -51,9 +51,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
-    const ctype = makeCType()
+    const cType = makeCType()
     const { keypair, getSignCallback } = makeSigningKeyTool()
-    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
@@ -61,15 +61,15 @@ describe('When there is an CtypeCreator and a verifier', () => {
       keypair.address
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
-    await expect(CType.verifyStored(ctype)).rejects.toThrow()
+    await expect(CType.verifyStored(cType)).rejects.toThrow()
     if (hasBlockNumbers) {
-      await expect(CType.fetchFromChain(ctype.$id)).rejects.toThrow()
+      await expect(CType.fetchFromChain(cType.$id)).rejects.toThrow()
     }
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
-    const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = makeCType()
+    const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
@@ -79,18 +79,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await submitTx(authorizedStoreTx, paymentAccount)
 
     if (hasBlockNumbers) {
-      const retrievedCType = await CType.fetchFromChain(ctype.$id)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { ctype: originalCtype, creator } = retrievedCType
-      expect(originalCtype).toStrictEqual(ctype)
+      const { cType: originalCtype, creator } = await CType.fetchFromChain(
+        cType.$id
+      )
+      expect(originalCtype).toStrictEqual(cType)
       expect(creator).toBe(ctypeCreator.uri)
       await expect(CType.verifyStored(originalCtype)).resolves.not.toThrow()
     }
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
-    const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const cType = makeCType()
+    const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
@@ -99,7 +99,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
-    const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
+    const storeTx2 = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx2 = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx2,
@@ -114,7 +114,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     })
 
     if (hasBlockNumbers) {
-      const retrievedCType = await CType.fetchFromChain(ctype.$id)
+      const retrievedCType = await CType.fetchFromChain(cType.$id)
       expect(retrievedCType.creator).toBe(ctypeCreator.uri)
     }
   }, 45_000)
