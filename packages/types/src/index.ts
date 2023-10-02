@@ -30,3 +30,4 @@ export * from './Imported.js'
 
 export * as DidDocumentV2 from './DidDocumentV2.js'
 export * as DidResolverV2 from './DidResolverV2.js'
+export * as CryptoCallbacksV2 from './CryptoCallbacksV2.js'

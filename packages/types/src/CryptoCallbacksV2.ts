@@ -5,12 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  DidResourceUri,
-  DidUri,
-  DidVerificationKey,
-  VerificationKeyRelationship,
-} from './DidDocument.js'
+import type { DidUri } from './DidDocumentV2'
+import { DidDocumentV2 } from './index.js'
 
 /**
  * Base interface for all signing requests.
@@ -24,7 +20,7 @@ export interface SignRequestData {
   /**
    * The did key relationship to be used.
    */
-  keyRelationship: VerificationKeyRelationship
+  verificationMethodRelationship: DidDocumentV2.SignatureVerificationMethodRelationship
 
   /**
    * The DID to be used for signing.
@@ -43,11 +39,7 @@ export interface SignResponseData {
   /**
    * The did key uri used for signing.
    */
-  keyUri: DidResourceUri
-  /**
-   * The did key type used for signing.
-   */
-  keyType: DidVerificationKey['type']
+  verificationMethod: DidDocumentV2.VerificationMethod
 }
 
 /**
@@ -62,7 +54,7 @@ export type SignCallback = (
  */
 export type SignExtrinsicCallback = (
   signData: SignRequestData
-) => Promise<Omit<SignResponseData, 'keyUri'>>
+) => Promise<SignResponseData>
 
 /**
  * Base interface for encryption requests.
@@ -97,7 +89,7 @@ export interface EncryptResponseData {
   /**
    * The did key uri used for the encryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: DidDocumentV2.VerificationMethod
 }
 
 /**
@@ -126,7 +118,7 @@ export interface DecryptRequestData {
   /**
    * The did key uri, which should be used for decryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: DidDocumentV2.VerificationMethod
 }
 
 export interface DecryptResponseData {

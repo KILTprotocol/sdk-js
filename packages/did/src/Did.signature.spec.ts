@@ -59,7 +59,7 @@ describe('light DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -90,13 +90,13 @@ describe('light DID', () => {
 
     const deserialized = signatureFromJson(oldSignature)
     expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.verificationMethodUri).toStrictEqual(keyUri)
+    expect(deserialized.keyUri).toStrictEqual(keyUri)
     expect(deserialized).not.toHaveProperty('keyId')
   })
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: SIGNED_BYTES,
       did: did.uri,
       keyRelationship: 'authentication',
@@ -113,7 +113,7 @@ describe('light DID', () => {
 
   it('fails if relationship does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -131,7 +131,7 @@ describe('light DID', () => {
   it('fails if key id does not match', async () => {
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
-    let { signature, verificationMethodUri: keyUri } = await sign({
+    let { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -150,7 +150,7 @@ describe('light DID', () => {
 
   it('fails if signature does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -169,7 +169,7 @@ describe('light DID', () => {
     jest.mocked(resolveKey).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
-    let { signature, verificationMethodUri: keyUri } = await sign({
+    let { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -189,7 +189,7 @@ describe('light DID', () => {
   it('does not verify if migrated to Full DID', async () => {
     jest.mocked(resolveKey).mockRejectedValue(new Error('Migrated'))
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -214,7 +214,7 @@ describe('light DID', () => {
 
   it('detects signer expectation mismatch if signature is by unrelated did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -237,7 +237,7 @@ describe('light DID', () => {
 
   it('allows variations of the same light did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -285,7 +285,7 @@ describe('full DID', () => {
     }
     sign = async ({ data }) => ({
       signature: keypair.sign(data),
-      verificationMethodUri: `${did.uri}#0x12345`,
+      keyUri: `${did.uri}#0x12345`,
       keyType: 'sr25519',
     })
   })
@@ -303,7 +303,7 @@ describe('full DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -320,7 +320,7 @@ describe('full DID', () => {
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: SIGNED_BYTES,
       did: did.uri,
       keyRelationship: 'authentication',
@@ -338,7 +338,7 @@ describe('full DID', () => {
   it('does not verify if deactivated', async () => {
     jest.mocked(resolveKey).mockRejectedValue(new Error('Deactivated'))
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -356,7 +356,7 @@ describe('full DID', () => {
   it('does not verify if not on chain', async () => {
     jest.mocked(resolveKey).mockRejectedValue(new Error('Not on chain'))
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',
@@ -373,7 +373,7 @@ describe('full DID', () => {
 
   it('accepts signature of full did for light did if enabled', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethodUri: keyUri } = await sign({
+    const { signature, keyUri } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
       did: did.uri,
       keyRelationship: 'authentication',

@@ -27,6 +27,16 @@ export type UriFragment = `#${string}`
  */
 export type DidResourceUri = `${DidUri}${UriFragment}`
 
+export type SignatureVerificationMethodRelationship =
+  | 'authentication'
+  | 'capabilityDelegation'
+  | 'assertionMethod'
+export type EncryptionMethodRelationship = 'keyAgreementKey'
+
+export type VerificationMethodRelationship =
+  | SignatureVerificationMethodRelationship
+  | EncryptionMethodRelationship
+
 type Base58BtcMultibaseString = `z${string}`
 
 /*
@@ -36,7 +46,7 @@ export type VerificationMethod = {
   /*
    * The value of the id property for a verification method MUST be a string that conforms to the rules in Section 3.2 DID URL Syntax.
    */
-  id: DidResourceUri
+  id: UriFragment
   /*
    * The value of the type property MUST be a string that references exactly one verification method type. In order to maximize global interoperability, the verification method type SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
    */
@@ -58,7 +68,7 @@ export type Service = {
   /*
    * The value of the id property MUST be a URI conforming to [RFC3986]. A conforming producer MUST NOT produce multiple service entries with the same id. A conforming consumer MUST produce an error if it detects multiple service entries with the same id.
    */
-  id: DidResourceUri
+  id: UriFragment
   /*
    * The value of the type property MUST be a string or a set of strings. In order to maximize interoperability, the service type and its associated properties SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
    */
