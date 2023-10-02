@@ -13,9 +13,10 @@ import type { BN } from '@polkadot/util'
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
 import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { Chain as ChainUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import {
   getHashForSchema,
@@ -122,7 +123,7 @@ function extractCTypeCreationCallsFromDidCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.ctype.add.args>> {
-  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
+  const extrinsicCalls = Blockchain.flattenCalls(call, api)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
       api.tx.ctype.add.is(c)
@@ -134,7 +135,7 @@ function extractDidCallsFromBatchCall(
   api: ApiPromise,
   call: Call
 ): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
-  const extrinsicCalls = ChainUtils.flattenCalls(api, call)
+  const extrinsicCalls = Blockchain.flattenCalls(call, api)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
       api.tx.did.submitDidCall.is(c)
@@ -161,15 +162,15 @@ export async function fetchFromChain(
       'Cannot fetch CType definitions on a chain that does not store the createdAt block'
     )
 
-  const extrinsic = await ChainUtils.retrieveExtrinsicFromBlock(
-    api,
+  const extrinsic = await Blockchain.retrieveExtrinsicFromBlock(
     createdAt,
     ({ events }) =>
       events.some(
         (event) =>
           api.events.ctype.CTypeCreated.is(event) &&
           event.data[1].toString() === cTypeHash
-      )
+      ),
+    api
   )
 
   if (extrinsic === null) {
@@ -179,7 +180,7 @@ export async function fetchFromChain(
   }
 
   if (
-    !ChainUtils.isBatch(api, extrinsic) &&
+    !Blockchain.isBatch(extrinsic, api) &&
     !api.tx.did.submitDidCall.is(extrinsic)
   ) {
     throw new SDKErrors.PublicCredentialError(
@@ -189,7 +190,7 @@ export async function fetchFromChain(
 
   // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
   // otherwise the extrinsic is itself a submit_did_call, so just take it.
-  const didCalls = ChainUtils.isBatch(api, extrinsic)
+  const didCalls = Blockchain.isBatch(extrinsic, api)
     ? extrinsic.args[0].flatMap((batchCall) =>
         extractDidCallsFromBatchCall(api, batchCall)
       )
