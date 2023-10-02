@@ -123,10 +123,10 @@ async function resolveInternal(
   }
 }
 
-async function resolve(
+export async function resolve(
   did: DidDocumentV2.DidUri,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resolutionOptions: DidResolverV2.DidResolutionOptions
+  resolutionOptions: DidResolverV2.DidResolutionOptions = {}
 ): Promise<DidResolverV2.ResolutionResult> {
   const result: DidResolverV2.ResolutionResult = {
     didDocumentMetadata: {},
@@ -154,4 +154,76 @@ async function resolve(
   return result
 }
 
-// TODO: Implement DID dereferencing
+type InternalDereferenceResult = {
+  contentStream?: DidResolverV2.DereferenceContentStream
+  contentMetadata: DidResolverV2.DereferenceContentMetadata
+}
+
+async function dereferenceInternal(
+  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  dereferenceOptions: DidResolverV2.DereferenceOptions
+): Promise<InternalDereferenceResult | null> {
+  const { did, fragment } = parse(didUrl)
+
+  const { didDocument, didDocumentMetadata } = await resolve(did)
+
+  if (fragment === undefined) {
+    return {
+      contentStream: didDocument,
+      contentMetadata: didDocumentMetadata,
+    }
+  }
+  const dereferencedResource = (() => {
+    const verificationMethod = didDocument?.verificationMethod.find(
+      (m) => m.id === fragment
+    )
+    if (verificationMethod !== undefined) {
+      return verificationMethod
+    }
+
+    const service = didDocument?.service?.find((s) => s.id === fragment)
+    return service
+  })()
+
+  return {
+    contentStream: dereferencedResource,
+    contentMetadata: {},
+  }
+}
+
+export async function dereference(
+  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  dereferenceOptions: DidResolverV2.DereferenceOptions = {}
+): Promise<DidResolverV2.DereferenceResult> {
+  const result: DidResolverV2.DereferenceResult = {
+    contentMetadata: {},
+    dereferencingMetadata: {},
+  }
+
+  try {
+    validateUri(didUrl)
+  } catch (error) {
+    result.dereferencingMetadata.error = 'invalidDidUrl'
+    return result
+  }
+
+  const resolutionResult = await dereferenceInternal(didUrl, dereferenceOptions)
+  if (!resolutionResult) {
+    result.dereferencingMetadata.error = 'notFound'
+    return result
+  }
+
+  const { contentMetadata, contentStream } = resolutionResult
+
+  result.contentMetadata = contentMetadata
+  result.contentStream = contentStream
+
+  return result
+}
+
+export const resolver: DidResolverV2.DidResolver = {
+  dereference,
+  resolve,
+}

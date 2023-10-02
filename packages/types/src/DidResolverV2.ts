@@ -76,7 +76,7 @@ export type ResolutionResult = {
   didDocumentMetadata: DidDocumentMetadata
 }
 
-type DereferenceOptions = {
+export type DereferenceOptions = {
   /*
    * The Media Type that the caller prefers for contentStream.
    * The Media Type MUST be expressed as an ASCII string.
@@ -92,7 +92,7 @@ type DereferenceOptions = {
  */
 type DidDereferenceMetadataError = 'invalidDidUrl' | 'notFound'
 
-type DereferencingMetadata = {
+export type DereferencingMetadata = {
   /*
    * The Media Type of the returned contentStream SHOULD be expressed using this property if dereferencing is successful.
    * The Media Type value MUST be expressed as an ASCII string.
@@ -107,11 +107,16 @@ type DereferencingMetadata = {
   error?: DidDereferenceMetadataError
 }
 
-type DereferenceContentStream = DidDocument | VerificationMethod | Service
+export type DereferenceContentStream =
+  | DidDocument
+  | VerificationMethod
+  | Service
 
-type DereferenceContentMetadata = DidDocumentMetadata | Record<string, never>
+export type DereferenceContentMetadata =
+  | DidDocumentMetadata
+  | Record<string, never>
 
-type DereferenceResult = {
+export type DereferenceResult = {
   /*
    * A metadata structure consisting of values relating to the results of the DID URL dereferencing process.
    * This structure is REQUIRED, and in the case of an error in the dereferencing process, this MUST NOT be empty.
@@ -159,7 +164,7 @@ export interface DereferenceDidUrl {
      * This is the DID URL to dereference.
      * To dereference a DID fragment, the complete DID URL including the DID fragment MUST be used. This input is REQUIRED.
      */
-    didUrl: DidResourceUri,
+    didUrl: DidUri | DidResourceUri,
     /*
      * A metadata structure consisting of input options to the dereference function in addition to the didUrl itself.
      * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.
