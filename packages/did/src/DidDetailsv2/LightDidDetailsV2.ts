@@ -5,7 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocumentV2, encryptionKeyTypes } from '@kiltprotocol/types'
+import {
+  DidDocumentV2,
+  encryptionKeyTypes,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+} from '@kiltprotocol/types'
 import { cbor, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   base58Decode,
@@ -13,25 +18,28 @@ import {
   decodeAddress,
 } from '@polkadot/util-crypto'
 import {
-  decodeMultikeyVerificationMethod,
-  encodeVerificationMethodToMultiKey,
-  getAddressByVerificationMethod,
+  keypairToMultibaseKey,
+  didKeyToVerificationMethod,
+  getAddressFromVerificationMethod,
   parse,
 } from '../Did2.utils.js'
 import { fragmentIdToChain, validateNewService } from '../Did2.chain.js'
-import type {
-  NewVerificationMethod,
-  NewServiceEndpoint,
-  DidKeyType,
-} from './DidDetailsV2.js'
+import type { NewService, DidVerificationKeyType } from './DidDetailsV2.js'
 
 /**
  * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
  */
 export type LightDidSupportedVerificationKeyType = Extract<
-  DidKeyType,
+  DidVerificationKeyType,
   'ed25519' | 'sr25519'
 >
+/**
+ * A new public key specified when creating a new light DID.
+ */
+export type NewLightDidVerificationKey = NewDidVerificationKey & {
+  type: LightDidSupportedVerificationKeyType
+}
+
 type LightDidEncoding = '00' | '01'
 
 const authenticationKeyId = '#authentication'
@@ -55,61 +63,54 @@ const lightDidEncodingToVerificationKeyType: Record<
 
 export type CreateDocumentInput = {
   /**
-   * The DID authentication key. This is mandatory and will be used as the first authentication key
+   * The DID authentication verification method. This is mandatory and will be used as the first authentication verification method
    * of the full DID upon migration.
    */
-  authentication: [NewVerificationMethod]
+  authentication: [NewDidVerificationKey]
   /**
-   * The optional DID encryption key. If present, it will be used as the first key agreement key
+   * The optional DID encryption verification method. If present, it will be used as the first key agreement verification method
    * of the full DID upon migration.
    */
-  keyAgreement?: [NewVerificationMethod]
+  keyAgreement?: [NewDidEncryptionKey]
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
    */
-  service?: NewServiceEndpoint[]
+  service?: NewService[]
 }
 
 function validateCreateDocumentInput({
   authentication,
   keyAgreement,
-  service: services,
+  service,
 }: CreateDocumentInput): void {
   // Check authentication key type
-  const { keyType: authenticationKeyType } = decodeMultikeyVerificationMethod(
-    authentication[0]
-  )
-  const authenticationKeyTypeEncoding = verificationKeyTypeToLightDidEncoding[
-    authenticationKeyType
-  ] as LightDidEncoding
+  const authenticationKeyTypeEncoding =
+    verificationKeyTypeToLightDidEncoding[authentication[0].type]
 
-  if (!authenticationKeyTypeEncoding) {
+  if (authenticationKeyTypeEncoding !== undefined) {
     throw new SDKErrors.UnsupportedKeyError(authentication[0].type)
   }
-
-  if (keyAgreement?.[0] !== undefined) {
-    const { keyType: keyAgreementKeyType } = decodeMultikeyVerificationMethod(
-      keyAgreement[0]
+  if (
+    keyAgreement?.[0].type &&
+    !encryptionKeyTypes.includes(keyAgreement[0].type)
+  ) {
+    throw new SDKErrors.DidError(
+      `Encryption key type "${keyAgreement[0].type}" is not supported`
     )
-    if (!encryptionKeyTypes.includes(keyAgreementKeyType)) {
-      throw new SDKErrors.DidError(
-        `Encryption key type "${keyAgreementKeyType}" is not supported`
-      )
-    }
   }
 
   // Checks that for all service IDs have regular strings as their ID and not a full DID.
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
-  services?.forEach((service) => {
+  service?.forEach((s) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
-    if (service.id === '#authentication' || service.id === '#encryption') {
+    if (s.id === '#authentication' || s.id === '#encryption') {
       throw new SDKErrors.DidError(
-        `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
+        `Cannot specify a service ID with the name "${s.id}" as it is a reserved keyword`
       )
     }
-    validateNewService(service)
+    validateNewService(s)
   })
 }
 
@@ -117,9 +118,9 @@ const KEY_AGREEMENT_MAP_KEY = 'e'
 const SERVICES_MAP_KEY = 's'
 
 interface SerializableStructure {
-  [KEY_AGREEMENT_MAP_KEY]?: NewVerificationMethod
+  [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
   [SERVICES_MAP_KEY]?: Array<
-    Partial<Omit<NewServiceEndpoint, 'id'>> & {
+    Partial<Omit<NewService, 'id'>> & {
       id: string
     } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their service endpoints.
   >
@@ -197,11 +198,11 @@ export function createLightDidDocument({
     service,
   })
   // Validity is checked in validateCreateDocumentInput
-  const { keyType: authenticationKeyType, publicKey: authenticationPublicKey } =
-    decodeMultikeyVerificationMethod(authentication[0])
   const authenticationKeyTypeEncoding =
-    verificationKeyTypeToLightDidEncoding[authenticationKeyType]
-  const address = getAddressByVerificationMethod(authentication[0])
+    verificationKeyTypeToLightDidEncoding[authentication[0].type]
+  const address = getAddressFromVerificationMethod({
+    publicKeyMultibase: keypairToMultibaseKey(authentication[0]),
+  })
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const uri =
@@ -211,22 +212,20 @@ export function createLightDidDocument({
     id: uri,
     authentication: [authenticationKeyId],
     verificationMethod: [
-      encodeVerificationMethodToMultiKey(uri, authenticationKeyId, {
-        keyType: authenticationKeyType,
-        publicKey: authenticationPublicKey,
+      didKeyToVerificationMethod(uri, authenticationKeyId, {
+        keyType: authentication[0].type,
+        publicKey: authentication[0].publicKey,
       }),
     ],
     service,
   }
 
   if (keyAgreement !== undefined) {
-    const { keyType: keyAgreementKeyType, publicKey: keyAgreementPublicKey } =
-      decodeMultikeyVerificationMethod(keyAgreement[0])
     did.keyAgreement = [encryptionKeyId]
     did.verificationMethod.push(
-      encodeVerificationMethodToMultiKey(uri, encryptionKeyId, {
-        keyType: keyAgreementKeyType,
-        publicKey: keyAgreementPublicKey,
+      didKeyToVerificationMethod(uri, encryptionKeyId, {
+        keyType: keyAgreement[0].type,
+        publicKey: keyAgreement[0].publicKey,
       })
     )
   }
@@ -252,7 +251,7 @@ export function parseDocumentFromLightDid(
       `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
     )
   }
-  if (fragment && failIfFragmentPresent) {
+  if (fragment !== undefined && failIfFragmentPresent) {
     throw new SDKErrors.DidError(
       `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
     )
@@ -267,11 +266,8 @@ export function parseDocumentFromLightDid(
     )
   }
   const publicKey = decodeAddress(address, false, ss58Format)
-  const authentication: [NewVerificationMethod] = [
-    encodeVerificationMethodToMultiKey(uri, authenticationKeyId, {
-      keyType,
-      publicKey,
-    }),
+  const authentication: [NewLightDidVerificationKey] = [
+    { publicKey, type: keyType },
   ]
   if (!encodedDetails) {
     return createLightDidDocument({ authentication })

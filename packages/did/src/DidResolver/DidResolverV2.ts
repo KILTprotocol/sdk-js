@@ -11,7 +11,7 @@ import { cbor } from '@kiltprotocol/utils'
 import { linkedInfoFromChain } from '../Did.rpc'
 import { toChain } from '../Did2.chain.js'
 import {
-  encodeVerificationMethodToMultiKey,
+  didKeyToVerificationMethod,
   getFullDidUri,
   parse,
   validateUri,
@@ -53,7 +53,7 @@ async function resolveInternal(
       id: did,
       authentication: [document.authentication[0].id],
       verificationMethod: [
-        encodeVerificationMethodToMultiKey(did, document.authentication[0].id, {
+        didKeyToVerificationMethod(did, document.authentication[0].id, {
           publicKey: document.authentication[0].publicKey,
           keyType: document.authentication[0].type,
         }),
@@ -64,7 +64,7 @@ async function resolveInternal(
       newDidDocument.assertionMethod = document.assertionMethod.map((k) => k.id)
       newDidDocument.verificationMethod.push(
         ...document.assertionMethod.map((k) =>
-          encodeVerificationMethodToMultiKey(did, k.id, {
+          didKeyToVerificationMethod(did, k.id, {
             keyType: k.type,
             publicKey: k.publicKey,
           })
@@ -75,7 +75,7 @@ async function resolveInternal(
       newDidDocument.assertionMethod = document.keyAgreement.map((k) => k.id)
       newDidDocument.verificationMethod.push(
         ...document.keyAgreement.map((k) =>
-          encodeVerificationMethodToMultiKey(did, k.id, {
+          didKeyToVerificationMethod(did, k.id, {
             keyType: k.type,
             publicKey: k.publicKey,
           })
@@ -88,7 +88,7 @@ async function resolveInternal(
       )
       newDidDocument.verificationMethod.push(
         ...document.capabilityDelegation.map((k) =>
-          encodeVerificationMethodToMultiKey(did, k.id, {
+          didKeyToVerificationMethod(did, k.id, {
             keyType: k.type,
             publicKey: k.publicKey,
           })

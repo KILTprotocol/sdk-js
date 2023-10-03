@@ -17,57 +17,71 @@ import type {
   KiltSupportDeposit,
 } from '@kiltprotocol/augment-api'
 
-import type {
+import {
   BN,
   CryptoCallbacksV2,
   Deposit,
   DidDocumentV2,
+  encryptionKeyTypesMap,
   KiltAddress,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
   SubmittableExtrinsic,
+  verificationKeyTypesMap,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import {
-  EncryptionKeyType,
-  NewServiceEndpoint,
-  NewVerificationMethod,
-  VerificationKeyType,
+  DidEncryptionKeyType,
+  NewService,
+  DidVerificationKeyType,
   verificationKeyTypes,
 } from './DidDetailsv2/DidDetailsV2.js'
 
 import {
-  decodeMultikeyVerificationMethod,
-  getAddressByVerificationMethod,
+  multibaseKeyToDidKey,
+  keypairToMultibaseKey,
+  getAddressFromVerificationMethod,
   getFullDidUri,
   parse,
 } from './Did2.utils.js'
 
 export type ChainDidIdentifier = KiltAddress
-export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 export type EncodedVerificationKey =
   | { sr25519: Uint8Array }
   | { ed25519: Uint8Array }
   | { ecdsa: Uint8Array }
-
 export type EncodedEncryptionKey = { x25519: Uint8Array }
-export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
+export type EncodedDidKey = EncodedVerificationKey | EncodedEncryptionKey
 export type EncodedSignature = EncodedVerificationKey
 
+/**
+ * @param did
+ */
 export function toChain(did: DidDocumentV2.DidUri): ChainDidIdentifier {
   return parse(did).address
 }
 
+/**
+ * @param id
+ */
 export function fragmentIdToChain(id: DidDocumentV2.UriFragment): string {
   return id.replace(/^#/, '')
 }
 
+/**
+ * @param encoded
+ */
 export function fromChain(encoded: AccountId32): DidDocumentV2.DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
+/**
+ * @param deposit
+ */
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
     owner: Crypto.encodeAddress(deposit.owner, ss58Format),
@@ -82,19 +96,17 @@ export type ChainDidBaseKey = {
   type: string
 }
 export type ChainDidVerificationKey = ChainDidBaseKey & {
-  type: VerificationKeyType
+  type: DidVerificationKeyType
 }
 export type ChainDidEncryptionKey = ChainDidBaseKey & {
-  type: EncryptionKeyType
+  type: DidEncryptionKeyType
 }
 export type ChainDidKey = ChainDidVerificationKey | ChainDidEncryptionKey
-
 export type ChainDidService = {
   id: string
   serviceTypes: string[]
   urls: string[]
 }
-
 export type ChainDidDetails = {
   authentication: [ChainDidVerificationKey]
   assertionMethod?: [ChainDidVerificationKey]
@@ -107,9 +119,9 @@ export type ChainDidDetails = {
   deposit: Deposit
 }
 
-function didPublicKeyDetailsFromChain(
+function publicKeyFromChain(
   keyId: Hash,
-  keyDetails: ChainDidPublicKeyDetails
+  keyDetails: DidDidDetailsDidPublicKeyDetails
 ): ChainDidKey {
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
@@ -123,6 +135,9 @@ function didPublicKeyDetailsFromChain(
   }
 }
 
+/**
+ * @param encoded
+ */
 export function documentFromChain(
   encoded: Option<DidDidDetails>
 ): ChainDidDetails {
@@ -137,9 +152,7 @@ export function documentFromChain(
   } = encoded.unwrap()
 
   const keys: Record<string, ChainDidKey> = [...publicKeys.entries()]
-    .map(([keyId, keyDetails]) =>
-      didPublicKeyDetailsFromChain(keyId, keyDetails)
-    )
+    .map(([keyId, keyDetails]) => publicKeyFromChain(keyId, keyDetails))
     .reduce((res, key) => {
       res[fragmentIdToChain(key.id)] = key
       return res
@@ -175,17 +188,22 @@ export function documentFromChain(
   return didRecord
 }
 
-export function verificationMethodToChain(
-  verificationMethod: Pick<
-    DidDocumentV2.VerificationMethod,
-    'publicKeyMultibase'
-  >
-): EncodedKey {
-  const { keyType, publicKey } =
-    decodeMultikeyVerificationMethod(verificationMethod)
-  return {
-    [keyType]: publicKey,
-  } as EncodedKey
+export function publicKeyToChain(
+  key: NewDidVerificationKey
+): EncodedVerificationKey
+export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
+
+/**
+ * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
+export function publicKeyToChain(
+  key: NewDidVerificationKey | NewDidEncryptionKey
+): EncodedDidKey {
+  // TypeScript can't infer type here, so we have to add a type assertion.
+  return { [key.type]: key.publicKey } as EncodedDidKey
 }
 
 function isUri(str: string): boolean {
@@ -207,9 +225,12 @@ function isUriFragment(str: string): boolean {
   }
 }
 
-export function validateNewService(endpoint: NewServiceEndpoint): void {
+/**
+ * @param endpoint
+ */
+export function validateNewService(endpoint: NewService): void {
   const { id, serviceEndpoint } = endpoint
-  if (id.startsWith('did:kilt')) {
+  if ((id as string).startsWith('did:kilt')) {
     throw new SDKErrors.DidError(
       `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
     )
@@ -228,7 +249,10 @@ export function validateNewService(endpoint: NewServiceEndpoint): void {
   })
 }
 
-export function serviceToChain(service: NewServiceEndpoint): ChainDidService {
+/**
+ * @param service
+ */
+export function serviceToChain(service: NewService): ChainDidService {
   validateNewService(service)
   const { id, type, serviceEndpoint } = service
   return {
@@ -238,9 +262,12 @@ export function serviceToChain(service: NewServiceEndpoint): ChainDidService {
   }
 }
 
+/**
+ * @param encoded
+ */
 export function serviceFromChain(
   encoded: Option<DidServiceEndpointsDidEndpoint>
-): NewServiceEndpoint {
+): NewService {
   const { id, serviceTypes, urls } = encoded.unwrap()
   return {
     id: `#${id.toUtf8()}`,
@@ -258,19 +285,24 @@ export type AuthorizeCallInput = {
 }
 
 interface GetStoreTxInput {
-  authentication: [NewVerificationMethod]
-  assertionMethod?: [NewVerificationMethod]
-  capabilityDelegation?: [NewVerificationMethod]
-  keyAgreement?: NewVerificationMethod[]
+  authentication: [NewDidVerificationKey]
+  assertionMethod?: [NewDidVerificationKey]
+  capabilityDelegation?: [NewDidVerificationKey]
+  keyAgreement?: NewDidEncryptionKey[]
 
-  service?: NewServiceEndpoint[]
+  service?: NewService[]
 }
 
 export type GetStoreTxSignCallback = (
   signData: Omit<CryptoCallbacksV2.SignRequestData, 'did'>
 ) => Promise<CryptoCallbacksV2.SignResponseData>
 
-export async function getStoreTx(
+/**
+ * @param input
+ * @param submitter
+ * @param sign
+ */
+export async function getStoreTxFromInput(
   input: GetStoreTxInput,
   submitter: KiltAddress,
   sign: GetStoreTxSignCallback
@@ -292,14 +324,14 @@ export async function getStoreTx(
   }
 
   // For now, it only takes the first attestation key, if present.
-  if (assertionMethod && assertionMethod.length > 1) {
+  if (assertionMethod !== undefined && assertionMethod.length > 1) {
     throw new SDKErrors.DidError(
       `More than one attestation key (${assertionMethod.length}) specified. The chain can only store one.`
     )
   }
 
   // For now, it only takes the first delegation key, if present.
-  if (capabilityDelegation && capabilityDelegation.length > 1) {
+  if (capabilityDelegation !== undefined && capabilityDelegation.length > 1) {
     throw new SDKErrors.DidError(
       `More than one delegation key (${capabilityDelegation.length}) specified. The chain can only store one.`
     )
@@ -321,19 +353,21 @@ export async function getStoreTx(
   }
 
   const [authenticationKey] = authentication
-  const did = getAddressByVerificationMethod(authenticationKey)
+  const did = getAddressFromVerificationMethod({
+    publicKeyMultibase: keypairToMultibaseKey(authenticationKey),
+  })
 
   const newAttestationKey =
     assertionMethod &&
     assertionMethod.length > 0 &&
-    getAddressByVerificationMethod(assertionMethod[0])
+    publicKeyToChain(assertionMethod[0])
 
   const newDelegationKey =
     capabilityDelegation &&
     capabilityDelegation.length > 0 &&
-    getAddressByVerificationMethod(capabilityDelegation[0])
+    publicKeyToChain(capabilityDelegation[0])
 
-  const newKeyAgreementKeys = keyAgreement.map(getAddressByVerificationMethod)
+  const newKeyAgreementKeys = keyAgreement.map(publicKeyToChain)
   const newServiceDetails = service.map(serviceToChain)
 
   const apiInput = {
@@ -349,15 +383,140 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const { signature, verificationMethod } = await sign({
+  const { signature, verificationMethodPublicKey } = await sign({
     data: encoded,
     verificationMethodRelationship: 'authentication',
   })
-  const { keyType } = decodeMultikeyVerificationMethod(verificationMethod)
+  const { keyType } = multibaseKeyToDidKey(verificationMethodPublicKey)
   const encodedSignature = {
     [keyType]: signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
+}
+
+/**
+ * @param input
+ * @param submitter
+ * @param sign
+ */
+export async function getStoreTxFromDidDocument(
+  input: DidDocumentV2.DidDocument,
+  submitter: KiltAddress,
+  sign: GetStoreTxSignCallback
+): Promise<SubmittableExtrinsic> {
+  const {
+    authentication,
+    assertionMethod,
+    keyAgreement,
+    capabilityDelegation,
+    service,
+    verificationMethod,
+  } = input
+
+  const authKey = (() => {
+    const authVerificationMethod = verificationMethod.find(
+      (vm) => vm.id === authentication[0]
+    )
+    if (authVerificationMethod === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      authVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const keyAgreementKey = (() => {
+    if (keyAgreement === undefined) {
+      return undefined
+    }
+    const keyAgreementVerificationMethod = verificationMethod.find(
+      (vm) => vm.id === keyAgreement?.[0]
+    )
+    if (keyAgreementVerificationMethod === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      keyAgreementVerificationMethod.publicKeyMultibase
+    )
+    if (encryptionKeyTypesMap[keyType] === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidEncryptionKey
+  })()
+
+  const assertionMethodKey = (() => {
+    if (assertionMethod === undefined) {
+      return undefined
+    }
+    const assertionMethodVerificationMethod = verificationMethod.find(
+      (vm) => vm.id === assertionMethod?.[0]
+    )
+    if (assertionMethodVerificationMethod === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      assertionMethodVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const capabilityDelegationKey = (() => {
+    if (capabilityDelegation === undefined) {
+      return undefined
+    }
+    const capabilityDelegationVerificationMethod = verificationMethod.find(
+      (vm) => vm.id === capabilityDelegation?.[0]
+    )
+    if (capabilityDelegationVerificationMethod === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      capabilityDelegationVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      // TODO: Better error
+      throw new Error('Malformed DID document.')
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const storeTxInput: GetStoreTxInput = {
+    authentication: [authKey],
+    assertionMethod: assertionMethodKey ? [assertionMethodKey] : undefined,
+    capabilityDelegation: capabilityDelegationKey
+      ? [capabilityDelegationKey]
+      : undefined,
+    keyAgreement: keyAgreementKey ? [keyAgreementKey] : undefined,
+    service,
+  }
+
+  return getStoreTxFromInput(storeTxInput, submitter, sign)
 }
 
 export interface SigningOptions {
@@ -365,6 +524,16 @@ export interface SigningOptions {
   verificationMethodRelationship: DidDocumentV2.SignatureVerificationMethodRelationship
 }
 
+/**
+ * @param root0
+ * @param root0.did
+ * @param root0.verificationMethodRelationship
+ * @param root0.sign
+ * @param root0.call
+ * @param root0.txCounter
+ * @param root0.submitter
+ * @param root0.blockNumber
+ */
 export async function generateDidAuthenticatedTx({
   did,
   verificationMethodRelationship,
@@ -386,23 +555,28 @@ export async function generateDidAuthenticatedTx({
         blockNumber: blockNumber ?? (await api.query.system.number()),
       }
     )
-  const { verificationMethod, signature } = await sign({
+  const { signature, verificationMethodPublicKey } = await sign({
     data: signableCall.toU8a(),
     verificationMethodRelationship,
     did,
   })
-  const { keyType } = decodeMultikeyVerificationMethod(verificationMethod)
+  const { keyType } = multibaseKeyToDidKey(verificationMethodPublicKey)
   const encodedSignature = {
     [keyType]: signature,
   } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 
+/**
+ * @param root0
+ * @param root0.publicKeyMultibase
+ * @param signature
+ */
 export function didSignatureToChain(
-  signature: Uint8Array,
-  verificationMethod: DidDocumentV2.VerificationMethod
+  { publicKeyMultibase }: DidDocumentV2.VerificationMethod,
+  signature: Uint8Array
 ): EncodedSignature {
-  const { keyType } = decodeMultikeyVerificationMethod(verificationMethod)
+  const { keyType } = multibaseKeyToDidKey(publicKeyMultibase)
   if (!verificationKeyTypes.includes(keyType)) {
     throw new SDKErrors.DidError(
       `encodedDidSignature requires a verification key. A key of type "${keyType}" was used instead`

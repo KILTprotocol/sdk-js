@@ -165,7 +165,7 @@ function groupExtrinsicsByKeyRelationship(
   const [first, ...rest] = extrinsics.map((extrinsic) => {
     const verificationMethodRelationship =
       getVerificationMethodRelationshipForTx(extrinsic)
-    if (!verificationMethodRelationship) {
+    if (verificationMethodRelationship === undefined) {
       throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )
