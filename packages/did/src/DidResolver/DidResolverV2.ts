@@ -17,7 +17,20 @@ import {
   validateUri,
 } from '../Did2.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
-import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
+
+const DID_JSON = 'application/did+json'
+const DID_JSON_LD = 'application/did+ld+json'
+const DID_CBOR = 'application/did+cbor'
+
+export type SupportedContentType =
+  | typeof DID_JSON
+  | typeof DID_JSON_LD
+  | typeof DID_CBOR
+
+function isValidContentType(input: unknown): input is SupportedContentType {
+  return input === DID_JSON || input === DID_JSON_LD || input === DID_CBOR
+}
 
 type InternalResolutionResult = {
   document?: DidDocumentV2.DidDocument
@@ -130,79 +143,82 @@ export async function resolve(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolutionOptions: DidResolverV2.ResolutionOptions = {}
 ): Promise<DidResolverV2.ResolutionResult> {
-  const result: DidResolverV2.ResolutionResult = {
-    didDocumentMetadata: {},
-    didResolutionMetadata: {},
-  }
-
   try {
     validateUri(did, 'Did')
   } catch (error) {
-    result.didResolutionMetadata.error = 'invalidDid'
-    return result
+    return {
+      didResolutionMetadata: {
+        error: 'invalidDid',
+      },
+      didDocumentMetadata: {},
+    }
   }
 
   const resolutionResult = await resolveInternal(did)
   if (!resolutionResult) {
-    result.didResolutionMetadata.error = 'notFound'
-    return result
+    return {
+      didResolutionMetadata: {
+        error: 'notFound',
+      },
+      didDocumentMetadata: {},
+    }
   }
 
-  const { documentMetadata, document } = resolutionResult
+  const { documentMetadata: didDocumentMetadata, document: didDocument } = resolutionResult
 
-  result.didDocument = document
-  result.didDocumentMetadata = documentMetadata
-
-  return result
+  return {
+    didResolutionMetadata: {},
+    didDocumentMetadata,
+    didDocument,
+  }
 }
 
 export async function resolveRepresentation(
   did: DidDocumentV2.DidUri,
-  resolutionOptions: DidResolverV2.RepresentationResolutionOptions = {
-    accept: 'application/did+json',
+  { accept }: DidResolverV2.DereferenceOptions<SupportedContentType> = {
+    accept: DID_JSON,
   }
-): Promise<DidResolverV2.RepresentationResolutionResult> {
-  const result: DidResolverV2.RepresentationResolutionResult = {
-    didDocumentMetadata: {},
-    didResolutionMetadata: {},
-  }
-
-  const { accept } = resolutionOptions
-  if (
-    accept !== 'application/did+json' &&
-    accept !== 'application/did+ld+json' &&
-    accept !== 'application/did+cbor'
-  ) {
-    result.didResolutionMetadata.error = 'representationNotSupported'
-    return result
+): Promise<DidResolverV2.RepresentationResolutionResult<SupportedContentType>> {
+  if (!isValidContentType(accept)) {
+    return {
+      didResolutionMetadata: {
+        error: 'representationNotSupported',
+      },
+      didDocumentMetadata: {},
+    }
   }
 
   const { didDocumentMetadata, didResolutionMetadata, didDocument } =
     await resolve(did)
 
-  result.didDocumentMetadata = didDocumentMetadata
-  result.didResolutionMetadata = didResolutionMetadata
-
   if (didDocument === undefined) {
-    return result
+    return {
+      // Metadata is the same, since the `representationNotSupported` is already accounted for above.
+      didResolutionMetadata,
+      didDocumentMetadata,
+    } as DidResolverV2.RepresentationResolutionResult<SupportedContentType>
   }
 
-  if (accept === 'application/did+json') {
-    result.didResolutionMetadata.contentType = 'application/did+json'
-    result.didDocumentStream = Buffer.from(JSON.stringify(didDocument))
-  } else if (accept === 'application/did+ld+json') {
-    const jsonLdDocument: DidDocumentV2.JsonLdDidDocument = {
-      ...didDocument,
-      '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+  const bufferInput = (() => {
+    if (accept === 'application/did+json') {
+      return JSON.stringify(didDocument)
     }
-    result.didResolutionMetadata.contentType = 'application/did+ld+json'
-    result.didDocumentStream = Buffer.from(JSON.stringify(jsonLdDocument))
-  } else if (accept === 'application/did+cbor') {
-    result.didResolutionMetadata.contentType = 'application/did+cbor'
-    result.didDocumentStream = Buffer.from(cbor.encode(didDocument))
-  }
+    if (accept === 'application/did+ld+json') {
+      const jsonLdDoc: DidDocumentV2.JsonLd<DidDocumentV2.DidDocument> = {
+        ...didDocument,
+        '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+      }
+      return JSON.stringify(jsonLdDoc)
+    }
+    // contentType === 'application/did+cbor
+    return cbor.encode(didDocument)
+  })()
 
-  return result
+  return {
+    didDocumentMetadata,
+    didResolutionMetadata,
+    didDocumentStream: Buffer.from(bufferInput),
+  } as DidResolverV2.RepresentationResolutionResult<SupportedContentType>
 }
 
 type InternalDereferenceResult = {
@@ -213,8 +229,8 @@ type InternalDereferenceResult = {
 async function dereferenceInternal(
   didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  dereferenceOptions: DidResolverV2.DereferenceOptions
-): Promise<InternalDereferenceResult | null> {
+  dereferenceOptions: DidResolverV2.DereferenceOptions<SupportedContentType>
+): Promise<InternalDereferenceResult> {
   const { did, fragment } = parse(didUrl)
 
   const { didDocument, didDocumentMetadata } = await resolve(did)
@@ -246,35 +262,63 @@ async function dereferenceInternal(
 export async function dereference(
   didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  dereferenceOptions: DidResolverV2.DereferenceOptions = {}
-): Promise<DidResolverV2.DereferenceResult> {
-  const result: DidResolverV2.DereferenceResult = {
-    contentMetadata: {},
-    dereferencingMetadata: {},
+  { accept }: DidResolverV2.DereferenceOptions<SupportedContentType> = {
+    accept: DID_JSON,
   }
+): Promise<DidResolverV2.DereferenceResult<SupportedContentType>> {
+  // The spec does not include an error for unsupported content types for dereferences
+  const contentType = isValidContentType(accept) ? accept : DID_JSON
 
   try {
     validateUri(didUrl)
   } catch (error) {
-    result.dereferencingMetadata.error = 'invalidDidUrl'
-    return result
+    return {
+      dereferencingMetadata: {
+        error: 'invalidDidUrl',
+      },
+      contentMetadata: {},
+    }
   }
 
-  const resolutionResult = await dereferenceInternal(didUrl, dereferenceOptions)
-  if (!resolutionResult) {
-    result.dereferencingMetadata.error = 'notFound'
-    return result
-  }
+  const resolutionResult = await dereferenceInternal(didUrl, {
+    accept: contentType,
+  })
 
   const { contentMetadata, contentStream } = resolutionResult
 
-  result.contentMetadata = contentMetadata
-  result.contentStream = contentStream
+  if (contentStream === undefined) {
+    return {
+      dereferencingMetadata: {
+        error: 'notFound',
+      },
+      contentMetadata,
+    }
+  }
 
-  return result
+  const stream = (() => {
+    if (contentType === 'application/did+json') {
+      return contentStream
+    }
+    if (contentType === 'application/did+ld+json') {
+      return {
+        ...contentStream,
+        '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+      }
+    }
+    // contentType === 'application/did+cbor'
+    return Buffer.from(cbor.encode(contentStream))
+  })()
+
+  return {
+    dereferencingMetadata: {
+      contentType,
+    },
+    contentMetadata,
+    contentStream: stream,
+  }
 }
 
-export const resolver: DidResolverV2.DidResolver = {
+export const resolver: DidResolverV2.DidResolver<SupportedContentType> = {
   resolve,
   resolveRepresentation,
   dereference,

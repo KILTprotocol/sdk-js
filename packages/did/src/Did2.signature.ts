@@ -19,7 +19,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: DidDocumentV2.DidUri
   allowUpgraded?: boolean
   expectedVerificationMethodRelationship?: DidDocumentV2.SignatureVerificationMethodRelationship
-  dereferenceDidUrl?: DidResolverV2.DereferenceDidUrl
+  dereferenceDidUrl?: DidResolverV2.DereferenceDidUrl<string>
 }
 
 export type DidSignature = {
