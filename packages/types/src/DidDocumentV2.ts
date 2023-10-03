@@ -113,3 +113,5 @@ export type DidDocument = {
    */
   service?: Service[]
 }
+
+export type JsonLdDidDocument = DidDocument & { '@context': string[] }

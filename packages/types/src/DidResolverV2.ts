@@ -13,30 +13,26 @@ import type {
   Service,
 } from './DidDocumentV2'
 
-export type DidResolutionOptions = Record<string, never>
+export type ResolutionOptions = Record<string, never>
 
 /*
  * This specification defines the following common error values:
  * invalidDid: The DID supplied to the DID resolution function does not conform to valid syntax.
  * notFound: The DID resolver was unable to find the DID document resulting from this resolution request.
- * representationNotSupported: This error code is returned if the representation requested via the accept input metadata property is not supported by the DID method and/or DID resolver implementation.
  */
-type DidResolutionMetadataError =
-  | 'invalidDid'
-  | 'notFound'
-  | 'representationNotSupported'
+type ResolutionMetadataError = 'invalidDid' | 'notFound'
 
-type DidResolutionMetadata = {
+export type ResolutionMetadata = {
   /*
    * The error code from the resolution process.
    * This property is REQUIRED when there is an error in the resolution process.
    * The value of this property MUST be a single keyword ASCII string.
    * The possible property values of this field SHOULD be registered in the DID Specification Registries.
    */
-  error?: DidResolutionMetadataError
+  error?: ResolutionMetadataError
 }
 
-export type DidDocumentMetadata = {
+export type ResolutionDocumentMetadata = {
   /*
    * If a DID has been deactivated, DID document metadata MUST include this property with the boolean value true.
    * If a DID has not been deactivated, this property is OPTIONAL, but if included, MUST have the boolean value false.
@@ -59,7 +55,7 @@ export type ResolutionResult = {
    * If the resolution is not successful, this structure MUST contain an error property describing the error.
    * The possible properties within this structure and their possible values are registered in the DID Specification Registries.
    */
-  didResolutionMetadata: DidResolutionMetadata
+  didResolutionMetadata: ResolutionMetadata
   /*
    * If the resolution is successful, and if the resolve function was called, this MUST be a DID document abstract data model (a map) as described in 4. Data Model that is capable of being transformed into a conforming DID Document (representation), using the production rules specified by the representation.
    * The value of id in the resolved DID document MUST match the DID that was resolved.
@@ -73,7 +69,79 @@ export type ResolutionResult = {
    * If the resolution is unsuccessful, this output MUST be an empty metadata structure.
    * The possible properties within this structure and their possible values SHOULD be registered in the DID Specification Registries.
    */
-  didDocumentMetadata: DidDocumentMetadata
+  didDocumentMetadata: ResolutionDocumentMetadata
+}
+
+export type RepresentationResolutionOptions = {
+  /*
+   * The Media Type of the caller's preferred representation of the DID document.
+   * The Media Type MUST be expressed as an ASCII string.
+   * The DID resolver implementation SHOULD use this value to determine the representation contained in the returned didDocumentStream if such a representation is supported and available.
+   * This property is OPTIONAL for the resolveRepresentation function and MUST NOT be used with the resolve function.
+   */
+  accept?: string
+}
+
+/*
+ * This specification defines the following common error values:
+ * invalidDid: The DID supplied to the DID resolution function does not conform to valid syntax.
+ * notFound: The DID resolver was unable to find the DID document resulting from this resolution request.
+ * representationNotSupported: This error code is returned if the representation requested via the accept input metadata property is not supported by the DID method and/or DID resolver implementation.
+ */
+type RepresentationResolutionMetadataError =
+  | 'invalidDid'
+  | 'notFound'
+  | 'representationNotSupported'
+
+export type RepresentationResolutionMetadata = {
+  error?: RepresentationResolutionMetadataError
+  /*
+   * The Media Type of the returned didDocumentStream.
+   * This property is REQUIRED if resolution is successful and if the resolveRepresentation function was called.
+   * This property MUST NOT be present if the resolve function was called.
+   * The value of this property MUST be an ASCII string that is the Media Type of the conformant representations.
+   * The caller of the resolveRepresentation function MUST use this value when determining how to parse and process the didDocumentStream returned by this function into the data model.
+   */
+  contentType?: string
+}
+
+export type RepresentationResolutionDocumentMetadata =
+  ResolutionDocumentMetadata
+
+export type RepresentationResolutionResult = Pick<
+  ResolutionResult,
+  'didDocumentMetadata'
+> & {
+  /*
+   * If the resolution is successful, and if the resolveRepresentation function was called, this MUST be a byte stream of the resolved DID document in one of the conformant representations.
+   * The byte stream might then be parsed by the caller of the resolveRepresentation function into a data model, which can in turn be validated and processed.
+   * If the resolution is unsuccessful, this value MUST be an empty stream.
+   */
+  didDocumentStream?: Buffer
+  didResolutionMetadata: RepresentationResolutionMetadata
+}
+
+/*
+ * The resolve function returns the DID document in its abstract form (a map).
+ */
+export interface ResolveDid {
+  resolve: (
+    /*
+     * This is the DID to resolve.
+     * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
+     */
+    did: DidUri,
+    /*
+     * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
+     * This input is REQUIRED, but the structure MAY be empty.
+     */
+    resolutionOptions: ResolutionOptions
+  ) => Promise<ResolutionResult>
+
+  resolveRepresentation: (
+    did: DidUri,
+    resolutionOptions: RepresentationResolutionOptions
+  ) => Promise<RepresentationResolutionResult>
 }
 
 export type DereferenceOptions = {
@@ -92,7 +160,7 @@ export type DereferenceOptions = {
  */
 type DidDereferenceMetadataError = 'invalidDidUrl' | 'notFound'
 
-export type DereferencingMetadata = {
+export type DereferenceMetadata = {
   /*
    * The Media Type of the returned contentStream SHOULD be expressed using this property if dereferencing is successful.
    * The Media Type value MUST be expressed as an ASCII string.
@@ -113,7 +181,7 @@ export type DereferenceContentStream =
   | Service
 
 export type DereferenceContentMetadata =
-  | DidDocumentMetadata
+  | ResolutionDocumentMetadata
   | Record<string, never>
 
 export type DereferenceResult = {
@@ -123,7 +191,7 @@ export type DereferenceResult = {
    * Properties defined by this specification are in 7.2.2 DID URL Dereferencing Metadata.
    * If the dereferencing is not successful, this structure MUST contain an error property describing the error.
    */
-  dereferencingMetadata: DereferencingMetadata
+  dereferencingMetadata: DereferenceMetadata
   /*
    * If the dereferencing function was called and successful, this MUST contain a resource corresponding to the DID URL.
    * The contentStream MAY be a resource such as a DID document that is serializable in one of the conformant representations, a Verification Method, a service, or any other resource format that can be identified via a Media Type and obtained through the resolution process.
@@ -137,24 +205,6 @@ export type DereferenceResult = {
    * If the dereferencing is unsuccessful, this output MUST be an empty metadata structure.
    */
   contentMetadata: DereferenceContentMetadata
-}
-
-/*
- * The resolve function returns the DID document in its abstract form (a map).
- */
-export interface ResolveDid {
-  resolve: (
-    /*
-     * This is the DID to resolve.
-     * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
-     */
-    did: DidUri,
-    /*
-     * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
-     * This input is REQUIRED, but the structure MAY be empty.
-     */
-    resolutionOptions: DidResolutionOptions
-  ) => Promise<ResolutionResult>
 }
 
 export interface DereferenceDidUrl {

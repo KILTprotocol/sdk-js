@@ -7,6 +7,7 @@
 
 import { ConfigService } from '@kiltprotocol/config'
 import { DidDocumentV2, DidResolverV2 } from '@kiltprotocol/types'
+import { cbor } from '@kiltprotocol/utils'
 import { linkedInfoFromChain } from '../Did.rpc'
 import { toChain } from '../Did2.chain.js'
 import {
@@ -16,10 +17,11 @@ import {
   validateUri,
 } from '../Did2.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2'
 
 type InternalResolutionResult = {
   document?: DidDocumentV2.DidDocument
-  documentMetadata: DidResolverV2.DidDocumentMetadata
+  documentMetadata: DidResolverV2.ResolutionDocumentMetadata
 }
 
 async function resolveInternal(
@@ -126,7 +128,7 @@ async function resolveInternal(
 export async function resolve(
   did: DidDocumentV2.DidUri,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resolutionOptions: DidResolverV2.DidResolutionOptions = {}
+  resolutionOptions: DidResolverV2.ResolutionOptions = {}
 ): Promise<DidResolverV2.ResolutionResult> {
   const result: DidResolverV2.ResolutionResult = {
     didDocumentMetadata: {},
@@ -150,6 +152,55 @@ export async function resolve(
 
   result.didDocument = document
   result.didDocumentMetadata = documentMetadata
+
+  return result
+}
+
+export async function resolveRepresentation(
+  did: DidDocumentV2.DidUri,
+  resolutionOptions: DidResolverV2.RepresentationResolutionOptions = {
+    accept: 'application/did+json',
+  }
+): Promise<DidResolverV2.RepresentationResolutionResult> {
+  const result: DidResolverV2.RepresentationResolutionResult = {
+    didDocumentMetadata: {},
+    didResolutionMetadata: {},
+  }
+
+  const { accept } = resolutionOptions
+  if (
+    accept !== 'application/did+json' &&
+    accept !== 'application/did+ld+json' &&
+    accept !== 'application/did+cbor'
+  ) {
+    result.didResolutionMetadata.error = 'representationNotSupported'
+    return result
+  }
+
+  const { didDocumentMetadata, didResolutionMetadata, didDocument } =
+    await resolve(did)
+
+  result.didDocumentMetadata = didDocumentMetadata
+  result.didResolutionMetadata = didResolutionMetadata
+
+  if (didDocument === undefined) {
+    return result
+  }
+
+  if (accept === 'application/did+json') {
+    result.didResolutionMetadata.contentType = 'application/did+json'
+    result.didDocumentStream = Buffer.from(JSON.stringify(didDocument))
+  } else if (accept === 'application/did+ld+json') {
+    const jsonLdDocument: DidDocumentV2.JsonLdDidDocument = {
+      ...didDocument,
+      '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+    }
+    result.didResolutionMetadata.contentType = 'application/did+ld+json'
+    result.didDocumentStream = Buffer.from(JSON.stringify(jsonLdDocument))
+  } else if (accept === 'application/did+cbor') {
+    result.didResolutionMetadata.contentType = 'application/did+cbor'
+    result.didDocumentStream = Buffer.from(cbor.encode(didDocument))
+  }
 
   return result
 }
@@ -224,6 +275,7 @@ export async function dereference(
 }
 
 export const resolver: DidResolverV2.DidResolver = {
-  dereference,
   resolve,
+  resolveRepresentation,
+  dereference,
 }
