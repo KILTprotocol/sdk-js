@@ -164,7 +164,8 @@ export async function resolve(
     }
   }
 
-  const { documentMetadata: didDocumentMetadata, document: didDocument } = resolutionResult
+  const { documentMetadata: didDocumentMetadata, document: didDocument } =
+    resolutionResult
 
   return {
     didResolutionMetadata: {},
