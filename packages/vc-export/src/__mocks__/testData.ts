@@ -25,10 +25,21 @@ import { KiltCredentialV1 } from '../types'
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
+// index of the attestation pallet, according to the metadata used
+const attestationPalletIndex = 62
+// asynchronously check that pallet index is correct
+mockedApi.once('ready', () => {
+  const idx = mockedApi.runtimeMetadata.asLatest.pallets.find((x) =>
+    x.name.match(/attestation/i)
+  )!.index
+  if (!idx.eqn(attestationPalletIndex)) {
+    console.warn(
+      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx.toNumber()}. This may lead to tests not behaving as expected!`
+    )
+  }
+})
 const attestationCreatedIndex = u8aToU8a([
-  mockedApi.runtimeMetadata.asLatest.pallets
-    .find((x) => x.name.match(/attestation/i))!
-    .index.toNumber(),
+  attestationPalletIndex,
   mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
 ])
 export function makeAttestationCreatedEvents(events: unknown[][]) {
