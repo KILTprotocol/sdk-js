@@ -6,10 +6,12 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
 
 import { disconnect } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import {
+  CryptoCallbacksV2,
   DidDocumentV2,
   KiltKeyringPair,
   NewDidVerificationKey,
@@ -37,10 +39,12 @@ beforeAll(async () => {
 describe.only('write and didDeleteTx', () => {
   let did: DidDocumentV2.DidDocument
   let key: TestUtilsV2.KeyTool
+  let signCallback: CryptoCallbacksV2.SignCallback
 
   beforeAll(async () => {
     key = TestUtilsV2.makeSigningKeyTool()
     did = await TestUtilsV2.createMinimalLightDidFromKeypair(key.keypair)
+    signCallback = key.getSignCallback(did)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
@@ -123,92 +127,94 @@ describe.only('write and didDeleteTx', () => {
     })
   }, 60_000)
 
-  // it('should return no results for empty accounts', async () => {
-  //   const emptyDid = Did.getFullDidUriFromKey(
-  //     makeSigningKeyTool().authentication[0]
-  //   )
+  it('should return no results for empty accounts', async () => {
+    const emptyDid = Did.DidUtilsV2.getFullDidUri(
+      TestUtilsV2.makeSigningKeyTool().keypair.address
+    )
 
-  //   const encodedDid = Did.toChain(emptyDid)
-  //   expect((await api.call.did.query(encodedDid)).isSome).toBe(false)
-  // })
+    const encodedDid = Did.DidChainV2.toChain(emptyDid)
+    expect((await api.call.did.query(encodedDid)).isSome).toBe(false)
+  })
 
-  // it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
-  //   // We verify that the DID to delete is on chain.
-  //   const fullDidLinkedInfo = await api.call.did.query(
-  //     Did.toChain(Did.getFullDidUri(did.id))
-  //   )
-  //   const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
-  //   expect(fullDid).not.toBeNull()
+  it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
+    // We verify that the DID to delete is on chain.
+    const fullDidLinkedInfo = await api.call.did.query(
+      Did.DidChainV2.toChain(Did.DidUtilsV2.getFullDidUri(did.id))
+    )
+    const { document: fullDid } =
+      Did.DidRpc2.linkedInfoFromChain(fullDidLinkedInfo)
+    expect(fullDid).not.toBeNull()
 
-  //   const otherAccount = devBob
+    const otherAccount = devBob
 
-  //   // 10 is an example value. It is not used here since we are testing another error
-  //   let call = api.tx.did.delete(new BN(10))
+    // 10 is an example value. It is not used here since we are testing another error
+    let call = api.tx.did.delete(new BN(10))
 
-  //   let submittable = await Did.authorizeTx(
-  //     fullDid.uri,
-  //     call,
-  //     signCallback,
-  //     // Use a different account than the submitter one
-  //     otherAccount.address
-  //   )
+    let submittable = await Did.DidDetailsV2.authorizeTx(
+      fullDid.id,
+      call,
+      signCallback,
+      // Use a different account than the submitter one
+      otherAccount.address
+    )
 
-  //   await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
-  //     section: 'did',
-  //     name: 'BadDidOrigin',
-  //   })
+    await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
+      section: 'did',
+      name: 'BadDidOrigin',
+    })
 
-  //   // We use 1 here and this should fail as there are two service endpoints stored.
-  //   call = api.tx.did.delete(new BN(1))
+    // We use 1 here and this should fail as there are two service endpoints stored.
+    call = api.tx.did.delete(new BN(1))
 
-  //   submittable = await Did.authorizeTx(
-  //     fullDid.uri,
-  //     call,
-  //     signCallback,
-  //     paymentAccount.address
-  //   )
+    submittable = await Did.DidDetailsV2.authorizeTx(
+      fullDid.id,
+      call,
+      signCallback,
+      paymentAccount.address
+    )
 
-  //   // Will fail because count provided is too low
-  //   await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
-  //     section: 'did',
-  //     name: expect.stringMatching(
-  //       /^(StoredEndpointsCountTooLarge|MaxStoredEndpointsCountExceeded)$/
-  //     ),
-  //   })
-  // }, 60_000)
+    // Will fail because count provided is too low
+    await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
+      section: 'did',
+      name: expect.stringMatching(
+        /^(StoredEndpointsCountTooLarge|MaxStoredEndpointsCountExceeded)$/
+      ),
+    })
+  }, 60_000)
 
-  // it('deletes DID from previous step', async () => {
-  //   // We verify that the DID to delete is on chain.
-  //   const fullDidLinkedInfo = await api.call.did.query(
-  //     Did.toChain(Did.getFullDidUri(did.uri))
-  //   )
-  //   const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
-  //   expect(fullDid).not.toBeNull()
+  it('deletes DID from previous step', async () => {
+    // We verify that the DID to delete is on chain.
+    const fullDidLinkedInfo = await api.call.did.query(
+      Did.DidChainV2.toChain(Did.getFullDidUri(did.id))
+    )
+    const { document: fullDid } =
+      Did.DidRpc2.linkedInfoFromChain(fullDidLinkedInfo)
+    expect(fullDid).not.toBeNull()
 
-  //   const encodedDid = Did.toChain(fullDid.uri)
-  //   const linkedInfo = Did.linkedInfoFromChain(
-  //     await api.call.did.query(encodedDid)
-  //   )
-  //   const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
-  //   const call = api.tx.did.delete(storedEndpointsCount)
+    const encodedDid = Did.toChain(fullDid.id)
+    const linkedInfo = Did.DidRpc2.linkedInfoFromChain(
+      await api.call.did.query(encodedDid)
+    )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
+    const call = api.tx.did.delete(storedEndpointsCount)
 
-  //   const submittable = await Did.authorizeTx(
-  //     fullDid.uri,
-  //     call,
-  //     signCallback,
-  //     paymentAccount.address
-  //   )
+    const submittable = await Did.DidDetailsV2.authorizeTx(
+      fullDid.id,
+      call,
+      signCallback,
+      paymentAccount.address
+    )
 
-  //   // Check that DID is not blacklisted.
-  //   expect((await api.query.did.didBlacklist(encodedDid)).isNone).toBe(true)
+    // Check that DID is not blacklisted.
+    expect((await api.query.did.didBlacklist(encodedDid)).isNone).toBe(true)
 
-  //   await submitTx(submittable, paymentAccount)
+    await submitTx(submittable, paymentAccount)
 
-  //   expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
+    expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
 
-  //   // Check that DID is now blacklisted.
-  //   expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
-  // }, 60_000)
+    // Check that DID is now blacklisted.
+    expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
+  }, 60_000)
 })
 
 // it('creates and updates DID, and then reclaims the deposit back', async () => {
