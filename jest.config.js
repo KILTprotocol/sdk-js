@@ -37,9 +37,9 @@ const common = {
     'index.ts',
     'types.ts',
     '.chain.ts',
+    'DelegationDecoder.ts',
     'SDKErrors.ts',
     'Did.rpc.ts',
-    'packages/utils/src/Chain.ts',
     // third party code copied to this repo
     'packages/utils/src/json-schema/',
     'jsonabc.ts',
