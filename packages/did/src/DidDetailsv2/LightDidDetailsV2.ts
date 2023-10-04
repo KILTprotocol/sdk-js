@@ -88,7 +88,7 @@ function validateCreateDocumentInput({
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
 
-  if (authenticationKeyTypeEncoding !== undefined) {
+  if (authenticationKeyTypeEncoding === undefined) {
     throw new SDKErrors.UnsupportedKeyError(authentication[0].type)
   }
   if (

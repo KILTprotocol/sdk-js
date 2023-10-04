@@ -26,7 +26,6 @@ import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { getStoreTxFromDidDocument } from 'did/src/Did2.chain'
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocumentV2.DidDocument
@@ -324,7 +323,7 @@ export async function createFullDidFromLightDid(
   fullDidDocumentToBeCreated.capabilityDelegation = [
     fullDidDocumentToBeCreated.authentication[0],
   ]
-  const tx = await getStoreTxFromDidDocument(
+  const tx = await Did.DidChainV2.getStoreTxFromDidDocument(
     fullDidDocumentToBeCreated,
     payer.address,
     sign

@@ -119,7 +119,7 @@ export type ChainDidDetails = {
   deposit: Deposit
 }
 
-function publicKeyFromChain(
+export function publicKeyFromChain(
   keyId: Hash,
   keyDetails: DidDidDetailsDidPublicKeyDetails
 ): ChainDidKey {
@@ -267,7 +267,7 @@ export function serviceToChain(service: NewService): ChainDidService {
  */
 export function serviceFromChain(
   encoded: Option<DidServiceEndpointsDidEndpoint>
-): NewService {
+): DidDocumentV2.Service {
   const { id, serviceTypes, urls } = encoded.unwrap()
   return {
     id: `#${id.toUtf8()}`,
