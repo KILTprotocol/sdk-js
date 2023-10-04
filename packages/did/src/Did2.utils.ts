@@ -150,10 +150,9 @@ export function multibaseKeyToDidKey(
 export function keypairToMultibaseKey({
   type,
   publicKey,
-}: Pick<
-  KeyringPair,
-  'publicKey' | 'type'
->): DidDocumentV2.VerificationMethod['publicKeyMultibase'] {
+}: Pick<KeyringPair, 'publicKey'> & {
+  type: DidKeyType
+}): DidDocumentV2.VerificationMethod['publicKeyMultibase'] {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[type]
   if (multiCodecPublicKeyPrefix === undefined) {
     // TODO: Proper error

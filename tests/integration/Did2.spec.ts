@@ -13,6 +13,7 @@ import * as Did from '@kiltprotocol/did'
 import {
   CryptoCallbacksV2,
   DidDocumentV2,
+  DidResolverV2,
   KiltKeyringPair,
   NewDidVerificationKey,
 } from '@kiltprotocol/types'
@@ -36,7 +37,7 @@ beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
 }, 30_000)
 
-describe.only('write and didDeleteTx', () => {
+describe('write and didDeleteTx', () => {
   let did: DidDocumentV2.DidDocument
   let key: TestUtilsV2.KeyTool
   let signCallback: CryptoCallbacksV2.SignCallback
@@ -60,7 +61,7 @@ describe.only('write and didDeleteTx', () => {
     })
   }, 60_000)
 
-  it.only('writes a new DID record to chain', async () => {
+  it('writes a new DID record to chain', async () => {
     const { publicKeyMultibase } = did.verificationMethod.find(
       (vm) => vm.id === did.authentication[0]
     ) as DidDocumentV2.VerificationMethod
@@ -185,13 +186,13 @@ describe.only('write and didDeleteTx', () => {
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
     const fullDidLinkedInfo = await api.call.did.query(
-      Did.DidChainV2.toChain(Did.getFullDidUri(did.id))
+      Did.DidChainV2.toChain(Did.DidUtilsV2.getFullDidUri(did.id))
     )
     const { document: fullDid } =
       Did.DidRpc2.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
-    const encodedDid = Did.toChain(fullDid.id)
+    const encodedDid = Did.DidChainV2.toChain(fullDid.id)
     const linkedInfo = Did.DidRpc2.linkedInfoFromChain(
       await api.call.did.query(encodedDid)
     )
@@ -217,277 +218,304 @@ describe.only('write and didDeleteTx', () => {
   }, 60_000)
 })
 
-// it('creates and updates DID, and then reclaims the deposit back', async () => {
-//   const { keypair, getSignCallback, storeDidCallback } = makeSigningKeyTool()
-//   const newDid = await createMinimalLightDidFromKeypair(keypair)
+it('creates and updates DID, and then reclaims the deposit back', async () => {
+  const { keypair, getSignCallback, storeDidCallback } =
+    TestUtilsV2.makeSigningKeyTool()
+  const newDid = await TestUtilsV2.createMinimalLightDidFromKeypair(keypair)
 
-//   const tx = await Did.getStoreTx(
-//     newDid,
-//     paymentAccount.address,
-//     storeDidCallback
-//   )
+  const tx = await Did.DidChainV2.getStoreTxFromDidDocument(
+    newDid,
+    paymentAccount.address,
+    storeDidCallback
+  )
 
-//   await submitTx(tx, paymentAccount)
+  await submitTx(tx, paymentAccount)
 
-//   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-//   let fullDidLinkedInfo = await api.call.did.query(
-//     Did.toChain(Did.getFullDidUri(newDid.uri))
-//   )
-//   let { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
+  // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
+  let fullDidLinkedInfo = await api.call.did.query(
+    Did.DidChainV2.toChain(Did.DidUtilsV2.getFullDidUri(newDid.id))
+  )
+  let { document: fullDid } = Did.DidRpc2.linkedInfoFromChain(fullDidLinkedInfo)
 
-//   const newKey = makeSigningKeyTool()
+  const newKey = TestUtilsV2.makeSigningKeyTool()
 
-//   const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
-//     Did.publicKeyToChain(newKey.authentication[0])
-//   )
-//   const tx2 = await Did.authorizeTx(
-//     fullDid.uri,
-//     updateAuthenticationKeyCall,
-//     getSignCallback(fullDid),
-//     paymentAccount.address
-//   )
-//   await submitTx(tx2, paymentAccount)
+  const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
+    Did.DidChainV2.publicKeyToChain(newKey.authentication[0])
+  )
+  const tx2 = await Did.DidDetailsV2.authorizeTx(
+    fullDid.id,
+    updateAuthenticationKeyCall,
+    getSignCallback(fullDid),
+    paymentAccount.address
+  )
+  await submitTx(tx2, paymentAccount)
 
-//   // Authentication key changed, so did must be updated.
-//   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-//   fullDidLinkedInfo = await api.call.did.query(
-//     Did.toChain(Did.getFullDidUri(newDid.uri))
-//   )
-//   fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
+  // Authentication key changed, so did must be updated.
+  // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
+  fullDidLinkedInfo = await api.call.did.query(
+    Did.DidChainV2.toChain(Did.DidUtilsV2.getFullDidUri(newDid.id))
+  )
+  fullDid = Did.DidRpc2.linkedInfoFromChain(fullDidLinkedInfo).document
 
-//   // Add a new service endpoint
-//   const newEndpoint: DidServiceEndpoint = {
-//     id: '#new-endpoint',
-//     type: ['new-type'],
-//     serviceEndpoint: ['x:new-url'],
-//   }
-//   const updateEndpointCall = api.tx.did.addServiceEndpoint(
-//     Did.serviceToChain(newEndpoint)
-//   )
+  // Add a new service endpoint
+  const newEndpoint: Did.DidDetailsV2.NewService = {
+    id: '#new-endpoint',
+    type: ['new-type'],
+    serviceEndpoint: ['x:new-url'],
+  }
+  const updateEndpointCall = api.tx.did.addServiceEndpoint(
+    Did.DidChainV2.serviceToChain(newEndpoint)
+  )
 
-//   const tx3 = await Did.authorizeTx(
-//     fullDid.uri,
-//     updateEndpointCall,
-//     newKey.getSignCallback(fullDid),
-//     paymentAccount.address
-//   )
-//   await submitTx(tx3, paymentAccount)
+  const tx3 = await Did.DidDetailsV2.authorizeTx(
+    fullDid.id,
+    updateEndpointCall,
+    newKey.getSignCallback(fullDid),
+    paymentAccount.address
+  )
+  await submitTx(tx3, paymentAccount)
 
-//   const encodedDid = Did.toChain(fullDid.uri)
-//   const linkedInfo = Did.linkedInfoFromChain(
-//     await api.call.did.query(encodedDid)
-//   )
-//   expect(Did.getService(linkedInfo.document, newEndpoint.id)).toStrictEqual(
-//     newEndpoint
-//   )
+  const encodedDid = Did.DidChainV2.toChain(fullDid.id)
+  const linkedInfo = Did.DidRpc2.linkedInfoFromChain(
+    await api.call.did.query(encodedDid)
+  )
+  expect(
+    linkedInfo.document.service?.find((s) => s.id === newEndpoint.id)
+  ).toStrictEqual(newEndpoint)
 
-//   // Delete the added service endpoint
-//   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
-//     Did.resourceIdToChain(newEndpoint.id)
-//   )
-//   const tx4 = await Did.authorizeTx(
-//     fullDid.uri,
-//     removeEndpointCall,
-//     newKey.getSignCallback(fullDid),
-//     paymentAccount.address
-//   )
-//   await submitTx(tx4, paymentAccount)
+  // Delete the added service endpoint
+  const removeEndpointCall = api.tx.did.removeServiceEndpoint(
+    Did.DidChainV2.fragmentIdToChain(newEndpoint.id)
+  )
+  const tx4 = await Did.DidDetailsV2.authorizeTx(
+    fullDid.id,
+    removeEndpointCall,
+    newKey.getSignCallback(fullDid),
+    paymentAccount.address
+  )
+  await submitTx(tx4, paymentAccount)
 
-//   // There should not be any endpoint with the given ID now.
-//   const linkedInfo2 = Did.linkedInfoFromChain(
-//     await api.call.did.query(encodedDid)
-//   )
-//   expect(Did.getService(linkedInfo2.document, newEndpoint.id)).toBe(undefined)
+  // There should not be any endpoint with the given ID now.
+  const linkedInfo2 = Did.DidRpc2.linkedInfoFromChain(
+    await api.call.did.query(encodedDid)
+  )
+  expect(
+    linkedInfo2.document.service?.find((s) => s.id === newEndpoint.id)
+  ).toBe(undefined)
 
-//   // Claim the deposit back
-//   const storedEndpointsCount = linkedInfo2.document.service?.length ?? 0
-//   const reclaimDepositTx = api.tx.did.reclaimDeposit(
-//     encodedDid,
-//     storedEndpointsCount
-//   )
-//   await submitTx(reclaimDepositTx, paymentAccount)
-//   // Verify that the DID has been deleted
-//   expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
-// }, 80_000)
+  // Claim the deposit back
+  const storedEndpointsCount = linkedInfo2.document.service?.length ?? 0
+  const reclaimDepositTx = api.tx.did.reclaimDeposit(
+    encodedDid,
+    storedEndpointsCount
+  )
+  await submitTx(reclaimDepositTx, paymentAccount)
+  // Verify that the DID has been deleted
+  expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
+}, 80_000)
 
-// describe('DID migration', () => {
-//   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-//     const { storeDidCallback, authentication } = makeSigningKeyTool('ed25519')
-//     const { keyAgreement } = makeEncryptionKeyTool(
-//       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-//     )
-//     const lightDid = Did.createLightDidDocument({
-//       authentication,
-//       keyAgreement,
-//     })
+describe('DID migration', () => {
+  it('migrates light DID with ed25519 auth key and encryption key', async () => {
+    const { storeDidCallback, authentication } =
+      TestUtilsV2.makeSigningKeyTool('ed25519')
+    const { keyAgreement } = TestUtilsV2.makeEncryptionKeyTool(
+      '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+    )
+    const lightDid = Did.DidDetailsV2.createLightDidDocument({
+      authentication,
+      keyAgreement,
+    })
 
-//     const storeTx = await Did.getStoreTx(
-//       lightDid,
-//       paymentAccount.address,
-//       storeDidCallback
-//     )
+    const storeTx = await Did.DidChainV2.getStoreTxFromDidDocument(
+      lightDid,
+      paymentAccount.address,
+      storeDidCallback
+    )
 
-//     await submitTx(storeTx, paymentAccount)
-//     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-//     const migratedFullDidLinkedInfo = await api.call.did.query(
-//       Did.toChain(migratedFullDidUri)
-//     )
-//     const { document: migratedFullDid } = Did.linkedInfoFromChain(
-//       migratedFullDidLinkedInfo
-//     )
+    await submitTx(storeTx, paymentAccount)
+    const migratedFullDidUri = Did.DidUtilsV2.getFullDidUri(lightDid.id)
+    const migratedFullDidLinkedInfo = await api.call.did.query(
+      Did.DidChainV2.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.DidRpc2.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
-//     expect(migratedFullDid).toMatchObject(<DidDocument>{
-//       uri: migratedFullDidUri,
-//       authentication: [
-//         expect.objectContaining({
-//           publicKey: lightDid.authentication[0].publicKey,
-//           type: 'ed25519',
-//         }),
-//       ],
-//       keyAgreement: [
-//         expect.objectContaining({
-//           publicKey: lightDid.keyAgreement?.[0].publicKey,
-//           type: 'x25519',
-//         }),
-//       ],
-//     })
+    expect(migratedFullDid).toMatchObject(<Partial<DidDocumentV2.DidDocument>>{
+      id: migratedFullDidUri,
+      verificationMethod: [
+        expect.objectContaining(<Partial<DidDocumentV2.VerificationMethod>>{
+          controller: migratedFullDidUri,
+          type: 'MultiKey',
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+            type: 'ed25519',
+            publicKey: authentication[0].publicKey,
+          }),
+        }),
+        expect.objectContaining(<Partial<DidDocumentV2.VerificationMethod>>{
+          controller: migratedFullDidUri,
+          type: 'MultiKey',
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+            type: 'x25519',
+            publicKey: keyAgreement[0].publicKey,
+          }),
+        }),
+      ],
+    })
 
-//     expect(
-//       (await api.call.did.query(Did.toChain(migratedFullDid.uri))).isSome
-//     ).toBe(true)
+    expect(
+      (await api.call.did.query(Did.DidChainV2.toChain(migratedFullDid.id))).isSome
+    ).toBe(true)
 
-//     const { metadata } = (await Did.resolve(
-//       lightDid.uri
-//     )) as DidResolutionResult
+    const { didDocumentMetadata } = (await Did.DidResolverV2.resolve(
+      lightDid.id
+    )) as DidResolverV2.ResolutionResult
 
-//     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-//     expect(metadata.deactivated).toBe(false)
-//   })
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.deactivated).toBe(undefined)
+  })
 
-//   it('migrates light DID with sr25519 auth key', async () => {
-//     const { authentication, storeDidCallback } = makeSigningKeyTool()
-//     const lightDid = Did.createLightDidDocument({
-//       authentication,
-//     })
+  it('migrates light DID with sr25519 auth key', async () => {
+    const { authentication, storeDidCallback } =
+      TestUtilsV2.makeSigningKeyTool()
+    const lightDid = Did.DidDetailsV2.createLightDidDocument({
+      authentication,
+    })
 
-//     const storeTx = await Did.getStoreTx(
-//       lightDid,
-//       paymentAccount.address,
-//       storeDidCallback
-//     )
+    const storeTx = await Did.DidChainV2.getStoreTxFromDidDocument(
+      lightDid,
+      paymentAccount.address,
+      storeDidCallback
+    )
 
-//     await submitTx(storeTx, paymentAccount)
-//     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-//     const migratedFullDidLinkedInfo = await api.call.did.query(
-//       Did.toChain(migratedFullDidUri)
-//     )
-//     const { document: migratedFullDid } = Did.linkedInfoFromChain(
-//       migratedFullDidLinkedInfo
-//     )
+    await submitTx(storeTx, paymentAccount)
+    const migratedFullDidUri = Did.DidUtilsV2.getFullDidUri(lightDid.id)
+    const migratedFullDidLinkedInfo = await api.call.did.query(
+      Did.DidChainV2.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.DidRpc2.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
-//     expect(migratedFullDid).toMatchObject(<DidDocument>{
-//       uri: migratedFullDidUri,
-//       authentication: [
-//         expect.objectContaining({
-//           publicKey: lightDid.authentication[0].publicKey,
-//           type: 'sr25519',
-//         }),
-//       ],
-//     })
+    expect(migratedFullDid).toMatchObject(<Partial<DidDocumentV2.DidDocument>>{
+      id: migratedFullDidUri,
+      verificationMethod: [
+        expect.objectContaining(<Partial<DidDocumentV2.VerificationMethod>>{
+          controller: migratedFullDidUri,
+          type: 'MultiKey',
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+            type: 'sr25519',
+            publicKey: authentication[0].publicKey,
+          }),
+        }),
+      ],
+    })
 
-//     expect(
-//       (await api.call.did.query(Did.toChain(migratedFullDid.uri))).isSome
-//     ).toBe(true)
+    expect(
+      (await api.call.did.query(Did.DidChainV2.toChain(migratedFullDid.id))).isSome
+    ).toBe(true)
 
-//     const { metadata } = (await Did.resolve(
-//       lightDid.uri
-//     )) as DidResolutionResult
+    const { didDocumentMetadata } = (await Did.DidResolverV2.resolve(
+      lightDid.id
+    )) as DidResolverV2.ResolutionResult
 
-//     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-//     expect(metadata.deactivated).toBe(false)
-//   })
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.deactivated).toBe(undefined)
+  })
 
-//   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
-//     const { storeDidCallback, authentication } = makeSigningKeyTool('ed25519')
-//     const { keyAgreement } = makeEncryptionKeyTool(
-//       '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
-//     )
-//     const service: DidServiceEndpoint[] = [
-//       {
-//         id: '#id-1',
-//         type: ['type-1'],
-//         serviceEndpoint: ['x:url-1'],
-//       },
-//     ]
-//     const lightDid = Did.createLightDidDocument({
-//       authentication,
-//       keyAgreement,
-//       service,
-//     })
+  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+    const { storeDidCallback, authentication } =
+      TestUtilsV2.makeSigningKeyTool('ed25519')
+    const { keyAgreement } = TestUtilsV2.makeEncryptionKeyTool(
+      '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    )
+    const service: Did.DidDetailsV2.NewService[] = [
+      {
+        id: '#id-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
+      },
+    ]
+    const lightDid = Did.DidDetailsV2.createLightDidDocument({
+      authentication,
+      keyAgreement,
+      service,
+    })
 
-//     const storeTx = await Did.getStoreTx(
-//       lightDid,
-//       paymentAccount.address,
-//       storeDidCallback
-//     )
+    const storeTx = await Did.DidChainV2.getStoreTxFromDidDocument(
+      lightDid,
+      paymentAccount.address,
+      storeDidCallback
+    )
 
-//     await submitTx(storeTx, paymentAccount)
-//     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-//     const migratedFullDidLinkedInfo = await api.call.did.query(
-//       Did.toChain(migratedFullDidUri)
-//     )
-//     const { document: migratedFullDid } = Did.linkedInfoFromChain(
-//       migratedFullDidLinkedInfo
-//     )
+    await submitTx(storeTx, paymentAccount)
+    const migratedFullDidUri = Did.DidUtilsV2.getFullDidUri(lightDid.id)
+    const migratedFullDidLinkedInfo = await api.call.did.query(
+      Did.DidChainV2.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.DidRpc2.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
-//     expect(migratedFullDid).toMatchObject(<DidDocument>{
-//       uri: migratedFullDidUri,
-//       authentication: [
-//         expect.objectContaining({
-//           publicKey: lightDid.authentication[0].publicKey,
-//           type: 'ed25519',
-//         }),
-//       ],
-//       keyAgreement: [
-//         expect.objectContaining({
-//           publicKey: lightDid.keyAgreement?.[0].publicKey,
-//           type: 'x25519',
-//         }),
-//       ],
-//       service: [
-//         {
-//           id: '#id-1',
-//           type: ['type-1'],
-//           serviceEndpoint: ['x:url-1'],
-//         },
-//       ],
-//     })
+    expect(migratedFullDid).toMatchObject(<Partial<DidDocumentV2.DidDocument>>{
+      id: migratedFullDidUri,
+      verificationMethod: [
+        expect.objectContaining(<Partial<DidDocumentV2.VerificationMethod>>{
+          controller: migratedFullDidUri,
+          type: 'MultiKey',
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+            type: 'ed25519',
+            publicKey: authentication[0].publicKey,
+          }),
+        }),
+        expect.objectContaining(<Partial<DidDocumentV2.VerificationMethod>>{
+          controller: migratedFullDidUri,
+          type: 'MultiKey',
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+            type: 'x25519',
+            publicKey: keyAgreement[0].publicKey,
+          }),
+        }),
+      ],
+      service: [
+        {
+          id: '#id-1',
+          type: ['type-1'],
+          serviceEndpoint: ['x:url-1'],
+        },
+      ],
+    })
 
-//     const encodedDid = Did.toChain(migratedFullDid.uri)
-//     expect((await api.call.did.query(encodedDid)).isSome).toBe(true)
+    const encodedDid = Did.DidChainV2.toChain(migratedFullDid.id)
+    expect((await api.call.did.query(encodedDid)).isSome).toBe(true)
 
-//     const { metadata } = (await Did.resolve(
-//       lightDid.uri
-//     )) as DidResolutionResult
+    const { didDocumentMetadata } = (await Did.DidResolverV2.resolve(
+      lightDid.id
+    )) as DidResolverV2.ResolutionResult
 
-//     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-//     expect(metadata.deactivated).toBe(false)
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.deactivated).toBe(undefined)
 
-//     // Remove and claim the deposit back
-//     const linkedInfo = Did.linkedInfoFromChain(
-//       await api.call.did.query(encodedDid)
-//     )
-//     const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
-//     const reclaimDepositTx = api.tx.did.reclaimDeposit(
-//       encodedDid,
-//       storedEndpointsCount
-//     )
-//     await submitTx(reclaimDepositTx, paymentAccount)
+    // Remove and claim the deposit back
+    const linkedInfo = Did.DidRpc2.linkedInfoFromChain(
+      await api.call.did.query(encodedDid)
+    )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
+    const reclaimDepositTx = api.tx.did.reclaimDeposit(
+      encodedDid,
+      storedEndpointsCount
+    )
+    await submitTx(reclaimDepositTx, paymentAccount)
 
-//     expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
-//     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
-//   }, 60_000)
-// })
+    expect((await api.call.did.query(encodedDid)).isNone).toBe(true)
+    expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
+  }, 60_000)
+})
 
 // describe('DID authorization', () => {
 //   // Light DIDs cannot authorize extrinsics
