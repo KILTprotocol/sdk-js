@@ -6,33 +6,13 @@
  */
 
 import { CType } from '@kiltprotocol/core'
-import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
-import {
-  attestation,
-  credential,
-  cType,
-} from './exportToVerifiableCredential.spec'
-import { exportICredentialToVc } from './fromICredential'
+import { randomAsHex } from '@polkadot/util-crypto'
+import { credential as VC, cType } from './__mocks__/testData.js'
 import {
   credentialSchema,
   validateStructure,
   validateSubject,
 } from './KiltCredentialV1'
-import type { KiltCredentialV1 } from './types'
-
-let VC: KiltCredentialV1
-const timestamp = 1234567
-const blockHash = randomAsU8a(32)
-const attester = attestation.owner
-
-beforeAll(() => {
-  VC = exportICredentialToVc(credential, {
-    issuer: attester,
-    blockHash,
-    timestamp,
-    cType: cType.$id,
-  })
-})
 
 it('exports to VC including ctype as schema', async () => {
   expect(VC).toMatchObject({

@@ -25,7 +25,7 @@ import {
 import { W3C_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
-import ingosCredential from '../examples/ICredentialExample.json'
+import ingosCredential from '../examples/KiltCredentialV1.json'
 import type { VerifiableCredential } from '../../types.js'
 
 // is not needed and imports a dependency that does not work in node 18
@@ -47,7 +47,7 @@ export async function makeFakeDid() {
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument = Did.exportToDidDocument(
     {
-      uri: ingosCredential.claim.owner as DidUri,
+      uri: ingosCredential.credentialSubject.id as DidUri,
       authentication: [
         {
           ...keypair,
@@ -101,14 +101,8 @@ it('issues and verifies a signed credential', async () => {
   const credential = {
     '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
     type: ['VerifiableCredential'],
-    credentialSubject: {
-      '@context': {
-        '@vocab': `kilt:ctype:${ingosCredential.claim.cTypeHash}#`,
-      },
-      id: ingosCredential.claim.owner,
-      ...ingosCredential.claim.contents,
-    },
-    issuer: ingosCredential.claim.owner,
+    credentialSubject: ingosCredential.credentialSubject,
+    issuer: ingosCredential.credentialSubject.id,
   } as Partial<VerifiableCredential>
 
   const verifiableCredential = await vcjs.issue({

@@ -5,11 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import { hexToU8a } from '@polkadot/util'
+
+import type { HexString } from '@kiltprotocol/types'
 
 import { Caip19, Caip2 } from './CAIP/index.js'
-
 import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
@@ -139,11 +141,12 @@ export function credentialIdToRootHash(
 /**
  * Transforms the credential root hash to an IRI that functions as the VC's id.
  *
- * @param rootHash Credential root hash as a Uint8Array.
+ * @param rootHash Credential root hash as a Uint8Array or HexString.
  * @returns An IRI composed by prefixing the root hash with the [[KILT_CREDENTIAL_IRI_PREFIX]].
  */
 export function credentialIdFromRootHash(
-  rootHash: Uint8Array
+  rootHash: Uint8Array | HexString
 ): KiltCredentialV1['id'] {
-  return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(rootHash, false)}`
+  const bytes = typeof rootHash === 'string' ? hexToU8a(rootHash) : rootHash
+  return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
 }

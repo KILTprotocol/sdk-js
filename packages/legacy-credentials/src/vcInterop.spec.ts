@@ -5,23 +5,22 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+import { u8aConcat, u8aToU8a } from '@polkadot/util'
 import { randomAsU8a } from '@polkadot/util-crypto'
 
-import { Credential } from '@kiltprotocol/core'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
+import {
+  KiltAttestationProofV1,
+  KiltCredentialV1,
+  constants,
+} from '@kiltprotocol/vc-export'
 
 import { ApiMocks } from '../../../tests/testUtils'
-import {
-  credentialSchema,
-  validateStructure as validateCredentialStructure,
-} from './KiltCredentialV1'
-import { credentialIdFromRootHash } from './common'
-import {
-  DEFAULT_CREDENTIAL_CONTEXTS,
-  DEFAULT_CREDENTIAL_TYPES,
-} from './constants'
-import { exportICredentialToVc } from './fromICredential'
+import { calculateRootHash, removeClaimProperties } from './Credential'
+import { fromVC, toVc } from './vcInterop'
+
+// is not needed and imports a dependency that does not work in node 18
+jest.mock('@digitalbazaar/http-client', () => ({}))
 
 export const mockedApi = ApiMocks.createAugmentedApi()
 
@@ -95,7 +94,7 @@ export const credential: ICredential = {
     '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
   rootHash: '0x',
 }
-credential.rootHash = Credential.calculateRootHash(credential)
+credential.rootHash = calculateRootHash(credential)
 
 export const attestation: IAttestation = {
   claimHash: credential.rootHash,
@@ -149,44 +148,42 @@ mockedApi.query.system = {
 } as any
 
 it('exports credential to VC', () => {
-  const exported = exportICredentialToVc(credential, {
+  const exported = toVc(credential, {
     issuer: attestation.owner,
     chainGenesisHash: mockedApi.genesisHash,
     blockHash,
     timestamp,
-    cType: cType.$id,
   })
   expect(exported).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    id: credentialIdFromRootHash(hexToU8a(credential.rootHash)),
+    id: KiltCredentialV1.idFromRootHash(credential.rootHash),
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     nonTransferable: true,
   })
-  expect(() => validateCredentialStructure(exported)).not.toThrow()
+  expect(() => KiltCredentialV1.validateStructure(exported)).not.toThrow()
 })
 
 it('VC has correct format (full example)', () => {
   expect(
-    exportICredentialToVc(credential, {
+    toVc(credential, {
       issuer: attestation.owner,
       chainGenesisHash: mockedApi.genesisHash,
       blockHash,
       timestamp,
-      cType: cType.$id,
     })
   ).toMatchObject({
-    '@context': DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...DEFAULT_CREDENTIAL_TYPES, cType.$id],
+    '@context': constants.DEFAULT_CREDENTIAL_CONTEXTS,
+    type: [...constants.DEFAULT_CREDENTIAL_TYPES, cType.$id],
     credentialSchema: {
-      id: credentialSchema.$id,
+      id: KiltCredentialV1.credentialSchema.$id,
       type: 'JsonSchema2023',
     },
     credentialSubject: {
@@ -209,4 +206,34 @@ it('VC has correct format (full example)', () => {
       block: expect.any(String),
     },
   })
+})
+
+it('reproduces credential in round trip', () => {
+  const VC = toVc(credential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
+    blockHash,
+    timestamp,
+  })
+  expect(fromVC(VC)).toMatchObject(credential)
+})
+
+it('it verifies credential with selected properties revealed', async () => {
+  const reducedCredential = removeClaimProperties(credential, [
+    'name',
+    'birthday',
+  ])
+  const { proof, ...reducedVC } = toVc(reducedCredential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
+    blockHash,
+    timestamp,
+  })
+
+  await expect(
+    KiltAttestationProofV1.verify(reducedVC, proof, {
+      api: mockedApi,
+      cTypes: [cType],
+    })
+  ).resolves.not.toThrow()
 })

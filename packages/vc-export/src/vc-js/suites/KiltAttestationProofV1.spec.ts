@@ -5,65 +5,67 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a, u8aEq } from '@polkadot/util'
-// @ts-expect-error not a typescript module
-import * as vcjs from '@digitalbazaar/vc'
+import { u8aEq } from '@polkadot/util'
+import { base58Decode } from '@polkadot/util-crypto'
 import {
   Ed25519Signature2020,
   suiteContext as Ed25519Signature2020Context,
   // @ts-expect-error not a typescript module
 } from '@digitalbazaar/ed25519-signature-2020'
 // @ts-expect-error not a typescript module
+import * as vcjs from '@digitalbazaar/vc'
+// @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 // @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
-import { Credential } from '@kiltprotocol/core'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
 import type {
   ConformingDidDocument,
+  HexString,
   ICType,
-  IClaim,
-  ICredential,
+  KiltAddress,
   KiltKeyringPair,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 
-import { exportICredentialToVc } from '../../fromICredential.js'
 import {
   DidSigner,
   TxHandler,
   applySelectiveDisclosure,
+  finalizeProof,
+  initializeProof,
 } from '../../KiltAttestationProofV1.js'
-import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
+import { idToRootHash } from '../../KiltCredentialV1.js'
+import {
+  KILT_CREDENTIAL_CONTEXT_URL,
+  W3C_CREDENTIAL_CONTEXT_URL,
+} from '../../constants.js'
+import {
+  cType,
+  makeAttestationCreatedEvents,
+  mockedApi,
+} from '../../__mocks__/testData.js'
+import type {
+  KiltAttestationProofV1,
+  KiltCredentialV1,
+  Proof,
+} from '../../types.js'
 import {
   JsonLdObj,
   combineDocumentLoaders,
   kiltContextsLoader,
   kiltDidLoader,
 } from '../documentLoader.js'
-import {
-  KILT_CREDENTIAL_CONTEXT_URL,
-  W3C_CREDENTIAL_CONTEXT_URL,
-} from '../../constants.js'
-import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
+import ingosCredential from '../examples/KiltCredentialV1.json'
+import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import {
   CredentialStub,
   KiltAttestationV1Suite,
 } from './KiltAttestationProofV1.js'
-import ingosCredential from '../examples/ICredentialExample.json'
-import {
-  cType,
-  makeAttestationCreatedEvents,
-  mockedApi,
-} from '../../exportToVerifiableCredential.spec.js'
-import type {
-  KiltAttestationProofV1,
-  Proof,
-  KiltCredentialV1,
-} from '../../types.js'
+import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
 import { makeFakeDid } from './Sr25519Signature2020.spec'
 
 jest.mock('@kiltprotocol/did', () => ({
@@ -75,55 +77,48 @@ jest.mock('@kiltprotocol/did', () => ({
 // is not needed and imports a dependency that does not work in node 18
 jest.mock('@digitalbazaar/http-client', () => ({}))
 
-const attester = '4pnfkRn5UurBJTW92d9TaVLR2CqJdY4z5HPjrEbpGyBykare'
-const timestamp = 1_649_670_060_000
-const blockHash = hexToU8a(
-  '0x93c4a399abff5a68812479445d121995fde278b7a29d5863259cf7b6b6f1dc7e'
-)
+const attester = ingosCredential.issuer.split(':')[2] as KiltAddress
+const timestamp = new Date(ingosCredential.issuanceDate).getTime()
+const blockHash = base58Decode(ingosCredential.proof.block)
 const { genesisHash } = mockedApi
+const ctypeHash = ingosCredential.type[2].split(':')[2] as HexString
 
-const attestedVc = exportICredentialToVc(ingosCredential as ICredential, {
-  issuer: `did:kilt:${attester}`,
-  chainGenesisHash: genesisHash,
-  blockHash,
-  timestamp,
-})
-
-const notAttestedVc = exportICredentialToVc(
-  Credential.fromClaim(ingosCredential.claim as IClaim),
-  {
-    issuer: `did:kilt:${attester}`,
-    chainGenesisHash: genesisHash,
-    blockHash,
-    timestamp,
-  }
+const attestedVc = finalizeProof(
+  { ...ingosCredential } as unknown as KiltCredentialV1,
+  ingosCredential.proof as KiltAttestationProofV1,
+  { blockHash, timestamp, genesisHash }
 )
-const revokedCredential = Credential.fromClaim(ingosCredential.claim as IClaim)
-const revokedVc = exportICredentialToVc(revokedCredential, {
-  issuer: `did:kilt:${attester}`,
-  chainGenesisHash: genesisHash,
+
+const notAttestedVc = finalizeProof(
+  attestedVc,
+  initializeProof(attestedVc)[0],
+  { blockHash, timestamp, genesisHash }
+)
+
+const revokedVc = finalizeProof(attestedVc, initializeProof(attestedVc)[0], {
   blockHash,
   timestamp,
+  genesisHash,
 })
 
 jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
   // @ts-expect-error
   async (claimHash) => {
-    if (u8aEq(claimHash, ingosCredential.rootHash)) {
+    if (u8aEq(claimHash, idToRootHash(attestedVc.id))) {
       return mockedApi.createType(
         'Option<AttestationAttestationsAttestationDetails>',
         {
-          ctypeHash: ingosCredential.claim.cTypeHash,
+          ctypeHash,
           attester,
           revoked: false,
         }
       )
     }
-    if (u8aEq(claimHash, revokedCredential.rootHash)) {
+    if (u8aEq(claimHash, idToRootHash(revokedVc.id))) {
       return mockedApi.createType(
         'Option<AttestationAttestationsAttestationDetails>',
         {
-          ctypeHash: revokedCredential.claim.cTypeHash,
+          ctypeHash,
           attester,
           revoked: true,
         }
@@ -136,13 +131,8 @@ jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
 )
 jest.mocked(mockedApi.query.system.events).mockResolvedValue(
   makeAttestationCreatedEvents([
-    [attester, ingosCredential.rootHash, ingosCredential.claim.cTypeHash, null],
-    [
-      attester,
-      revokedCredential.rootHash,
-      revokedCredential.claim.cTypeHash,
-      null,
-    ],
+    [attester, idToRootHash(attestedVc.id), ctypeHash, null],
+    [attester, idToRootHash(revokedVc.id), ctypeHash, null],
   ]) as any
 )
 jest
