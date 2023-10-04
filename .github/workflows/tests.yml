@@ -19,6 +19,7 @@ on:
     branches:
       - develop
       - master
+      - vc-refactor
 
 env:
   TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
