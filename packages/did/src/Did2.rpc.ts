@@ -161,18 +161,17 @@ export function linkedInfoFromChain(
     ],
   }
 
-  if (didRec.keyAgreement !== undefined) {
-    did.keyAgreement = [didRec.keyAgreement[0].id]
-    did.verificationMethod.push(
-      didKeyToVerificationMethod(
-        fromChain(identifier),
-        didRec.keyAgreement[0].id,
-        {
-          keyType: didRec.keyAgreement[0].type,
-          publicKey: didRec.keyAgreement[0].publicKey,
-        }
+  if (didRec.keyAgreement !== undefined && didRec.keyAgreement.length > 0) {
+    did.keyAgreement = []
+    didRec.keyAgreement.forEach(({ id, publicKey, type: keyType }) => {
+      did.keyAgreement?.push(id)
+      did.verificationMethod.push(
+        didKeyToVerificationMethod(fromChain(identifier), id, {
+          keyType,
+          publicKey,
+        })
       )
-    )
+    })
   }
 
   if (didRec.assertionMethod !== undefined) {
