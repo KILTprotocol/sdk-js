@@ -197,6 +197,38 @@ export function makeSigningKeyTool(
   }
 }
 
+function addVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  verificationMethod: DidDocumentV2.VerificationMethod,
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  const existingRelationship = didDocument[relationship] ?? []
+  existingRelationship.push(verificationMethod.id)
+  // eslint-disable-next-line no-param-reassign
+  didDocument[relationship] = existingRelationship
+  didDocument.verificationMethod.push(verificationMethod)
+}
+
+function addKeypairAsVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  {
+    id,
+    publicKey,
+    type: keyType,
+  }: Did.DidDetailsV2.BaseNewDidKey & { id: DidDocumentV2.UriFragment },
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  const verificationMethod = Did.DidUtilsV2.didKeyToVerificationMethod(
+    didDocument.id,
+    id,
+    {
+      keyType: keyType as Did.DidDetailsV2.DidKeyType,
+      publicKey,
+    }
+  )
+  addVerificationMethod(didDocument, verificationMethod, relationship)
+}
+
 /**
  * Given a keypair, creates a light DID with an authentication and an encryption key.
  *
@@ -253,36 +285,72 @@ export async function createLocalDemoFullDidFromKeypair(
     keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
     endpoints?: DidServiceEndpoint[]
   } = {}
-): Promise<DidDocument> {
-  const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.getFullDidUriFromKey(authKey)
+): Promise<DidDocumentV2.DidDocument> {
+  const {
+    type: keyType,
+    publicKey,
+    id: authKeyId,
+  } = makeDidKeyFromKeypair(keypair)
+  const id = Did.DidUtilsV2.getFullDidUriFromVerificationMethod({
+    publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey({
+      type: keyType,
+      publicKey,
+    }),
+  })
 
-  const result: DidDocument = {
-    uri,
-    authentication: [authKey],
+  const result: DidDocumentV2.DidDocument = {
+    id,
+    authentication: [authKeyId],
+    verificationMethod: [
+      Did.DidUtilsV2.didKeyToVerificationMethod(id, authKeyId, {
+        keyType,
+        publicKey,
+      }),
+    ],
     service: endpoints,
   }
 
   if (keyRelationships.has('keyAgreement')) {
-    const encryptionKeypair = makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement[0]
-    const encKey = {
-      ...encryptionKeypair,
-      id: computeKeyId(encryptionKeypair.publicKey),
-    }
-    result.keyAgreement = [encKey]
+    const { publicKey: encPublicKey, type } = makeEncryptionKeyTool(
+      `${keypair.publicKey}//enc`
+    ).keyAgreement[0]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'keyAgreement'
+    )
   }
   if (keyRelationships.has('assertionMethod')) {
-    const attKey = makeDidKeyFromKeypair(
+    const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//att') as KiltKeyringPair
     )
-    result.assertionMethod = [attKey]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'assertionMethod'
+    )
   }
   if (keyRelationships.has('capabilityDelegation')) {
-    const delKey = makeDidKeyFromKeypair(
+    const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//del') as KiltKeyringPair
     )
-    result.capabilityDelegation = [delKey]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'capabilityDelegation'
+    )
   }
 
   return result
@@ -307,38 +375,6 @@ export async function createLocalDemoFullDidFromLightDid(
     capabilityDelegation: authentication,
     keyAgreement: lightDid.keyAgreement,
   }
-}
-
-function addVerificationMethod(
-  didDocument: DidDocumentV2.DidDocument,
-  verificationMethod: DidDocumentV2.VerificationMethod,
-  relationship: DidDocumentV2.VerificationMethodRelationship
-): void {
-  const existingRelationship = didDocument[relationship] ?? []
-  existingRelationship.push(verificationMethod.id)
-  // eslint-disable-next-line no-param-reassign
-  didDocument[relationship] = existingRelationship
-  didDocument.verificationMethod.push(verificationMethod)
-}
-
-function addKeypairAsVerificationMethod(
-  didDocument: DidDocumentV2.DidDocument,
-  {
-    id,
-    publicKey,
-    type: keyType,
-  }: Did.DidDetailsV2.BaseNewDidKey & { id: DidDocumentV2.UriFragment },
-  relationship: DidDocumentV2.VerificationMethodRelationship
-): void {
-  const verificationMethod = Did.DidUtilsV2.didKeyToVerificationMethod(
-    didDocument.id,
-    id,
-    {
-      keyType: keyType as Did.DidDetailsV2.DidKeyType,
-      publicKey,
-    }
-  )
-  addVerificationMethod(didDocument, verificationMethod, relationship)
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
