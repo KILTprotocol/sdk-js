@@ -141,7 +141,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
 
       return {
         signature,
-        verificationMethodPublicKey: verificationMethod.publicKeyMultibase,
+        verificationMethod,
       }
     }
 }
@@ -163,8 +163,9 @@ export function makeStoreDidCallback(
     const signature = keypair.sign(data, { withType: false })
     return {
       signature,
-      verificationMethodPublicKey:
-        Did.DidUtilsV2.keypairToMultibaseKey(keypair),
+      verificationMethod: {
+        publicKeyMultibase: Did.DidUtilsV2.keypairToMultibaseKey(keypair),
+      },
     }
   }
 }

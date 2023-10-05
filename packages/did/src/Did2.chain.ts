@@ -293,9 +293,18 @@ interface GetStoreTxInput {
   service?: NewService[]
 }
 
+type GetStoreTxSignCallbacResponse = Pick<
+  CryptoCallbacksV2.SignResponseData,
+  'signature'
+> & {
+  verificationMethod: Pick<
+    DidDocumentV2.VerificationMethod,
+    'publicKeyMultibase'
+  >
+}
 export type GetStoreTxSignCallback = (
   signData: Omit<CryptoCallbacksV2.SignRequestData, 'did'>
-) => Promise<CryptoCallbacksV2.SignResponseData>
+) => Promise<GetStoreTxSignCallbacResponse>
 
 /**
  * @param input
@@ -383,11 +392,13 @@ export async function getStoreTxFromInput(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const { signature, verificationMethodPublicKey } = await sign({
+  const { signature, verificationMethod } = await sign({
     data: encoded,
     verificationMethodRelationship: 'authentication',
   })
-  const { keyType } = multibaseKeyToDidKey(verificationMethodPublicKey)
+  const { keyType } = multibaseKeyToDidKey(
+    verificationMethod.publicKeyMultibase
+  )
   const encodedSignature = {
     [keyType]: signature,
   } as EncodedSignature
@@ -555,12 +566,14 @@ export async function generateDidAuthenticatedTx({
         blockNumber: blockNumber ?? (await api.query.system.number()),
       }
     )
-  const { signature, verificationMethodPublicKey } = await sign({
+  const { signature, verificationMethod } = await sign({
     data: signableCall.toU8a(),
     verificationMethodRelationship,
     did,
   })
-  const { keyType } = multibaseKeyToDidKey(verificationMethodPublicKey)
+  const { keyType } = multibaseKeyToDidKey(
+    verificationMethod.publicKeyMultibase
+  )
   const encodedSignature = {
     [keyType]: signature,
   } as EncodedSignature
