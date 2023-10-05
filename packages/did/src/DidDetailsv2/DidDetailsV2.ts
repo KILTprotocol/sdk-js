@@ -6,7 +6,7 @@
  */
 
 import { DidDocumentV2 } from '@kiltprotocol/types'
-import { didKeyToVerificationMethod } from '../Did2.utils'
+import { didKeyToVerificationMethod } from '../Did2.utils.js'
 
 /**
  * Possible types for a DID verification key.
@@ -90,7 +90,7 @@ export function addVerificationMethod(
   }
 }
 
-export function addKeyAsVerificationMethod(
+export function addKeypairAsVerificationMethod(
   didDocument: DidDocumentV2.DidDocument,
   {
     id,

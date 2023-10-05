@@ -16,7 +16,7 @@ import {
   parse,
   validateUri,
 } from '../Did2.utils.js'
-import { addKeyAsVerificationMethod } from '../DidDetailsv2/DidDetailsV2.js'
+import { addKeypairAsVerificationMethod } from '../DidDetailsv2/DidDetailsV2.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
 
@@ -66,7 +66,7 @@ async function resolveInternal(
       document.keyAgreement.length > 0
     ) {
       document.keyAgreement.forEach(({ id, type: keyType, publicKey }) => {
-        addKeyAsVerificationMethod(
+        addKeypairAsVerificationMethod(
           newDidDocument,
           { id, publicKey, type: keyType },
           'keyAgreement'
@@ -75,7 +75,7 @@ async function resolveInternal(
     }
     if (document.assertionMethod !== undefined) {
       const { id, publicKey, type: keyType } = document.assertionMethod[0]
-      addKeyAsVerificationMethod(
+      addKeypairAsVerificationMethod(
         newDidDocument,
         { id, publicKey, type: keyType },
         'assertionMethod'
@@ -83,7 +83,7 @@ async function resolveInternal(
     }
     if (document.capabilityDelegation !== undefined) {
       const { id, publicKey, type: keyType } = document.capabilityDelegation[0]
-      addKeyAsVerificationMethod(
+      addKeypairAsVerificationMethod(
         newDidDocument,
         { id, publicKey, type: keyType },
         'capabilityDelegation'

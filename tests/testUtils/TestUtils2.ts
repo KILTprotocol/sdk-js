@@ -356,7 +356,7 @@ export async function createFullDidFromLightDid(
   }
   if (assertionMethod !== undefined) {
     const { id, publicKey, type } = assertionMethod[0]
-    Did.DidDetailsV2.addKeyAsVerificationMethod(
+    Did.DidDetailsV2.addKeypairAsVerificationMethod(
       didDocument,
       {
         id,
@@ -368,7 +368,7 @@ export async function createFullDidFromLightDid(
   }
   if (capabilityDelegation !== undefined) {
     const { id, publicKey, type } = capabilityDelegation[0]
-    Did.DidDetailsV2.addKeyAsVerificationMethod(
+    Did.DidDetailsV2.addKeypairAsVerificationMethod(
       didDocument,
       {
         id,
@@ -380,7 +380,7 @@ export async function createFullDidFromLightDid(
   }
   if (keyAgreement !== undefined && keyAgreement.length > 0) {
     keyAgreement.forEach(({ id, type, publicKey }) => {
-      Did.DidDetailsV2.addKeyAsVerificationMethod(
+      Did.DidDetailsV2.addKeypairAsVerificationMethod(
         didDocument,
         {
           id,
