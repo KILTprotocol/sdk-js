@@ -355,35 +355,38 @@ export async function createFullDidFromLightDid(
     service,
   }
   if (assertionMethod !== undefined) {
-    const { id, publicKey, type: keyType } = assertionMethod[0]
-    Did.DidDetailsV2.addVerificationMethod(
+    const { id, publicKey, type } = assertionMethod[0]
+    Did.DidDetailsV2.addKeyAsVerificationMethod(
       didDocument,
-      Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
-        keyType,
+      {
+        id,
         publicKey,
-      }),
+        type,
+      },
       'assertionMethod'
     )
   }
   if (capabilityDelegation !== undefined) {
-    const { id, publicKey, type: keyType } = capabilityDelegation[0]
-    Did.DidDetailsV2.addVerificationMethod(
+    const { id, publicKey, type } = capabilityDelegation[0]
+    Did.DidDetailsV2.addKeyAsVerificationMethod(
       didDocument,
-      Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
-        keyType,
+      {
+        id,
         publicKey,
-      }),
+        type,
+      },
       'capabilityDelegation'
     )
   }
   if (keyAgreement !== undefined && keyAgreement.length > 0) {
-    keyAgreement.forEach(({ id, type: keyType, publicKey }) => {
-      Did.DidDetailsV2.addVerificationMethod(
+    keyAgreement.forEach(({ id, type, publicKey }) => {
+      Did.DidDetailsV2.addKeyAsVerificationMethod(
         didDocument,
-        Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
-          keyType,
+        {
+          id,
           publicKey,
-        }),
+          type,
+        },
         'keyAgreement'
       )
     })

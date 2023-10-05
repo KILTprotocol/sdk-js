@@ -167,12 +167,9 @@ export function linkedInfoFromChain(
 
   if (keyAgreement !== undefined && keyAgreement.length > 0) {
     keyAgreement.forEach(({ id, publicKey, type }) => {
-      DidDetailsV2.addVerificationMethod(
+      DidDetailsV2.addKeyAsVerificationMethod(
         did,
-        didKeyToVerificationMethod(fromChain(identifier), id, {
-          keyType: type,
-          publicKey,
-        }),
+        { id, publicKey, type },
         'keyAgreement'
       )
     })
@@ -180,24 +177,18 @@ export function linkedInfoFromChain(
 
   if (assertionMethod !== undefined) {
     const { id, type, publicKey } = assertionMethod[0]
-    DidDetailsV2.addVerificationMethod(
+    DidDetailsV2.addKeyAsVerificationMethod(
       did,
-      didKeyToVerificationMethod(fromChain(identifier), id, {
-        keyType: type,
-        publicKey,
-      }),
+      { id, publicKey, type },
       'assertionMethod'
     )
   }
 
   if (capabilityDelegation !== undefined) {
     const { id, type, publicKey } = capabilityDelegation[0]
-    DidDetailsV2.addVerificationMethod(
+    DidDetailsV2.addKeyAsVerificationMethod(
       did,
-      didKeyToVerificationMethod(fromChain(identifier), id, {
-        keyType: type,
-        publicKey,
-      }),
+      { id, publicKey, type },
       'capabilityDelegation'
     )
   }

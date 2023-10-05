@@ -6,6 +6,7 @@
  */
 
 import { DidDocumentV2 } from '@kiltprotocol/types'
+import { didKeyToVerificationMethod } from '../Did2.utils'
 
 /**
  * Possible types for a DID verification key.
@@ -87,4 +88,20 @@ export function addVerificationMethod(
       didDocument.verificationMethod.push(verificationMethod)
     }
   }
+}
+
+export function addKeyAsVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  {
+    id,
+    publicKey,
+    type: keyType,
+  }: BaseNewDidKey & { id: DidDocumentV2.UriFragment },
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
+    keyType: keyType as DidKeyType,
+    publicKey,
+  })
+  addVerificationMethod(didDocument, verificationMethod, relationship)
 }
