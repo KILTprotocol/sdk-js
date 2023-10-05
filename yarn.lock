@@ -1927,6 +1927,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/asset-credentials@workspace:packages/asset-credentials"
   dependencies:
+    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -2076,7 +2077,6 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
-    "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     cbor-web: ^9.0.0

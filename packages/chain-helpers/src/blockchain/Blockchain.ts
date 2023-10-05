@@ -5,16 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SubmittableResult } from '@polkadot/api'
-import { AnyNumber } from '@polkadot/types/types'
+import type { ApiPromise } from '@polkadot/api'
+import type { TxWithEvent } from '@polkadot/api-derive/types'
+import type { GenericCall, GenericExtrinsic, Vec } from '@polkadot/types'
+import type { Call, Extrinsic } from '@polkadot/types/interfaces'
+import type { AnyNumber } from '@polkadot/types/types'
+import type { BN } from '@polkadot/util'
 
-import { ConfigService } from '@kiltprotocol/config'
 import type {
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+
+import { SubmittableResult } from '@polkadot/api'
+
+import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { ErrorHandler } from '../errorhandling/index.js'
@@ -179,4 +186,71 @@ export async function signAndSubmitTx(
 ): Promise<ISubmittableResult> {
   const signedTx = await tx.signAsync(signer, { tip })
   return submitSignedTx(signedTx, opts)
+}
+
+/**
+ * Checks wheather the provided extrinsic or call represents a batch.
+ *
+ * @param extrinsic The input [[Extrinsic]] or [[Call]].
+ * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns True if it's a batch, false otherwise.
+ */
+export function isBatch(
+  extrinsic: Extrinsic | Call,
+  api?: ApiPromise
+): extrinsic is GenericExtrinsic<[Vec<Call>]> | GenericCall<[Vec<Call>]> {
+  const apiPromise = api ?? ConfigService.get('api')
+  return (
+    apiPromise.tx.utility.batch.is(extrinsic) ||
+    apiPromise.tx.utility.batchAll.is(extrinsic) ||
+    apiPromise.tx.utility.forceBatch.is(extrinsic)
+  )
+}
+
+/**
+ * Flatten all calls into a single array following a DFS approach.
+ *
+ * For example, given the calls [[N1, N2], [N3, [N4, N5], N6]], the final list will look like [N1, N2, N3, N4, N5, N6].
+ *
+ * @param call The [[Call]] which can potentially contain nested calls.
+ * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns A list of [[Call]] nested according to the rules above.
+ */
+export function flattenCalls(call: Call, api?: ApiPromise): Call[] {
+  if (isBatch(call, api)) {
+    // Inductive case
+    return call.args[0].flatMap((c) => flattenCalls(c, api))
+  }
+  // Base case
+  return [call]
+}
+
+/**
+ * Retrieve the last extrinsic from a block that matches the provided filter.
+ *
+ * The function ignores failed extrinsics and, if multiple extrinsics from the block match the provided filter, it only takes the last one.
+ *
+ * @param blockNumber The number of the block to parse.
+ * @param filter The filter to apply to the transactions in the block.
+ * @param api The optional [[ApiPromise]]. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns The last extrinsic in the block matching the filter, or null if no extrinsic is found.
+ */
+export async function retrieveExtrinsicFromBlock(
+  blockNumber: BN,
+  filter: (tx: TxWithEvent) => boolean,
+  api?: ApiPromise
+): Promise<Extrinsic | null> {
+  const apiPromise = api ?? ConfigService.get('api')
+  const { extrinsics } = await apiPromise.derive.chain.getBlockByNumber(
+    blockNumber
+  )
+  const successfulExtrinsics = extrinsics.filter(
+    ({ dispatchError }) => !dispatchError
+  )
+  const extrinsicLastOccurrence = successfulExtrinsics.reverse().find(filter)
+
+  return extrinsicLastOccurrence?.extrinsic ?? null
 }
