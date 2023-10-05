@@ -31,7 +31,7 @@ export type SignatureVerificationMethodRelationship =
   | 'authentication'
   | 'capabilityDelegation'
   | 'assertionMethod'
-export type EncryptionMethodRelationship = 'keyAgreementKey'
+export type EncryptionMethodRelationship = 'keyAgreement'
 
 export type VerificationMethodRelationship =
   | SignatureVerificationMethodRelationship

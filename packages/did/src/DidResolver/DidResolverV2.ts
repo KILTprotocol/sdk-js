@@ -16,6 +16,7 @@ import {
   parse,
   validateUri,
 } from '../Did2.utils.js'
+import { addVerificationMethod } from '../DidDetailsv2/DidDetailsV2.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
 
@@ -60,39 +61,41 @@ async function resolveInternal(
       ],
       service: document.service,
     }
-    if (document.assertionMethod !== undefined) {
-      newDidDocument.assertionMethod = document.assertionMethod.map((k) => k.id)
-      newDidDocument.verificationMethod.push(
-        ...document.assertionMethod.map((k) =>
-          didKeyToVerificationMethod(did, k.id, {
-            keyType: k.type,
-            publicKey: k.publicKey,
-          })
+    if (
+      document.keyAgreement !== undefined &&
+      document.keyAgreement.length > 0
+    ) {
+      document.keyAgreement.forEach(({ id, type: keyType, publicKey }) => {
+        addVerificationMethod(
+          newDidDocument,
+          didKeyToVerificationMethod(newDidDocument.id, id, {
+            keyType,
+            publicKey,
+          }),
+          'keyAgreement'
         )
-      )
+      })
     }
-    if (document.keyAgreement !== undefined) {
-      newDidDocument.keyAgreement = document.keyAgreement.map((k) => k.id)
-      newDidDocument.verificationMethod.push(
-        ...document.keyAgreement.map((k) =>
-          didKeyToVerificationMethod(did, k.id, {
-            keyType: k.type,
-            publicKey: k.publicKey,
-          })
-        )
+    if (document.assertionMethod !== undefined) {
+      const { id, publicKey, type: keyType } = document.assertionMethod[0]
+      addVerificationMethod(
+        newDidDocument,
+        didKeyToVerificationMethod(newDidDocument.id, id, {
+          keyType,
+          publicKey,
+        }),
+        'assertionMethod'
       )
     }
     if (document.capabilityDelegation !== undefined) {
-      newDidDocument.capabilityDelegation = document.capabilityDelegation.map(
-        (k) => k.id
-      )
-      newDidDocument.verificationMethod.push(
-        ...document.capabilityDelegation.map((k) =>
-          didKeyToVerificationMethod(did, k.id, {
-            keyType: k.type,
-            publicKey: k.publicKey,
-          })
-        )
+      const { id, publicKey, type: keyType } = document.capabilityDelegation[0]
+      addVerificationMethod(
+        newDidDocument,
+        didKeyToVerificationMethod(newDidDocument.id, id, {
+          keyType,
+          publicKey,
+        }),
+        'capabilityDelegation'
       )
     }
     if (web3Name !== undefined) {

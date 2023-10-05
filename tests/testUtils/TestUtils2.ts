@@ -355,53 +355,38 @@ export async function createFullDidFromLightDid(
     service,
   }
   if (assertionMethod !== undefined) {
-    didDocument.assertionMethod = [assertionMethod[0].id]
-    if (
-      didDocument.verificationMethod.find(
-        (vm) => vm.id === assertionMethod[0].id
-      ) === undefined
-    ) {
-      didDocument.verificationMethod.push(
-        Did.DidUtilsV2.didKeyToVerificationMethod(uri, assertionMethod[0].id, {
-          keyType: assertionMethod[0].type,
-          publicKey: assertionMethod[0].publicKey,
-        })
-      )
-    }
+    const { id, publicKey, type: keyType } = assertionMethod[0]
+    Did.DidDetailsV2.addVerificationMethod(
+      didDocument,
+      Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
+        keyType,
+        publicKey,
+      }),
+      'assertionMethod'
+    )
   }
   if (capabilityDelegation !== undefined) {
-    didDocument.capabilityDelegation = [capabilityDelegation[0].id]
-    if (
-      didDocument.verificationMethod.find(
-        (vm) => vm.id === capabilityDelegation[0].id
-      ) === undefined
-    ) {
-      didDocument.verificationMethod.push(
-        Did.DidUtilsV2.didKeyToVerificationMethod(
-          uri,
-          capabilityDelegation[0].id,
-          {
-            keyType: capabilityDelegation[0].type,
-            publicKey: capabilityDelegation[0].publicKey,
-          }
-        )
-      )
-    }
+    const { id, publicKey, type: keyType } = capabilityDelegation[0]
+    Did.DidDetailsV2.addVerificationMethod(
+      didDocument,
+      Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
+        keyType,
+        publicKey,
+      }),
+      'capabilityDelegation'
+    )
   }
-  if (keyAgreement !== undefined) {
-    didDocument.keyAgreement = [keyAgreement[0].id]
-    if (
-      didDocument.verificationMethod.find(
-        (vm) => vm.id === keyAgreement[0].id
-      ) === undefined
-    ) {
-      didDocument.verificationMethod.push(
-        Did.DidUtilsV2.didKeyToVerificationMethod(uri, keyAgreement[0].id, {
-          keyType: keyAgreement[0].type,
-          publicKey: keyAgreement[0].publicKey,
-        })
+  if (keyAgreement !== undefined && keyAgreement.length > 0) {
+    keyAgreement.forEach(({ id, type: keyType, publicKey }) => {
+      Did.DidDetailsV2.addVerificationMethod(
+        didDocument,
+        Did.DidUtilsV2.didKeyToVerificationMethod(didDocument.id, id, {
+          keyType,
+          publicKey,
+        }),
+        'keyAgreement'
       )
-    }
+    })
   }
 
   return didDocument

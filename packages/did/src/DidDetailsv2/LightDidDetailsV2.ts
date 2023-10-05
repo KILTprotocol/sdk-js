@@ -24,6 +24,7 @@ import {
   parse,
 } from '../Did2.utils.js'
 import { fragmentIdToChain, validateNewService } from '../Did2.chain.js'
+import { addVerificationMethod } from './DidDetailsV2.js'
 import type { NewService, DidVerificationKeyType } from './DidDetailsV2.js'
 
 /**
@@ -221,18 +222,15 @@ export function createLightDidDocument({
   }
 
   if (keyAgreement !== undefined) {
-    did.keyAgreement = [encryptionKeyId]
-    if (
-      did.verificationMethod.find((vm) => vm.id === encryptionKeyId) ===
-      undefined
-    ) {
-      did.verificationMethod.push(
-        didKeyToVerificationMethod(uri, encryptionKeyId, {
-          keyType: keyAgreement[0].type,
-          publicKey: keyAgreement[0].publicKey,
-        })
-      )
-    }
+    const { publicKey, type } = keyAgreement[0]
+    addVerificationMethod(
+      did,
+      didKeyToVerificationMethod(uri, encryptionKeyId, {
+        keyType: type,
+        publicKey,
+      }),
+      'keyAgreement'
+    )
   }
 
   return did

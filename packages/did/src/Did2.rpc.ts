@@ -30,8 +30,11 @@ import {
   fromChain,
   publicKeyFromChain,
 } from './Did2.chain.js'
+import { DidDetailsV2 } from './index.js'
 
-function documentFromChain(encoded: DidDidDetails): ChainDidDetails {
+function documentFromChain(
+  encoded: DidDidDetails
+): Omit<ChainDidDetails, 'service'> {
   const {
     publicKeys,
     authenticationKey,
@@ -145,65 +148,58 @@ export function linkedInfoFromChain(
   const { identifier, accounts, w3n, serviceEndpoints, details } =
     encoded.unwrap()
 
-  const didRec = documentFromChain(details)
+  const {
+    authentication,
+    keyAgreement,
+    capabilityDelegation,
+    assertionMethod,
+  } = documentFromChain(details)
   const did: DidDocumentV2.DidDocument = {
     id: fromChain(identifier),
-    authentication: [didRec.authentication[0].id],
+    authentication: [authentication[0].id],
     verificationMethod: [
-      didKeyToVerificationMethod(
-        fromChain(identifier),
-        didRec.authentication[0].id,
-        {
-          keyType: didRec.authentication[0].type,
-          publicKey: didRec.authentication[0].publicKey,
-        }
-      ),
+      didKeyToVerificationMethod(fromChain(identifier), authentication[0].id, {
+        keyType: authentication[0].type,
+        publicKey: authentication[0].publicKey,
+      }),
     ],
   }
 
-  if (didRec.keyAgreement !== undefined && didRec.keyAgreement.length > 0) {
-    did.keyAgreement = []
-    didRec.keyAgreement.forEach(({ id, publicKey, type: keyType }) => {
-      did.keyAgreement?.push(id)
-      if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
-        did.verificationMethod.push(
-          didKeyToVerificationMethod(fromChain(identifier), id, {
-            keyType,
-            publicKey,
-          })
-        )
-      }
-    })
-  }
-
-  if (didRec.assertionMethod !== undefined) {
-    const { id, type, publicKey } = didRec.assertionMethod[0]
-    did.assertionMethod = [id]
-    if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
-      did.verificationMethod.push(
-        didKeyToVerificationMethod(
-          fromChain(identifier),
-          didRec.assertionMethod[0].id,
-          {
-            keyType: type,
-            publicKey,
-          }
-        )
-      )
-    }
-  }
-
-  if (didRec.capabilityDelegation !== undefined) {
-    const { id, type, publicKey } = didRec.capabilityDelegation[0]
-    did.capabilityDelegation = [id]
-    if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
-      did.verificationMethod.push(
+  if (keyAgreement !== undefined && keyAgreement.length > 0) {
+    keyAgreement.forEach(({ id, publicKey, type }) => {
+      DidDetailsV2.addVerificationMethod(
+        did,
         didKeyToVerificationMethod(fromChain(identifier), id, {
           keyType: type,
           publicKey,
-        })
+        }),
+        'keyAgreement'
       )
-    }
+    })
+  }
+
+  if (assertionMethod !== undefined) {
+    const { id, type, publicKey } = assertionMethod[0]
+    DidDetailsV2.addVerificationMethod(
+      did,
+      didKeyToVerificationMethod(fromChain(identifier), id, {
+        keyType: type,
+        publicKey,
+      }),
+      'assertionMethod'
+    )
+  }
+
+  if (capabilityDelegation !== undefined) {
+    const { id, type, publicKey } = capabilityDelegation[0]
+    DidDetailsV2.addVerificationMethod(
+      did,
+      didKeyToVerificationMethod(fromChain(identifier), id, {
+        keyType: type,
+        publicKey,
+      }),
+      'capabilityDelegation'
+    )
   }
 
   const services = servicesFromChain(serviceEndpoints)

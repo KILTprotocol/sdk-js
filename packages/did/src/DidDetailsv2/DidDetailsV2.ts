@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidDocumentV2 } from '@kiltprotocol/types'
+import { DidDocumentV2 } from '@kiltprotocol/types'
 
 /**
  * Possible types for a DID verification key.
@@ -50,4 +50,41 @@ export type NewDidVerificationKey = BaseNewDidKey & {
  */
 export type NewDidEncryptionKey = BaseNewDidKey & {
   type: DidEncryptionKeyType
+}
+
+function isVerificationMethodRelationship(
+  input: unknown
+): input is DidDocumentV2.VerificationMethodRelationship {
+  if (
+    input === 'authentication' ||
+    input === 'capabilityDelegation' ||
+    input === 'assertionMethod' ||
+    input === 'keyAgreement'
+  ) {
+    return true
+  }
+  return false
+}
+
+function doesVerificationMethodExist(
+  didDocument: DidDocumentV2.DidDocument,
+  { id }: Pick<DidDocumentV2.VerificationMethod, 'id'>
+): boolean {
+  return didDocument.verificationMethod.find((vm) => vm.id === id) !== undefined
+}
+
+export function addVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  verificationMethod: DidDocumentV2.VerificationMethod,
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  if (isVerificationMethodRelationship(relationship)) {
+    const existingRelationship = didDocument[relationship] ?? []
+    existingRelationship.push(verificationMethod.id)
+    // eslint-disable-next-line no-param-reassign
+    didDocument[relationship] = existingRelationship
+    if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
+      didDocument.verificationMethod.push(verificationMethod)
+    }
+  }
 }
