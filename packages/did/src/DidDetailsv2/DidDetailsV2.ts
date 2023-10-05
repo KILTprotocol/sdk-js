@@ -44,3 +44,10 @@ export type BaseNewDidKey = {
 export type NewDidVerificationKey = BaseNewDidKey & {
   type: DidVerificationKeyType
 }
+
+/**
+ * Type of a new encryption key to add under a DID.
+ */
+export type NewDidEncryptionKey = BaseNewDidKey & {
+  type: DidEncryptionKeyType
+}

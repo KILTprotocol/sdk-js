@@ -72,7 +72,7 @@ async function resolveInternal(
       )
     }
     if (document.keyAgreement !== undefined) {
-      newDidDocument.assertionMethod = document.keyAgreement.map((k) => k.id)
+      newDidDocument.keyAgreement = document.keyAgreement.map((k) => k.id)
       newDidDocument.verificationMethod.push(
         ...document.keyAgreement.map((k) =>
           didKeyToVerificationMethod(did, k.id, {
@@ -83,7 +83,7 @@ async function resolveInternal(
       )
     }
     if (document.capabilityDelegation !== undefined) {
-      newDidDocument.assertionMethod = document.capabilityDelegation.map(
+      newDidDocument.capabilityDelegation = document.capabilityDelegation.map(
         (k) => k.id
       )
       newDidDocument.verificationMethod.push(

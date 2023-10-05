@@ -165,41 +165,45 @@ export function linkedInfoFromChain(
     did.keyAgreement = []
     didRec.keyAgreement.forEach(({ id, publicKey, type: keyType }) => {
       did.keyAgreement?.push(id)
-      did.verificationMethod.push(
-        didKeyToVerificationMethod(fromChain(identifier), id, {
-          keyType,
-          publicKey,
-        })
-      )
+      if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
+        did.verificationMethod.push(
+          didKeyToVerificationMethod(fromChain(identifier), id, {
+            keyType,
+            publicKey,
+          })
+        )
+      }
     })
   }
 
   if (didRec.assertionMethod !== undefined) {
-    did.assertionMethod = [didRec.assertionMethod[0].id]
-    did.verificationMethod.push(
-      didKeyToVerificationMethod(
-        fromChain(identifier),
-        didRec.assertionMethod[0].id,
-        {
-          keyType: didRec.assertionMethod[0].type,
-          publicKey: didRec.assertionMethod[0].publicKey,
-        }
+    const { id, type, publicKey } = didRec.assertionMethod[0]
+    did.assertionMethod = [id]
+    if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
+      did.verificationMethod.push(
+        didKeyToVerificationMethod(
+          fromChain(identifier),
+          didRec.assertionMethod[0].id,
+          {
+            keyType: type,
+            publicKey,
+          }
+        )
       )
-    )
+    }
   }
 
   if (didRec.capabilityDelegation !== undefined) {
-    did.capabilityDelegation = [didRec.capabilityDelegation[0].id]
-    did.verificationMethod.push(
-      didKeyToVerificationMethod(
-        fromChain(identifier),
-        didRec.capabilityDelegation[0].id,
-        {
-          keyType: didRec.capabilityDelegation[0].type,
-          publicKey: didRec.capabilityDelegation[0].publicKey,
-        }
+    const { id, type, publicKey } = didRec.capabilityDelegation[0]
+    did.capabilityDelegation = [id]
+    if (did.verificationMethod.find((vm) => vm.id === id) === undefined) {
+      did.verificationMethod.push(
+        didKeyToVerificationMethod(fromChain(identifier), id, {
+          keyType: type,
+          publicKey,
+        })
       )
-    )
+    }
   }
 
   const services = servicesFromChain(serviceEndpoints)

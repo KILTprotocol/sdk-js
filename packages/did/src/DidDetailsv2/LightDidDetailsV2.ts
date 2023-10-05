@@ -222,12 +222,17 @@ export function createLightDidDocument({
 
   if (keyAgreement !== undefined) {
     did.keyAgreement = [encryptionKeyId]
-    did.verificationMethod.push(
-      didKeyToVerificationMethod(uri, encryptionKeyId, {
-        keyType: keyAgreement[0].type,
-        publicKey: keyAgreement[0].publicKey,
-      })
-    )
+    if (
+      did.verificationMethod.find((vm) => vm.id === encryptionKeyId) ===
+      undefined
+    ) {
+      did.verificationMethod.push(
+        didKeyToVerificationMethod(uri, encryptionKeyId, {
+          keyType: keyAgreement[0].type,
+          publicKey: keyAgreement[0].publicKey,
+        })
+      )
+    }
   }
 
   return did
