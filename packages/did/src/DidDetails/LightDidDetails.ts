@@ -25,7 +25,6 @@ import { SDKErrors, ss58Format, cbor } from '@kiltprotocol/utils'
 
 import { getAddressByKey, parse } from '../Did.utils.js'
 import { resourceIdToChain, validateService } from '../Did.chain.js'
-import { NewService } from '../DidDetailsv2/DidDetailsV2.js'
 
 const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'
@@ -66,7 +65,7 @@ export type CreateDocumentInput = {
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
    */
-  service?: NewService[]
+  service?: DidServiceEndpoint[]
 }
 
 function validateCreateDocumentInput({
