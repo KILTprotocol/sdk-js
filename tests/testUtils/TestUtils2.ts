@@ -309,6 +309,38 @@ export async function createLocalDemoFullDidFromLightDid(
   }
 }
 
+function addVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  verificationMethod: DidDocumentV2.VerificationMethod,
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  const existingRelationship = didDocument[relationship] ?? []
+  existingRelationship.push(verificationMethod.id)
+  // eslint-disable-next-line no-param-reassign
+  didDocument[relationship] = existingRelationship
+  didDocument.verificationMethod.push(verificationMethod)
+}
+
+function addKeypairAsVerificationMethod(
+  didDocument: DidDocumentV2.DidDocument,
+  {
+    id,
+    publicKey,
+    type: keyType,
+  }: Did.DidDetailsV2.BaseNewDidKey & { id: DidDocumentV2.UriFragment },
+  relationship: DidDocumentV2.VerificationMethodRelationship
+): void {
+  const verificationMethod = Did.DidUtilsV2.didKeyToVerificationMethod(
+    didDocument.id,
+    id,
+    {
+      keyType: keyType as Did.DidDetailsV2.DidKeyType,
+      publicKey,
+    }
+  )
+  addVerificationMethod(didDocument, verificationMethod, relationship)
+}
+
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
   payer: KiltKeyringPair,
@@ -356,7 +388,7 @@ export async function createFullDidFromLightDid(
   }
   if (assertionMethod !== undefined) {
     const { id, publicKey, type } = assertionMethod[0]
-    Did.DidDetailsV2.addKeypairAsVerificationMethod(
+    addKeypairAsVerificationMethod(
       didDocument,
       {
         id,
@@ -368,7 +400,7 @@ export async function createFullDidFromLightDid(
   }
   if (capabilityDelegation !== undefined) {
     const { id, publicKey, type } = capabilityDelegation[0]
-    Did.DidDetailsV2.addKeypairAsVerificationMethod(
+    addKeypairAsVerificationMethod(
       didDocument,
       {
         id,
@@ -380,7 +412,7 @@ export async function createFullDidFromLightDid(
   }
   if (keyAgreement !== undefined && keyAgreement.length > 0) {
     keyAgreement.forEach(({ id, type, publicKey }) => {
-      Did.DidDetailsV2.addKeypairAsVerificationMethod(
+      addKeypairAsVerificationMethod(
         didDocument,
         {
           id,

@@ -30,7 +30,7 @@ import {
   fromChain,
   publicKeyFromChain,
 } from './Did2.chain.js'
-import { DidDetailsV2 } from './index.js'
+import { addKeypairAsVerificationMethod } from './DidDetailsv2/DidDetailsV2.js'
 
 function documentFromChain(
   encoded: DidDidDetails
@@ -167,7 +167,7 @@ export function linkedInfoFromChain(
 
   if (keyAgreement !== undefined && keyAgreement.length > 0) {
     keyAgreement.forEach(({ id, publicKey, type }) => {
-      DidDetailsV2.addKeypairAsVerificationMethod(
+      addKeypairAsVerificationMethod(
         did,
         { id, publicKey, type },
         'keyAgreement'
@@ -177,7 +177,7 @@ export function linkedInfoFromChain(
 
   if (assertionMethod !== undefined) {
     const { id, type, publicKey } = assertionMethod[0]
-    DidDetailsV2.addKeypairAsVerificationMethod(
+    addKeypairAsVerificationMethod(
       did,
       { id, publicKey, type },
       'assertionMethod'
@@ -186,7 +186,7 @@ export function linkedInfoFromChain(
 
   if (capabilityDelegation !== undefined) {
     const { id, type, publicKey } = capabilityDelegation[0]
-    DidDetailsV2.addKeypairAsVerificationMethod(
+    addKeypairAsVerificationMethod(
       did,
       { id, publicKey, type },
       'capabilityDelegation'
