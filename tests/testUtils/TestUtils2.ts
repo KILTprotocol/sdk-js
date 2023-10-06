@@ -48,7 +48,7 @@ export function makeEncryptCallback({
       if (keyId === undefined) {
         throw new Error(`Encryption key not found in did "${didDocument.id}"`)
       }
-      const verificationMethod = didDocument.verificationMethod.find(
+      const verificationMethod = didDocument.verificationMethod?.find(
         (v) => v.id === keyId
       ) as DidDocumentV2.VerificationMethod
       const { box, nonce } = Crypto.encryptAsymmetric(
@@ -130,7 +130,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
           `Key for purpose "${verificationMethodRelationship}" not found in did "${didDocument.id}"`
         )
       }
-      const verificationMethod = didDocument.verificationMethod.find(
+      const verificationMethod = didDocument.verificationMethod?.find(
         (vm) => vm.id === keyId
       )
       if (verificationMethod === undefined) {
@@ -203,7 +203,9 @@ function doesVerificationMethodExist(
   didDocument: DidDocumentV2.DidDocument,
   { id }: Pick<DidDocumentV2.VerificationMethod, 'id'>
 ): boolean {
-  return didDocument.verificationMethod.find((vm) => vm.id === id) !== undefined
+  return (
+    didDocument.verificationMethod?.find((vm) => vm.id === id) !== undefined
+  )
 }
 
 function addVerificationMethod(
@@ -216,7 +218,10 @@ function addVerificationMethod(
   // eslint-disable-next-line no-param-reassign
   didDocument[relationship] = existingRelationship
   if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
-    didDocument.verificationMethod.push(verificationMethod)
+    const existingVerificationMethod = didDocument.verificationMethod ?? []
+    existingVerificationMethod.push(verificationMethod)
+    // eslint-disable-next-line no-param-reassign
+    didDocument.verificationMethod = existingVerificationMethod
   }
 }
 

@@ -11,11 +11,11 @@ import type {
   DidDocumentV2,
   DidResolverV2,
   KiltKeyringPair,
-  Permission,
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
 import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
+import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
@@ -63,8 +63,8 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
-    const { publicKeyMultibase } = did.verificationMethod.find(
-      (vm) => vm.id === did.authentication[0]
+    const { publicKeyMultibase } = did.verificationMethod?.find(
+      (vm) => vm.id === did.authentication?.[0]
     ) as DidDocumentV2.VerificationMethod
     const { keyType, publicKey: authPublicKey } =
       Did.DidUtilsV2.multibaseKeyToDidKey(publicKeyMultibase)
@@ -873,14 +873,14 @@ describe('DID management batching', () => {
         extrinsics: [
           api.tx.did.removeKeyAgreementKey(
             Did.DidChainV2.fragmentIdToChain(
-              initialFullDid.verificationMethod.find(
+              initialFullDid.verificationMethod!.find(
                 (vm) => vm.id === encryptionKeys[0]
               )!.id
             )
           ),
           api.tx.did.removeKeyAgreementKey(
             Did.DidChainV2.fragmentIdToChain(
-              initialFullDid.verificationMethod.find(
+              initialFullDid.verificationMethod!.find(
                 (vm) => vm.id === encryptionKeys[1]
               )!.id
             )

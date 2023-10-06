@@ -25,6 +25,10 @@ import type {
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
+import {
+  verificationKeyTypesMap,
+  encryptionKeyTypesMap,
+} from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import type {
@@ -445,6 +449,159 @@ export async function getStoreTxFromInput(
     [authenticationKey.type]: signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
+}
+
+/**
+ * Create a DID creation operation which would write to chain the DID Document provided as input.
+ * Only the first authentication, assertion, and capability delegation verification methods are considered from the input DID Document.
+ * All the input DID Document key agreement verification methods are considered.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and service endpoints.
+ *
+ * A DID creation operation can contain at most 25 new service endpoints.
+ * Additionally, each service endpoint must respect the following conditions:
+ * - The service endpoint ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ *
+ * @param input The DID Document to store.
+ * @param submitter The KILT address authorized to submit the creation operation.
+ * @param sign The sign callback. The authentication key has to be used.
+ *
+ * @returns The SubmittableExtrinsic for the DID creation operation.
+ */
+export async function getStoreTxFromDidDocument(
+  input: DidDocumentV2.DidDocument,
+  submitter: KiltAddress,
+  sign: GetStoreTxSignCallback
+): Promise<SubmittableExtrinsic> {
+  const {
+    authentication,
+    assertionMethod,
+    keyAgreement,
+    capabilityDelegation,
+    service,
+    verificationMethod,
+  } = input
+
+  const authKey = (() => {
+    const authenticationMethodId = authentication?.[0]
+    if (authenticationMethodId === undefined) {
+      throw new SDKErrors.DidError(
+        'Cannot create a DID without an authentication method.'
+      )
+    }
+    const authVerificationMethod = verificationMethod?.find(
+      (vm) => vm.id === authenticationMethodId
+    )
+    if (authVerificationMethod === undefined) {
+      throw new SDKErrors.DidError(
+        `Cannot find the authentication method with ID "${authenticationMethodId}" in the \`verificationMethod\` property.`
+      )
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      authVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      throw new SDKErrors.DidError(
+        `Provided authentication key has an unsupported key type "${keyType}".`
+      )
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const keyAgreementKeys = (() => {
+    if (keyAgreement === undefined || keyAgreement.length === 0) {
+      return undefined
+    }
+    return keyAgreement.map((k) => {
+      const vm = verificationMethod?.find((_vm) => _vm.id === k)
+      if (vm === undefined) {
+        throw new SDKErrors.DidError(
+          `Cannot find the key agreement method with ID "${k}" in the \`verificationMethod\` property.`
+        )
+      }
+      const { keyType, publicKey } = multibaseKeyToDidKey(vm.publicKeyMultibase)
+      if (encryptionKeyTypesMap[keyType] === undefined) {
+        throw new SDKErrors.DidError(
+          `The key agreement key with ID "${k}" has an unsupported key type ${keyType}.`
+        )
+      }
+      return {
+        type: keyType,
+        publicKey,
+      } as NewDidEncryptionKey
+    })
+  })()
+
+  const assertionMethodKey = (() => {
+    const assertionMethodId = assertionMethod?.[0]
+    if (assertionMethodId === undefined) {
+      return undefined
+    }
+    const assertionVerificationMethod = verificationMethod?.find(
+      (vm) => vm.id === assertionMethodId
+    )
+    if (assertionVerificationMethod === undefined) {
+      throw new SDKErrors.DidError(
+        `Cannot find the assertion method with ID "${assertionMethodId}" in the \`verificationMethod\` property.`
+      )
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      assertionVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      throw new SDKErrors.DidError(
+        `The assertion method key with ID "${assertionMethodId}" has an unsupported key type ${keyType}.`
+      )
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const capabilityDelegationKey = (() => {
+    const capabilityDelegationId = capabilityDelegation?.[0]
+    if (capabilityDelegationId === undefined) {
+      return undefined
+    }
+    const capabilityDelegationVerificationMethod = verificationMethod?.find(
+      (vm) => vm.id === capabilityDelegationId
+    )
+    if (capabilityDelegationVerificationMethod === undefined) {
+      throw new SDKErrors.DidError(
+        `Cannot find the capability delegation method with ID "${capabilityDelegationId}" in the \`verificationMethod\` property.`
+      )
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(
+      capabilityDelegationVerificationMethod.publicKeyMultibase
+    )
+    if (verificationKeyTypesMap[keyType] === undefined) {
+      throw new SDKErrors.DidError(
+        `The capability delegation method key with ID "${capabilityDelegationId}" has an unsupported key type ${keyType}.`
+      )
+    }
+    return {
+      type: keyType,
+      publicKey,
+    } as NewDidVerificationKey
+  })()
+
+  const storeTxInput: GetStoreTxInput = {
+    authentication: [authKey],
+    assertionMethod: assertionMethodKey ? [assertionMethodKey] : undefined,
+    capabilityDelegation: capabilityDelegationKey
+      ? [capabilityDelegationKey]
+      : undefined,
+    keyAgreement: keyAgreementKeys,
+    service,
+  }
+
+  return getStoreTxFromInput(storeTxInput, submitter, sign)
 }
 
 export interface SigningOptions {
