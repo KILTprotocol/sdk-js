@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { BN } from '@polkadot/util'
-import { randomAsHex } from '@polkadot/util-crypto'
-
-import { ConfigService } from '@kiltprotocol/config'
 import type {
   CryptoCallbacksV2,
   DidDocumentV2,
@@ -16,11 +12,16 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import {
-  ApiMocks, TestUtilsV2,
-} from '../../../../tests/testUtils'
+import { BN } from '@polkadot/util'
+import { randomAsHex } from '@polkadot/util-crypto'
+import { ConfigService } from '@kiltprotocol/config'
+
+import { ApiMocks, TestUtilsV2 } from '../../../../tests/testUtils'
 import { generateDidAuthenticatedTx } from '../Did2.chain.js'
-import * as Did from './index.js'
+import {
+  authorizeBatch,
+  getVerificationMethodRelationshipForTx,
+} from './FullDidDetailsV2'
 
 const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
@@ -56,7 +57,7 @@ describe('When creating an instance from the chain', () => {
       it('fails if the extrinsic does not require a DID', async () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
-          Did.authorizeBatch({
+          authorizeBatch({
             did: fullDid.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
@@ -74,7 +75,7 @@ describe('When creating an instance from the chain', () => {
         ])
         const batchFunction =
           jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
-        await Did.authorizeBatch({
+        await authorizeBatch({
           did: fullDid.id,
           batchFunction,
           extrinsics: [extrinsic, extrinsic],
@@ -111,7 +112,7 @@ describe('When creating an instance from the chain', () => {
           ctype3Extrinsic,
           ctype4Extrinsic,
         ]
-        await Did.authorizeBatch({
+        await authorizeBatch({
           did: fullDid.id,
           batchFunction,
           extrinsics,
@@ -139,7 +140,7 @@ describe('When creating an instance from the chain', () => {
     describe('.build()', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
-          Did.authorizeBatch({
+          authorizeBatch({
             did: fullDid.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
@@ -164,13 +165,13 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 describe('When creating an instance from the chain', () => {
   it('Should return correct KeyRelationship for single valid call', () => {
-    const keyRelationship = Did.getVerificationMethodRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
     )
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batched call', () => {
-    const keyRelationship = Did.getVerificationMethodRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.batch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -187,7 +188,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batchAll call', () => {
-    const keyRelationship = Did.getVerificationMethodRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.batchAll([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -204,7 +205,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for forceBatch call', () => {
-    const keyRelationship = Did.getVerificationMethodRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -221,7 +222,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return undefined for batch with mixed KeyRelationship calls', () => {
-    const keyRelationship = Did.getVerificationMethodRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),

@@ -5,13 +5,22 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocumentV2 } from '@kiltprotocol/types'
-import { cbor, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import type { DidDocumentV2 } from '@kiltprotocol/types'
+
 import {
   base58Decode,
   base58Encode,
   decodeAddress,
 } from '@polkadot/util-crypto'
+import { cbor, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+
+import type {
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+  DidVerificationKeyType,
+} from './DidDetailsV2.js'
+
 import {
   keypairToMultibaseKey,
   didKeyToVerificationMethod,
@@ -19,12 +28,9 @@ import {
   parse,
 } from '../Did2.utils.js'
 import { fragmentIdToChain, validateNewService } from '../Did2.chain.js'
-import { addKeypairAsVerificationMethod, encryptionKeyTypes } from './DidDetailsV2.js'
-import type {
-  NewDidEncryptionKey,
-  NewDidVerificationKey,
-  NewService,
-  DidVerificationKeyType,
+import {
+  addKeypairAsVerificationMethod,
+  encryptionKeyTypes,
 } from './DidDetailsV2.js'
 
 /**

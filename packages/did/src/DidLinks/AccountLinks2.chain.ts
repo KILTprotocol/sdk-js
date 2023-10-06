@@ -5,27 +5,27 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { TypeDef } from '@polkadot/types/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
-import {
-  stringToU8a,
-  U8A_WRAP_ETHEREUM,
-  u8aConcatStrict,
-  u8aToHex,
-  u8aWrapBytes,
-  BN,
-} from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
-
-import { SDKErrors } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
+import type { ApiPromise } from '@polkadot/api'
+import type { BN } from '@polkadot/util'
 import type {
   HexString,
   DidDocumentV2,
   KeyringPair,
   KiltAddress,
 } from '@kiltprotocol/types'
+
+import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
+import {
+  stringToU8a,
+  U8A_WRAP_ETHEREUM,
+  u8aConcatStrict,
+  u8aToHex,
+  u8aWrapBytes,
+} from '@polkadot/util'
+import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 
 import { toChain, EncodedSignature } from '../Did2.chain.js'
 

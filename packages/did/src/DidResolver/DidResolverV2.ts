@@ -5,14 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { DidDocumentV2, DidResolverV2 } from '@kiltprotocol/types'
+
 import { ConfigService } from '@kiltprotocol/config'
-import { DidDocumentV2, DidResolverV2 } from '@kiltprotocol/types'
 import { cbor } from '@kiltprotocol/utils'
+
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
 import { linkedInfoFromChain } from '../Did2.rpc.js'
 import { toChain } from '../Did2.chain.js'
 import { getFullDidUri, parse, validateUri } from '../Did2.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
-import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
 
 const DID_JSON = 'application/did+json'
 const DID_JSON_LD = 'application/did+ld+json'
@@ -213,7 +215,7 @@ async function dereferenceInternal(
     }
   }
   const dereferencedResource = (() => {
-    const verificationMethod = didDocument?.verificationMethod.find(
+    const verificationMethod = didDocument?.verificationMethod?.find(
       (m) => m.id === fragment
     )
     if (verificationMethod !== undefined) {

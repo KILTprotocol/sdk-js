@@ -6,18 +6,18 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import { BN } from '@polkadot/util'
-
-import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
-import { UUID } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
-import {
+import type {
   CryptoCallbacksV2,
   DidDocumentV2,
   DidResolverV2,
   KiltKeyringPair,
   Permission,
 } from '@kiltprotocol/types'
+
+import { BN } from '@polkadot/util'
+import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
+import { UUID } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
 
 import { TestUtilsV2 } from '../testUtils/index.js'
 import {

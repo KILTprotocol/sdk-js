@@ -18,18 +18,26 @@ import type { KiltAddress, DidDocumentV2 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { Address, SubstrateAddress } from './DidLinks/AccountLinks2.chain.js'
-import { didKeyToVerificationMethod } from './Did2.utils.js'
-import {
+
+import type {
+  Address,
+  SubstrateAddress,
+} from './DidLinks/AccountLinks2.chain.js'
+import type {
   ChainDidDetails,
   ChainDidEncryptionKey,
   ChainDidKey,
   ChainDidVerificationKey,
+} from './Did2.chain.js'
+
+import {
   depositFromChain,
   fragmentIdToChain,
   fromChain,
   publicKeyFromChain,
 } from './Did2.chain.js'
+
+import { didKeyToVerificationMethod } from './Did2.utils.js'
 import { addKeypairAsVerificationMethod } from './DidDetailsv2/DidDetailsV2.js'
 
 function documentFromChain(

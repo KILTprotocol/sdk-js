@@ -8,7 +8,6 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-
 import type {
   DidDidDetails,
   DidDidDetailsDidAuthorizedCallOperation,
@@ -16,8 +15,7 @@ import type {
   DidServiceEndpointsDidEndpoint,
   KiltSupportDeposit,
 } from '@kiltprotocol/augment-api'
-
-import {
+import type {
   BN,
   CryptoCallbacksV2,
   Deposit,
@@ -29,15 +27,15 @@ import {
 import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import {
+import type {
   DidEncryptionKeyType,
   NewService,
   DidVerificationKeyType,
-  verificationKeyTypes,
   NewDidVerificationKey,
   NewDidEncryptionKey,
 } from './DidDetailsv2/DidDetailsV2.js'
 
+import { verificationKeyTypes } from './DidDetailsv2/DidDetailsV2.js'
 import {
   multibaseKeyToDidKey,
   keypairToMultibaseKey,

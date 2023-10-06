@@ -11,12 +11,15 @@ import type {
   CryptoCallbacksV2,
   KeyringPair,
 } from '@kiltprotocol/types'
+
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
+import type { DidSignature } from './Did2.signature'
+import type { NewLightDidVerificationKey } from './DidDetailsv2'
+
 import { TestUtilsV2 } from '../../../tests/testUtils'
 import {
-  DidSignature,
   isDidSignature,
   signatureFromJson,
   signatureToJson,
@@ -28,10 +31,7 @@ import {
   multibaseKeyToDidKey,
   parse,
 } from './Did2.utils'
-import {
-  createLightDidDocument,
-  NewLightDidVerificationKey,
-} from './DidDetailsv2'
+import { createLightDidDocument } from './DidDetailsv2'
 
 jest.mock('./DidResolver/DidResolverV2')
 jest
@@ -219,7 +219,7 @@ describe('light DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      signerUrl: `${did.id}${did.authentication[0]}`,
+      signerUrl: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -256,8 +256,8 @@ describe('light DID', () => {
       verificationMethodRelationship: 'authentication',
     })
 
-    const authKey = did.verificationMethod.find(
-      (vm) => vm.id === did.authentication[0]
+    const authKey = did.verificationMethod?.find(
+      (vm) => vm.id === did.authentication?.[0]
     )
     const expectedSignerAuthKey = multibaseKeyToDidKey(
       authKey!.publicKeyMultibase
@@ -413,8 +413,8 @@ describe('full DID', () => {
       verificationMethodRelationship: 'authentication',
     })
 
-    const authKey = did.verificationMethod.find(
-      (vm) => vm.id === did.authentication[0]
+    const authKey = did.verificationMethod?.find(
+      (vm) => vm.id === did.authentication?.[0]
     )
     const expectedSignerAuthKey = multibaseKeyToDidKey(
       authKey!.publicKeyMultibase
@@ -452,7 +452,7 @@ describe('full DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      signerUrl: `${did.id}${did.authentication[0]}`,
+      signerUrl: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)

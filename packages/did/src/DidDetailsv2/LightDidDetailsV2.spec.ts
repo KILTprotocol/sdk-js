@@ -5,12 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocumentV2 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import { keypairToMultibaseKey, parse } from '../Did2.utils.js'
+import type { DidDocumentV2 } from '@kiltprotocol/types'
 
-import * as Did from './index.js'
+import { Crypto } from '@kiltprotocol/utils'
+
 import type { NewService } from './DidDetailsV2.js'
+import type { CreateDocumentInput } from './LightDidDetailsV2.js'
+
+import { keypairToMultibaseKey, parse } from '../Did2.utils.js'
+import {
+  createLightDidDocument,
+  parseDocumentFromLightDid,
+} from './LightDidDetailsV2.js'
 
 /*
  * Functions tested:
@@ -41,7 +47,7 @@ describe('When creating an instance from the details', () => {
       },
     ]
 
-    const lightDid = Did.createLightDidDocument({
+    const lightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
@@ -92,7 +98,7 @@ describe('When creating an instance from the details', () => {
       new Uint8Array(32).fill(1)
     )
 
-    const lightDid = Did.createLightDidDocument({
+    const lightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
     })
@@ -133,9 +139,7 @@ describe('When creating an instance from the details', () => {
       authentication: [authKey],
     }
     expect(() =>
-      Did.createLightDidDocument(
-        invalidInput as unknown as Did.CreateDocumentInput
-      )
+      createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
     ).toThrowError()
   })
 
@@ -148,9 +152,7 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
     expect(() =>
-      Did.createLightDidDocument(
-        invalidInput as unknown as Did.CreateDocumentInput
-      )
+      createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
     ).toThrowError()
   })
 })
@@ -174,14 +176,14 @@ describe('When creating an instance from a URI', () => {
       },
     ]
     // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument({
+    const expectedLightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service: endpoints,
     })
 
     const { address } = parse(expectedLightDid.id)
-    const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.id)
+    const builtLightDid = parseDocumentFromLightDid(expectedLightDid.id)
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
     expect(builtLightDid).toStrictEqual(<DidDocumentV2.DidDocument>{
@@ -240,7 +242,7 @@ describe('When creating an instance from a URI', () => {
     ]
 
     // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument({
+    const expectedLightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
@@ -248,9 +250,9 @@ describe('When creating an instance from a URI', () => {
 
     const uriWithFragment: DidDocumentV2.DidUri = `${expectedLightDid.id}#authentication`
 
-    expect(() => Did.parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
+    expect(() => parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
     expect(() =>
-      Did.parseDocumentFromLightDid(uriWithFragment, false)
+      parseDocumentFromLightDid(uriWithFragment, false)
     ).not.toThrow()
   })
 
@@ -271,7 +273,7 @@ describe('When creating an instance from a URI', () => {
     ]
     incorrectURIs.forEach((uri) => {
       expect(() =>
-        Did.parseDocumentFromLightDid(uri as DidDocumentV2.DidUri)
+        parseDocumentFromLightDid(uri as DidDocumentV2.DidUri)
       ).toThrow()
     })
   })

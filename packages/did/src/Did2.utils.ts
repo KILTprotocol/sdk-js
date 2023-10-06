@@ -5,19 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
-
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
-import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-
 import type {
   DidDocumentV2,
   KeyringPair,
   KiltAddress,
 } from '@kiltprotocol/types'
 
+import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
+import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+
 import type { DidKeyType } from './DidDetailsv2/DidDetailsV2.js'
-import { DidError } from 'utils/src/SDKErrors.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -203,7 +201,9 @@ export function didKeyToVerificationMethod(
 ): DidDocumentV2.VerificationMethod {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[keyType]
   if (multiCodecPublicKeyPrefix === undefined) {
-    throw new DidError(`Provided key type "${keyType}" not supported.`)
+    throw new SDKErrors.DidError(
+      `Provided key type "${keyType}" not supported.`
+    )
   }
   const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
   if (publicKey.length !== expectedPublicKeySize) {

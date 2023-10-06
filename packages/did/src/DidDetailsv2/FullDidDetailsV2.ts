@@ -5,20 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { BN } from '@polkadot/util'
-
-import { ConfigService } from '@kiltprotocol/config'
-import { SDKErrors } from '@kiltprotocol/utils'
-
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
-
 import type {
   CryptoCallbacksV2,
   DidDocumentV2,
   KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+
+import { BN } from '@polkadot/util'
+
+import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { parse } from '../Did2.utils.js'
 import {

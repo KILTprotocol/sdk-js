@@ -5,7 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocumentV2 } from '@kiltprotocol/types'
+import type { DidDocumentV2 } from '@kiltprotocol/types'
+
 import { didKeyToVerificationMethod } from '../Did2.utils.js'
 
 /**
