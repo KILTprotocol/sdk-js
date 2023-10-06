@@ -8,7 +8,7 @@
 import type {
   DidUri,
   DidDocument,
-  DidResourceUri,
+  DidUrl,
   VerificationMethod,
   Service,
   JsonLd,
@@ -236,7 +236,7 @@ export interface DereferenceDidUrl<Accept extends string> {
      * This is the DID URL to dereference.
      * To dereference a DID fragment, the complete DID URL including the DID fragment MUST be used. This input is REQUIRED.
      */
-    didUrl: DidUri | DidResourceUri,
+    didUrl: DidUri | DidUrl,
     /*
      * A metadata structure consisting of input options to the dereference function in addition to the didUrl itself.
      * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.

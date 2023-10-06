@@ -53,6 +53,13 @@ export type NewDidEncryptionKey = BaseNewDidKey & {
   type: DidEncryptionKeyType
 }
 
+function doesVerificationMethodExist(
+  didDocument: DidDocumentV2.DidDocument,
+  { id }: Pick<DidDocumentV2.VerificationMethod, 'id'>
+): boolean {
+  return didDocument.verificationMethod.find((vm) => vm.id === id) !== undefined
+}
+
 function addVerificationMethod(
   didDocument: DidDocumentV2.DidDocument,
   verificationMethod: DidDocumentV2.VerificationMethod,
@@ -62,7 +69,9 @@ function addVerificationMethod(
   existingRelationship.push(verificationMethod.id)
   // eslint-disable-next-line no-param-reassign
   didDocument[relationship] = existingRelationship
-  didDocument.verificationMethod.push(verificationMethod)
+  if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
+    didDocument.verificationMethod.push(verificationMethod)
+  }
 }
 
 export function addKeypairAsVerificationMethod(

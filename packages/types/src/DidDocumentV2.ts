@@ -25,7 +25,7 @@ export type UriFragment = `#${string}`
 /**
  * URI for DID resources like keys or service endpoints.
  */
-export type DidResourceUri = `${DidUri}${UriFragment}`
+export type DidUrl = `${DidUri}${UriFragment}`
 
 export type SignatureVerificationMethodRelationship =
   | 'authentication'

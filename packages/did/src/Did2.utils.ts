@@ -57,7 +57,7 @@ type IDidParsingResult = {
  * @returns Object containing information extracted from the DID uri.
  */
 export function parse(
-  didUri: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri
+  didUri: DidDocumentV2.DidUri | DidDocumentV2.DidUrl
 ): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {

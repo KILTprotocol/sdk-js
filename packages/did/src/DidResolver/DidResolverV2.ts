@@ -222,7 +222,7 @@ type InternalDereferenceResult = {
 }
 
 async function dereferenceInternal(
-  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
+  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dereferenceOptions: DidResolverV2.DereferenceOptions<SupportedContentType>
 ): Promise<InternalDereferenceResult> {
@@ -255,7 +255,7 @@ async function dereferenceInternal(
 }
 
 export async function dereference(
-  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidResourceUri,
+  didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { accept }: DidResolverV2.DereferenceOptions<SupportedContentType> = {
     accept: DID_JSON,
