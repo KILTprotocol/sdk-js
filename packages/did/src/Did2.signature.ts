@@ -105,18 +105,16 @@ export async function verifyDidSignature({
 
   const { didDocument } = await resolveDid(signerUrl, {})
   if (didDocument === undefined) {
-    // TODO: Better error
-    throw new Error(
-      `Error validating the DID signature. Cannot fetch DID Document.`
+    throw new SDKErrors.SignatureUnverifiableError(
+      `Error validating the DID signature. Cannot fetch DID Document for "${signerUrl}".`
     )
   }
   const verificationMethod = didDocument.verificationMethod?.find(
     (vm) => vm.id === signer.fragment
   )
   if (verificationMethod === undefined) {
-    // TODO: Better error
-    throw new Error(
-      `Cannot find verification method with ID "${signer.fragment} in the DID Document.`
+    throw new SDKErrors.SignatureUnverifiableError(
+      `Cannot find verification method with ID "${signer.fragment} in the DID Document for "${signerUrl}".`
     )
   }
   if (
@@ -125,8 +123,7 @@ export async function verifyDidSignature({
       (vm) => vm === signer.fragment
     ) === undefined
   ) {
-    // TODO: Better error
-    throw new Error(
+    throw new SDKErrors.SignatureUnverifiableError(
       `Cannot find verification method with ID "${signer.fragment} for the relationship "${expectedVerificationMethodRelationship}".`
     )
   }

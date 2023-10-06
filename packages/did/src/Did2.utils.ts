@@ -17,6 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 
 import type { DidKeyType } from './DidDetailsv2/DidDetailsV2.js'
+import { DidError } from 'utils/src/SDKErrors.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -137,14 +138,20 @@ export function multibaseKeyToDidKey(
     decodedMulticodecPublicKey.subarray(1),
   ]
   const [keyType, expectedPublicKeyLength] = multicodecPrefixes[keyTypeFlag]
-  if (keyType !== undefined && publicKey.length === expectedPublicKeyLength) {
-    return {
-      keyType,
-      publicKey,
-    }
+  if (keyType === undefined) {
+    throw new SDKErrors.DidError(
+      `Cannot decode key type for multibase key "${publicKeyMultibase}".`
+    )
   }
-  // TODO: Change to proper error
-  throw new Error('Invalid encoding of the verification method.')
+  if (publicKey.length !== expectedPublicKeyLength) {
+    throw new SDKErrors.DidError(
+      `Key of type "${keyType}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${publicKey.length} bytes long instead.`
+    )
+  }
+  return {
+    keyType,
+    publicKey,
+  }
 }
 
 /**
@@ -163,14 +170,14 @@ export function keypairToMultibaseKey({
 }): DidDocumentV2.VerificationMethod['publicKeyMultibase'] {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[type]
   if (multiCodecPublicKeyPrefix === undefined) {
-    // TODO: Proper error
-    throw new Error(`Invalid key type provided: ${type}.`)
+    throw new SDKErrors.DidError(
+      `The provided key type "${type}" is not supported.`
+    )
   }
   const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
   if (publicKey.length !== expectedPublicKeySize) {
-    // TODO: Proper error
-    throw new Error(
-      `Provided public key does not match the expected length: ${expectedPublicKeySize}.`
+    throw new SDKErrors.DidError(
+      `Key of type "${type}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
     )
   }
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
@@ -196,14 +203,12 @@ export function didKeyToVerificationMethod(
 ): DidDocumentV2.VerificationMethod {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[keyType]
   if (multiCodecPublicKeyPrefix === undefined) {
-    // TODO: Proper error
-    throw new Error(`Invalid key type provided: ${keyType}.`)
+    throw new DidError(`Provided key type "${keyType}" not supported.`)
   }
   const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
   if (publicKey.length !== expectedPublicKeySize) {
-    // TODO: Proper error
-    throw new Error(
-      `Provided public key does not match the expected length: ${expectedPublicKeySize}.`
+    throw new SDKErrors.DidError(
+      `Key of type "${keyType}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
     )
   }
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
