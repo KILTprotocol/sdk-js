@@ -79,7 +79,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -117,7 +117,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -134,7 +134,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'assertionMethod',
       })
     ).rejects.toThrow()
@@ -154,7 +154,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri:
+        signerUrl:
           `${did.id}${wrongVerificationMethodId}` as DidDocumentV2.DidUrl,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -172,7 +172,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -192,7 +192,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri:
+        signerUrl:
           `${did.id}${malformedVerificationId}` as DidDocumentV2.DidUrl,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -211,7 +211,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -241,7 +241,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -283,7 +283,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -346,7 +346,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -363,7 +363,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -381,7 +381,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -399,7 +399,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -432,7 +432,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -442,7 +442,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        verificationMethodUri: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
         allowUpgraded: true,
         expectedVerificationMethodRelationship: 'authentication',

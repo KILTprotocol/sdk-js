@@ -91,11 +91,11 @@ export type DidDocument = {
   /*
    * The verificationMethod property is OPTIONAL. If present, the value MUST be a set of verification methods, where each verification method is expressed using a map.
    */
-  verificationMethod: VerificationMethod[]
+  verificationMethod?: VerificationMethod[]
   /*
    * The authentication property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
    */
-  authentication: UriFragment[]
+  authentication?: UriFragment[]
   /*
    * The assertionMethod property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
    */

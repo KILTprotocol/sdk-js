@@ -8,15 +8,9 @@
 import { ConfigService } from '@kiltprotocol/config'
 import { DidDocumentV2, DidResolverV2 } from '@kiltprotocol/types'
 import { cbor } from '@kiltprotocol/utils'
-import { linkedInfoFromChain } from '../Did.rpc'
+import { linkedInfoFromChain } from '../Did2.rpc.js'
 import { toChain } from '../Did2.chain.js'
-import {
-  didKeyToVerificationMethod,
-  getFullDidUri,
-  parse,
-  validateUri,
-} from '../Did2.utils.js'
-import { addKeypairAsVerificationMethod } from '../DidDetailsv2/DidDetailsV2.js'
+import { getFullDidUri, parse, validateUri } from '../Did2.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetailsv2/LightDidDetailsV2.js'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContextsV2.js'
 
@@ -24,6 +18,9 @@ const DID_JSON = 'application/did+json'
 const DID_JSON_LD = 'application/did+ld+json'
 const DID_CBOR = 'application/did+cbor'
 
+/**
+ * Supported types for DID resolution and dereferencing.
+ */
 export type SupportedContentType =
   | typeof DID_JSON
   | typeof DID_JSON_LD
@@ -44,57 +41,14 @@ async function resolveInternal(
   const { type } = parse(did)
   const api = ConfigService.get('api')
 
-  const { document, web3Name } = await api.call.did
+  const { document } = await api.call.did
     .query(toChain(did))
     .then(linkedInfoFromChain)
-    .catch(() => ({ document: undefined, web3Name: undefined }))
+    .catch(() => ({ document: undefined }))
 
   if (type === 'full' && document !== undefined) {
-    const newDidDocument: DidDocumentV2.DidDocument = {
-      id: did,
-      authentication: [document.authentication[0].id],
-      verificationMethod: [
-        didKeyToVerificationMethod(did, document.authentication[0].id, {
-          publicKey: document.authentication[0].publicKey,
-          keyType: document.authentication[0].type,
-        }),
-      ],
-      service: document.service,
-    }
-    if (
-      document.keyAgreement !== undefined &&
-      document.keyAgreement.length > 0
-    ) {
-      document.keyAgreement.forEach(({ id, type: keyType, publicKey }) => {
-        addKeypairAsVerificationMethod(
-          newDidDocument,
-          { id, publicKey, type: keyType },
-          'keyAgreement'
-        )
-      })
-    }
-    if (document.assertionMethod !== undefined) {
-      const { id, publicKey, type: keyType } = document.assertionMethod[0]
-      addKeypairAsVerificationMethod(
-        newDidDocument,
-        { id, publicKey, type: keyType },
-        'assertionMethod'
-      )
-    }
-    if (document.capabilityDelegation !== undefined) {
-      const { id, publicKey, type: keyType } = document.capabilityDelegation[0]
-      addKeypairAsVerificationMethod(
-        newDidDocument,
-        { id, publicKey, type: keyType },
-        'capabilityDelegation'
-      )
-    }
-    if (web3Name !== undefined) {
-      newDidDocument.alsoKnownAs = [web3Name]
-    }
-
     return {
-      document: newDidDocument,
+      document,
       documentMetadata: {},
     }
   }
@@ -121,6 +75,9 @@ async function resolveInternal(
       documentMetadata: {
         canonicalId: getFullDidUri(did),
       },
+      document: {
+        id: did,
+      },
     }
   }
 
@@ -132,6 +89,15 @@ async function resolveInternal(
   }
 }
 
+/**
+ * Implementation of `resolve` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
+ * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
+ *
+ * @param did The DID to resolve.
+ * @param resolutionOptions The resolution options accepted by the `resolve` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * @returns The resolution result for the `resolve` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ */
 export async function resolve(
   did: DidDocumentV2.DidUri,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -168,6 +134,16 @@ export async function resolve(
   }
 }
 
+/**
+ * Implementation of `resolveRepresentation` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
+ * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
+ *
+ * @param did The DID to resolve.
+ * @param resolutionOptions The resolution options accepted by the `resolveRepresentation` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * @param resolutionOptions.accept The content type accepted by the requesting client.
+ * @returns The resolution result for the `resolveRepresentation` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ */
 export async function resolveRepresentation(
   did: DidDocumentV2.DidUri,
   { accept }: DidResolverV2.DereferenceOptions<SupportedContentType> = {
@@ -254,6 +230,15 @@ async function dereferenceInternal(
   }
 }
 
+/**
+ * Implementation of `dereference` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-url-dereferencing).
+ * If a DID URL is invalid or has not been registered, this is indicated by the `error` property on the `dereferencingMetadata`.
+ *
+ * @param didUrl The DID URL to dereference.
+ * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-url-dereferencing).
+ * @param resolutionOptions.accept The content type accepted by the requesting client.
+ * @returns The resolution result for the `dereference` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-url-dereferencing).
+ */
 export async function dereference(
   didUrl: DidDocumentV2.DidUri | DidDocumentV2.DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -313,6 +298,9 @@ export async function dereference(
   }
 }
 
+/**
+ * Fully-fledged default resolver capable of resolving DIDs in their canonical form, encoded for a specific content type, and of dereferencing parts of a DID Document according to the dereferencing specification.
+ */
 export const resolver: DidResolverV2.DidResolver<SupportedContentType> = {
   resolve,
   resolveRepresentation,

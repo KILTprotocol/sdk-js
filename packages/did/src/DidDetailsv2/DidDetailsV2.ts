@@ -57,7 +57,9 @@ function doesVerificationMethodExist(
   didDocument: DidDocumentV2.DidDocument,
   { id }: Pick<DidDocumentV2.VerificationMethod, 'id'>
 ): boolean {
-  return didDocument.verificationMethod.find((vm) => vm.id === id) !== undefined
+  return (
+    didDocument.verificationMethod?.find((vm) => vm.id === id) !== undefined
+  )
 }
 
 function addVerificationMethod(
@@ -70,10 +72,24 @@ function addVerificationMethod(
   // eslint-disable-next-line no-param-reassign
   didDocument[relationship] = existingRelationship
   if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
-    didDocument.verificationMethod.push(verificationMethod)
+    const existingVerificationMethod = didDocument.verificationMethod ?? []
+    existingVerificationMethod.push(verificationMethod)
+    // eslint-disable-next-line no-param-reassign
+    didDocument.verificationMethod = existingVerificationMethod
   }
 }
 
+/**
+ * Add the provided keypair as a new verification method to the DID Document.
+ * !!! This function is meant to be used internally and not exposed since it is mostly used as a utility and does not perform extensive checks on the inputs.
+ *
+ * @param didDocument The DID Document to add the verification method to.
+ * @param newKeypair The new keypair to add as a verification method.
+ * @param newKeypair.id The ID of the new verification method. If a verification method with the same ID already exists, this operation is a no-op.
+ * @param newKeypair.publicKey The public key of the keypair.
+ * @param newKeypair.type The type of the public key.
+ * @param relationship The verification relationship to add the verification method to.
+ */
 export function addKeypairAsVerificationMethod(
   didDocument: DidDocumentV2.DidDocument,
   {

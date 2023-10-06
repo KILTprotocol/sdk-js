@@ -72,10 +72,10 @@ function getVerificationMethodRelationshipForRuntimeCall(
 }
 
 /**
- * Detect the key relationship for a key which should be used to DID-authorize the provided extrinsic.
+ * Detect the verification relationship for a verification method which should be used to DID-authorize the provided extrinsic.
  *
  * @param extrinsic The unsigned extrinsic to inspect.
- * @returns The key relationship.
+ * @returns The verification relationship.
  */
 export function getVerificationMethodRelationshipForTx(
   extrinsic: Extrinsic
@@ -111,7 +111,7 @@ async function getNextNonce(did: DidDocumentV2.DidUri): Promise<BN> {
 }
 
 /**
- * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will throw an error.
+ * Signs and returns the provided unsigned extrinsic with the right DID verification method, if present. Otherwise, it will throw an error.
  *
  * @param did The DID data.
  * @param extrinsic The unsigned extrinsic to sign.
@@ -199,7 +199,7 @@ function groupExtrinsicsByKeyRelationship(
 }
 
 /**
- * Authorizes/signs a list of extrinsics grouping them in batches by required key type.
+ * Authorizes/signs a list of extrinsics grouping them in batches by required verification relationship.
  *
  * @param input The object with named parameters.
  * @param input.batchFunction The batch function to use, for example `api.tx.utility.batchAll`.

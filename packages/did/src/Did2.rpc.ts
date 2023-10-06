@@ -18,7 +18,7 @@ import type { KiltAddress, DidDocumentV2 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
+import { Address, SubstrateAddress } from './DidLinks/AccountLinks2.chain.js'
 import { didKeyToVerificationMethod } from './Did2.utils.js'
 import {
   ChainDidDetails,

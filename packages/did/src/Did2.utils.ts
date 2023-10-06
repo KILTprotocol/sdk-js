@@ -126,7 +126,7 @@ const multicodecReversePrefixes: Record<DidKeyType, number> = {
  * Decode a multibase, multicodec representation of a verification method into its fundamental components: the public key and the key type.
  *
  * @param publicKeyMultibase The verification method's public key multibase.
- * @returns The decoded public key and [DidKeyType].
+ * @returns The decoded public key and [[DidKeyType]].
  */
 export function multibaseKeyToDidKey(
   publicKeyMultibase: DidDocumentV2.VerificationMethod['publicKeyMultibase']
@@ -147,6 +147,14 @@ export function multibaseKeyToDidKey(
   throw new Error('Invalid encoding of the verification method.')
 }
 
+/**
+ * Calculate the multibase, multicodec representation of a keypair given its type and public key.
+ *
+ * @param keypair The input keypair to encode as multibase, multicodec.
+ * @param keypair.type The keypair [[DidKeyType]].
+ * @param keypair.publicKey The keypair public key.
+ * @returns The multicodec, multibase encoding of the provided keypair.
+ */
 export function keypairToMultibaseKey({
   type,
   publicKey,
@@ -171,6 +179,16 @@ export function keypairToMultibaseKey({
   ).toString() as `z${string}`
 }
 
+/**
+ * Export a DID key to a `MultiKey` verification method.
+ *
+ * @param controller The verification method controller's DID URI.
+ * @param id The verification method ID.
+ * @param key The DID key to export as a verification method.
+ * @param key.keyType The key type.
+ * @param key.publicKey The public component of the key.
+ * @returns The provided key encoded as a [[ DidDocumentV2.VerificationMethod]].
+ */
 export function didKeyToVerificationMethod(
   controller: DidDocumentV2.VerificationMethod['controller'],
   id: DidDocumentV2.VerificationMethod['id'],
@@ -249,7 +267,13 @@ export function validateUri(
   DataUtils.verifyKiltAddress(address)
 }
 
-// TODO: Fix JSDoc
+/**
+ * Internal: derive the address part of the DID when it is created from the provided authentication verification method.
+ *
+ * @param input The authentication verification method.
+ * @param input.publicKeyMultibase The `publicKeyMultibase` value of the verification method.
+ * @returns The expected address of the DID.
+ */
 export function getAddressFromVerificationMethod({
   publicKeyMultibase,
 }: Pick<DidDocumentV2.VerificationMethod, 'publicKeyMultibase'>): KiltAddress {

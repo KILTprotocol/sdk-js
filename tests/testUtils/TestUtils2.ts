@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
@@ -396,10 +397,10 @@ export async function createFullDidFromLightDid(
   const api = ConfigService.get('api')
   const fullDidDocumentToBeCreated = lightDidForId
   fullDidDocumentToBeCreated.assertionMethod = [
-    fullDidDocumentToBeCreated.authentication[0],
+    fullDidDocumentToBeCreated.authentication![0],
   ]
   fullDidDocumentToBeCreated.capabilityDelegation = [
-    fullDidDocumentToBeCreated.authentication[0],
+    fullDidDocumentToBeCreated.authentication![0],
   ]
   const tx = await Did.DidChainV2.getStoreTxFromDidDocument(
     fullDidDocumentToBeCreated,

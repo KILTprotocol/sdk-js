@@ -18,7 +18,7 @@ import { resolve } from './DidResolver/DidResolverV2.js'
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
-  verificationMethodUri: DidDocumentV2.DidUrl
+  signerUrl: DidDocumentV2.DidUrl
   expectedSigner?: DidDocumentV2.DidUri
   allowUpgraded?: boolean
   expectedVerificationMethodRelationship?: DidDocumentV2.SignatureVerificationMethodRelationship
@@ -61,17 +61,30 @@ function verifyDidSignatureDataStructure(
   validateUri(verificationMethodUri, 'ResourceUri')
 }
 
+/**
+ * Verify a DID signature given the signer's DID URL.
+ * A signature verification returns false if a migrated and then deleted DID is used.
+ *
+ * @param input Object wrapping all input.
+ * @param input.message The message that was signed.
+ * @param input.signature Signature bytes.
+ * @param input.signerUrl DID URL of the verification method used for signing.
+ * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
+ * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
+ * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
+ * @param input.resolveDid Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
+ */
 export async function verifyDidSignature({
   message,
   signature,
-  verificationMethodUri,
+  signerUrl,
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationMethodRelationship,
   resolveDid = resolve,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
-  const signer = parse(verificationMethodUri)
+  const signer = parse(signerUrl)
   if (expectedSigner && expectedSigner !== signer.did) {
     // check for allowable exceptions
     const expected = parse(expectedSigner)
@@ -90,14 +103,14 @@ export async function verifyDidSignature({
     }
   }
 
-  const { didDocument } = await resolveDid(verificationMethodUri, {})
+  const { didDocument } = await resolveDid(signerUrl, {})
   if (didDocument === undefined) {
     // TODO: Better error
     throw new Error(
       `Error validating the DID signature. Cannot fetch DID Document.`
     )
   }
-  const verificationMethod = didDocument.verificationMethod.find(
+  const verificationMethod = didDocument.verificationMethod?.find(
     (vm) => vm.id === signer.fragment
   )
   if (verificationMethod === undefined) {
@@ -124,6 +137,13 @@ export async function verifyDidSignature({
   Crypto.verify(message, signature, publicKey)
 }
 
+/**
+ * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Does not cryptographically verify the signature itself!
+ *
+ * @param input Arbitrary input.
+ * @returns True if validation of form has passed.
+ */
 export function isDidSignature(
   input: unknown
 ): input is DidSignature | OldDidSignatureV1 | OldDidSignatureV2 {
@@ -135,6 +155,15 @@ export function isDidSignature(
   }
 }
 
+/**
+ * Transforms the output of a [[SignCallback]] into the [[DidSignature]] format suitable for json-based data exchange.
+ *
+ * @param input Signature data returned from the [[SignCallback]].
+ * @param input.signature Signature bytes.
+ * @param input.did The DID URI of the signer.
+ * @param input.verificationMethod The verification method used to generate the signature.
+ * @returns A [[DidSignature]] object where signature is hex-encoded.
+ */
 export function signatureToJson({
   did,
   signature,
@@ -148,7 +177,13 @@ export function signatureToJson({
   }
 }
 
-// TODO: JSDocs
+/**
+ * Deserializes a [[DidSignature]] for signature verification.
+ * Handles backwards compatibility to an older version of the interface where the `verificationMethodUri` property was called either `keyUri` or `keyId`.
+ *
+ * @param input A [[DidSignature]] object.
+ * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
+ */
 export function signatureFromJson(
   input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
 ): Pick<CryptoCallbacksV2.SignResponseData, 'signature'> & {

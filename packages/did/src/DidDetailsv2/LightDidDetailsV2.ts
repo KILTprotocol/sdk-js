@@ -5,12 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  DidDocumentV2,
-  encryptionKeyTypes,
-  NewDidEncryptionKey,
-  NewDidVerificationKey,
-} from '@kiltprotocol/types'
+import { DidDocumentV2 } from '@kiltprotocol/types'
 import { cbor, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   base58Decode,
@@ -24,8 +19,13 @@ import {
   parse,
 } from '../Did2.utils.js'
 import { fragmentIdToChain, validateNewService } from '../Did2.chain.js'
-import { addKeypairAsVerificationMethod } from './DidDetailsV2.js'
-import type { NewService, DidVerificationKeyType } from './DidDetailsV2.js'
+import { addKeypairAsVerificationMethod, encryptionKeyTypes } from './DidDetailsV2.js'
+import type {
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+  DidVerificationKeyType,
+} from './DidDetailsV2.js'
 
 /**
  * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
@@ -62,14 +62,17 @@ const lightDidEncodingToVerificationKeyType: Record<
   '01': 'ed25519',
 }
 
+/**
+ * The options that can be used to create a light DID.
+ */
 export type CreateDocumentInput = {
   /**
-   * The DID authentication verification method. This is mandatory and will be used as the first authentication verification method
+   * The key to be used as the DID authentication verification method. This is mandatory and will be used as the first authentication verification method
    * of the full DID upon migration.
    */
   authentication: [NewDidVerificationKey]
   /**
-   * The optional DID encryption verification method. If present, it will be used as the first key agreement verification method
+   * The optional encryption key to be used as the DID key agreement verification method. If present, it will be used as the first key agreement verification method
    * of the full DID upon migration.
    */
   keyAgreement?: [NewDidEncryptionKey]
@@ -127,6 +130,15 @@ interface SerializableStructure {
   >
 }
 
+/**
+ * Serialize the optional key agreement key and service endpoints of a light DID using the CBOR serialization algorithm
+ * and encoding the result in Base58 format with a multibase prefix.
+ *
+ * @param details The light DID details to encode.
+ * @param details.keyAgreement The DID key agreement key.
+ * @param details.service The DID service endpoints.
+ * @returns The Base58-encoded and CBOR-serialized light DID optional details.
+ */
 function serializeAdditionalLightDidDetails({
   keyAgreement,
   service,
@@ -184,6 +196,18 @@ function deserializeAdditionalLightDidDetails(
   }
 }
 
+/**
+ * Create [[DidDocument]] of a light DID using the provided keys and endpoints.
+ * Sets proper key IDs, builds light DID URI.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ *
+ * @param input The input.
+ * @param input.authentication The array containing the public keys to be used as the light DID authentication verification method.
+ * @param input.keyAgreement The optional array containing the public keys to be used as the light DID key agreement verification methods.
+ * @param input.service The optional light DID service endpoints.
+ *
+ * @returns The resulting [[DidDocument]].
+ */
 export function createLightDidDocument({
   authentication,
   keyAgreement = undefined,
@@ -233,6 +257,19 @@ export function createLightDidDocument({
   return did
 }
 
+/**
+ * Create [[DidDocument]] of a light DID by parsing the provided input URI.
+ * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
+ * For the DIDs you have received from external sources use [[resolve]] etc.
+ *
+ * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ *
+ * @param uri The DID URI to parse.
+ * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
+ *
+ * @returns The resulting [[DidDocument]].
+ */
 export function parseDocumentFromLightDid(
   uri: DidDocumentV2.DidUri,
   failIfFragmentPresent = true
