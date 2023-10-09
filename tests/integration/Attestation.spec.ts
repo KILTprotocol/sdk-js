@@ -7,13 +7,8 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import {
-  Attestation,
-  Claim,
-  Credential,
-  CType,
-  disconnect,
-} from '@kiltprotocol/core'
+import { Attestation, CType, disconnect } from '@kiltprotocol/core'
+import { Claim, Credential } from '@kiltprotocol/legacy-credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -363,7 +358,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       })
 
       expect(() =>
-        Attestation.verifyAgainstCredential(attestation, fakeCredential)
+        Credential.verifyAgainstAttestation(attestation, fakeCredential)
       ).toThrow()
     }, 15_000)
 
@@ -541,10 +536,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       expect(storedAttAuthorized.revoked).toBe(false)
 
       expect(() =>
-        Attestation.verifyAgainstCredential(licenseGranted, credential2)
+        Credential.verifyAgainstAttestation(licenseGranted, credential2)
       ).not.toThrow()
       expect(() =>
-        Attestation.verifyAgainstCredential(
+        Credential.verifyAgainstAttestation(
           licenseAuthorizationGranted,
           credential1
         )

@@ -14,8 +14,12 @@ import {
 } from '@polkadot/util'
 import { base58Decode, base58Encode, blake2AsU8a } from '@polkadot/util-crypto'
 
-import { CType } from '@kiltprotocol/core'
-import { KiltCredentialV1, Types, constants } from '@kiltprotocol/vc-export'
+import {
+  CType,
+  KiltCredentialV1,
+  KiltAttestationProofV1,
+  Types,
+} from '@kiltprotocol/core'
 
 import type { ICType, IClaim, ICredential } from '@kiltprotocol/types'
 
@@ -45,7 +49,7 @@ function proofFromICredential(
     .sort((a, b) => u8aCmp(a[0], b[0]))
     .map((i) => base58Encode(i[1]))
   return {
-    type: constants.ATTESTATION_PROOF_V1_TYPE,
+    type: KiltAttestationProofV1.PROOF_TYPE,
     block,
     commitments,
     salt,
@@ -159,7 +163,7 @@ export function fromVC(input: Types.KiltCredentialV1): ICredential {
   const delegationId = u8aToHex(KiltCredentialV1.getDelegationId(input))
   const legitimationVcs = input.federatedTrustModel?.filter(
     (i): i is Types.KiltAttesterLegitimationV1 =>
-      i.type === constants.KILT_ATTESTER_LEGITIMATION_V1_TYPE
+      i.type === KiltCredentialV1.LEGITIMATION_TYPE
   )
   const legitimations = (legitimationVcs ?? []).map(
     ({ id, verifiableCredential }) =>

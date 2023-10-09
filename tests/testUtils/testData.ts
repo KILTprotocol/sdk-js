@@ -5,23 +5,42 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aConcat, u8aToU8a } from '@polkadot/util'
-import { randomAsU8a } from '@polkadot/util-crypto'
+import {
+  hexToU8a,
+  stringToU8a,
+  u8aCmp,
+  u8aConcat,
+  u8aToU8a,
+} from '@polkadot/util'
+import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
+import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import { KiltAttestationProofV1, KiltCredentialV1 } from '@kiltprotocol/core'
+import {
+  KiltCredentialV1,
+  Types,
+  KiltAttestationProofV1,
+} from '@kiltprotocol/core'
 
-import { ApiMocks } from '../../../tests/testUtils'
-import { calculateRootHash, removeClaimProperties } from './Credential'
-import { fromVC, toVc } from './vcInterop'
+import { createAugmentedApi } from './mocks/index.js'
 
-// is not needed and imports a dependency that does not work in node 18
-jest.mock('@digitalbazaar/http-client', () => ({}))
+export const mockedApi = createAugmentedApi()
 
-export const mockedApi = ApiMocks.createAugmentedApi()
-
+// index of the attestation pallet, according to the metadata used
+const attestationPalletIndex = 62
+// asynchronously check that pallet index is correct
+mockedApi.once('ready', () => {
+  const idx = mockedApi.runtimeMetadata.asLatest.pallets.find((x) =>
+    x.name.match(/attestation/i)
+  )!.index
+  if (!idx.eqn(attestationPalletIndex)) {
+    console.warn(
+      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx.toNumber()}. This may lead to tests not behaving as expected!`
+    )
+  }
+})
 const attestationCreatedIndex = u8aToU8a([
-  62,
+  attestationPalletIndex,
   mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
 ])
 export function makeAttestationCreatedEvents(events: unknown[][]) {
@@ -58,7 +77,7 @@ export const cType: ICType = {
   $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-export const credential: ICredential = {
+const _legacyCredential: ICredential = {
   claim: {
     contents: {
       birthday: '1991-01-01',
@@ -90,12 +109,20 @@ export const credential: ICredential = {
     '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d',
   rootHash: '0x',
 }
-credential.rootHash = calculateRootHash(credential)
+_legacyCredential.rootHash = Credential.calculateRootHash(_legacyCredential)
+
+// eslint-disable-next-line import/no-mutable-exports
+export let legacyCredential: ICredential = JSON.parse(
+  JSON.stringify(_legacyCredential)
+)
+beforeEach(() => {
+  legacyCredential = JSON.parse(JSON.stringify(_legacyCredential))
+})
 
 export const attestation: IAttestation = {
-  claimHash: credential.rootHash,
-  cTypeHash: credential.claim.cTypeHash,
-  delegationId: credential.delegationId,
+  claimHash: _legacyCredential.rootHash,
+  cTypeHash: _legacyCredential.claim.cTypeHash,
+  delegationId: _legacyCredential.delegationId,
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   revoked: false,
 }
@@ -103,6 +130,40 @@ export const attestation: IAttestation = {
 export const timestamp = 1234567
 export const blockHash = randomAsU8a(32)
 export const genesisHash = randomAsU8a(32)
+
+const _credential = JSON.stringify({
+  ...KiltCredentialV1.fromInput({
+    claims: _legacyCredential.claim.contents,
+    claimHash: _legacyCredential.rootHash,
+    subject: _legacyCredential.claim.owner,
+    delegationId: _legacyCredential.delegationId ?? undefined,
+    cType: cType.$id,
+    issuer: attestation.owner,
+    chainGenesisHash: genesisHash,
+    timestamp,
+  }),
+  proof: {
+    type: KiltAttestationProofV1.PROOF_TYPE,
+    // `block` field is base58 encoding of block hash
+    block: base58Encode(blockHash),
+    // `commitments` (claimHashes) are base58 encoded in new format
+    commitments: _legacyCredential.claimHashes.map((i) =>
+      base58Encode(hexToU8a(i))
+    ),
+    // salt/nonces must be sorted by statement digest (keys) and base58 encoded
+    salt: Object.entries(_legacyCredential.claimNonceMap)
+      .map(([hsh, slt]) => [hexToU8a(hsh), stringToU8a(slt)])
+      .sort((a, b) => u8aCmp(a[0], b[0]))
+      .map((i) => base58Encode(i[1])),
+  },
+})
+
+// eslint-disable-next-line import/no-mutable-exports
+export let credential: Types.KiltCredentialV1 = JSON.parse(_credential)
+beforeEach(() => {
+  credential = JSON.parse(_credential)
+})
+
 jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))
 jest
   .spyOn(mockedApi, 'queryMulti')
@@ -142,94 +203,3 @@ mockedApi.query.system = {
       ])
     ),
 } as any
-
-it('exports credential to VC', () => {
-  const exported = toVc(credential, {
-    issuer: attestation.owner,
-    chainGenesisHash: mockedApi.genesisHash,
-    blockHash,
-    timestamp,
-  })
-  expect(exported).toMatchObject({
-    '@context': KiltCredentialV1.DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...KiltCredentialV1.DEFAULT_CREDENTIAL_TYPES, cType.$id],
-    credentialSubject: {
-      id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-      birthday: '1991-01-01',
-      name: 'Kurt',
-      premium: true,
-    },
-    id: KiltCredentialV1.idFromRootHash(credential.rootHash),
-    issuanceDate: expect.any(String),
-    issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-    nonTransferable: true,
-  })
-  expect(() => KiltCredentialV1.validateStructure(exported)).not.toThrow()
-})
-
-it('VC has correct format (full example)', () => {
-  expect(
-    toVc(credential, {
-      issuer: attestation.owner,
-      chainGenesisHash: mockedApi.genesisHash,
-      blockHash,
-      timestamp,
-    })
-  ).toMatchObject({
-    '@context': KiltCredentialV1.DEFAULT_CREDENTIAL_CONTEXTS,
-    type: [...KiltCredentialV1.DEFAULT_CREDENTIAL_TYPES, cType.$id],
-    credentialSchema: {
-      id: KiltCredentialV1.credentialSchema.$id,
-      type: 'JsonSchema2023',
-    },
-    credentialSubject: {
-      '@context': {
-        '@vocab': expect.any(String),
-      },
-      id: expect.any(String),
-      birthday: '1991-01-01',
-      name: 'Kurt',
-      premium: true,
-    },
-    id: expect.any(String),
-    issuanceDate: expect.any(String),
-    issuer: expect.any(String),
-    nonTransferable: true,
-    proof: {
-      type: 'KiltAttestationProofV1',
-      commitments: expect.any(Array),
-      salt: expect.any(Array),
-      block: expect.any(String),
-    },
-  })
-})
-
-it('reproduces credential in round trip', () => {
-  const VC = toVc(credential, {
-    issuer: attestation.owner,
-    chainGenesisHash: mockedApi.genesisHash,
-    blockHash,
-    timestamp,
-  })
-  expect(fromVC(VC)).toMatchObject(credential)
-})
-
-it('it verifies credential with selected properties revealed', async () => {
-  const reducedCredential = removeClaimProperties(credential, [
-    'name',
-    'birthday',
-  ])
-  const { proof, ...reducedVC } = toVc(reducedCredential, {
-    issuer: attestation.owner,
-    chainGenesisHash: mockedApi.genesisHash,
-    blockHash,
-    timestamp,
-  })
-
-  await expect(
-    KiltAttestationProofV1.verify(reducedVC, proof, {
-      api: mockedApi,
-      cTypes: [cType],
-    })
-  ).resolves.not.toThrow()
-})

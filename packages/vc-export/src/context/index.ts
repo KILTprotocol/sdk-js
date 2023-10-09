@@ -5,7 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './suites/index.js'
-export * from './purposes/index.js'
-export * from './documentLoader.js'
-export { validationContexts as contexts } from './context/index.js'
+import { KiltCredentialV1 } from '@kiltprotocol/core'
+import { context } from './context.js'
+
+export const validationContexts = {
+  [KiltCredentialV1.CONTEXT_URL]: context,
+}

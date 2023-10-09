@@ -305,6 +305,40 @@ export function verifyWellFormed(
 }
 
 /**
+ * Verifies whether the data of the given credential matches that of the corresponding attestation. It is valid if:
+ * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
+ * and
+ * * the data (root hash, CType, and delegation) of the [[ICredential]] object and of the [[Attestation]] are equivalent.
+ *
+ * @param attestation - The attestation to verify against.
+ * @param credential - The credential to verify.
+ */
+export function verifyAgainstAttestation(
+  attestation: IAttestation,
+  credential: ICredential
+): void {
+  const credentialMismatch =
+    credential.claim.cTypeHash !== attestation.cTypeHash
+  const ctypeMismatch = credential.rootHash !== attestation.claimHash
+  const delegationMismatch =
+    credential.delegationId !== attestation.delegationId
+  if (credentialMismatch || ctypeMismatch || delegationMismatch) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      `Some attributes of the on-chain attestation diverge from the credential: ${[
+        'cTypeHash',
+        'delegationId',
+        'claimHash',
+      ]
+        .filter(
+          (_, i) => [ctypeMismatch, delegationMismatch, credentialMismatch][i]
+        )
+        .join(', ')}`
+    )
+  }
+  verifyDataIntegrity(credential)
+}
+
+/**
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
@@ -324,7 +358,7 @@ export async function verifyAttested(credential: ICredential): Promise<{
     maybeAttestation,
     credential.rootHash
   )
-  Attestation.verifyAgainstCredential(attestation, credential)
+  verifyAgainstAttestation(attestation, credential)
   const { owner: attester, revoked } = attestation
   return { attester, revoked }
 }

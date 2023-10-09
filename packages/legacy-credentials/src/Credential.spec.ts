@@ -686,7 +686,7 @@ describe('Presentations', () => {
       keyAlice.getSignCallback(identityAlice)
     )
     expect(() =>
-      Attestation.verifyAgainstCredential(attestation, credential)
+      Credential.verifyAgainstAttestation(attestation, credential)
     ).not.toThrow()
     const { cTypeHash } = attestation
     // @ts-ignore
@@ -696,7 +696,7 @@ describe('Presentations', () => {
       cTypeHash.slice(16),
     ].join('')
     expect(() =>
-      Attestation.verifyAgainstCredential(attestation, credential)
+      Credential.verifyAgainstAttestation(attestation, credential)
     ).toThrow()
   })
   it('returns Claim Hash of the attestation', async () => {

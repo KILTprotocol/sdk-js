@@ -11,11 +11,10 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import {
   Attestation,
   CType,
-  Claim,
-  Credential,
   DelegationNode,
   disconnect,
 } from '@kiltprotocol/core'
+import { Claim, Credential } from '@kiltprotocol/legacy-credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,

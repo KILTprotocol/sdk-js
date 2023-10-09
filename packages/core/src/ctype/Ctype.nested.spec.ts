@@ -8,7 +8,6 @@
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CType from './CType'
-import * as Claim from '../claim'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
@@ -98,19 +97,17 @@ describe('Nested CTypes', () => {
       },
     })
 
-    nestedData = Claim.fromNestedCTypeClaim(
-      nestedCType,
-      [passport, kyc],
-      claimContents,
-      didAlice
-    )
+    nestedData = {
+      contents: claimContents,
+      owner: didAlice,
+      cTypeHash: CType.idToHash(nestedCType.$id),
+    }
 
-    nestedDeepData = Claim.fromNestedCTypeClaim(
-      deeplyNestedCType,
-      [passport, kyc],
-      claimDeepContents,
-      didAlice
-    )
+    nestedDeepData = {
+      contents: claimDeepContents,
+      owner: didAlice,
+      cTypeHash: CType.idToHash(deeplyNestedCType.$id),
+    }
   })
 
   it('verify json-schema validator', () => {
@@ -124,11 +121,10 @@ describe('Nested CTypes', () => {
 
     claimContents.fullName = {}
     expect(() =>
-      Claim.fromNestedCTypeClaim(
+      CType.verifyClaimAgainstNestedSchemas(
         nestedCType,
         [passport, kyc],
-        claimContents,
-        didAlice
+        claimContents
       )
     ).toThrowError(SDKErrors.ObjectUnverifiableError)
     expect(() =>
@@ -154,11 +150,10 @@ describe('Nested CTypes', () => {
     expect(nestedDeepData).toBeDefined()
     expect(nestedDeepData).not.toBeNull()
     expect(() =>
-      Claim.fromNestedCTypeClaim(
+      CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType,
         [passport, kyc],
-        claimDeepContents,
-        didAlice
+        claimDeepContents
       )
     ).toThrowError(SDKErrors.ObjectUnverifiableError)
   })
