@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
@@ -18,7 +17,7 @@ import type {
   SignCallback,
   UriFragment,
   VerificationMethod,
-  VerificationMethodRelationship,
+  VerificationRelationship,
 } from '@kiltprotocol/types'
 import type {
   BaseNewDidKey,
@@ -213,7 +212,7 @@ function doesVerificationMethodExist(
 function addVerificationMethod(
   didDocument: DidDocument,
   verificationMethod: VerificationMethod,
-  relationship: VerificationMethodRelationship
+  relationship: VerificationRelationship
 ): void {
   const existingRelationship = didDocument[relationship] ?? []
   existingRelationship.push(verificationMethod.id)
@@ -230,7 +229,7 @@ function addVerificationMethod(
 function addKeypairAsVerificationMethod(
   didDocument: DidDocument,
   { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
-  relationship: VerificationMethodRelationship
+  relationship: VerificationRelationship
 ): void {
   const verificationMethod = Did.didKeyToVerificationMethod(
     didDocument.id,
@@ -296,9 +295,7 @@ export async function createLocalDemoFullDidFromKeypair(
     ]),
     endpoints = [],
   }: {
-    keyRelationships?: Set<
-      Omit<VerificationMethodRelationship, 'authentication'>
-    >
+    keyRelationships?: Set<Omit<VerificationRelationship, 'authentication'>>
     endpoints?: NewService[]
   } = {}
 ): Promise<DidDocument> {
@@ -402,9 +399,11 @@ export async function createFullDidFromLightDid(
   const api = ConfigService.get('api')
   const fullDidDocumentToBeCreated = lightDidForId
   fullDidDocumentToBeCreated.assertionMethod = [
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fullDidDocumentToBeCreated.authentication![0],
   ]
   fullDidDocumentToBeCreated.capabilityDelegation = [
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fullDidDocumentToBeCreated.authentication![0],
   ]
   const tx = await Did.getStoreTxFromDidDocument(
