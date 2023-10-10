@@ -119,7 +119,7 @@ export async function verifyDidSignature({
   }
   if (
     expectedVerificationMethodRelationship !== undefined &&
-    !contentMetadata?.verificationRelationship?.includes(
+    !contentMetadata?.verificationRelationships?.includes(
       expectedVerificationMethodRelationship
     )
   ) {

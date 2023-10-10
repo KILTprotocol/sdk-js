@@ -271,7 +271,7 @@ async function dereferenceInternal(
   return {
     contentStream: dereferencedResource,
     contentMetadata: {
-      verificationRelationship,
+      verificationRelationships: verificationRelationship,
     },
   }
 }

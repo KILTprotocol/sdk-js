@@ -211,7 +211,7 @@ export type DereferenceContentMetadata = ResolutionDocumentMetadata & {
    * This field is optional and is set only if the dereferenced object is a verification method and it belongs to one of the verification methods of the DID Document.
    * This field is empty if the dereferenced object is a full DID Document or a service, or if the dereferences verification method is not linked to the DID Document by any specific relationship.
    */
-  verificationRelationship?: VerificationRelationship[]
+  verificationRelationships?: VerificationRelationship[]
 }
 
 export type DereferenceResult<ContentType extends string> = {
