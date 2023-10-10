@@ -8,3 +8,4 @@
 export * from './CType.js'
 export * as Schemas from './CType.schemas.js'
 export * from './CType.chain.js'
+export * from './CTypeLoader.js'

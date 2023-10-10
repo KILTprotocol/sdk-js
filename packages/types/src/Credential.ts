@@ -5,7 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidSignature } from './DidDocument'
+import type { DidSignature } from '@kiltprotocol/did'
+
 import type { IClaim } from './Claim'
 import type { IDelegationNode } from './Delegation'
 import type { HexString } from './Imported'

@@ -19,15 +19,16 @@ import type {
 const { kilt } = window
 
 const {
-  Claim,
-  Attestation,
   ConfigService,
-  Credential,
   CType,
   Did,
   Blockchain,
   Utils: { Crypto, ss58Format },
   BalanceUtils,
+  KiltCredentialV1,
+  KiltAttestationProofV1,
+  KiltRevocationStatusV1,
+  Presentation,
 } = kilt
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
@@ -141,8 +142,7 @@ async function runAll() {
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const { keypair: bobKeypair, getSignCallback: bobSign } =
-    makeSigningKeypair('//Bob')
+  const { keypair: bobKeypair } = makeSigningKeypair('//Bob')
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
   const bob = await createFullDidFromKeypair(
     payer,
@@ -243,48 +243,59 @@ async function runAll() {
   // Attestation workflow
   console.log('Attestation workflow started')
   const content = { name: 'Bob', age: 21 }
-  const claim = Claim.fromCTypeAndClaimContents(
-    DriversLicense,
-    content,
-    bob.uri
-  )
-  const credential = Credential.fromClaim(claim)
-  if (!Credential.isICredential(credential))
-    throw new Error('Not a valid Credential')
-  Credential.verifyDataIntegrity(credential)
-  console.info('Credential data verified')
-  if (credential.claim.contents !== content)
-    throw new Error('Claim content inside Credential mismatching')
 
-  const presentation = await Credential.createPresentation({
-    credential,
-    signCallback: bobSign(bob),
+  const credential = KiltCredentialV1.fromInput({
+    cType: DriversLicense.$id,
+    claims: content,
+    subject: bob.uri,
+    issuer: alice.uri,
   })
-  if (!Credential.isPresentation(presentation))
-    throw new Error('Not a valid Presentation')
-  await Credential.verifySignature(presentation)
-  console.info('Presentation signature verified')
 
-  const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
-  Attestation.verifyAgainstCredential(attestation, credential)
-  console.info('Attestation Data verified')
+  await KiltCredentialV1.validateSubject(credential, {
+    cTypes: [DriversLicense],
+  })
+  console.info('Credential subject conforms to CType')
 
-  const attestationStoreTx = await Did.authorizeTx(
-    alice.uri,
-    api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
-    aliceSign(alice),
-    payer.address
-  )
-  await Blockchain.signAndSubmitTx(attestationStoreTx, payer)
-  const storedAttestation = Attestation.fromChain(
-    await api.query.attestation.attestations(credential.rootHash),
-    credential.rootHash
-  )
-  if (storedAttestation?.revoked === false) {
-    console.info('Attestation verified with chain')
-  } else {
-    throw new Error('Attestation not verifiable with chain')
+  if (
+    credential.credentialSubject.name !== content.name ||
+    credential.credentialSubject.age !== content.age ||
+    credential.credentialSubject.id !== bob.uri
+  ) {
+    throw new Error('Claim content inside Credential mismatching')
   }
+
+  const issued = await KiltAttestationProofV1.issue(credential, {
+    didSigner: { did: alice.uri, signer: aliceSign(alice) },
+    transactionHandler: {
+      account: payer.address,
+      signAndSubmit: async (tx) => {
+        const signed = await api.tx(tx).signAsync(payer)
+        const result = await Blockchain.submitSignedTx(signed, {
+          resolveOn: Blockchain.IS_IN_BLOCK,
+        })
+        const blockHash = result.status.asInBlock
+        return { blockHash }
+      },
+    },
+  })
+  console.info('Credential issued')
+
+  KiltCredentialV1.validateStructure(issued)
+  console.info('Credential structure validated')
+
+  await KiltAttestationProofV1.verify(issued, issued.proof, {
+    cTypes: [DriversLicense],
+  })
+  console.info('Credential proof verified')
+
+  await KiltRevocationStatusV1.check(issued)
+  console.info('Credential status verified')
+
+  const presentation = Presentation.create([issued], bob.uri)
+  console.info('Presentation created')
+
+  Presentation.validateStructure(presentation)
+  console.info('Presentation structure validated')
 }
 
 window.runAll = runAll

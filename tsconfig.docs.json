@@ -16,6 +16,7 @@
       "packages/messaging/src/index.ts",
       "packages/vc-export/src/index.ts",
       "packages/sdk-js/src/index.ts",
+      "packages/legacy-credentials/src/index.ts"
     ],
     "out": "docs/api",
     "theme": "default",

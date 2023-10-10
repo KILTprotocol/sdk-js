@@ -9,12 +9,12 @@ import type {
   CTypeHash,
   DidDocument,
   DidUri,
-  DidVerificationKey,
   IAttestation,
   IDelegationHierarchyDetails,
   IDelegationNode,
   SignCallback,
   SubmittableExtrinsic,
+  DidUrl,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -268,25 +268,26 @@ export class DelegationNode implements IDelegationNode {
   ): Promise<Did.EncodedSignature> {
     const delegateSignature = await sign({
       data: this.generateHash(),
-      did: delegateDid.uri,
-      keyRelationship: 'authentication',
+      did: delegateDid.id,
+      verificationMethodRelationship: 'authentication',
     })
-    const { fragment } = Did.parse(delegateSignature.keyUri)
+    const signerUrl =
+      `${delegateDid.id}${delegateSignature.verificationMethod.id}` as DidUrl
+    const { fragment } = Did.parse(signerUrl)
     if (!fragment) {
       throw new SDKErrors.DidError(
-        `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
+        `DID verification method URL "${signerUrl}" couldn't be parsed`
       )
     }
-    const key = Did.getKey(delegateDid, fragment)
+    const key = delegateDid.verificationMethod?.find(
+      ({ id }) => id === fragment
+    )
     if (!key) {
       throw new SDKErrors.DidError(
-        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
+        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.id}"`
       )
     }
-    return Did.didSignatureToChain(
-      key as DidVerificationKey,
-      delegateSignature.signature
-    )
+    return Did.didSignatureToChain(key, delegateSignature.signature)
   }
 
   /**
