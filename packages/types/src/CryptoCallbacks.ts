@@ -6,11 +6,10 @@
  */
 
 import type {
-  DidResourceUri,
   DidUri,
-  DidVerificationKey,
-  VerificationKeyRelationship,
-} from './DidDocument.js'
+  SignatureVerificationMethodRelationship,
+  VerificationMethod,
+} from './DidDocument'
 
 /**
  * Base interface for all signing requests.
@@ -24,7 +23,7 @@ export interface SignRequestData {
   /**
    * The did key relationship to be used.
    */
-  keyRelationship: VerificationKeyRelationship
+  verificationMethodRelationship: SignatureVerificationMethodRelationship
 
   /**
    * The DID to be used for signing.
@@ -43,11 +42,7 @@ export interface SignResponseData {
   /**
    * The did key uri used for signing.
    */
-  keyUri: DidResourceUri
-  /**
-   * The did key type used for signing.
-   */
-  keyType: DidVerificationKey['type']
+  verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase' | 'id'>
 }
 
 /**
@@ -62,7 +57,7 @@ export type SignCallback = (
  */
 export type SignExtrinsicCallback = (
   signData: SignRequestData
-) => Promise<Omit<SignResponseData, 'keyUri'>>
+) => Promise<SignResponseData>
 
 /**
  * Base interface for encryption requests.
@@ -97,7 +92,7 @@ export interface EncryptResponseData {
   /**
    * The did key uri used for the encryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: VerificationMethod
 }
 
 /**
@@ -126,7 +121,7 @@ export interface DecryptRequestData {
   /**
    * The did key uri, which should be used for decryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: VerificationMethod
 }
 
 export interface DecryptResponseData {

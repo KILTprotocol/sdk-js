@@ -5,42 +5,44 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type {
+  KiltKeyringPair,
+  KeyringPair,
+  DidDocument,
+  SignCallback,
+  DidUrl,
+} from '@kiltprotocol/types'
+
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
-import type {
-  DidDocument,
-  DidResourceUri,
-  DidSignature,
-  KeyringPair,
-  KiltKeyringPair,
-  NewLightDidVerificationKey,
-  SignCallback,
-} from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import type { DidSignature } from './Did.signature'
+import type { NewLightDidVerificationKey } from './DidDetails'
 
-import { makeSigningKeyTool } from '../../../tests/testUtils'
+import { TestUtilsV2 } from '../../../tests/testUtils'
 import {
   isDidSignature,
   signatureFromJson,
   signatureToJson,
   verifyDidSignature,
 } from './Did.signature'
-import { keyToResolvedKey, resolveKey } from './DidResolver'
-import * as Did from './index.js'
+import { resolve } from './DidResolver'
+import { keypairToMultibaseKey, multibaseKeyToDidKey, parse } from './Did.utils'
+import { createLightDidDocument } from './DidDetails'
 
 jest.mock('./DidResolver')
 jest
-  .mocked(keyToResolvedKey)
-  .mockImplementation(jest.requireActual('./DidResolver').keyToResolvedKey)
+  .mocked(resolve)
+  .mockImplementation(jest.requireActual('./DidResolver').resolve)
 
 describe('light DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
   let sign: SignCallback
   beforeAll(() => {
-    const keyTool = makeSigningKeyTool()
+    const keyTool = TestUtilsV2.makeSigningKeyTool()
     keypair = keyTool.keypair
-    did = Did.createLightDidDocument({
+    did = createLightDidDocument({
       authentication: keyTool.authentication,
     })
     sign = keyTool.getSignCallback(did)
@@ -48,82 +50,89 @@ describe('light DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(resolveKey)
+      .mocked(resolve)
       .mockReset()
-      .mockImplementation(async (didUri, keyRelationship = 'authentication') =>
-        didUri.includes(keypair.address)
-          ? Did.keyToResolvedKey(did[keyRelationship]![0], did.uri)
-          : Promise.reject()
-      )
+      .mockImplementation(async (didUrl) => {
+        const { address } = parse(didUrl)
+        if (address === keypair.address) {
+          return {
+            didDocumentMetadata: {},
+            didResolutionMetadata: {},
+            didDocument: did,
+          }
+        }
+        return Promise.reject()
+      })
   })
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
 
   it('deserializes old did signature (with `keyId` property) to new format', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = signatureToJson(
-      await sign({
+    const { signature, signerUrl } = signatureToJson({
+      did: did.id,
+      ...(await sign({
         data: Crypto.coToUInt8(SIGNED_STRING),
-        did: did.uri,
-        keyRelationship: 'authentication',
-      })
-    )
+        did: did.id,
+        verificationMethodRelationship: 'authentication',
+      })),
+    })
     const oldSignature = {
       signature,
-      keyId: keyUri,
+      keyId: signerUrl,
     }
 
     const deserialized = signatureFromJson(oldSignature)
     expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.keyUri).toStrictEqual(keyUri)
+    expect(deserialized.verificationMethodUri).toStrictEqual(signerUrl)
     expect(deserialized).not.toHaveProperty('keyId')
   })
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: SIGNED_BYTES,
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
 
   it('fails if relationship does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'assertionMethod',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'assertionMethod',
       })
     ).rejects.toThrow()
   })
@@ -131,82 +140,82 @@ describe('light DID', () => {
   it('fails if key id does not match', async () => {
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
-    let { signature, keyUri } = await sign({
+    let { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
-    keyUri = `${keyUri}1a`
-    jest.mocked(resolveKey).mockRejectedValue(new Error('Key not found'))
+    const wrongVerificationMethodId = `${verificationMethod.id}1a`
+    jest.mocked(resolve).mockRejectedValue(new Error('DID not found'))
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${wrongVerificationMethodId}` as DidUrl,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('fails if signature does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('fails if key id malformed', async () => {
-    jest.mocked(resolveKey).mockRestore()
+    jest.mocked(resolve).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
-    let { signature, keyUri } = await sign({
+    let { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
-    // @ts-expect-error
-    keyUri = keyUri.replace('#', '?')
+    const malformedVerificationId = verificationMethod.id.replace('#', '?')
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl:
+          `${did.id}${malformedVerificationId}` as DidUrl,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('does not verify if migrated to Full DID', async () => {
-    jest.mocked(resolveKey).mockRejectedValue(new Error('Migrated'))
+    jest.mocked(resolve).mockRejectedValue(new Error('Migrated'))
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      keyUri: `${did.uri}${did.authentication[0].id}`,
+      signerUrl: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -214,37 +223,48 @@ describe('light DID', () => {
 
   it('detects signer expectation mismatch if signature is by unrelated did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
 
-    const expectedSigner = Did.createLightDidDocument({
-      authentication: makeSigningKeyTool().authentication,
-    }).uri
+    const expectedSigner = createLightDidDocument({
+      authentication: TestUtilsV2.makeSigningKeyTool().authentication,
+    }).id
 
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
-        expectedVerificationMethod: 'authentication',
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
 
   it('allows variations of the same light did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
 
-    const expectedSigner = Did.createLightDidDocument({
-      authentication: did.authentication as [NewLightDidVerificationKey],
+    const authKey = did.verificationMethod?.find(
+      (vm) => vm.id === did.authentication?.[0]
+    )
+    const expectedSignerAuthKey = multibaseKeyToDidKey(
+      authKey!.publicKeyMultibase
+    )
+    const expectedSigner = createLightDidDocument({
+      authentication: [
+        {
+          publicKey: expectedSignerAuthKey.publicKey,
+          type: expectedSignerAuthKey.keyType,
+        },
+      ] as [NewLightDidVerificationKey],
       keyAgreement: [{ type: 'x25519', publicKey: new Uint8Array(32).fill(1) }],
       service: [
         {
@@ -253,15 +273,15 @@ describe('light DID', () => {
           serviceEndpoint: ['http://example.com'],
         },
       ],
-    }).uri
+    }).id
 
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
-        expectedVerificationMethod: 'authentication',
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
@@ -274,122 +294,143 @@ describe('full DID', () => {
   beforeAll(() => {
     keypair = Crypto.makeKeypairFromSeed()
     did = {
-      uri: `did:kilt:${keypair.address}`,
-      authentication: [
+      id: `did:kilt:${keypair.address}`,
+      authentication: ['#0x12345'],
+      verificationMethod: [
         {
+          controller: `did:kilt:${keypair.address}`,
           id: '#0x12345',
-          type: 'sr25519',
-          publicKey: keypair.publicKey,
+          publicKeyMultibase: keypairToMultibaseKey(keypair),
+          type: 'MultiKey',
         },
       ],
     }
     sign = async ({ data }) => ({
       signature: keypair.sign(data),
-      keyUri: `${did.uri}#0x12345`,
-      keyType: 'sr25519',
+      verificationMethod: {
+        id: '#0x12345',
+        publicKeyMultibase: keypairToMultibaseKey(keypair),
+      },
     })
   })
 
   beforeEach(() => {
     jest
-      .mocked(resolveKey)
+      .mocked(resolve)
       .mockReset()
-      .mockImplementation(async (didUri) =>
-        didUri.includes(keypair.address)
-          ? Did.keyToResolvedKey(did.authentication[0], did.uri)
-          : Promise.reject()
-      )
+      .mockImplementation(async (didUri) => {
+        const { address } = parse(didUri)
+        if (address === keypair.address) {
+          return {
+            didDocumentMetadata: {},
+            didResolutionMetadata: {},
+            didDocument: did,
+          }
+        }
+        return Promise.reject()
+      })
   })
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: SIGNED_BYTES,
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
 
   it('does not verify if deactivated', async () => {
-    jest.mocked(resolveKey).mockRejectedValue(new Error('Deactivated'))
+    jest.mocked(resolve).mockRejectedValue(new Error('Deactivated'))
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('does not verify if not on chain', async () => {
-    jest.mocked(resolveKey).mockRejectedValue(new Error('Not on chain'))
+    jest.mocked(resolve).mockRejectedValue(new Error('Not on chain'))
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
-        expectedVerificationMethod: 'authentication',
+        signerUrl: `${did.id}${verificationMethod.id}`,
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('accepts signature of full did for light did if enabled', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = await sign({
+    const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.uri,
-      keyRelationship: 'authentication',
+      did: did.id,
+      verificationMethodRelationship: 'authentication',
     })
 
-    const expectedSigner = Did.createLightDidDocument({
-      authentication: did.authentication as [NewLightDidVerificationKey],
-    }).uri
+    const authKey = did.verificationMethod?.find(
+      (vm) => vm.id === did.authentication?.[0]
+    )
+    const expectedSignerAuthKey = multibaseKeyToDidKey(
+      authKey!.publicKeyMultibase
+    )
+    const expectedSigner = createLightDidDocument({
+      authentication: [
+        {
+          publicKey: expectedSignerAuthKey.publicKey,
+          type: expectedSignerAuthKey.keyType,
+        },
+      ] as [NewLightDidVerificationKey],
+    }).id
 
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
-        expectedVerificationMethod: 'authentication',
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
 
@@ -397,17 +438,17 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        keyUri,
+        signerUrl: `${did.id}${verificationMethod.id}`,
         expectedSigner,
         allowUpgraded: true,
-        expectedVerificationMethod: 'authentication',
+        expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      keyUri: `${did.uri}${did.authentication[0].id}`,
+      signerUrl: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -423,31 +464,31 @@ describe('type guard', () => {
   it('rejects malformed key uri', () => {
     let signature: DidSignature = {
       // @ts-expect-error
-      keyUri: `did:kilt:${keypair.address}?mykey`,
+      signerUrl: `did:kilt:${keypair.address}?mykey`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      keyUri: `kilt:did:${keypair.address}#mykey`,
+      signerUrl: `kilt:did:${keypair.address}#mykey`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      keyUri: `kilt:did:${keypair.address}`,
+      signerUrl: `did:kilt:${keypair.address}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      keyUri: keypair.address,
+      signerUrl: keypair.address,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      keyUri: '',
+      signerUrl: '',
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -455,7 +496,7 @@ describe('type guard', () => {
 
   it('rejects unexpected signature type', () => {
     const signature: DidSignature = {
-      keyUri: `did:kilt:${keypair.address}#mykey` as DidResourceUri,
+      signerUrl: `did:kilt:${keypair.address}#mykey` as DidUrl,
       signature: '',
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -468,14 +509,14 @@ describe('type guard', () => {
 
   it('rejects incomplete objects', () => {
     let signature: DidSignature = {
-      keyUri: `did:kilt:${keypair.address}#mykey` as DidResourceUri,
+      signerUrl: `did:kilt:${keypair.address}#mykey` as DidUrl,
       // @ts-expect-error
       signature: undefined,
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      keyUri: undefined,
+      signerUrl: undefined,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -484,16 +525,16 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
-    // @ts-expect-error
     signature = {
-      keyUri: `did:kilt:${keypair.address}#mykey` as DidResourceUri,
+      // @ts-expect-error
+      signerUrl: `did:kilt:${keypair.address}#mykey`,
     }
     expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = {}
     expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
-    signature = { keyUri: null, signature: null }
+    signature = { signerUrl: null, signature: null }
     expect(isDidSignature(signature)).toBe(false)
   })
 })

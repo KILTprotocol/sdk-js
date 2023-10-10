@@ -441,7 +441,7 @@ describe('Presentations', () => {
 
   async function didResolveKey(
     keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey> {
+  ): Promise<VerificationMet> {
     const { did } = Did.parse(keyUri)
     const document = [
       identityAlice,
@@ -450,7 +450,7 @@ describe('Presentations', () => {
       identityDave,
     ].find(({ uri }) => uri === did)
     if (!document) throw new Error('Cannot resolve mocked DID')
-    return Did.keyToResolvedKey(document.authentication[0], did)
+    return Did.resolve(document.authentication[0], did)
   }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.

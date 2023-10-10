@@ -5,14 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { BN } from './Imported'
 import type { KiltAddress } from './Address'
 
 type AuthenticationKeyType = '00' | '01'
 type DidUriVersion = '' | `v${string}:`
 type LightDidEncodedData = '' | `:${string}`
-
-// NOTICE: The following string pattern types must be kept in sync with regex patterns @kiltprotocol/did/Utils
 
 /**
  * A string containing a KILT DID Uri.
@@ -28,149 +25,93 @@ export type UriFragment = `#${string}`
 /**
  * URI for DID resources like keys or service endpoints.
  */
-export type DidResourceUri = `${DidUri}${UriFragment}`
+export type DidUrl = `${DidUri}${UriFragment}`
 
-/**
- * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
- */
-const keyRelationshipsC = [
-  'authentication',
-  'capabilityDelegation',
-  'assertionMethod',
-  'keyAgreement',
-] as const
-export const keyRelationships = keyRelationshipsC as unknown as string[]
-export type KeyRelationship = typeof keyRelationshipsC[number]
+export type SignatureVerificationMethodRelationship =
+  | 'authentication'
+  | 'capabilityDelegation'
+  | 'assertionMethod'
+export type EncryptionMethodRelationship = 'keyAgreement'
 
-/**
- * Subset of key relationships which pertain to signing/verification keys.
- */
-export type VerificationKeyRelationship = Extract<
-  KeyRelationship,
-  'authentication' | 'capabilityDelegation' | 'assertionMethod'
->
+export type VerificationMethodRelationship =
+  | SignatureVerificationMethodRelationship
+  | EncryptionMethodRelationship
 
-/**
- * Possible types for a DID verification key.
- */
-const verificationKeyTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
-export const verificationKeyTypes = verificationKeyTypesC as unknown as string[]
-export type VerificationKeyType = typeof verificationKeyTypesC[number]
-// `as unknown as string[]` is a workaround for https://github.com/microsoft/TypeScript/issues/26255
+type Base58BtcMultibaseString = `z${string}`
 
-/**
- * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+/*
+ * The verification method map MUST include the id, type, controller, and specific verification material properties that are determined by the value of type and are defined in 5.2.1 Verification Material. A verification method MAY include additional properties. Verification methods SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
  */
-export type LightDidSupportedVerificationKeyType = Extract<
-  VerificationKeyType,
-  'ed25519' | 'sr25519'
->
-
-/**
- * Subset of key relationships which pertain to key agreement/encryption keys.
- */
-export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
-
-/**
- * Possible types for a DID encryption key.
- */
-const encryptionKeyTypesC = ['x25519'] as const
-export const encryptionKeyTypes = encryptionKeyTypesC as unknown as string[]
-export type EncryptionKeyType = typeof encryptionKeyTypesC[number]
-
-/**
- * Type of a new key material to add under a DID.
- */
-export type BaseNewDidKey = {
-  publicKey: Uint8Array
-  type: string
-}
-
-/**
- * Type of a new verification key to add under a DID.
- */
-export type NewDidVerificationKey = BaseNewDidKey & {
-  type: VerificationKeyType
-}
-/**
- * A new public key specified when creating a new light DID.
- */
-export type NewLightDidVerificationKey = NewDidVerificationKey & {
-  type: LightDidSupportedVerificationKeyType
-}
-/**
- * Type of a new encryption key to add under a DID.
- */
-export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
-
-/**
- * The SDK-specific base details of a DID key.
- */
-export type BaseDidKey = {
-  /**
-   * Relative key URI: `#` sign followed by fragment part of URI.
+export type VerificationMethod = {
+  /*
+   * The value of the id property for a verification method MUST be a string that conforms to the rules in Section 3.2 DID URL Syntax.
    */
   id: UriFragment
-  /**
-   * The public key material.
+  /*
+   * The value of the type property MUST be a string that references exactly one verification method type. In order to maximize global interoperability, the verification method type SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
    */
-  publicKey: Uint8Array
-  /**
-   * The inclusion block of the key, if stored on chain.
+  type: 'MultiKey'
+  /*
+   * The value of the controller property MUST be a string that conforms to the rules in 3.1 DID Syntax.
    */
-  includedAt?: BN
-  /**
-   * The type of the key.
+  controller: DidUri
+  /*
+   * The publicKeyMultibase property is OPTIONAL. This feature is non-normative. If present, the value MUST be a string representation of a [MULTIBASE] encoded public key.
    */
-  type: string
+  publicKeyMultibase: Base58BtcMultibaseString
 }
 
-/**
- * The SDK-specific details of a DID verification key.
+/*
+ * Each service map MUST contain id, type, and serviceEndpoint properties. Each service extension MAY include additional properties and MAY further restrict the properties associated with the extension.
  */
-export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
-/**
- * The SDK-specific details of a DID encryption key.
- */
-export type DidEncryptionKey = BaseDidKey & { type: EncryptionKeyType }
-/**
- * The SDK-specific details of a DID key.
- */
-export type DidKey = DidVerificationKey | DidEncryptionKey
-
-/**
- * The SDK-specific details of a new DID service endpoint.
- */
-export type DidServiceEndpoint = {
-  /**
-   * Relative endpoint URI: `#` sign followed by fragment part of URI.
+export type Service = {
+  /*
+   * The value of the id property MUST be a URI conforming to [RFC3986]. A conforming producer MUST NOT produce multiple service entries with the same id. A conforming consumer MUST produce an error if it detects multiple service entries with the same id.
    */
   id: UriFragment
-  /**
-   * A list of service types the endpoint exposes.
+  /*
+   * The value of the type property MUST be a string or a set of strings. In order to maximize interoperability, the service type and its associated properties SHOULD be registered in the DID Specification Registries [DID-SPEC-REGISTRIES].
    */
   type: string[]
-  /**
-   * A list of URIs the endpoint exposes its services at.
+  /*
+   * The value of the serviceEndpoint property MUST be a string, a map, or a set composed of one or more strings and/or maps. All string values MUST be valid URIs conforming to [RFC3986] and normalized according to the Normalization and Comparison rules in RFC3986 and to any normalization rules in its applicable URI scheme specification.
    */
   serviceEndpoint: string[]
 }
 
-/**
- * A signature issued with a DID associated key, indicating which key was used to sign.
- */
-export type DidSignature = {
-  keyUri: DidResourceUri
-  signature: string
+export type DidDocument = {
+  /*
+   * The value of id MUST be a string that conforms to the rules in 3.1 DID Syntax and MUST exist in the root map of the data model for the DID document.
+   */
+  id: DidUri
+  /*
+   * The alsoKnownAs property is OPTIONAL. If present, the value MUST be a set where each item in the set is a URI conforming to [RFC3986].
+   */
+  alsoKnownAs?: string[]
+  /*
+   * The verificationMethod property is OPTIONAL. If present, the value MUST be a set of verification methods, where each verification method is expressed using a map.
+   */
+  verificationMethod?: VerificationMethod[]
+  /*
+   * The authentication property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
+   */
+  authentication?: UriFragment[]
+  /*
+   * The assertionMethod property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
+   */
+  assertionMethod?: UriFragment[]
+  /*
+   * The keyAgreement property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
+   */
+  keyAgreement?: UriFragment[]
+  /*
+   * The capabilityDelegation property is OPTIONAL. If present, the associated value MUST be a set of one or more verification methods. Each verification method MAY be embedded or referenced.
+   */
+  capabilityDelegation?: UriFragment[]
+  /*
+   * The service property is OPTIONAL. If present, the associated value MUST be a set of services, where each service is described by a map.
+   */
+  service?: Service[]
 }
 
-export interface DidDocument {
-  uri: DidUri
-
-  authentication: [DidVerificationKey]
-  assertionMethod?: [DidVerificationKey]
-  capabilityDelegation?: [DidVerificationKey]
-  keyAgreement?: DidEncryptionKey[]
-
-  service?: DidServiceEndpoint[]
-}
+export type JsonLd<T> = T & { '@context': string[] }

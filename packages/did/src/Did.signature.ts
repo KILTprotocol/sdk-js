@@ -5,79 +5,90 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type {
+  DidUri,
+  DidUrl,
+  ResolveDid,
+  SignatureVerificationMethodRelationship,
+  SignResponseData,
+} from '@kiltprotocol/types'
+
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 
-import {
-  DidResolveKey,
-  DidResourceUri,
-  DidSignature,
-  DidUri,
-  SignResponseData,
-  VerificationKeyRelationship,
-} from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-
-import { resolveKey } from './DidResolver/index.js'
-import { parse, validateUri } from './Did.utils.js'
+import { multibaseKeyToDidKey, parse, validateUri } from './Did.utils.js'
+import { resolve } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
-  keyUri: DidResourceUri
+  signerUrl: DidUrl
   expectedSigner?: DidUri
   allowUpgraded?: boolean
-  expectedVerificationMethod?: VerificationKeyRelationship
-  didResolveKey?: DidResolveKey
+  expectedVerificationMethodRelationship?: SignatureVerificationMethodRelationship
+  resolveDid?: ResolveDid<string>['resolve']
+}
+
+export type DidSignature = {
+  signerUrl: DidUrl
+  signature: string
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
 // It is reasonable to think that it will be removed at some point in the future.
-type OldDidSignature = Pick<DidSignature, 'signature'> & {
-  keyId: DidSignature['keyUri']
+type OldDidSignatureV1 = {
+  signature: string
+  keyId: DidUrl
+}
+type OldDidSignatureV2 = {
+  signature: string
+  keyUri: DidUrl
 }
 
-/**
- * Checks whether the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
- * Does not cryptographically verify the signature itself!
- *
- * @param input Arbitrary input.
- */
 function verifyDidSignatureDataStructure(
-  input: DidSignature | OldDidSignature
+  input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
 ): void {
-  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  const verificationMethodUri = (() => {
+    if ('keyUri' in input) {
+      return input.keyUri
+    }
+    if ('keyId' in input) {
+      return input.keyId
+    }
+    return input.signerUrl
+  })()
   if (!isHex(input.signature)) {
     throw new SDKErrors.SignatureMalformedError(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateUri(keyUri, 'ResourceUri')
+  validateUri(verificationMethodUri, 'ResourceUri')
 }
 
 /**
- * Verify a DID signature given the key URI of the signature.
+ * Verify a DID signature given the signer's DID URL.
  * A signature verification returns false if a migrated and then deleted DID is used.
  *
  * @param input Object wrapping all input.
  * @param input.message The message that was signed.
  * @param input.signature Signature bytes.
- * @param input.keyUri DID URI of the key used for signing.
+ * @param input.signerUrl DID URL of the verification method used for signing.
  * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
- * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
- * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
+ * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
+ * @param input.resolveDid Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
  */
 export async function verifyDidSignature({
   message,
   signature,
-  keyUri,
+  signerUrl,
   expectedSigner,
   allowUpgraded = false,
-  expectedVerificationMethod,
-  didResolveKey = resolveKey,
+  expectedVerificationMethodRelationship,
+  resolveDid = resolve,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
-  const signer = parse(keyUri)
+  const signer = parse(signerUrl)
   if (expectedSigner && expectedSigner !== signer.did) {
     // check for allowable exceptions
     const expected = parse(expectedSigner)
@@ -96,8 +107,34 @@ export async function verifyDidSignature({
     }
   }
 
-  const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
+  const { didDocument } = await resolveDid(signerUrl, {})
+  if (didDocument === undefined) {
+    throw new SDKErrors.SignatureUnverifiableError(
+      `Error validating the DID signature. Cannot fetch DID Document for "${signerUrl}".`
+    )
+  }
+  const verificationMethod = didDocument.verificationMethod?.find(
+    (vm) => vm.id === signer.fragment
+  )
+  if (verificationMethod === undefined) {
+    throw new SDKErrors.SignatureUnverifiableError(
+      `Cannot find verification method with ID "${signer.fragment} in the DID Document for "${signerUrl}".`
+    )
+  }
+  if (
+    expectedVerificationMethodRelationship !== undefined &&
+    didDocument[expectedVerificationMethodRelationship]?.find(
+      (vm) => vm === signer.fragment
+    ) === undefined
+  ) {
+    throw new SDKErrors.SignatureUnverifiableError(
+      `Cannot find verification method with ID "${signer.fragment} for the relationship "${expectedVerificationMethodRelationship}".`
+    )
+  }
 
+  const { publicKey } = multibaseKeyToDidKey(
+    verificationMethod.publicKeyMultibase
+  )
   Crypto.verify(message, signature, publicKey)
 }
 
@@ -110,7 +147,7 @@ export async function verifyDidSignature({
  */
 export function isDidSignature(
   input: unknown
-): input is DidSignature | OldDidSignature {
+): input is DidSignature | OldDidSignatureV1 | OldDidSignatureV2 {
   try {
     verifyDidSignatureDataStructure(input as DidSignature)
     return true
@@ -124,27 +161,44 @@ export function isDidSignature(
  *
  * @param input Signature data returned from the [[SignCallback]].
  * @param input.signature Signature bytes.
- * @param input.keyUri DID URI of the key used for signing.
+ * @param input.did The DID URI of the signer.
+ * @param input.verificationMethod The verification method used to generate the signature.
  * @returns A [[DidSignature]] object where signature is hex-encoded.
  */
 export function signatureToJson({
+  did,
   signature,
-  keyUri,
-}: SignResponseData): DidSignature {
-  return { signature: Crypto.u8aToHex(signature), keyUri }
+  verificationMethod,
+}: SignResponseData & {
+  did: DidUri
+}): DidSignature {
+  return {
+    signature: Crypto.u8aToHex(signature),
+    signerUrl: `${did}${verificationMethod.id}`,
+  }
 }
 
 /**
  * Deserializes a [[DidSignature]] for signature verification.
- * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
+ * Handles backwards compatibility to an older version of the interface where the `verificationMethodUri` property was called either `keyUri` or `keyId`.
  *
  * @param input A [[DidSignature]] object.
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
  */
 export function signatureFromJson(
-  input: DidSignature | OldDidSignature
-): Pick<SignResponseData, 'keyUri' | 'signature'> {
-  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
+): Pick<SignResponseData, 'signature'> & {
+  verificationMethodUri: DidUrl
+} {
+  const verificationMethodUri = (() => {
+    if ('keyUri' in input) {
+      return input.keyUri
+    }
+    if ('keyId' in input) {
+      return input.keyId
+    }
+    return input.signerUrl
+  })()
   const signature = Crypto.coToUInt8(input.signature)
-  return { signature, keyUri }
+  return { signature, verificationMethodUri }
 }

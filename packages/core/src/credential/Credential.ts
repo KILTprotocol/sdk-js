@@ -21,12 +21,12 @@ import { ConfigService } from '@kiltprotocol/config'
 import {
   isDidSignature,
   verifyDidSignature,
-  resolveKey,
+  resolve,
   signatureToJson,
   signatureFromJson,
 } from '@kiltprotocol/did'
 import type {
-  DidResolveKey,
+  ResolveDid,
   DidUri,
   Hash,
   IAttestation,
@@ -206,17 +206,17 @@ export function verifyDataStructure(input: ICredential): void {
  *
  * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
+ * @param verificationOpts.didResolve - The function used to resolve the claimer's DID Document and verification method. Defaults to [[resolve]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    didResolveKey = resolveKey,
+    didResolve = resolve,
   }: {
     challenge?: string
-    didResolveKey?: DidResolveKey
+    didResolve?: ResolveDid<string>
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -233,8 +233,8 @@ export async function verifySignature(
     expectedSigner: input.claim.owner,
     // allow full did to sign presentation if owned by corresponding light did
     allowUpgraded: true,
-    expectedVerificationMethod: 'authentication',
-    didResolveKey,
+    expectedVerificationMethodRelationship: 'authentication',
+    didResolve,
   })
 }
 

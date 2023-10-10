@@ -5,16 +5,20 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
-
-import {
-  DidResourceUri,
+import type {
   DidUri,
-  DidVerificationKey,
+  DidUrl,
+  KeyringPair,
   KiltAddress,
   UriFragment,
+  VerificationMethod,
 } from '@kiltprotocol/types'
+
+import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+
+import type { DidKeyType } from './DidDetails/DidDetails.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -54,7 +58,7 @@ type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
+export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -98,6 +102,125 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
   throw new SDKErrors.InvalidDidFormatError(didUri)
 }
 
+type DecodedVerificationMethod = {
+  publicKey: Uint8Array
+  keyType: DidKeyType
+}
+
+const multicodecPrefixes: Record<number, [DidKeyType, number]> = {
+  0xe7: ['ecdsa', 33],
+  0xec: ['x25519', 32],
+  0xed: ['ed25519', 32],
+  0xef: ['sr25519', 32],
+}
+const multicodecReversePrefixes: Record<DidKeyType, number> = {
+  ecdsa: 0xe7,
+  ed25519: 0xed,
+  sr25519: 0xef,
+  x25519: 0xec,
+}
+
+/**
+ * Decode a multibase, multicodec representation of a verification method into its fundamental components: the public key and the key type.
+ *
+ * @param publicKeyMultibase The verification method's public key multibase.
+ * @returns The decoded public key and [[DidKeyType]].
+ */
+export function multibaseKeyToDidKey(
+  publicKeyMultibase: VerificationMethod['publicKeyMultibase']
+): DecodedVerificationMethod {
+  const decodedMulticodecPublicKey = multibaseDecode(publicKeyMultibase)
+  const [keyTypeFlag, publicKey] = [
+    decodedMulticodecPublicKey.subarray(0, 1)[0],
+    decodedMulticodecPublicKey.subarray(1),
+  ]
+  const [keyType, expectedPublicKeyLength] = multicodecPrefixes[keyTypeFlag]
+  if (keyType === undefined) {
+    throw new SDKErrors.DidError(
+      `Cannot decode key type for multibase key "${publicKeyMultibase}".`
+    )
+  }
+  if (publicKey.length !== expectedPublicKeyLength) {
+    throw new SDKErrors.DidError(
+      `Key of type "${keyType}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${publicKey.length} bytes long instead.`
+    )
+  }
+  return {
+    keyType,
+    publicKey,
+  }
+}
+
+/**
+ * Calculate the multibase, multicodec representation of a keypair given its type and public key.
+ *
+ * @param keypair The input keypair to encode as multibase, multicodec.
+ * @param keypair.type The keypair [[DidKeyType]].
+ * @param keypair.publicKey The keypair public key.
+ * @returns The multicodec, multibase encoding of the provided keypair.
+ */
+export function keypairToMultibaseKey({
+  type,
+  publicKey,
+}: Pick<KeyringPair, 'publicKey'> & {
+  type: DidKeyType
+}): VerificationMethod['publicKeyMultibase'] {
+  const multiCodecPublicKeyPrefix = multicodecReversePrefixes[type]
+  if (multiCodecPublicKeyPrefix === undefined) {
+    throw new SDKErrors.DidError(
+      `The provided key type "${type}" is not supported.`
+    )
+  }
+  const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
+  if (publicKey.length !== expectedPublicKeySize) {
+    throw new SDKErrors.DidError(
+      `Key of type "${type}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
+    )
+  }
+  const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
+  return Buffer.from(
+    multibaseEncode('base58btc', Buffer.from(multiCodecPublicKey))
+  ).toString() as `z${string}`
+}
+
+/**
+ * Export a DID key to a `MultiKey` verification method.
+ *
+ * @param controller The verification method controller's DID URI.
+ * @param id The verification method ID.
+ * @param key The DID key to export as a verification method.
+ * @param key.keyType The key type.
+ * @param key.publicKey The public component of the key.
+ * @returns The provided key encoded as a [[ DidDocumentV2.VerificationMethod]].
+ */
+export function didKeyToVerificationMethod(
+  controller: VerificationMethod['controller'],
+  id: VerificationMethod['id'],
+  { keyType, publicKey }: DecodedVerificationMethod
+): VerificationMethod {
+  const multiCodecPublicKeyPrefix = multicodecReversePrefixes[keyType]
+  if (multiCodecPublicKeyPrefix === undefined) {
+    throw new SDKErrors.DidError(
+      `Provided key type "${keyType}" not supported.`
+    )
+  }
+  const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
+  if (publicKey.length !== expectedPublicKeySize) {
+    throw new SDKErrors.DidError(
+      `Key of type "${keyType}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
+    )
+  }
+  const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
+  return {
+    controller,
+    id,
+    type: 'MultiKey',
+    publicKeyMultibase: Buffer.from(
+      multibaseEncode('base58btc', Buffer.from(multiCodecPublicKey))
+    ).toString() as `z${string}`,
+  }
+}
+
 /**
  * Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
  *
@@ -108,17 +231,6 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   return parse(didA).address === parse(didB).address
 }
-
-export type EncodedVerificationKey =
-  | { sr25519: Uint8Array }
-  | { ed25519: Uint8Array }
-  | { ecdsa: Uint8Array }
-
-export type EncodedEncryptionKey = { x25519: Uint8Array }
-
-export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
-
-export type EncodedSignature = EncodedVerificationKey
 
 /**
  * Checks that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
@@ -137,7 +249,7 @@ export function validateUri(
   const { address, fragment } = parse(input as DidUri)
 
   if (
-    fragment &&
+    fragment !== undefined &&
     (expectType === 'Did' ||
       // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
       (typeof expectType === 'boolean' && expectType === false))
@@ -147,7 +259,7 @@ export function validateUri(
     )
   }
 
-  if (!fragment && expectType === 'ResourceUri') {
+  if (fragment === undefined && expectType === 'ResourceUri') {
     throw new SDKErrors.DidError(
       'Expected a Kilt DidResourceUri (containing a #fragment) but got a DidUri'
     )
@@ -157,17 +269,16 @@ export function validateUri(
 }
 
 /**
- * Internal: derive the address part of the DID when it is created from authentication key.
+ * Internal: derive the address part of the DID when it is created from the provided authentication verification method.
  *
- * @param input The authentication key.
- * @param input.publicKey The public key.
- * @param input.type The type of the key.
+ * @param input The authentication verification method.
+ * @param input.publicKeyMultibase The `publicKeyMultibase` value of the verification method.
  * @returns The expected address of the DID.
  */
-export function getAddressByKey({
-  publicKey,
-  type,
-}: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
+export function getAddressFromVerificationMethod({
+  publicKeyMultibase,
+}: Pick<VerificationMethod, 'publicKeyMultibase'>): KiltAddress {
+  const { keyType: type, publicKey } = multibaseKeyToDidKey(publicKeyMultibase)
   if (type === 'ed25519' || type === 'sr25519') {
     return encodeAddress(publicKey, ss58Format)
   }
@@ -199,12 +310,12 @@ export function getFullDidUri(
 /**
  * Builds the URI of a full DID if it is created with the authentication key provided.
  *
- * @param key The key that will be used as DID authentication key.
+ * @param verificationMethod The DID verification method.
  * @returns The expected full DID URI.
  */
-export function getFullDidUriFromKey(
-  key: Pick<DidVerificationKey, 'publicKey' | 'type'>
+export function getFullDidUriFromVerificationMethod(
+  verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase'>
 ): DidUri {
-  const address = getAddressByKey(key)
+  const address = getAddressFromVerificationMethod(verificationMethod)
   return getFullDidUri(address)
 }

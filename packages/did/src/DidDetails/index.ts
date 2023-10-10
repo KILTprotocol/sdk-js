@@ -5,6 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DidDetails.js'
+// We don't export the `add*VerificationMethod` functions, they are meant to be used internally
+export {
+  BaseNewDidKey,
+  DidEncryptionKeyType,
+  DidKeyType,
+  DidVerificationKeyType,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+  NewVerificationMethod,
+} from './DidDetails.js'
 export * from './LightDidDetails.js'
 export * from './FullDidDetails.js'

@@ -10,18 +10,9 @@
  */
 
 export * from './DidDetails/index.js'
-export * from './DidDocumentExporter/index.js'
-export * from './DidResolver/index.js'
+export * from './DidResolver/DidResolver.js'
 export * from './Did.chain.js'
 export * from './Did.rpc.js'
 export * from './Did.utils.js'
 export * from './Did.signature.js'
 export * from './DidLinks/AccountLinks.chain.js'
-
-export * as DidDetailsV2 from './DidDetailsv2/index.js'
-export * as DidResolverV2 from './DidResolver/DidResolverV2.js'
-export * as DidChainV2 from './Did2.chain.js'
-export * as DidUtilsV2 from './Did2.utils.js'
-export * as DidSignatureV2 from './Did2.signature.js'
-export * as DidRpc2 from './Did2.rpc.js'
-export * as DidLinksV2 from './DidLinks/AccountLinks2.chain.js'

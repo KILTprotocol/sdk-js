@@ -7,51 +7,117 @@
 
 import type {
   DidDocument,
-  DidKey,
-  DidServiceEndpoint,
+  Service,
+  UriFragment,
+  VerificationMethod,
+  VerificationMethodRelationship,
 } from '@kiltprotocol/types'
 
+import { didKeyToVerificationMethod } from '../Did.utils.js'
+
 /**
- * Gets all public keys associated with this DID.
- *
- * @param did The DID data.
- * @returns Array of public keys.
+ * Possible types for a DID verification key.
  */
-export function getKeys(
-  did: Partial<DidDocument> & Pick<DidDocument, 'authentication'>
-): DidKey[] {
-  return [
-    ...did.authentication,
-    ...(did.assertionMethod || []),
-    ...(did.capabilityDelegation || []),
-    ...(did.keyAgreement || []),
-  ]
+const verificationKeyTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
+export const verificationKeyTypes = verificationKeyTypesC as unknown as string[]
+export type DidVerificationKeyType = typeof verificationKeyTypesC[number]
+// `as unknown as string[]` is a workaround for https://github.com/microsoft/TypeScript/issues/26255
+
+export function isValidVerificationKeyType(
+  input: string
+): input is DidVerificationKeyType {
+  return verificationKeyTypes.includes(input)
 }
 
 /**
- * Returns a key with a given id, if associated with this DID.
- *
- * @param did The DID data.
- * @param id Key id (not the full key uri).
- * @returns The respective public key data or undefined.
+ * Possible types for a DID encryption key.
  */
-export function getKey(
-  did: Partial<DidDocument> & Pick<DidDocument, 'authentication'>,
-  id: DidKey['id']
-): DidKey | undefined {
-  return getKeys(did).find((key) => key.id === id)
+const encryptionKeyTypesC = ['x25519'] as const
+export const encryptionKeyTypes = encryptionKeyTypesC as unknown as string[]
+export type DidEncryptionKeyType = typeof encryptionKeyTypesC[number]
+
+export function isValidEncryptionKeyType(
+  input: string
+): input is DidEncryptionKeyType {
+  return encryptionKeyTypes.includes(input)
+}
+
+export type DidKeyType = DidVerificationKeyType | DidEncryptionKeyType
+
+export function isValidDidKeyType(input: string): input is DidKeyType {
+  return isValidVerificationKeyType(input) || isValidEncryptionKeyType(input)
+}
+
+export type NewVerificationMethod = Omit<VerificationMethod, 'controller'>
+export type NewService = Service
+
+/**
+ * Type of a new key material to add under a DID.
+ */
+export type BaseNewDidKey = {
+  publicKey: Uint8Array
+  type: string
 }
 
 /**
- * Returns a service endpoint with a given id, if associated with this DID.
- *
- * @param did The DID data.
- * @param id Endpoint id (not the full endpoint uri).
- * @returns The respective endpoint data or undefined.
+ * Type of a new verification key to add under a DID.
  */
-export function getService(
-  did: Pick<DidDocument, 'service'>,
-  id: DidServiceEndpoint['id']
-): DidServiceEndpoint | undefined {
-  return did.service?.find((endpoint) => endpoint.id === id)
+export type NewDidVerificationKey = BaseNewDidKey & {
+  type: DidVerificationKeyType
+}
+
+/**
+ * Type of a new encryption key to add under a DID.
+ */
+export type NewDidEncryptionKey = BaseNewDidKey & {
+  type: DidEncryptionKeyType
+}
+
+function doesVerificationMethodExist(
+  didDocument: DidDocument,
+  { id }: Pick<VerificationMethod, 'id'>
+): boolean {
+  return (
+    didDocument.verificationMethod?.find((vm) => vm.id === id) !== undefined
+  )
+}
+
+function addVerificationMethod(
+  didDocument: DidDocument,
+  verificationMethod: VerificationMethod,
+  relationship: VerificationMethodRelationship
+): void {
+  const existingRelationship = didDocument[relationship] ?? []
+  existingRelationship.push(verificationMethod.id)
+  // eslint-disable-next-line no-param-reassign
+  didDocument[relationship] = existingRelationship
+  if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
+    const existingVerificationMethod = didDocument.verificationMethod ?? []
+    existingVerificationMethod.push(verificationMethod)
+    // eslint-disable-next-line no-param-reassign
+    didDocument.verificationMethod = existingVerificationMethod
+  }
+}
+
+/**
+ * Add the provided keypair as a new verification method to the DID Document.
+ * !!! This function is meant to be used internally and not exposed since it is mostly used as a utility and does not perform extensive checks on the inputs.
+ *
+ * @param didDocument The DID Document to add the verification method to.
+ * @param newKeypair The new keypair to add as a verification method.
+ * @param newKeypair.id The ID of the new verification method. If a verification method with the same ID already exists, this operation is a no-op.
+ * @param newKeypair.publicKey The public key of the keypair.
+ * @param newKeypair.type The type of the public key.
+ * @param relationship The verification relationship to add the verification method to.
+ */
+export function addKeypairAsVerificationMethod(
+  didDocument: DidDocument,
+  { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
+  relationship: VerificationMethodRelationship
+): void {
+  const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
+    keyType: keyType as DidKeyType,
+    publicKey,
+  })
+  addVerificationMethod(didDocument, verificationMethod, relationship)
 }

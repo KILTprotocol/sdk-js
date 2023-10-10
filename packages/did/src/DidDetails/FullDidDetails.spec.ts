@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { BN } from '@polkadot/util'
-import { randomAsHex } from '@polkadot/util-crypto'
-
-import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDocument,
   KiltKeyringPair,
@@ -16,19 +12,22 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import {
-  ApiMocks,
-  createLocalDemoFullDidFromKeypair,
-  makeSigningKeyTool,
-} from '../../../../tests/testUtils'
+import { BN } from '@polkadot/util'
+import { randomAsHex } from '@polkadot/util-crypto'
+import { ConfigService } from '@kiltprotocol/config'
+
+import { ApiMocks, TestUtilsV2 } from '../../../../tests/testUtils'
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
-import * as Did from './index.js'
+import {
+  authorizeBatch,
+  getVerificationMethodRelationshipForTx,
+} from './FullDidDetails.js'
 
 const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })
 
-jest.mock('../Did.chain')
+jest.mock('../Did2.chain')
 jest
   .mocked(generateDidAuthenticatedTx)
   .mockResolvedValue({} as SubmittableExtrinsic)
@@ -46,9 +45,11 @@ describe('When creating an instance from the chain', () => {
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      const keyTool = makeSigningKeyTool()
+      const keyTool = TestUtilsV2.makeSigningKeyTool()
       keypair = keyTool.keypair
-      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
+      fullDid = await TestUtilsV2.createLocalDemoFullDidFromKeypair(
+        keyTool.keypair
+      )
       sign = keyTool.getSignCallback(fullDid)
     })
 
@@ -56,8 +57,8 @@ describe('When creating an instance from the chain', () => {
       it('fails if the extrinsic does not require a DID', async () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
-          Did.authorizeBatch({
-            did: fullDid.uri,
+          authorizeBatch({
+            did: fullDid.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
@@ -74,8 +75,8 @@ describe('When creating an instance from the chain', () => {
         ])
         const batchFunction =
           jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
-        await Did.authorizeBatch({
-          did: fullDid.uri,
+        await authorizeBatch({
+          did: fullDid.id,
           batchFunction,
           extrinsics: [extrinsic, extrinsic],
           sign,
@@ -111,8 +112,8 @@ describe('When creating an instance from the chain', () => {
           ctype3Extrinsic,
           ctype4Extrinsic,
         ]
-        await Did.authorizeBatch({
-          did: fullDid.uri,
+        await authorizeBatch({
+          did: fullDid.id,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
@@ -139,8 +140,8 @@ describe('When creating an instance from the chain', () => {
     describe('.build()', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
-          Did.authorizeBatch({
-            did: fullDid.uri,
+          authorizeBatch({
+            did: fullDid.id,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
             sign,
@@ -164,13 +165,13 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 describe('When creating an instance from the chain', () => {
   it('Should return correct KeyRelationship for single valid call', () => {
-    const keyRelationship = Did.getKeyRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
     )
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batched call', () => {
-    const keyRelationship = Did.getKeyRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.batch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -187,7 +188,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batchAll call', () => {
-    const keyRelationship = Did.getKeyRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.batchAll([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -204,7 +205,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for forceBatch call', () => {
-    const keyRelationship = Did.getKeyRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -221,7 +222,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return undefined for batch with mixed KeyRelationship calls', () => {
-    const keyRelationship = Did.getKeyRelationshipForTx(
+    const keyRelationship = getVerificationMethodRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),

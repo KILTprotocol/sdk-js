@@ -5,10 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
+import type { DidDocument, DidUri } from '@kiltprotocol/types'
+
 import { Crypto } from '@kiltprotocol/utils'
 
-import * as Did from '../index.js'
+import type { NewService } from './DidDetails.js'
+import type { CreateDocumentInput } from './LightDidDetails.js'
+
+import { keypairToMultibaseKey, parse } from '../Did.utils.js'
+import {
+  createLightDidDocument,
+  parseDocumentFromLightDid,
+} from './LightDidDetails.js'
 
 /*
  * Functions tested:
@@ -26,7 +34,7 @@ describe('When creating an instance from the details', () => {
     const encKey = Crypto.makeEncryptionKeypairFromSeed(
       new Uint8Array(32).fill(1)
     )
-    const service: DidServiceEndpoint[] = [
+    const service: NewService[] = [
       {
         id: '#service-1',
         type: ['type-1'],
@@ -39,26 +47,34 @@ describe('When creating an instance from the details', () => {
       },
     ]
 
-    const lightDid = Did.createLightDidDocument({
+    const lightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
     })
 
     expect(lightDid).toEqual(<DidDocument>{
-      uri: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-      authentication: [
+      id: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
+      authentication: ['#authentication'],
+      keyAgreement: ['#encryption'],
+      verificationMethod: [
         {
+          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
           id: '#authentication',
-          publicKey: authKey.publicKey,
-          type: 'sr25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: authKey.publicKey,
+            type: 'sr25519',
+          }),
+          type: 'MultiKey',
         },
-      ],
-      keyAgreement: [
         {
+          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
           id: '#encryption',
-          publicKey: encKey.publicKey,
-          type: 'x25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: encKey.publicKey,
+            type: 'x25519',
+          }),
+          type: 'MultiKey',
         },
       ],
       service: [
@@ -82,27 +98,35 @@ describe('When creating an instance from the details', () => {
       new Uint8Array(32).fill(1)
     )
 
-    const lightDid = Did.createLightDidDocument({
+    const lightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
     })
 
-    expect(Did.parse(lightDid.uri).address).toStrictEqual(authKey.address)
+    expect(parse(lightDid.id).address).toStrictEqual(authKey.address)
 
-    expect(lightDid).toEqual({
-      uri: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
-      authentication: [
+    expect(lightDid).toEqual(<DidDocument>{
+      id: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
+      authentication: ['#authentication'],
+      keyAgreement: ['#encryption'],
+      verificationMethod: [
         {
+          controller: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
           id: '#authentication',
-          publicKey: authKey.publicKey,
-          type: 'ed25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: authKey.publicKey,
+            type: 'ed25519',
+          }),
+          type: 'MultiKey',
         },
-      ],
-      keyAgreement: [
         {
+          controller: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
           id: '#encryption',
-          publicKey: encKey.publicKey,
-          type: 'x25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: encKey.publicKey,
+            type: 'x25519',
+          }),
+          type: 'MultiKey',
         },
       ],
     })
@@ -115,9 +139,7 @@ describe('When creating an instance from the details', () => {
       authentication: [authKey],
     }
     expect(() =>
-      Did.createLightDidDocument(
-        invalidInput as unknown as Did.CreateDocumentInput
-      )
+      createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
     ).toThrowError()
   })
 
@@ -130,9 +152,7 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
     expect(() =>
-      Did.createLightDidDocument(
-        invalidInput as unknown as Did.CreateDocumentInput
-      )
+      createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
     ).toThrowError()
   })
 })
@@ -143,7 +163,7 @@ describe('When creating an instance from a URI', () => {
     const encKey = Crypto.makeEncryptionKeypairFromSeed(
       new Uint8Array(32).fill(1)
     )
-    const endpoints: DidServiceEndpoint[] = [
+    const endpoints: NewService[] = [
       {
         id: '#service-1',
         type: ['type-1'],
@@ -156,30 +176,38 @@ describe('When creating an instance from a URI', () => {
       },
     ]
     // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument({
+    const expectedLightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service: endpoints,
     })
 
-    const { address } = Did.parse(expectedLightDid.uri)
-    const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.uri)
+    const { address } = parse(expectedLightDid.id)
+    const builtLightDid = parseDocumentFromLightDid(expectedLightDid.id)
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
     expect(builtLightDid).toStrictEqual(<DidDocument>{
-      uri: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7` as DidUri,
-      authentication: [
+      id: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
+      authentication: ['#authentication'],
+      keyAgreement: ['#encryption'],
+      verificationMethod: [
         {
+          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
           id: '#authentication',
-          publicKey: authKey.publicKey,
-          type: 'sr25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: authKey.publicKey,
+            type: 'sr25519',
+          }),
+          type: 'MultiKey',
         },
-      ],
-      keyAgreement: [
         {
+          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
           id: '#encryption',
-          publicKey: encKey.publicKey,
-          type: 'x25519',
+          publicKeyMultibase: keypairToMultibaseKey({
+            publicKey: encKey.publicKey,
+            type: 'x25519',
+          }),
+          type: 'MultiKey',
         },
       ],
       service: [
@@ -200,7 +228,7 @@ describe('When creating an instance from a URI', () => {
   it('fail if a fragment is present according to the options', () => {
     const authKey = Crypto.makeKeypairFromSeed()
     const encKey = Crypto.makeEncryptionKeypairFromSeed()
-    const service: DidServiceEndpoint[] = [
+    const service: NewService[] = [
       {
         id: '#service-1',
         type: ['type-1'],
@@ -214,17 +242,17 @@ describe('When creating an instance from a URI', () => {
     ]
 
     // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument({
+    const expectedLightDid = createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
     })
 
-    const uriWithFragment: DidUri = `${expectedLightDid.uri}#authentication`
+    const uriWithFragment: DidUri = `${expectedLightDid.id}#authentication`
 
-    expect(() => Did.parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
+    expect(() => parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
     expect(() =>
-      Did.parseDocumentFromLightDid(uriWithFragment, false)
+      parseDocumentFromLightDid(uriWithFragment, false)
     ).not.toThrow()
   })
 
@@ -244,7 +272,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
-      expect(() => Did.parseDocumentFromLightDid(uri as DidUri)).toThrow()
+      expect(() => parseDocumentFromLightDid(uri as DidUri)).toThrow()
     })
   })
 })
