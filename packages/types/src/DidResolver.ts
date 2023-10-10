@@ -12,6 +12,7 @@ import type {
   VerificationMethod,
   Service,
   JsonLd,
+  VerificationMethodRelationship,
 } from './DidDocument'
 
 /*
@@ -170,6 +171,16 @@ export type DereferenceOptions<Accept extends string> = {
   accept?: Accept
 }
 
+export type SignatureVerificationRelationship =
+  | 'authentication'
+  | 'capabilityDelegation'
+  | 'assertionMethod'
+export type EncryptionRelationship = 'keyAgreement'
+
+export type VerificationRelationship =
+  | SignatureVerificationRelationship
+  | EncryptionRelationship
+
 export type SuccessfulDereferenceMetadata<ContentType extends string> = {
   /*
    * The Media Type of the returned contentStream SHOULD be expressed using this property if dereferencing is successful.
@@ -204,7 +215,14 @@ export type DereferenceContentStream =
   | JsonLd<Service>
   | Buffer
 
-export type DereferenceContentMetadata = ResolutionDocumentMetadata
+export type DereferenceContentMetadata = ResolutionDocumentMetadata & {
+  /*
+   * NOT YET DRAFTED. DRAFTING WORK WILL START SOON.
+   * This field is optional and is set only if the dereferenced object is a verification method and it belongs to one of the verification methods of the DID Document.
+   * This field is empty if the dereferenced object is a full DID Document or a service, or if the dereferences verification method is not linked to the DID Document by any specific relationship.
+   */
+  verificationRelationship?: VerificationRelationship[]
+}
 
 export type DereferenceResult<ContentType extends string> = {
   /*

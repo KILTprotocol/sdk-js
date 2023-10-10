@@ -19,6 +19,7 @@ import type {
   ResolutionDocumentMetadata,
   ResolutionOptions,
   ResolutionResult,
+  VerificationMethodRelationship,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
@@ -228,21 +229,50 @@ async function dereferenceInternal(
       contentMetadata: didDocumentMetadata,
     }
   }
-  const dereferencedResource = (() => {
+  // Return the dereferenced resource and its set of relationships with the controlling DID Document.
+  const [dereferencedResource, verificationRelationship] = (() => {
     const verificationMethod = didDocument?.verificationMethod?.find(
-      (vm) => vm.id === fragment
+      (vm) => vm.controller === didDocument.id && vm.id === fragment
     )
     if (verificationMethod !== undefined) {
-      return verificationMethod
+      const verificationRelationships: VerificationMethodRelationship[] = []
+      if (
+        didDocument?.authentication?.find((a) => a === verificationMethod.id)
+      ) {
+        verificationRelationships.push('authentication')
+      }
+      if (
+        didDocument?.assertionMethod?.find((a) => a === verificationMethod.id)
+      ) {
+        verificationRelationships.push('assertionMethod')
+      }
+      if (
+        didDocument?.capabilityDelegation?.find(
+          (a) => a === verificationMethod.id
+        )
+      ) {
+        verificationRelationships.push('capabilityDelegation')
+      }
+      if (didDocument?.keyAgreement?.find((a) => a === verificationMethod.id)) {
+        verificationRelationships.push('keyAgreement')
+      }
+      return [
+        verificationMethod,
+        verificationRelationships.length > 0
+          ? verificationRelationships
+          : undefined,
+      ]
     }
 
     const service = didDocument?.service?.find((s) => s.id === fragment)
-    return service
+    return [service, undefined]
   })()
 
   return {
     contentStream: dereferencedResource,
-    contentMetadata: {},
+    contentMetadata: {
+      verificationRelationship,
+    },
   }
 }
 
