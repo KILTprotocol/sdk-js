@@ -19,7 +19,7 @@ import type {
   ResolutionDocumentMetadata,
   ResolutionOptions,
   ResolutionResult,
-  VerificationMethodRelationship,
+  VerificationRelationship,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
@@ -235,7 +235,7 @@ async function dereferenceInternal(
       (vm) => vm.controller === didDocument.id && vm.id === fragment
     )
     if (verificationMethod !== undefined) {
-      const verificationRelationships: VerificationMethodRelationship[] = []
+      const verificationRelationships: VerificationRelationship[] = []
       if (
         didDocument?.authentication?.find((a) => a === verificationMethod.id)
       ) {

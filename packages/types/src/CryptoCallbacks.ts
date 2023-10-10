@@ -7,7 +7,7 @@
 
 import type {
   DidUri,
-  SignatureVerificationMethodRelationship,
+  SignatureVerificationRelationship,
   VerificationMethod,
 } from './DidDocument'
 
@@ -23,7 +23,7 @@ export interface SignRequestData {
   /**
    * The did key relationship to be used.
    */
-  verificationMethodRelationship: SignatureVerificationMethodRelationship
+  verificationMethodRelationship: SignatureVerificationRelationship
 
   /**
    * The DID to be used for signing.

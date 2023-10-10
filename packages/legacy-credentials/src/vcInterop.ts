@@ -167,7 +167,7 @@ export function fromVC(input: Types.KiltCredentialV1): ICredential {
   )
   const legitimations = (legitimationVcs ?? []).map(
     ({ id, verifiableCredential }) =>
-      verifiableCredential
+      verifiableCredential !== undefined
         ? fromVC(verifiableCredential)
         : ({
             rootHash: u8aToHex(KiltCredentialV1.idToRootHash(id)),

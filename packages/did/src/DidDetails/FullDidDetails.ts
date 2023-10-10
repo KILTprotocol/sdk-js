@@ -10,7 +10,7 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import type {
   DidUri,
   KiltAddress,
-  SignatureVerificationMethodRelationship,
+  SignatureVerificationRelationship,
   SignExtrinsicCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -32,7 +32,7 @@ import {
 // TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
 const methodMapping: Record<
   string,
-  SignatureVerificationMethodRelationship | undefined
+  SignatureVerificationRelationship | undefined
 > = {
   attestation: 'assertionMethod',
   ctype: 'assertionMethod',
@@ -48,7 +48,7 @@ const methodMapping: Record<
 
 function getVerificationMethodRelationshipForRuntimeCall(
   call: Extrinsic['method']
-): SignatureVerificationMethodRelationship | undefined {
+): SignatureVerificationRelationship | undefined {
   const { section, method } = call
 
   // get the VerificationKeyRelationship of a batched call
@@ -79,7 +79,7 @@ function getVerificationMethodRelationshipForRuntimeCall(
  */
 export function getVerificationMethodRelationshipForTx(
   extrinsic: Extrinsic
-): SignatureVerificationMethodRelationship | undefined {
+): SignatureVerificationRelationship | undefined {
   return getVerificationMethodRelationshipForRuntimeCall(extrinsic.method)
 }
 
@@ -156,7 +156,7 @@ export async function authorizeTx(
 
 type GroupedExtrinsics = Array<{
   extrinsics: Extrinsic[]
-  verificationMethodRelationship: SignatureVerificationMethodRelationship
+  verificationMethodRelationship: SignatureVerificationRelationship
 }>
 
 function groupExtrinsicsByKeyRelationship(

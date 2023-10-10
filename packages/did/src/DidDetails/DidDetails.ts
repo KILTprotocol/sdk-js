@@ -10,7 +10,7 @@ import type {
   Service,
   UriFragment,
   VerificationMethod,
-  VerificationMethodRelationship,
+  VerificationRelationship,
 } from '@kiltprotocol/types'
 
 import { didKeyToVerificationMethod } from '../Did.utils.js'
@@ -85,7 +85,7 @@ function doesVerificationMethodExist(
 function addVerificationMethod(
   didDocument: DidDocument,
   verificationMethod: VerificationMethod,
-  relationship: VerificationMethodRelationship
+  relationship: VerificationRelationship
 ): void {
   const existingRelationship = didDocument[relationship] ?? []
   existingRelationship.push(verificationMethod.id)
@@ -113,7 +113,7 @@ function addVerificationMethod(
 export function addKeypairAsVerificationMethod(
   didDocument: DidDocument,
   { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
-  relationship: VerificationMethodRelationship
+  relationship: VerificationRelationship
 ): void {
   const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
     keyType: keyType as DidKeyType,

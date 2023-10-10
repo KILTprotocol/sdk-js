@@ -22,7 +22,7 @@ import type {
   DidUri,
   KiltAddress,
   Service,
-  SignatureVerificationMethodRelationship,
+  SignatureVerificationRelationship,
   SignExtrinsicCallback,
   SignRequestData,
   SignResponseData,
@@ -606,7 +606,7 @@ export async function getStoreTxFromDidDocument(
 
 export interface SigningOptions {
   sign: SignExtrinsicCallback
-  verificationMethodRelationship: SignatureVerificationMethodRelationship
+  verificationMethodRelationship: SignatureVerificationRelationship
 }
 
 /**

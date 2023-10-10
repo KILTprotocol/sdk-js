@@ -27,15 +27,15 @@ export type UriFragment = `#${string}`
  */
 export type DidUrl = `${DidUri}${UriFragment}`
 
-export type SignatureVerificationMethodRelationship =
+export type SignatureVerificationRelationship =
   | 'authentication'
   | 'capabilityDelegation'
   | 'assertionMethod'
-export type EncryptionMethodRelationship = 'keyAgreement'
+export type EncryptionRelationship = 'keyAgreement'
 
-export type VerificationMethodRelationship =
-  | SignatureVerificationMethodRelationship
-  | EncryptionMethodRelationship
+export type VerificationRelationship =
+  | SignatureVerificationRelationship
+  | EncryptionRelationship
 
 type Base58BtcMultibaseString = `z${string}`
 

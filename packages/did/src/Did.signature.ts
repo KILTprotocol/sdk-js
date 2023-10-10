@@ -9,7 +9,7 @@ import type {
   DereferenceDidUrl,
   DidUri,
   DidUrl,
-  SignatureVerificationMethodRelationship,
+  SignatureVerificationRelationship,
   SignResponseData,
   VerificationMethod,
 } from '@kiltprotocol/types'
@@ -26,7 +26,7 @@ export type DidSignatureVerificationInput = {
   signerUrl: DidUrl
   expectedSigner?: DidUri
   allowUpgraded?: boolean
-  expectedVerificationMethodRelationship?: SignatureVerificationMethodRelationship
+  expectedVerificationMethodRelationship?: SignatureVerificationRelationship
   dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
 }
 

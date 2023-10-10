@@ -12,7 +12,7 @@ import type {
   VerificationMethod,
   Service,
   JsonLd,
-  VerificationMethodRelationship,
+  VerificationRelationship,
 } from './DidDocument'
 
 /*
@@ -170,16 +170,6 @@ export type DereferenceOptions<Accept extends string> = {
    */
   accept?: Accept
 }
-
-export type SignatureVerificationRelationship =
-  | 'authentication'
-  | 'capabilityDelegation'
-  | 'assertionMethod'
-export type EncryptionRelationship = 'keyAgreement'
-
-export type VerificationRelationship =
-  | SignatureVerificationRelationship
-  | EncryptionRelationship
 
 export type SuccessfulDereferenceMetadata<ContentType extends string> = {
   /*

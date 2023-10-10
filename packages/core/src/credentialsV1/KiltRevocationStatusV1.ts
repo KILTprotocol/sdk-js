@@ -49,7 +49,7 @@ export async function check(
       `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
     )
   }
-  if (!assetInstance) {
+  if (assetInstance === undefined) {
     throw new SDKErrors.CredentialMalformedError(
       "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
     )
