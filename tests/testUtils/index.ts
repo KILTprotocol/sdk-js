@@ -7,5 +7,3 @@
 
 export * as ApiMocks from './mocks/index.js'
 export * from './TestUtils.js'
-
-export * as TestUtilsV2 from './TestUtils2.js'

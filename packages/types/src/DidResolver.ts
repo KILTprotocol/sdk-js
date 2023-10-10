@@ -254,6 +254,6 @@ export interface DereferenceDidUrl<Accept extends string> {
   ) => Promise<DereferenceResult<Accept>>
 }
 
-export interface DidResolver<Accept extends string>
+export interface DidResolver<Accept extends string = string>
   extends ResolveDid<Accept>,
     DereferenceDidUrl<Accept> {}

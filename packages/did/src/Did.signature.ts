@@ -185,9 +185,9 @@ export function signatureToJson({
 export function signatureFromJson(
   input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
 ): Pick<SignResponseData, 'signature'> & {
-  verificationMethodUri: DidUrl
+  signerUrl: DidUrl
 } {
-  const verificationMethodUri = (() => {
+  const signerUrl = (() => {
     if ('keyUri' in input) {
       return input.keyUri
     }
@@ -197,5 +197,5 @@ export function signatureFromJson(
     return input.signerUrl
   })()
   const signature = Crypto.coToUInt8(input.signature)
-  return { signature, verificationMethodUri }
+  return { signature, signerUrl }
 }
