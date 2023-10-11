@@ -16,7 +16,11 @@ import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { ApiMocks, TestUtilsV2 } from '../../../../tests/testUtils'
+import {
+  ApiMocks,
+  createLocalDemoFullDidFromKeypair,
+  makeSigningKeyTool,
+} from '../../../../tests/testUtils'
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
 import {
   authorizeBatch,
@@ -27,7 +31,7 @@ const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })
 
-jest.mock('../Did2.chain')
+jest.mock('../Did.chain')
 jest
   .mocked(generateDidAuthenticatedTx)
   .mockResolvedValue({} as SubmittableExtrinsic)
@@ -45,11 +49,9 @@ describe('When creating an instance from the chain', () => {
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      const keyTool = TestUtilsV2.makeSigningKeyTool()
+      const keyTool = makeSigningKeyTool()
       keypair = keyTool.keypair
-      fullDid = await TestUtilsV2.createLocalDemoFullDidFromKeypair(
-        keyTool.keypair
-      )
+      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
       sign = keyTool.getSignCallback(fullDid)
     })
 

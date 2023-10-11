@@ -19,28 +19,28 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import type { DidSignature } from './Did.signature'
 import type { NewLightDidVerificationKey } from './DidDetails'
 
-import { TestUtilsV2 } from '../../../tests/testUtils'
+import { makeSigningKeyTool } from '../../../tests/testUtils'
 import {
   isDidSignature,
   signatureFromJson,
   signatureToJson,
   verifyDidSignature,
 } from './Did.signature'
-import { resolve } from './DidResolver'
+import { dereference } from './DidResolver/DidResolver'
 import { keypairToMultibaseKey, multibaseKeyToDidKey, parse } from './Did.utils'
 import { createLightDidDocument } from './DidDetails'
 
-jest.mock('./DidResolver')
+jest.mock('./DidResolver/DidResolver')
 jest
-  .mocked(resolve)
-  .mockImplementation(jest.requireActual('./DidResolver').resolve)
+  .mocked(dereference)
+  .mockImplementation(jest.requireActual('./DidResolver').dereference)
 
 describe('light DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
   let sign: SignCallback
   beforeAll(() => {
-    const keyTool = TestUtilsV2.makeSigningKeyTool()
+    const keyTool = makeSigningKeyTool()
     keypair = keyTool.keypair
     did = createLightDidDocument({
       authentication: keyTool.authentication,
@@ -50,18 +50,32 @@ describe('light DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(resolve)
+      .mocked(dereference)
       .mockReset()
       .mockImplementation(async (didUrl) => {
-        const { address } = parse(didUrl)
-        if (address === keypair.address) {
+        const { address, queryParameters } = parse(didUrl)
+        if (
+          address === keypair.address &&
+          (queryParameters === undefined ||
+            queryParameters.requiredVerificationRelationship ===
+              'authentication')
+        ) {
           return {
-            didDocumentMetadata: {},
-            didResolutionMetadata: {},
-            didDocument: did,
+            contentMetadata: {},
+            dereferencingMetadata: {
+              contentType: 'application/did+json',
+            },
+            contentStream: did.verificationMethod?.find(
+              ({ id }) => id === did.authentication![0]
+            ),
           }
         }
-        return Promise.reject()
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: {
+            error: 'notFound',
+          },
+        }
       })
   })
 
@@ -99,7 +113,7 @@ describe('light DID', () => {
 
     const deserialized = signatureFromJson(oldSignature)
     expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.verificationMethodUri).toStrictEqual(signerUrl)
+    expect(deserialized.signerUrl).toStrictEqual(signerUrl)
     expect(deserialized).not.toHaveProperty('keyId')
   })
 
@@ -146,7 +160,10 @@ describe('light DID', () => {
       verificationMethodRelationship: 'authentication',
     })
     const wrongVerificationMethodId = `${verificationMethod.id}1a`
-    jest.mocked(resolve).mockRejectedValue(new Error('DID not found'))
+    jest.mocked(dereference).mockResolvedValue({
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'notFound' },
+    })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -175,7 +192,7 @@ describe('light DID', () => {
   })
 
   it('fails if key id malformed', async () => {
-    jest.mocked(resolve).mockRestore()
+    jest.mocked(dereference).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
     let { signature, verificationMethod } = await sign({
@@ -188,15 +205,19 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl:
-          `${did.id}${malformedVerificationId}` as DidUrl,
+        signerUrl: `${did.id}${malformedVerificationId}` as DidUrl,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).rejects.toThrow()
   })
 
   it('does not verify if migrated to Full DID', async () => {
-    jest.mocked(resolve).mockRejectedValue(new Error('Migrated'))
+    jest.mocked(dereference).mockResolvedValue({
+      contentMetadata: {
+        canonicalId: did.id,
+      },
+      dereferencingMetadata: { contentType: 'application/did+json' },
+    })
     const SIGNED_STRING = 'signed string'
     const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
@@ -230,7 +251,7 @@ describe('light DID', () => {
     })
 
     const expectedSigner = createLightDidDocument({
-      authentication: TestUtilsV2.makeSigningKeyTool().authentication,
+      authentication: makeSigningKeyTool().authentication,
     }).id
 
     await expect(
@@ -316,18 +337,32 @@ describe('full DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(resolve)
+      .mocked(dereference)
       .mockReset()
-      .mockImplementation(async (didUri) => {
-        const { address } = parse(didUri)
-        if (address === keypair.address) {
+      .mockImplementation(async (didUrl) => {
+        const { address, queryParameters } = parse(didUrl)
+        if (
+          address === keypair.address &&
+          (queryParameters === undefined ||
+            queryParameters.requiredVerificationRelationship ===
+              'authentication')
+        ) {
           return {
-            didDocumentMetadata: {},
-            didResolutionMetadata: {},
-            didDocument: did,
+            contentMetadata: {},
+            dereferencingMetadata: {
+              contentType: 'application/did+json',
+            },
+            contentStream: did.verificationMethod?.find(
+              ({ id }) => id === did.authentication![0]
+            ),
           }
         }
-        return Promise.reject()
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: {
+            error: 'notFound',
+          },
+        }
       })
   })
 
@@ -366,7 +401,10 @@ describe('full DID', () => {
   })
 
   it('does not verify if deactivated', async () => {
-    jest.mocked(resolve).mockRejectedValue(new Error('Deactivated'))
+    jest.mocked(dereference).mockResolvedValue({
+      contentMetadata: { deactivated: true },
+      dereferencingMetadata: { contentType: 'application/did+json' },
+    })
     const SIGNED_STRING = 'signed string'
     const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
@@ -384,7 +422,10 @@ describe('full DID', () => {
   })
 
   it('does not verify if not on chain', async () => {
-    jest.mocked(resolve).mockRejectedValue(new Error('Not on chain'))
+    jest.mocked(dereference).mockResolvedValue({
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'notFound' },
+    })
     const SIGNED_STRING = 'signed string'
     const { signature, verificationMethod } = await sign({
       data: Crypto.coToUInt8(SIGNED_STRING),

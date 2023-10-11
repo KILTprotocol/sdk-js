@@ -59,7 +59,7 @@ import { makeFakeDid } from './Sr25519Signature2020.spec'
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
-  resolveCompliant: jest.fn(),
+  resolve: jest.fn(),
   authorizeTx: jest.fn(),
 }))
 

@@ -62,8 +62,8 @@ function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
   const urlified = new URL(didUri)
   const params: Record<string, string> = {}
   urlified.searchParams.forEach((value, key) => {
-    if (params[value] === undefined) {
-      params[value] = key
+    if (params[key] === undefined) {
+      params[key] = value
     }
   })
   return params
@@ -86,7 +86,8 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
       : FULL_DID_LATEST_VERSION
     const queryParameters = (() => {
       try {
-        return exportQueryParamsFromUri(didUri as DidUrl)
+        const queryParams = exportQueryParamsFromUri(didUri as DidUrl)
+        return Object.keys(queryParams).length > 0 ? queryParams : undefined
       } catch {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
@@ -116,7 +117,8 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
       : LIGHT_DID_LATEST_VERSION
     const queryParameters = (() => {
       try {
-        return exportQueryParamsFromUri(didUri as DidUrl)
+        const queryParams = exportQueryParamsFromUri(didUri as DidUrl)
+        return Object.keys(queryParams).length > 0 ? queryParams : undefined
       } catch {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }

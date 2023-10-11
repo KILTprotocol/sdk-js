@@ -6,9 +6,9 @@
  */
 
 import type {
-  DereferenceDidUrl,
   DidUri,
   DidUrl,
+  ResolveDid,
   SignatureVerificationRelationship,
   SignResponseData,
   VerificationMethod,
@@ -18,7 +18,7 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 
 import { multibaseKeyToDidKey, parse, validateUri } from './Did.utils.js'
-import { dereference } from './DidResolver/DidResolver.js'
+import { resolve } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
@@ -27,7 +27,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: DidUri
   allowUpgraded?: boolean
   expectedVerificationMethodRelationship?: SignatureVerificationRelationship
-  dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
+  resolveDid?: ResolveDid<string>['resolve']
 }
 
 export type DidSignature = {
@@ -77,7 +77,7 @@ function verifyDidSignatureDataStructure(
  * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
- * @param input.dereferenceDidUrl Allows specifying a custom DID dereference. Defaults to the built-in [[dereferenceDidUrl]].
+ * @param input.resolveDid Allows specifying a custom DID resolver. Defaults to the built-in [[resolve]].
  */
 export async function verifyDidSignature({
   message,
@@ -86,7 +86,7 @@ export async function verifyDidSignature({
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationMethodRelationship,
-  dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
+  resolveDid = resolve,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
   const signer = parse(signerUrl)
