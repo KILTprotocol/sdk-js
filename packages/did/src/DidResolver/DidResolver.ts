@@ -14,6 +14,7 @@ import type {
   DidResolver,
   DidUri,
   DidUrl,
+  FailedDereferenceMetadata,
   JsonLd,
   RepresentationResolutionResult,
   ResolutionDocumentMetadata,
@@ -30,6 +31,7 @@ import { linkedInfoFromChain } from '../Did.rpc.js'
 import { toChain } from '../Did.chain.js'
 import { getFullDidUri, parse, validateUri } from '../Did.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
+import { isValidVerificationRelationship } from '../DidDetails/DidDetails.js'
 
 const DID_JSON = 'application/did+json'
 const DID_JSON_LD = 'application/did+ld+json'
@@ -121,7 +123,7 @@ export async function resolve(
   resolutionOptions: ResolutionOptions = {}
 ): Promise<ResolutionResult> {
   try {
-    validateUri(did, 'Did')
+    validateUri(did, 'Uri')
   } catch (error) {
     return {
       didResolutionMetadata: {
@@ -209,9 +211,17 @@ export async function resolveRepresentation(
   } as RepresentationResolutionResult<SupportedContentType>
 }
 
-type InternalDereferenceResult = {
-  contentStream?: DereferenceContentStream
-  contentMetadata: DereferenceContentMetadata
+type InternalDereferenceResult =
+  | FailedDereferenceMetadata
+  | {
+      contentMetadata: DereferenceContentMetadata
+      contentStream: DereferenceContentStream
+    }
+
+function isFailedDereferenceMetadata(
+  input: InternalDereferenceResult
+): input is FailedDereferenceMetadata {
+  return (input as FailedDereferenceMetadata)?.error !== undefined
 }
 
 async function dereferenceInternal(
@@ -219,60 +229,82 @@ async function dereferenceInternal(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dereferenceOptions: DereferenceOptions<SupportedContentType>
 ): Promise<InternalDereferenceResult> {
-  const { did, fragment } = parse(didUrl)
+  const { did, queryParameters, fragment } = parse(didUrl)
 
   const { didDocument, didDocumentMetadata } = await resolve(did)
 
-  if (fragment === undefined) {
+  if (didDocument === undefined) {
     return {
-      contentStream: didDocument,
-      contentMetadata: didDocumentMetadata,
+      error: 'notFound',
     }
   }
-  // Return the dereferenced resource and its set of relationships with the controlling DID Document.
-  const [dereferencedResource, verificationRelationship] = (() => {
+
+  if (fragment === undefined) {
+    return {
+      contentMetadata: didDocumentMetadata,
+      contentStream: didDocument,
+    }
+  }
+
+  const [dereferencedResource, dereferencingError] = (() => {
     const verificationMethod = didDocument?.verificationMethod?.find(
-      (vm) => vm.controller === didDocument.id && vm.id === fragment
+      ({ controller, id }) => controller === didDocument.id && id === fragment
     )
+
     if (verificationMethod !== undefined) {
-      const verificationRelationships: VerificationRelationship[] = []
-      if (
-        didDocument?.authentication?.find((a) => a === verificationMethod.id)
-      ) {
-        verificationRelationships.push('authentication')
+      const requiredVerificationRelationship =
+        queryParameters?.requiredVerificationRelationship
+
+      // If a verification method is found and no filter is applied, return the retrieved verification method.
+      if (requiredVerificationRelationship === undefined) {
+        return [verificationMethod, null]
       }
-      if (
-        didDocument?.assertionMethod?.find((a) => a === verificationMethod.id)
-      ) {
-        verificationRelationships.push('assertionMethod')
+      // If a verification method is found and the applied filter is invalid, return the dereferencing error.
+      if (!isValidVerificationRelationship(requiredVerificationRelationship)) {
+        return [
+          null,
+          {
+            error: 'invalidVerificationRelationship',
+          } as FailedDereferenceMetadata,
+        ]
       }
+      // If a verification method is found and it matches the applied filter, return the retrieved verification method.
       if (
-        didDocument?.capabilityDelegation?.find(
-          (a) => a === verificationMethod.id
+        didDocument[requiredVerificationRelationship]?.includes(
+          verificationMethod.id
         )
       ) {
-        verificationRelationships.push('capabilityDelegation')
+        return [verificationMethod, null]
       }
-      if (didDocument?.keyAgreement?.find((a) => a === verificationMethod.id)) {
-        verificationRelationships.push('keyAgreement')
-      }
+      // Finally, if the above condition fails and the verification method does not pass the applied filter, the `notFound` error is returned.
       return [
-        verificationMethod,
-        verificationRelationships.length > 0
-          ? verificationRelationships
-          : undefined,
+        null,
+        {
+          error: 'notFound',
+        } as FailedDereferenceMetadata,
       ]
     }
 
+    // If no verification method is found, try to retrieve a service with the provided ID, ignoring any query parameters.
     const service = didDocument?.service?.find((s) => s.id === fragment)
-    return [service, undefined]
+    if (service === undefined) {
+      return [
+        null,
+        {
+          error: 'notFound',
+        } as FailedDereferenceMetadata,
+      ]
+    }
+    return [service, null]
   })()
+
+  if (dereferencingError !== null) {
+    return dereferencingError
+  }
 
   return {
     contentStream: dereferencedResource,
-    contentMetadata: {
-      verificationRelationships: verificationRelationship,
-    },
+    contentMetadata: {},
   }
 }
 
@@ -306,40 +338,36 @@ export async function dereference(
     }
   }
 
-  const resolutionResult = await dereferenceInternal(didUrl, {
+  const dereferenceResult = await dereferenceInternal(didUrl, {
     accept: contentType,
   })
 
-  const { contentMetadata, contentStream } = resolutionResult
-
-  if (contentStream === undefined) {
+  if (isFailedDereferenceMetadata(dereferenceResult)) {
     return {
-      dereferencingMetadata: {
-        error: 'notFound',
-      },
-      contentMetadata,
+      contentMetadata: {},
+      dereferencingMetadata: dereferenceResult,
     }
   }
 
   const stream = (() => {
     if (contentType === 'application/did+json') {
-      return contentStream
+      return dereferenceResult.contentStream
     }
     if (contentType === 'application/did+ld+json') {
       return {
-        ...contentStream,
+        ...dereferenceResult.contentStream,
         '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
       }
     }
     // contentType === 'application/did+cbor'
-    return Buffer.from(cbor.encode(contentStream))
+    return Buffer.from(cbor.encode(dereferenceResult.contentStream))
   })()
 
   return {
     dereferencingMetadata: {
       contentType,
     },
-    contentMetadata,
+    contentMetadata: dereferenceResult.contentMetadata,
     contentStream: stream,
   }
 }

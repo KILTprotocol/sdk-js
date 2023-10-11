@@ -19,7 +19,8 @@ export type DidUri =
   | `did:kilt:light:${DidUriVersion}${AuthenticationKeyType}${KiltAddress}${LightDidEncodedData}`
 
 export type UriQuery = `${string}=${string}`
-type MAXIMUM_ALLOWED_BOUNDARY = 50
+// Only one query parameter is allowed
+type MAXIMUM_ALLOWED_BOUNDARY = 1
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow
 type Last<T extends string[]> = T extends [...infer _, infer Last]
   ? Last
@@ -35,7 +36,7 @@ type Mapped<
   ? Result
   : Mapped<N, [...Result, ConcatPrevious<Result>]>
 
-export type UriQueryParams = Mapped<MAXIMUM_ALLOWED_BOUNDARY>[number]
+export type UriQueryParams = `?${Mapped<MAXIMUM_ALLOWED_BOUNDARY>[number]}`
 
 /**
  * The fragment part of the DID URI including the `#` character.
@@ -47,7 +48,7 @@ export type UriFragment = `#${string}`
  */
 export type DidUrl =
   | `${DidUri}${UriFragment}`
-  | `${DidUri}?${UriQueryParams}${UriFragment}`
+  | `${DidUri}${UriQueryParams}${UriFragment}`
 
 export type SignatureVerificationRelationship =
   | 'authentication'

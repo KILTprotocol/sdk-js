@@ -11,6 +11,7 @@ import type {
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
+  UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
 
@@ -63,7 +64,7 @@ function verifyDidSignatureDataStructure(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateUri(verificationMethodUri, 'ResourceUri')
+  validateUri(verificationMethodUri, 'Url')
 }
 
 /**
@@ -108,23 +109,20 @@ export async function verifyDidSignature({
     }
   }
 
-  const { contentStream, contentMetadata } = await dereferenceDidUrl(
-    signerUrl,
-    {}
-  )
+  // Add the expectedVerificationMethodRelationship to the DID URL before dereferencing.
+  const urlForDereference: DidUrl =
+    expectedVerificationMethodRelationship !== undefined
+      ? `${
+          signer.did
+        }?requiredVerificationRelationship=${expectedVerificationMethodRelationship}${
+          signer.fragment as UriFragment
+        }`
+      : signerUrl
+
+  const { contentStream } = await dereferenceDidUrl(urlForDereference, {})
   if (contentStream === undefined) {
     throw new SDKErrors.SignatureUnverifiableError(
       `Error validating the DID signature. Cannot fetch DID Document or the verification method for "${signerUrl}".`
-    )
-  }
-  if (
-    expectedVerificationMethodRelationship !== undefined &&
-    !contentMetadata?.verificationRelationships?.includes(
-      expectedVerificationMethodRelationship
-    )
-  ) {
-    throw new SDKErrors.SignatureUnverifiableError(
-      `Cannot find verification "${signerUrl} for the relationship "${expectedVerificationMethodRelationship}".`
     )
   }
   const verificationMethod = contentStream as VerificationMethod

@@ -51,6 +51,20 @@ export function isValidDidKeyType(input: string): input is DidKeyType {
 export type NewVerificationMethod = Omit<VerificationMethod, 'controller'>
 export type NewService = Service
 
+export function isValidVerificationRelationship(
+  input: unknown
+): input is VerificationRelationship {
+  switch (input as VerificationRelationship) {
+    case 'assertionMethod':
+    case 'authentication':
+    case 'capabilityDelegation':
+    case 'keyAgreement':
+      return true
+    default:
+      return false
+  }
+}
+
 /**
  * Type of a new key material to add under a DID.
  */

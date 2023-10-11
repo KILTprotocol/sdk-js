@@ -186,8 +186,9 @@ export type FailedDereferenceMetadata = {
    * This specification defines the following common error values:
    * invalidDidUrl: The DID URL supplied to the DID URL dereferencing function does not conform to valid syntax. (See 3.2 DID URL Syntax.)
    * notFound: The DID URL dereferencer was unable to find the contentStream resulting from this dereferencing request.
+   * invalidVerificationRelationship: https://github.com/decentralized-identity/did-spec-extensions/pull/21
    */
-  error: 'invalidDidUrl' | 'notFound'
+  error: 'invalidDidUrl' | 'notFound' | 'invalidVerificationRelationship'
 }
 
 // Either success with `contentType` or failure with `error`

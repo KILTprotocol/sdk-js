@@ -30,26 +30,43 @@ const FULL_DID_LATEST_VERSION = 1
 
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
+// - did:kilt:<kilt_address>?<query>
 // - did:kilt:<kilt_address>#<fragment>
+// - did:kilt:<kilt_address>?<query>#<fragment>
 const FULL_KILT_DID_REGEX =
-  /^did:kilt:(?<address>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:(?<address>4[1-9a-km-zA-HJ-NP-Z]{47})(?<query>\?[^#]+)?(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
 // - did:kilt:light:01<kilt_address>:<encoded_details>
+// - did:kilt:light:10<kilt_address>?<query>
 // - did:kilt:light:10<kilt_address>#<fragment>
+// - did:kilt:light:01<kilt_address>:<encoded_details>?<query>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
+// - did:kilt:light:01<kilt_address>:<encoded_details>?<query>#<fragment>
 const LIGHT_KILT_DID_REGEX =
-  /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<query>\?[^#\n]+)?(?<fragment>#[^#\n]+)?$/
 
 type IDidParsingResult = {
   did: DidUri
   version: number
   type: 'light' | 'full'
   address: KiltAddress
+  queryParameters?: Record<string, string>
   fragment?: UriFragment
   authKeyTypeEncoding?: string
   encodedDetails?: string
+}
+
+function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
+  const urlified = new URL(didUri)
+  const params: Record<string, string> = {}
+  urlified.searchParams.forEach((value, key) => {
+    if (params[value] === undefined) {
+      params[value] = key
+    }
+  })
+  return params
 }
 
 /**
@@ -59,6 +76,7 @@ type IDidParsingResult = {
  * @returns Object containing information extracted from the DID uri.
  */
 export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
+  // Then we check if it conforms to either a full or a light DID URI.
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -66,11 +84,19 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     const version = versionString
       ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
+    const queryParameters = (() => {
+      try {
+        return exportQueryParamsFromUri(didUri as DidUrl)
+      } catch {
+        throw new SDKErrors.InvalidDidFormatError(didUri)
+      }
+    })()
     return {
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'full',
       address,
+      queryParameters,
       fragment: fragment === '#' ? undefined : (fragment as UriFragment),
     }
   }
@@ -88,11 +114,19 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     const version = versionString
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
+    const queryParameters = (() => {
+      try {
+        return exportQueryParamsFromUri(didUri as DidUrl)
+      } catch {
+        throw new SDKErrors.InvalidDidFormatError(didUri)
+      }
+    })()
     return {
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'light',
       address,
+      queryParameters,
       fragment: fragment === '#' ? undefined : (fragment as UriFragment),
       encodedDetails,
       authKeyTypeEncoding: authKeyType,
@@ -239,29 +273,26 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
  * @param input Arbitrary input.
  * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
  */
-export function validateUri(
-  input: unknown,
-  expectType?: 'Did' | 'ResourceUri'
-): void {
+export function validateUri(input: unknown, expectType?: 'Uri' | 'Url'): void {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parse(input as DidUri)
+  const { address, queryParameters, fragment } = parse(input as DidUri)
 
   if (
-    fragment !== undefined &&
-    (expectType === 'Did' ||
+    (fragment !== undefined || queryParameters !== undefined) &&
+    (expectType === 'Uri' ||
       // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
       (typeof expectType === 'boolean' && expectType === false))
   ) {
     throw new SDKErrors.DidError(
-      'Expected a Kilt DidUri but got a DidResourceUri (containing a #fragment)'
+      'Expected a Kilt DidUri but got a DidUrl (containing a #fragment or a ?query_parameter)'
     )
   }
 
-  if (fragment === undefined && expectType === 'ResourceUri') {
+  if (fragment === undefined && expectType === 'Url') {
     throw new SDKErrors.DidError(
-      'Expected a Kilt DidResourceUri (containing a #fragment) but got a DidUri'
+      'Expected a Kilt DidUrl (containing a #fragment) but got a DidUri'
     )
   }
 
