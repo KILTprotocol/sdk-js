@@ -30,22 +30,17 @@ const FULL_DID_LATEST_VERSION = 1
 
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
-// - did:kilt:<kilt_address>?<query>
 // - did:kilt:<kilt_address>#<fragment>
-// - did:kilt:<kilt_address>?<query>#<fragment>
 const FULL_KILT_DID_REGEX =
-  /^did:kilt:(?<address>4[1-9a-km-zA-HJ-NP-Z]{47})(?<query>\?[^#]+)?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:(?<address>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
 // - did:kilt:light:01<kilt_address>:<encoded_details>
-// - did:kilt:light:10<kilt_address>?<query>
 // - did:kilt:light:10<kilt_address>#<fragment>
-// - did:kilt:light:01<kilt_address>:<encoded_details>?<query>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
-// - did:kilt:light:01<kilt_address>:<encoded_details>?<query>#<fragment>
 const LIGHT_KILT_DID_REGEX =
-  /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<query>\?[^#\n]+)?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
 type IDidParsingResult = {
   did: DidUri

@@ -6,19 +6,19 @@
  */
 
 import type {
+  DereferenceDidUrl,
+  DidDocument,
   DidUri,
   DidUrl,
-  ResolveDid,
   SignatureVerificationRelationship,
   SignResponseData,
-  VerificationMethod,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 
 import { multibaseKeyToDidKey, parse, validateUri } from './Did.utils.js'
-import { resolve } from './DidResolver/DidResolver.js'
+import { dereference } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
@@ -27,7 +27,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: DidUri
   allowUpgraded?: boolean
   expectedVerificationMethodRelationship?: SignatureVerificationRelationship
-  resolveDid?: ResolveDid<string>['resolve']
+  dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
 }
 
 export type DidSignature = {
@@ -77,7 +77,7 @@ function verifyDidSignatureDataStructure(
  * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
- * @param input.resolveDid Allows specifying a custom DID resolver. Defaults to the built-in [[resolve]].
+ * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in [[dereference]].
  */
 export async function verifyDidSignature({
   message,
@@ -86,7 +86,7 @@ export async function verifyDidSignature({
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationMethodRelationship,
-  resolveDid = resolve,
+  dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
   const signer = parse(signerUrl)
@@ -107,23 +107,47 @@ export async function verifyDidSignature({
       throw new SDKErrors.DidSubjectMismatchError(signer.did, expected.did)
     }
   }
+  if (signer.fragment === undefined) {
+    throw new SDKErrors.DidError(
+      `Key URI "${signer}" is not a valid DID resource.`
+    )
+  }
 
-  // Add the expectedVerificationMethodRelationship to the DID URL before dereferencing.
-  const queryParams =
-    expectedVerificationMethodRelationship !== undefined
-      ? `?requiredVerificationRelationship=${expectedVerificationMethodRelationship}`
-      : ''
-  const uriFragment = signer.fragment !== undefined ? `${signer.fragment}` : ''
-  const urlForDereference =
-    `${signer.did}${queryParams}${uriFragment}` as DidUrl
-
-  const { contentStream } = await dereferenceDidUrl(urlForDereference, {})
+  const { contentStream, contentMetadata } = await dereferenceDidUrl(
+    signer.did,
+    {}
+  )
   if (contentStream === undefined) {
     throw new SDKErrors.SignatureUnverifiableError(
       `Error validating the DID signature. Cannot fetch DID Document or the verification method for "${signerUrl}".`
     )
   }
-  const verificationMethod = contentStream as VerificationMethod
+  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  if (contentMetadata.canonicalId !== undefined) {
+    throw new SDKErrors.DidResolveUpgradedDidError()
+  }
+  if (contentMetadata.deactivated) {
+    throw new SDKErrors.DidDeactivatedError()
+  }
+  const didDocument = contentStream as DidDocument
+  const verificationMethod = didDocument.verificationMethod?.find(
+    ({ controller, id }) =>
+      controller === didDocument.id && id === signer.fragment
+  )
+  if (verificationMethod === undefined) {
+    throw new SDKErrors.DidNotFoundError('Verification method not found in DID')
+  }
+  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
+  if (
+    expectedVerificationMethodRelationship &&
+    !didDocument[expectedVerificationMethodRelationship]?.some(
+      (id) => id === verificationMethod.id
+    )
+  ) {
+    throw new SDKErrors.DidError(
+      `No key "${signer.fragment}" for the verification method "${expectedVerificationMethodRelationship}"`
+    )
+  }
 
   const { publicKey } = multibaseKeyToDidKey(
     verificationMethod.publicKeyMultibase

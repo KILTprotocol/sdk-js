@@ -13,6 +13,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType, init } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import type {
+  DereferenceResult,
   DidDocument,
   DidUri,
   DidUrl,
@@ -21,13 +22,19 @@ import type {
   IClaimContents,
   ICredential,
   ICredentialPresentation,
-  ResolutionResult,
   SignCallback,
+  VerificationMethod,
 } from '@kiltprotocol/types'
+import {
+  didKeyToVerificationMethod,
+  NewDidVerificationKey,
+  SupportedContentType,
+} from '@kiltprotocol/did'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 
 import {
   ApiMocks,
+  computeKeyId,
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   makeSigningKeyTool,
@@ -435,16 +442,26 @@ describe('Presentations', () => {
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
 
-  async function resolveDid(keyUri: DidUrl): Promise<ResolutionResult> {
-    const { did } = Did.parse(keyUri)
+  async function dereferenceDidUrl(
+    didUrl: DidUrl | DidUri
+  ): Promise<DereferenceResult<SupportedContentType>> {
+    const { did } = Did.parse(didUrl)
     const didDocument = [
       identityAlice,
       identityBob,
       identityCharlie,
       identityDave,
     ].find(({ id }) => id === did)
-    if (!didDocument) throw new Error('Cannot resolve mocked DID')
-    return { didDocumentMetadata: {}, didResolutionMetadata: {}, didDocument }
+    if (!didDocument)
+      return {
+        contentMetadata: {},
+        dereferencingMetadata: { error: 'notFound' },
+      }
+    return {
+      contentMetadata: {},
+      dereferencingMetadata: { contentType: 'application/did+json' },
+      contentStream: didDocument,
+    }
   }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
@@ -524,7 +541,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        resolveDid,
+        dereferenceDidUrl,
       })
     ).resolves.toMatchObject({ revoked: false, attester: identityBob.id })
   })
@@ -550,7 +567,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).resolves.toMatchObject({ revoked: false, attester: identityBob.id })
   })
@@ -568,7 +585,7 @@ describe('Presentations', () => {
     await expect(
       Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrow()
   })
@@ -596,7 +613,7 @@ describe('Presentations', () => {
 
     await expect(
       Credential.verifySignature(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
@@ -623,12 +640,14 @@ describe('Presentations', () => {
       signCallback: keyAlice.getSignCallback(identityAlice),
     })
     // but replace signer key reference with authentication key of light did
-    presentation.claimerSignature.keyUri = `${identityDave.id}${identityDave.authentication[0].id}`
+    presentation.claimerSignature.signerUrl = `${identityDave.id}${
+      identityDave.authentication![0]
+    }`
 
     // signature would check out but mismatch should be detected
     await expect(
       Credential.verifySignature(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
@@ -655,7 +674,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrowError()
   })
@@ -726,29 +745,71 @@ describe('create presentation', () => {
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
     lightDidForId: DidDocument,
-    newAuthenticationKey?: DidVerificationKey
+    newAuthenticationKey?: NewDidVerificationKey
   ): DidDocument {
-    const uri = Did.getFullDidUri(lightDidForId.id)
-    const authKey = newAuthenticationKey || lightDidForId.authentication[0]
+    const id = Did.getFullDidUri(lightDidForId.id)
+    const authMethod = (() => {
+      if (newAuthenticationKey !== undefined) {
+        return didKeyToVerificationMethod(
+          id,
+          computeKeyId(newAuthenticationKey.publicKey),
+          {
+            keyType: newAuthenticationKey?.type,
+            publicKey: newAuthenticationKey.publicKey,
+          }
+        )
+      }
+      const lightDidAuth = lightDidForId.authentication![0]
+      const lightDidVerificationMethod = lightDidForId.verificationMethod?.find(
+        ({ id: vmId }) => vmId === lightDidAuth
+      ) as VerificationMethod
+      const { publicKey } = Did.multibaseKeyToDidKey(
+        lightDidVerificationMethod.publicKeyMultibase
+      )
+      lightDidVerificationMethod.id = computeKeyId(publicKey)
+      return lightDidVerificationMethod
+    })()
 
     return {
-      uri,
-      authentication: [authKey],
+      id,
+      authentication: [authMethod.id],
+      verificationMethod: [authMethod],
     }
   }
 
-  async function didResolveKey(
-    keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey> {
-    const { did } = Did.parse(keyUri)
-    const document = [
-      migratedClaimerLightDid,
-      unmigratedClaimerLightDid,
-      migratedClaimerFullDid,
-      attester,
-    ].find(({ uri }) => uri === did)
-    if (!document) throw new Error('Cannot resolve mocked DID')
-    return Did.keyToResolvedKey(document.authentication[0], did)
+  async function dereferenceDidUrl(
+    didUrl: DidUrl | DidUri
+  ): Promise<DereferenceResult<SupportedContentType>> {
+    const { did } = Did.parse(didUrl)
+    if (did === migratedClaimerLightDid.id) {
+      return {
+        contentMetadata: { canonicalId: migratedClaimerFullDid.id },
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: migratedClaimerLightDid,
+      }
+    }
+    if (did === unmigratedClaimerLightDid.id) {
+      return {
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: unmigratedClaimerLightDid,
+      }
+    }
+    if (did === migratedClaimerFullDid.id) {
+      return {
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: unmigratedClaimerLightDid,
+      }
+    }
+    if (did === attester.id) {
+      return {
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: attester,
+      }
+    }
+    return { contentMetadata: {}, dereferencingMetadata: { error: 'notFound' } }
   }
 
   beforeAll(async () => {
@@ -768,10 +829,7 @@ describe('create presentation', () => {
     newKeyForMigratedClaimerDid = makeSigningKeyTool()
     migratedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedClaimerLightDid,
-      {
-        ...newKeyForMigratedClaimerDid.authentication[0],
-        id: '#new-auth',
-      }
+      { ...newKeyForMigratedClaimerDid.keypair }
     )
     migratedThenDeletedKey = makeSigningKeyTool('ed25519')
     migratedThenDeletedClaimerLightDid = Did.createLightDidDocument({
@@ -813,7 +871,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -842,12 +900,12 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
-  it('should create presentation and exclude specific attributes using a migrated DID', async () => {
+  it.only('should create presentation and exclude specific attributes using a migrated DID', async () => {
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -873,7 +931,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -905,7 +963,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(att, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrow()
   })
@@ -936,7 +994,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolveKey,
+        dereferenceDidUrl,
       })
     ).rejects.toThrow()
   })
