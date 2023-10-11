@@ -20,7 +20,6 @@ import type {
   ResolutionDocumentMetadata,
   ResolutionOptions,
   ResolutionResult,
-  VerificationRelationship,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'

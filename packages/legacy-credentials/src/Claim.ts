@@ -143,7 +143,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if ('owner' in input) {
-    Did.validateUri(input.owner, 'Did')
+    Did.validateUri(input.owner, 'Uri')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {

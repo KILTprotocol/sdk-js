@@ -11,7 +11,6 @@ import type {
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
-  UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
 
@@ -110,14 +109,13 @@ export async function verifyDidSignature({
   }
 
   // Add the expectedVerificationMethodRelationship to the DID URL before dereferencing.
-  const urlForDereference: DidUrl =
+  const queryParams =
     expectedVerificationMethodRelationship !== undefined
-      ? `${
-          signer.did
-        }?requiredVerificationRelationship=${expectedVerificationMethodRelationship}${
-          signer.fragment as UriFragment
-        }`
-      : signerUrl
+      ? `?requiredVerificationRelationship=${expectedVerificationMethodRelationship}`
+      : ''
+  const uriFragment = signer.fragment !== undefined ? `${signer.fragment}` : ''
+  const urlForDereference =
+    `${signer.did}${queryParams}${uriFragment}` as DidUrl
 
   const { contentStream } = await dereferenceDidUrl(urlForDereference, {})
   if (contentStream === undefined) {

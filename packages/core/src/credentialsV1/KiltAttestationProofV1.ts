@@ -347,7 +347,7 @@ export async function verify(
   validateCredentialStructure(credential)
   const { nonTransferable, credentialStatus, credentialSubject, issuer } =
     credential
-  validateUri(issuer, 'Did')
+  validateUri(issuer, 'Uri')
   await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)
