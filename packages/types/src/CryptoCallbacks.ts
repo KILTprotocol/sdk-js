@@ -42,7 +42,7 @@ export interface SignResponseData {
   /**
    * The did key uri used for signing.
    */
-  verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase' | 'id'>
+  verificationMethod: VerificationMethod
 }
 
 /**

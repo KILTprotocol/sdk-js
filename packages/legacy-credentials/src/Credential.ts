@@ -550,7 +550,9 @@ export async function createPresentation({
   return {
     ...presentation,
     claimerSignature: {
-      ...signatureToJson({ did: credential.claim.owner, ...signature }),
+      ...signatureToJson({
+        ...signature,
+      }),
       ...(challenge && { challenge }),
     },
   }

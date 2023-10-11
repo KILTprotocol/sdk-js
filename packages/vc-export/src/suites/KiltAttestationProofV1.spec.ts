@@ -449,7 +449,12 @@ describe('issuance', () => {
   const didSigner: KiltAttestationProofV1.DidSigner = {
     did: attestedVc.issuer,
     signer: async () => ({
-      verificationMethod: { id: '#test', publicKeyMultibase: 'zasd' },
+      verificationMethod: {
+        controller: attestedVc.issuer,
+        type: 'MultiKey',
+        id: '#test',
+        publicKeyMultibase: 'zasd',
+      },
       signature: new Uint8Array(32),
     }),
   }

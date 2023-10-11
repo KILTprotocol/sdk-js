@@ -11,6 +11,7 @@ import type {
   DidDocument,
   SignCallback,
   DidUrl,
+  DereferenceResult,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -26,7 +27,7 @@ import {
   signatureToJson,
   verifyDidSignature,
 } from './Did.signature'
-import { dereference } from './DidResolver/DidResolver'
+import { dereference, SupportedContentType } from './DidResolver/DidResolver'
 import { keypairToMultibaseKey, multibaseKeyToDidKey, parse } from './Did.utils'
 import { createLightDidDocument } from './DidDetails'
 
@@ -52,31 +53,22 @@ describe('light DID', () => {
     jest
       .mocked(dereference)
       .mockReset()
-      .mockImplementation(async (didUrl) => {
-        const { address, queryParameters } = parse(didUrl)
-        if (
-          address === keypair.address &&
-          (queryParameters === undefined ||
-            queryParameters.requiredVerificationRelationship ===
-              'authentication')
-        ) {
+      .mockImplementation(
+        async (didUrl): Promise<DereferenceResult<SupportedContentType>> => {
+          const { address } = parse(didUrl)
+          if (address === keypair.address) {
+            return {
+              contentMetadata: {},
+              dereferencingMetadata: { contentType: 'application/did+json' },
+              contentStream: did,
+            }
+          }
           return {
             contentMetadata: {},
-            dereferencingMetadata: {
-              contentType: 'application/did+json',
-            },
-            contentStream: did.verificationMethod?.find(
-              ({ id }) => id === did.authentication![0]
-            ),
+            dereferencingMetadata: { error: 'notFound' },
           }
         }
-        return {
-          contentMetadata: {},
-          dereferencingMetadata: {
-            error: 'notFound',
-          },
-        }
-      })
+      )
   })
 
   it('verifies did signature over string', async () => {
@@ -90,7 +82,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -98,14 +90,13 @@ describe('light DID', () => {
 
   it('deserializes old did signature (with `keyId` property) to new format', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, signerUrl } = signatureToJson({
-      did: did.id,
-      ...(await sign({
+    const { signature, signerUrl } = signatureToJson(
+      await sign({
         data: Crypto.coToUInt8(SIGNED_STRING),
         did: did.id,
         verificationMethodRelationship: 'authentication',
-      })),
-    })
+      })
+    )
     const oldSignature = {
       signature,
       keyId: signerUrl,
@@ -128,7 +119,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
         expectedVerificationMethodRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -295,12 +286,14 @@ describe('light DID', () => {
         },
       ],
     }).id
+    console.log('expectedSigner', expectedSigner)
+    console.log('signer', verificationMethod)
 
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
         expectedSigner,
         expectedVerificationMethodRelationship: 'authentication',
       })
@@ -326,10 +319,12 @@ describe('full DID', () => {
         },
       ],
     }
-    sign = async ({ data }) => ({
+    sign = async ({ data, did: signingDid }) => ({
       signature: keypair.sign(data),
       verificationMethod: {
         id: '#0x12345',
+        controller: signingDid,
+        type: 'MultiKey',
         publicKeyMultibase: keypairToMultibaseKey(keypair),
       },
     })
@@ -339,31 +334,26 @@ describe('full DID', () => {
     jest
       .mocked(dereference)
       .mockReset()
-      .mockImplementation(async (didUrl) => {
-        const { address, queryParameters } = parse(didUrl)
-        if (
-          address === keypair.address &&
-          (queryParameters === undefined ||
-            queryParameters.requiredVerificationRelationship ===
-              'authentication')
-        ) {
+      .mockImplementation(
+        async (didUrl): Promise<DereferenceResult<SupportedContentType>> => {
+          const { address } = parse(didUrl)
+          console.log('address', address)
+          console.log('didUrl', didUrl)
+          console.log(address === keypair.address)
+          console.log('did', did)
+          if (address === keypair.address) {
+            return {
+              contentMetadata: {},
+              dereferencingMetadata: { contentType: 'application/did+json' },
+              contentStream: did,
+            }
+          }
           return {
             contentMetadata: {},
-            dereferencingMetadata: {
-              contentType: 'application/did+json',
-            },
-            contentStream: did.verificationMethod?.find(
-              ({ id }) => id === did.authentication![0]
-            ),
+            dereferencingMetadata: { error: 'notFound' },
           }
         }
-        return {
-          contentMetadata: {},
-          dereferencingMetadata: {
-            error: 'notFound',
-          },
-        }
-      })
+      )
   })
 
   it('verifies did signature over string', async () => {
@@ -390,6 +380,8 @@ describe('full DID', () => {
       did: did.id,
       verificationMethodRelationship: 'authentication',
     })
+    console.log('verificationMethod', verificationMethod)
+    console.log('signerUrl', `${did.id}${verificationMethod.id}`)
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
@@ -464,6 +456,8 @@ describe('full DID', () => {
         },
       ] as [NewLightDidVerificationKey],
     }).id
+    console.log(expectedSigner)
+    console.log(did)
 
     await expect(
       verifyDidSignature({

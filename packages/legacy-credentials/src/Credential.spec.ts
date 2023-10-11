@@ -799,7 +799,7 @@ describe('create presentation', () => {
       return {
         contentMetadata: {},
         dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: unmigratedClaimerLightDid,
+        contentStream: migratedClaimerFullDid,
       }
     }
     if (did === attester.id) {
@@ -905,7 +905,7 @@ describe('create presentation', () => {
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
-  it.only('should create presentation and exclude specific attributes using a migrated DID', async () => {
+  it('should create presentation and exclude specific attributes using a migrated DID', async () => {
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
