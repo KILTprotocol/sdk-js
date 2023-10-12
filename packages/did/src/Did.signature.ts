@@ -113,15 +113,10 @@ export async function verifyDidSignature({
     )
   }
 
-  console.log('before')
   const { contentStream, contentMetadata } = await dereferenceDidUrl(
     signer.did,
     {}
   )
-  console.log('signer.did', signer.did)
-  console.log('signerUrl', signerUrl)
-  console.log('contentStream', contentStream)
-  console.log('contentMetadata', contentMetadata)
   if (contentStream === undefined) {
     throw new SDKErrors.SignatureUnverifiableError(
       `Error validating the DID signature. Cannot fetch DID Document or the verification method for "${signerUrl}".`
@@ -135,12 +130,10 @@ export async function verifyDidSignature({
     throw new SDKErrors.DidDeactivatedError()
   }
   const didDocument = contentStream as DidDocument
-  console.log('didDocument', didDocument)
   const verificationMethod = didDocument.verificationMethod?.find(
     ({ controller, id }) =>
       controller === didDocument.id && id === signer.fragment
   )
-  console.log('verificationMethod', verificationMethod)
   if (verificationMethod === undefined) {
     throw new SDKErrors.DidNotFoundError('Verification method not found in DID')
   }

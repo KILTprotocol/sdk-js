@@ -108,6 +108,26 @@ describe('light DID', () => {
     expect(deserialized).not.toHaveProperty('keyId')
   })
 
+  it('deserializes old did signature (with `keyUri` property) to new format', async () => {
+    const SIGNED_STRING = 'signed string'
+    const { signature, signerUrl } = signatureToJson(
+      await sign({
+        data: Crypto.coToUInt8(SIGNED_STRING),
+        did: did.id,
+        verificationMethodRelationship: 'authentication',
+      })
+    )
+    const oldSignature = {
+      signature,
+      keyUri: signerUrl,
+    }
+
+    const deserialized = signatureFromJson(oldSignature)
+    expect(deserialized.signature).toBeInstanceOf(Uint8Array)
+    expect(deserialized.signerUrl).toStrictEqual(signerUrl)
+    expect(deserialized).not.toHaveProperty('keyUri')
+  })
+
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const { signature, verificationMethod } = await sign({
