@@ -27,7 +27,7 @@ jest.mock('@digitalbazaar/http-client', () => ({}))
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
-  resolveCompliant: jest.fn(),
+  dereference: jest.fn(),
 }))
 
 const documentLoader = combineDocumentLoaders([
@@ -41,12 +41,12 @@ export async function makeFakeDid() {
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument: DidDocument = {
     id: ingosCredential.credentialSubject.id as DidUri,
-    authentication: ['#autentication'],
+    authentication: ['#authentication'],
     assertionMethod: ['#assertion'],
     verificationMethod: [
       Did.didKeyToVerificationMethod(
         ingosCredential.credentialSubject.id as DidUri,
-        '#autentication',
+        '#authentication',
         { ...keypair, keyType: keypair.type }
       ),
       Did.didKeyToVerificationMethod(
@@ -56,24 +56,25 @@ export async function makeFakeDid() {
       ),
     ],
   }
-  jest.mocked(Did.resolve).mockImplementation(async (did) => {
+
+  jest.mocked(Did.dereference).mockImplementation(async (did) => {
     if (did.includes('light')) {
       return {
-        didDocument: Did.parseDocumentFromLightDid(did, false),
-        didDocumentMetadata: {},
-        didResolutionMetadata: {},
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: Did.parseDocumentFromLightDid(did, false),
       }
     }
     if (did.startsWith(didDocument.id)) {
       return {
-        didDocument,
-        didDocumentMetadata: {},
-        didResolutionMetadata: {},
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: 'application/did+json' },
+        contentStream: didDocument,
       }
     }
     return {
-      didDocumentMetadata: {},
-      didResolutionMetadata: { error: 'notFound' },
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'notFound' },
     }
   })
   return { didDocument, keypair }

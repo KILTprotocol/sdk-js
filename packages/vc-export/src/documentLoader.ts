@@ -19,8 +19,9 @@ import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
   parse,
-  resolve as resolveDid,
+  dereference as dereferenceDid,
   W3C_DID_CONTEXT_URL,
+  isFailedDereferenceMetadata,
 } from '@kiltprotocol/did'
 import { CType } from '@kiltprotocol/core'
 
@@ -81,13 +82,15 @@ export const kiltContextsLoader: DocumentLoader = async (url) => {
 
 export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as DidUri)
-  const { didDocument, didResolutionMetadata } = await resolveDid(did)
-  if (didResolutionMetadata.error) {
-    throw new Error(didResolutionMetadata.error)
+  const { dereferencingMetadata, contentStream } = await dereferenceDid(did, {
+    accept: 'application/did+ld+json',
+  })
+  if (isFailedDereferenceMetadata(dereferencingMetadata)) {
+    throw new Error(dereferencingMetadata.error)
   }
   // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
   const document = (await jsonld.frame(
-    didDocument ?? {},
+    contentStream ?? {},
     {
       // add did contexts to make sure we get a compacted representation
       '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],

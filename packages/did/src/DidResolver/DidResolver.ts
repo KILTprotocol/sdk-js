@@ -219,8 +219,8 @@ type InternalDereferenceResult =
       contentStream: DereferenceContentStream
     }
 
-function isFailedDereferenceMetadata(
-  input: InternalDereferenceResult
+export function isFailedDereferenceMetadata(
+  input: unknown
 ): input is FailedDereferenceMetadata {
   return (input as FailedDereferenceMetadata)?.error !== undefined
 }

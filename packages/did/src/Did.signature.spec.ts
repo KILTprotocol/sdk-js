@@ -306,8 +306,6 @@ describe('light DID', () => {
         },
       ],
     }).id
-    console.log('expectedSigner', expectedSigner)
-    console.log('signer', verificationMethod)
 
     await expect(
       verifyDidSignature({
@@ -357,10 +355,6 @@ describe('full DID', () => {
       .mockImplementation(
         async (didUrl): Promise<DereferenceResult<SupportedContentType>> => {
           const { address } = parse(didUrl)
-          console.log('address', address)
-          console.log('didUrl', didUrl)
-          console.log(address === keypair.address)
-          console.log('did', did)
           if (address === keypair.address) {
             return {
               contentMetadata: {},
@@ -400,8 +394,6 @@ describe('full DID', () => {
       did: did.id,
       verificationMethodRelationship: 'authentication',
     })
-    console.log('verificationMethod', verificationMethod)
-    console.log('signerUrl', `${did.id}${verificationMethod.id}`)
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
@@ -476,8 +468,6 @@ describe('full DID', () => {
         },
       ] as [NewLightDidVerificationKey],
     }).id
-    console.log(expectedSigner)
-    console.log(did)
 
     await expect(
       verifyDidSignature({
