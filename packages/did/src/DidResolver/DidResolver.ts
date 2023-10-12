@@ -75,9 +75,12 @@ async function resolveInternal(
     .isSome
   if (isFullDidDeleted) {
     return {
-      // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
+      // No canonicalId is returned as we consider this DID deactivated/deleted.
       documentMetadata: {
         deactivated: true,
+      },
+      document: {
+        id: did,
       },
     }
   }
@@ -94,13 +97,12 @@ async function resolveInternal(
         canonicalId: getFullDidUri(did),
       },
       document: {
-        id: did,
+        ...lightDocument,
       },
     }
   }
 
   // If no full DID details nor deletion info is found, the light DID is un-migrated.
-  // Metadata will simply contain `deactivated: false`.
   return {
     document: lightDocument,
     documentMetadata: {},
@@ -133,7 +135,7 @@ export async function resolve(
   }
 
   const resolutionResult = await resolveInternal(did)
-  if (!resolutionResult) {
+  if (resolutionResult === null) {
     return {
       didResolutionMetadata: {
         error: 'notFound',
