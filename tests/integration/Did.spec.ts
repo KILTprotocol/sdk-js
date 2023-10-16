@@ -79,7 +79,7 @@ describe('write and didDeleteTx', () => {
       Did.multibaseKeyToDidKey(publicKeyMultibase)
     const newDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authPublicKey, type: keyType }] as [
-        Did.NewDidVerificationKey
+        Did.NewLightDidVerificationKey
       ],
       service: [
         {
@@ -898,7 +898,7 @@ describe('DID management batching', () => {
         makeSigningKeyTool()
       const {
         authentication: [newAuthKey],
-      } = TestUtils.makeSigningKeyTool('ed25519')
+      } = makeSigningKeyTool('ed25519')
 
       const createTx = await Did.getStoreTxFromInput(
         { authentication },
