@@ -74,7 +74,7 @@ function verifyDidSignatureDataStructure(
  * @param input.message The message that was signed.
  * @param input.signature Signature bytes.
  * @param input.signerUrl DID URL of the verification method used for signing.
- * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
+ * @param input.expectedSigner If given, verification fails if the controller of the signing verification method is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
  * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in [[dereference]].
@@ -88,7 +88,7 @@ export async function verifyDidSignature({
   expectedVerificationMethodRelationship,
   dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
 }: DidSignatureVerificationInput): Promise<void> {
-  // checks if key uri points to the right did; alternatively we could check the key's controller
+  // checks if signer URL points to the right did; alternatively we could check the verification method's controller
   const signer = parse(signerUrl)
   if (expectedSigner && expectedSigner !== signer.did) {
     // check for allowable exceptions
@@ -98,7 +98,7 @@ export async function verifyDidSignature({
       expected.address === signer.address && expected.version === signer.version
     // EITHER: signer is a full did and we allow signatures by corresponding full did
     const allowedUpgrade = allowUpgraded && signer.type === 'full'
-    // OR: both are light dids and their auth key type matches
+    // OR: both are light dids and their auth verification method key type matches
     const keyTypeMatch =
       signer.type === 'light' &&
       expected.type === 'light' &&
@@ -109,7 +109,7 @@ export async function verifyDidSignature({
   }
   if (signer.fragment === undefined) {
     throw new SDKErrors.DidError(
-      `Key URI "${signer}" is not a valid DID resource.`
+      `Signer DID URL "${signerUrl}" is not a valid DID resource.`
     )
   }
 
@@ -137,7 +137,7 @@ export async function verifyDidSignature({
   if (verificationMethod === undefined) {
     throw new SDKErrors.DidNotFoundError('Verification method not found in DID')
   }
-  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
+  // Check whether the provided verification method ID is included in the given verification relationship, if provided.
   if (
     expectedVerificationMethodRelationship &&
     !didDocument[expectedVerificationMethodRelationship]?.some(
@@ -145,7 +145,7 @@ export async function verifyDidSignature({
     )
   ) {
     throw new SDKErrors.DidError(
-      `No key "${signer.fragment}" for the verification method "${expectedVerificationMethodRelationship}"`
+      `No verification method "${signer.fragment}" for the verification method "${expectedVerificationMethodRelationship}"`
     )
   }
 
@@ -156,7 +156,7 @@ export async function verifyDidSignature({
 }
 
 /**
- * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the DID URL of the signer's verification method.
  * Does not cryptographically verify the signature itself!
  *
  * @param input Arbitrary input.

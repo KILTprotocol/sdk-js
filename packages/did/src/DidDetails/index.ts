@@ -8,9 +8,9 @@
 // We don't export the `add*VerificationMethod` functions, they are meant to be used internally
 export {
   BaseNewDidKey,
-  DidEncryptionKeyType,
-  DidKeyType,
-  DidVerificationKeyType,
+  DidEncryptionMethodType,
+  DidSigningMethodType,
+  DidVerificationMethodType,
   NewDidEncryptionKey,
   NewDidVerificationKey,
   NewService,

@@ -18,7 +18,7 @@ import type {
   NewDidEncryptionKey,
   NewDidVerificationKey,
   NewService,
-  DidVerificationKeyType,
+  DidSigningMethodType,
 } from './DidDetails.js'
 
 import {
@@ -30,14 +30,14 @@ import {
 import { fragmentIdToChain, validateNewService } from '../Did.chain.js'
 import {
   addKeypairAsVerificationMethod,
-  encryptionKeyTypes,
+  encryptionMethodTypes,
 } from './DidDetails.js'
 
 /**
- * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication verification method.
  */
 export type LightDidSupportedVerificationKeyType = Extract<
-  DidVerificationKeyType,
+  DidSigningMethodType,
   'ed25519' | 'sr25519'
 >
 /**
@@ -103,7 +103,7 @@ function validateCreateDocumentInput({
   }
   if (
     keyAgreement?.[0].type &&
-    !encryptionKeyTypes.includes(keyAgreement[0].type)
+    !encryptionMethodTypes.includes(keyAgreement[0].type)
   ) {
     throw new SDKErrors.DidError(
       `Encryption key type "${keyAgreement[0].type}" is not supported`
@@ -137,12 +137,12 @@ interface SerializableStructure {
 }
 
 /**
- * Serialize the optional key agreement key and service endpoints of a light DID using the CBOR serialization algorithm
+ * Serialize the optional key agreement verification method and services of a light DID using the CBOR serialization algorithm
  * and encoding the result in Base58 format with a multibase prefix.
  *
  * @param details The light DID details to encode.
- * @param details.keyAgreement The DID key agreement key.
- * @param details.service The DID service endpoints.
+ * @param details.keyAgreement The DID key agreement verification method.
+ * @param details.service The DID services.
  * @returns The Base58-encoded and CBOR-serialized light DID optional details.
  */
 function serializeAdditionalLightDidDetails({
@@ -203,14 +203,14 @@ function deserializeAdditionalLightDidDetails(
 }
 
 /**
- * Create [[DidDocument]] of a light DID using the provided keys and endpoints.
- * Sets proper key IDs, builds light DID URI.
- * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ * Create [[DidDocument]] of a light DID using the provided verification methods and services.
+ * Sets proper verification method IDs, builds light DID URI.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
  *
  * @param input The input.
  * @param input.authentication The array containing the public keys to be used as the light DID authentication verification method.
  * @param input.keyAgreement The optional array containing the public keys to be used as the light DID key agreement verification methods.
- * @param input.service The optional light DID service endpoints.
+ * @param input.service The optional light DID services.
  *
  * @returns The resulting [[DidDocument]].
  */
@@ -269,7 +269,7 @@ export function createLightDidDocument({
  * For the DIDs you have received from external sources use [[resolve]] etc.
  *
  * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
- * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
  *
  * @param uri The DID URI to parse.
  * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.

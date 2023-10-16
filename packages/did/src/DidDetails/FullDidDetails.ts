@@ -51,13 +51,13 @@ function getVerificationMethodRelationshipForRuntimeCall(
 ): SignatureVerificationRelationship | undefined {
   const { section, method } = call
 
-  // get the VerificationKeyRelationship of a batched call
+  // get the VerificationRelationship of a batched call
   if (
     section === 'utility' &&
     ['batch', 'batchAll', 'forceBatch'].includes(method) &&
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
-    // map all calls to their VerificationKeyRelationship and deduplicate the items
+    // map all calls to their VerificationRelationship and deduplicate the items
     return (call.args[0] as unknown as Array<Extrinsic['method']>)
       .map(getVerificationMethodRelationshipForRuntimeCall)
       .reduce((prev, value) => (prev === value ? prev : undefined))
@@ -141,7 +141,9 @@ export async function authorizeTx(
   const verificationMethodRelationship =
     getVerificationMethodRelationshipForTx(extrinsic)
   if (verificationMethodRelationship === undefined) {
-    throw new SDKErrors.SDKError('No key relationship found for extrinsic')
+    throw new SDKErrors.SDKError(
+      'No verification relationship found for extrinsic'
+    )
   }
 
   return generateDidAuthenticatedTx({
@@ -159,7 +161,7 @@ type GroupedExtrinsics = Array<{
   verificationMethodRelationship: SignatureVerificationRelationship
 }>
 
-function groupExtrinsicsByKeyRelationship(
+function groupExtrinsicsByVerificationRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
@@ -243,7 +245,7 @@ export async function authorizeBatch({
     })
   }
 
-  const groups = groupExtrinsicsByKeyRelationship(extrinsics)
+  const groups = groupExtrinsicsByVerificationRelationship(extrinsics)
   const firstNonce = nonce || (await getNextNonce(did))
 
   const promises = groups.map(async (group, batchIndex) => {

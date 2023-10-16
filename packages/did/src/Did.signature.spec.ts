@@ -162,7 +162,7 @@ describe('light DID', () => {
     ).rejects.toThrow()
   })
 
-  it('fails if key id does not match', async () => {
+  it('fails if verification method id does not match', async () => {
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
     let { signature, verificationMethod } = await sign({
@@ -202,7 +202,7 @@ describe('light DID', () => {
     ).rejects.toThrow()
   })
 
-  it('fails if key id malformed', async () => {
+  it('fails if verification method id malformed', async () => {
     jest.mocked(dereference).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
@@ -506,7 +506,7 @@ describe('type guard', () => {
     keypair = Crypto.makeKeypairFromSeed()
   })
 
-  it('rejects malformed key uri', () => {
+  it('rejects malformed signer URL', () => {
     let signature: DidSignature = {
       // @ts-expect-error
       signerUrl: `did:kilt:${keypair.address}?mykey`,

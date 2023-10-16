@@ -7,12 +7,12 @@
 
 /// <reference lib="dom" />
 
+import { keypairToMultibaseKey, NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
   KeyringPair,
   KiltEncryptionKeypair,
   KiltKeyringPair,
-  NewDidEncryptionKey,
   SignCallback,
 } from '@kiltprotocol/types'
 
@@ -37,28 +37,32 @@ function makeSignCallback(
   keypair: KeyringPair
 ): (didDocument: DidDocument) => SignCallback {
   return (didDocument) => {
-    return async function sign({ data, keyRelationship }) {
-      const keyId = didDocument[keyRelationship]?.[0].id
-      const keyType = didDocument[keyRelationship]?.[0].type
-      if (keyId === undefined || keyType === undefined) {
+    return async function sign({ data, verificationMethodRelationship }) {
+      const authKeyId = didDocument[verificationMethodRelationship]?.[0]
+      const authKey = didDocument.verificationMethod?.find(
+        ({ id }) => id === authKeyId
+      )
+      if (authKeyId === undefined || authKey === undefined) {
         throw new Error(
-          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
+          `No verification method for purpose "${verificationMethodRelationship}" found in DID "${didDocument.id}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })
-      return { signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
+      return { signature, verificationMethod: authKey }
     }
   }
 }
 
-type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTxFromInput>['2']
 
 function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
       signature,
-      keyType: keypair.type,
+      verificationMethod: {
+        publicKeyMultibase: keypairToMultibaseKey(keypair),
+      },
     }
   }
 }
@@ -101,7 +105,7 @@ async function createFullDidFromKeypair(
   const api = ConfigService.get('api')
   const sign = makeStoreDidCallback(keypair)
 
-  const storeTx = await Did.getStoreTx(
+  const storeTx = await Did.getStoreTxFromInput(
     {
       authentication: [keypair],
       assertionMethod: [keypair],
@@ -115,7 +119,11 @@ async function createFullDidFromKeypair(
 
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
   const encodedDidDetails = await queryFunction(
-    Did.toChain(Did.getFullDidUriFromKey(keypair))
+    Did.toChain(
+      Did.getFullDidUriFromVerificationMethod({
+        publicKeyMultibase: keypairToMultibaseKey(keypair),
+      })
+    )
   )
   return Did.linkedInfoFromChain(encodedDidDetails).document
 }
@@ -166,7 +174,7 @@ async function runAll() {
     keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
   })
   if (
-    testDid.uri !==
+    testDid.id !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
   ) {
     throw new Error('DID Test Unsuccessful')
@@ -179,7 +187,7 @@ async function runAll() {
     'ed25519'
   )
 
-  const didStoreTx = await Did.getStoreTx(
+  const didStoreTx = await Did.getStoreTxFromInput(
     { authentication: [keypair] },
     payer.address,
     storeDidCallback
@@ -188,15 +196,19 @@ async function runAll() {
 
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
   const encodedDidDetails = await queryFunction(
-    Did.toChain(Did.getFullDidUriFromKey(keypair))
+    Did.toChain(
+      Did.getFullDidUriFromVerificationMethod({
+        publicKeyMultibase: keypairToMultibaseKey(keypair),
+      })
+    )
   )
   const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
-  const resolved = await Did.resolve(fullDid.uri)
+  const resolved = await Did.resolve(fullDid.id)
 
   if (
-    resolved &&
-    !resolved.metadata.deactivated &&
-    resolved.document?.uri === fullDid.uri
+    resolved !== undefined &&
+    !resolved.didDocumentMetadata.deactivated &&
+    resolved.didDocument?.id === fullDid.id
   ) {
     console.info('DID matches')
   } else {
@@ -204,15 +216,18 @@ async function runAll() {
   }
 
   const deleteTx = await Did.authorizeTx(
-    fullDid.uri,
+    fullDid.id,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     getSignCallback(fullDid),
     payer.address
   )
   await Blockchain.signAndSubmitTx(deleteTx, payer)
 
-  const resolvedAgain = await Did.resolve(fullDid.uri)
-  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
+  const resolvedAgain = await Did.resolve(fullDid.id)
+  if (
+    resolvedAgain === undefined ||
+    resolvedAgain.didDocumentMetadata.deactivated
+  ) {
     console.info('DID successfully deleted')
   } else {
     throw new Error('DID was not deleted')
@@ -230,7 +245,7 @@ async function runAll() {
   })
 
   const cTypeStoreTx = await Did.authorizeTx(
-    alice.uri,
+    alice.id,
     api.tx.ctype.add(CType.toChain(DriversLicense)),
     aliceSign(alice),
     payer.address
@@ -247,8 +262,8 @@ async function runAll() {
   const credential = KiltCredentialV1.fromInput({
     cType: DriversLicense.$id,
     claims: content,
-    subject: bob.uri,
-    issuer: alice.uri,
+    subject: bob.id,
+    issuer: alice.id,
   })
 
   await KiltCredentialV1.validateSubject(credential, {
@@ -259,13 +274,13 @@ async function runAll() {
   if (
     credential.credentialSubject.name !== content.name ||
     credential.credentialSubject.age !== content.age ||
-    credential.credentialSubject.id !== bob.uri
+    credential.credentialSubject.id !== bob.id
   ) {
     throw new Error('Claim content inside Credential mismatching')
   }
 
   const issued = await KiltAttestationProofV1.issue(credential, {
-    didSigner: { did: alice.uri, signer: aliceSign(alice) },
+    didSigner: { did: alice.id, signer: aliceSign(alice) },
     transactionHandler: {
       account: payer.address,
       signAndSubmit: async (tx) => {
@@ -291,7 +306,7 @@ async function runAll() {
   await KiltRevocationStatusV1.check(issued)
   console.info('Credential status verified')
 
-  const presentation = Presentation.create([issued], bob.uri)
+  const presentation = Presentation.create([issued], bob.id)
   console.info('Presentation created')
 
   Presentation.validateStructure(presentation)

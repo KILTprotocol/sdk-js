@@ -16,36 +16,43 @@ import type {
 import { didKeyToVerificationMethod } from '../Did.utils.js'
 
 /**
- * Possible types for a DID verification key.
+ * Possible types for a DID verification method.
  */
-const verificationKeyTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
-export const verificationKeyTypes = verificationKeyTypesC as unknown as string[]
-export type DidVerificationKeyType = typeof verificationKeyTypesC[number]
+const signingMethodTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
+export const signingMethodTypes = signingMethodTypesC as unknown as string[]
+export type DidSigningMethodType = typeof signingMethodTypesC[number]
 // `as unknown as string[]` is a workaround for https://github.com/microsoft/TypeScript/issues/26255
 
-export function isValidVerificationKeyType(
+export function isValidVerificationMethodType(
   input: string
-): input is DidVerificationKeyType {
-  return verificationKeyTypes.includes(input)
+): input is DidSigningMethodType {
+  return signingMethodTypes.includes(input)
 }
 
 /**
- * Possible types for a DID encryption key.
+ * Possible types for a DID encryption verification method.
  */
-const encryptionKeyTypesC = ['x25519'] as const
-export const encryptionKeyTypes = encryptionKeyTypesC as unknown as string[]
-export type DidEncryptionKeyType = typeof encryptionKeyTypesC[number]
+const encryptionMethodTypesC = ['x25519'] as const
+export const encryptionMethodTypes =
+  encryptionMethodTypesC as unknown as string[]
+export type DidEncryptionMethodType = typeof encryptionMethodTypesC[number]
 
-export function isValidEncryptionKeyType(
+export function isValidEncryptionMethodType(
   input: string
-): input is DidEncryptionKeyType {
-  return encryptionKeyTypes.includes(input)
+): input is DidEncryptionMethodType {
+  return encryptionMethodTypes.includes(input)
 }
 
-export type DidKeyType = DidVerificationKeyType | DidEncryptionKeyType
+export type DidVerificationMethodType =
+  | DidSigningMethodType
+  | DidEncryptionMethodType
 
-export function isValidDidKeyType(input: string): input is DidKeyType {
-  return isValidVerificationKeyType(input) || isValidEncryptionKeyType(input)
+export function isValidDidVerificationType(
+  input: string
+): input is DidSigningMethodType {
+  return (
+    isValidVerificationMethodType(input) || isValidEncryptionMethodType(input)
+  )
 }
 
 export type NewVerificationMethod = Omit<VerificationMethod, 'controller'>
@@ -77,14 +84,14 @@ export type BaseNewDidKey = {
  * Type of a new verification key to add under a DID.
  */
 export type NewDidVerificationKey = BaseNewDidKey & {
-  type: DidVerificationKeyType
+  type: DidSigningMethodType
 }
 
 /**
  * Type of a new encryption key to add under a DID.
  */
 export type NewDidEncryptionKey = BaseNewDidKey & {
-  type: DidEncryptionKeyType
+  type: DidEncryptionMethodType
 }
 
 function doesVerificationMethodExist(
@@ -130,7 +137,7 @@ export function addKeypairAsVerificationMethod(
   relationship: VerificationRelationship
 ): void {
   const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
-    keyType: keyType as DidKeyType,
+    keyType: keyType as DidSigningMethodType,
     publicKey,
   })
   addVerificationMethod(didDocument, verificationMethod, relationship)

@@ -634,12 +634,12 @@ describe('Presentations', () => {
       [legitimation]
     )
 
-    // sign presentation using Alice's authenication key
+    // sign presentation using Alice's authenication verification method
     const presentation = await Credential.createPresentation({
       credential,
       signCallback: keyAlice.getSignCallback(identityAlice),
     })
-    // but replace signer key reference with authentication key of light did
+    // but replace signer key reference with authentication verification method of light did
     presentation.claimerSignature.signerUrl = `${identityDave.id}${
       identityDave.authentication![0]
     }`

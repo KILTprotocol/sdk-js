@@ -21,7 +21,7 @@ export interface SignRequestData {
   data: Uint8Array
 
   /**
-   * The did key relationship to be used.
+   * The DID verification method relationship to be used.
    */
   verificationMethodRelationship: SignatureVerificationRelationship
 
@@ -40,7 +40,7 @@ export interface SignResponseData {
    */
   signature: Uint8Array
   /**
-   * The did key uri used for signing.
+   * The DID verification method used for signing.
    */
   verificationMethod: VerificationMethod
 }
@@ -90,7 +90,7 @@ export interface EncryptResponseData {
    */
   nonce: Uint8Array
   /**
-   * The did key uri used for the encryption.
+   * The DID verification method used for the encryption.
    */
   verificationMethod: VerificationMethod
 }
@@ -119,7 +119,7 @@ export interface DecryptRequestData {
    */
   nonce: Uint8Array
   /**
-   * The did key uri, which should be used for decryption.
+   * The DID verification method, which should be used for decryption.
    */
   verificationMethod: VerificationMethod
 }

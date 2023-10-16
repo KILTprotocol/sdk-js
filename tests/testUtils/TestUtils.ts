@@ -22,7 +22,7 @@ import type {
 import type {
   BaseNewDidKey,
   ChainDidKey,
-  DidKeyType,
+  DidVerificationMethodType,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
   NewService,
@@ -130,7 +130,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       const keyId = didDocument[verificationMethodRelationship]?.[0]
       if (keyId === undefined) {
         throw new Error(
-          `Key for purpose "${verificationMethodRelationship}" not found in did "${didDocument.id}"`
+          `Verification method for relationship "${verificationMethodRelationship}" not found in DID "${didDocument.id}"`
         )
       }
       const verificationMethod = didDocument.verificationMethod?.find(
@@ -138,7 +138,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       )
       if (verificationMethod === undefined) {
         throw new Error(
-          `Key for purpose "${verificationMethodRelationship}" not found in did "${didDocument.id}"`
+          `Verification method for relationship "${verificationMethodRelationship}" not found in DID "${didDocument.id}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })
@@ -235,7 +235,7 @@ function addKeypairAsVerificationMethod(
     didDocument.id,
     id,
     {
-      keyType: keyType as DidKeyType,
+      keyType: keyType as DidVerificationMethodType,
       publicKey,
     }
   )
@@ -280,7 +280,7 @@ function makeDidKeyFromKeypair({
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
- * @param generationOptions.keyRelationships The set of key relationships to indicate which keys must be added to the DID.
+ * @param generationOptions.verificationRelationships The set of verification relationships to indicate which keys must be added to the DID.
  * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
  *
  * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
@@ -288,14 +288,16 @@ function makeDidKeyFromKeypair({
 export async function createLocalDemoFullDidFromKeypair(
   keypair: KiltKeyringPair,
   {
-    keyRelationships = new Set([
+    verificationRelationships = new Set([
       'assertionMethod',
       'capabilityDelegation',
       'keyAgreement',
     ]),
     endpoints = [],
   }: {
-    keyRelationships?: Set<Omit<VerificationRelationship, 'authentication'>>
+    verificationRelationships?: Set<
+      Omit<VerificationRelationship, 'authentication'>
+    >
     endpoints?: NewService[]
   } = {}
 ): Promise<DidDocument> {
@@ -323,7 +325,7 @@ export async function createLocalDemoFullDidFromKeypair(
     service: endpoints,
   }
 
-  if (keyRelationships.has('keyAgreement')) {
+  if (verificationRelationships.has('keyAgreement')) {
     const { publicKey: encPublicKey, type } = makeEncryptionKeyTool(
       `${keypair.publicKey}//enc`
     ).keyAgreement[0]
@@ -337,7 +339,7 @@ export async function createLocalDemoFullDidFromKeypair(
       'keyAgreement'
     )
   }
-  if (keyRelationships.has('assertionMethod')) {
+  if (verificationRelationships.has('assertionMethod')) {
     const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//att') as KiltKeyringPair
     )
@@ -351,7 +353,7 @@ export async function createLocalDemoFullDidFromKeypair(
       'assertionMethod'
     )
   }
-  if (keyRelationships.has('capabilityDelegation')) {
+  if (verificationRelationships.has('capabilityDelegation')) {
     const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//del') as KiltKeyringPair
     )

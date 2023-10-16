@@ -35,16 +35,16 @@ import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import type {
-  DidEncryptionKeyType,
+  DidEncryptionMethodType,
   NewService,
-  DidVerificationKeyType,
+  DidSigningMethodType,
   NewDidVerificationKey,
   NewDidEncryptionKey,
 } from './DidDetails/DidDetails.js'
 
 import {
-  isValidVerificationKeyType,
-  isValidEncryptionKeyType,
+  isValidVerificationMethodType,
+  isValidEncryptionMethodType,
 } from './DidDetails/DidDetails.js'
 import {
   multibaseKeyToDidKey,
@@ -114,10 +114,10 @@ export type ChainDidBaseKey = {
   type: string
 }
 export type ChainDidVerificationKey = ChainDidBaseKey & {
-  type: DidVerificationKeyType
+  type: DidSigningMethodType
 }
 export type ChainDidEncryptionKey = ChainDidBaseKey & {
-  type: DidEncryptionKeyType
+  type: DidEncryptionMethodType
 }
 export type ChainDidKey = ChainDidVerificationKey | ChainDidEncryptionKey
 export type ChainDidService = {
@@ -502,7 +502,7 @@ export async function getStoreTxFromDidDocument(
     const { keyType, publicKey } = multibaseKeyToDidKey(
       authVerificationMethod.publicKeyMultibase
     )
-    if (!isValidVerificationKeyType(keyType)) {
+    if (!isValidVerificationMethodType(keyType)) {
       throw new SDKErrors.DidError(
         `Provided authentication key has an unsupported key type "${keyType}".`
       )
@@ -525,7 +525,7 @@ export async function getStoreTxFromDidDocument(
         )
       }
       const { keyType, publicKey } = multibaseKeyToDidKey(vm.publicKeyMultibase)
-      if (!isValidEncryptionKeyType(keyType)) {
+      if (!isValidEncryptionMethodType(keyType)) {
         throw new SDKErrors.DidError(
           `The key agreement key with ID "${k}" has an unsupported key type ${keyType}.`
         )
@@ -553,7 +553,7 @@ export async function getStoreTxFromDidDocument(
     const { keyType, publicKey } = multibaseKeyToDidKey(
       assertionVerificationMethod.publicKeyMultibase
     )
-    if (!isValidVerificationKeyType(keyType)) {
+    if (!isValidVerificationMethodType(keyType)) {
       throw new SDKErrors.DidError(
         `The assertion method key with ID "${assertionMethodId}" has an unsupported key type ${keyType}.`
       )
@@ -580,7 +580,7 @@ export async function getStoreTxFromDidDocument(
     const { keyType, publicKey } = multibaseKeyToDidKey(
       capabilityDelegationVerificationMethod.publicKeyMultibase
     )
-    if (!isValidVerificationKeyType(keyType)) {
+    if (!isValidVerificationMethodType(keyType)) {
       throw new SDKErrors.DidError(
         `The capability delegation method key with ID "${capabilityDelegationId}" has an unsupported key type ${keyType}.`
       )
@@ -671,7 +671,7 @@ export function didSignatureToChain(
   signature: Uint8Array
 ): EncodedSignature {
   const { keyType } = multibaseKeyToDidKey(publicKeyMultibase)
-  if (!isValidVerificationKeyType(keyType)) {
+  if (!isValidVerificationMethodType(keyType)) {
     throw new SDKErrors.DidError(
       `encodedDidSignature requires a verification key. A key of type "${keyType}" was used instead`
     )

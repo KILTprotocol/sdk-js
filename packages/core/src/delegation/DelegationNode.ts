@@ -279,15 +279,18 @@ export class DelegationNode implements IDelegationNode {
         `DID verification method URL "${signerUrl}" couldn't be parsed`
       )
     }
-    const key = delegateDid.verificationMethod?.find(
+    const verificationMethod = delegateDid.verificationMethod?.find(
       ({ id }) => id === fragment
     )
-    if (!key) {
+    if (!verificationMethod) {
       throw new SDKErrors.DidError(
-        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.id}"`
+        `Verification method with ID "${fragment}" was not found on DID: "${delegateDid.id}"`
       )
     }
-    return Did.didSignatureToChain(key, delegateSignature.signature)
+    return Did.didSignatureToChain(
+      verificationMethod,
+      delegateSignature.signature
+    )
   }
 
   /**

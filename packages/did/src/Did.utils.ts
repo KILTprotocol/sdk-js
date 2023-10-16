@@ -18,7 +18,7 @@ import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import type { DidKeyType } from './DidDetails/DidDetails.js'
+import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -135,16 +135,17 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
 
 type DecodedVerificationMethod = {
   publicKey: Uint8Array
-  keyType: DidKeyType
+  keyType: DidVerificationMethodType
 }
 
-const multicodecPrefixes: Record<number, [DidKeyType, number]> = {
-  0xe7: ['ecdsa', 33],
-  0xec: ['x25519', 32],
-  0xed: ['ed25519', 32],
-  0xef: ['sr25519', 32],
-}
-const multicodecReversePrefixes: Record<DidKeyType, number> = {
+const multicodecPrefixes: Record<number, [DidVerificationMethodType, number]> =
+  {
+    0xe7: ['ecdsa', 33],
+    0xec: ['x25519', 32],
+    0xed: ['ed25519', 32],
+    0xef: ['sr25519', 32],
+  }
+const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
   ecdsa: 0xe7,
   ed25519: 0xed,
   sr25519: 0xef,
@@ -194,7 +195,7 @@ export function keypairToMultibaseKey({
   type,
   publicKey,
 }: Pick<KeyringPair, 'publicKey'> & {
-  type: DidKeyType
+  type: DidVerificationMethodType
 }): VerificationMethod['publicKeyMultibase'] {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[type]
   if (multiCodecPublicKeyPrefix === undefined) {
@@ -215,7 +216,7 @@ export function keypairToMultibaseKey({
 }
 
 /**
- * Export a DID key to a `MultiKey` verification method.
+ * Convert a DID key to a `MultiKey` verification method.
  *
  * @param controller The verification method controller's DID URI.
  * @param id The verification method ID.
@@ -336,7 +337,7 @@ export function getFullDidUri(
 }
 
 /**
- * Builds the URI of a full DID if it is created with the authentication key provided.
+ * Builds the URI of a full DID if it is created with the authentication verification method derived from the provided public key.
  *
  * @param verificationMethod The DID verification method.
  * @returns The expected full DID URI.
