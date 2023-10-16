@@ -24,7 +24,7 @@ import {
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
 import {
   authorizeBatch,
-  getVerificationMethodRelationshipForTx,
+  getVerificationRelationshipForTx,
 } from './FullDidDetails.js'
 
 const augmentedApi = ApiMocks.createAugmentedApi()
@@ -167,13 +167,13 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 describe('When creating an instance from the chain', () => {
   it('Should return correct VerificationRelationship for single valid call', () => {
-    const verificationRelationship = getVerificationMethodRelationshipForTx(
+    const verificationRelationship = getVerificationRelationshipForTx(
       mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
     )
     expect(verificationRelationship).toBe('assertionMethod')
   })
   it('Should return correct VerificationRelationship for batched call', () => {
-    const verificationRelationship = getVerificationMethodRelationshipForTx(
+    const verificationRelationship = getVerificationRelationshipForTx(
       mockApi.tx.utility.batch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -190,7 +190,7 @@ describe('When creating an instance from the chain', () => {
     expect(verificationRelationship).toBe('assertionMethod')
   })
   it('Should return correct VerificationRelationship for batchAll call', () => {
-    const verificationRelationship = getVerificationMethodRelationshipForTx(
+    const verificationRelationship = getVerificationRelationshipForTx(
       mockApi.tx.utility.batchAll([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -207,7 +207,7 @@ describe('When creating an instance from the chain', () => {
     expect(verificationRelationship).toBe('assertionMethod')
   })
   it('Should return correct VerificationRelationship for forceBatch call', () => {
-    const verificationRelationship = getVerificationMethodRelationshipForTx(
+    const verificationRelationship = getVerificationRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -224,7 +224,7 @@ describe('When creating an instance from the chain', () => {
     expect(verificationRelationship).toBe('assertionMethod')
   })
   it('Should return undefined for batch with mixed VerificationRelationship calls', () => {
-    const verificationRelationship = getVerificationMethodRelationshipForTx(
+    const verificationRelationship = getVerificationRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),

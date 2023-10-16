@@ -76,7 +76,7 @@ export type CreateDocumentInput = {
    * The key to be used as the DID authentication verification method. This is mandatory and will be used as the first authentication verification method
    * of the full DID upon migration.
    */
-  authentication: [NewDidVerificationKey]
+  authentication: [NewLightDidVerificationKey]
   /**
    * The optional encryption key to be used as the DID key agreement verification method. If present, it will be used as the first key agreement verification method
    * of the full DID upon migration.
@@ -98,7 +98,7 @@ function validateCreateDocumentInput({
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
 
-  if (authenticationKeyTypeEncoding === undefined) {
+  if (!authenticationKeyTypeEncoding) {
     throw new SDKErrors.UnsupportedKeyError(authentication[0].type)
   }
   if (
@@ -294,7 +294,7 @@ export function parseDocumentFromLightDid(
       `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
     )
   }
-  if (fragment !== undefined && failIfFragmentPresent) {
+  if (fragment && failIfFragmentPresent) {
     throw new SDKErrors.DidError(
       `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
     )

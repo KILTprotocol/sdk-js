@@ -32,7 +32,7 @@ import type { IEventData, Signer } from '@polkadot/types/types'
 import {
   authorizeTx,
   getFullDidUri,
-  validateUri,
+  validateIdentifier,
   fromChain as didFromChain,
 } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors, Caip19 } from '@kiltprotocol/utils'
@@ -347,7 +347,7 @@ export async function verify(
   validateCredentialStructure(credential)
   const { nonTransferable, credentialStatus, credentialSubject, issuer } =
     credential
-  validateUri(issuer, 'Uri')
+  validateIdentifier(issuer, 'Uri')
   await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)

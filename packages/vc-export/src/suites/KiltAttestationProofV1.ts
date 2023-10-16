@@ -184,7 +184,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     KiltCredentialV1.validateStructure(credential)
     const { id } = credential
     const proof = this.attestationInfo.get(id)
-    if (proof === undefined) {
+    if (!proof) {
       throw new Error(
         `No attestation information available for the credential ${id}. Make sure you have called anchorCredential on the same instance of this class.`
       )
@@ -213,7 +213,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     let cType = type?.find((str): str is ICType['$id'] =>
       str.startsWith('kilt:ctype:')
     )
-    if (cType === undefined) {
+    if (!cType) {
       cType = credentialSubject['@context']['@vocab'].slice(
         0,
         -1

@@ -269,7 +269,7 @@ export class DelegationNode implements IDelegationNode {
     const delegateSignature = await sign({
       data: this.generateHash(),
       did: delegateDid.id,
-      verificationMethodRelationship: 'authentication',
+      verificationRelationship: 'authentication',
     })
     const signerUrl =
       `${delegateDid.id}${delegateSignature.verificationMethod.id}` as DidUrl
@@ -284,7 +284,7 @@ export class DelegationNode implements IDelegationNode {
     )
     if (!verificationMethod) {
       throw new SDKErrors.DidError(
-        `Verification method with ID "${fragment}" was not found on DID: "${delegateDid.id}"`
+        `Verification method "${signerUrl}" was not found on DID: "${delegateDid.id}"`
       )
     }
     return Did.didSignatureToChain(

@@ -232,7 +232,7 @@ export async function verifySignature(
     expectedSigner: input.claim.owner,
     // allow full did to sign presentation if owned by corresponding light did
     allowUpgraded: true,
-    expectedVerificationMethodRelationship: 'authentication',
+    expectedVerificationRelationship: 'authentication',
     signerUrl: claimerSignature.signerUrl,
     dereferenceDidUrl,
   })
@@ -544,7 +544,7 @@ export async function createPresentation({
   const signature = await signCallback({
     data: makeSigningData(presentation, challenge),
     did: credential.claim.owner,
-    verificationMethodRelationship: 'authentication',
+    verificationRelationship: 'authentication',
   })
 
   return {

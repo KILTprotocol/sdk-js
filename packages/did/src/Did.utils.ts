@@ -71,7 +71,7 @@ function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
  * @returns Object containing information extracted from the DID uri.
  */
 export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
-  // Then we check if it conforms to either a full or a light DID URI.
+  // Then we check if it conforms to either a full or a light DID URL.
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -138,18 +138,23 @@ type DecodedVerificationMethod = {
   keyType: DidVerificationMethodType
 }
 
+const MULTICODEC_ECDSA_PREFIX = 0xe7
+const MULTICODEC_X25519_PREFIX = 0xec
+const MULTICODEC_ED25519_PREFIX = 0xed
+const MULTICODEC_SR25519_PREFIX = 0xef
+
 const multicodecPrefixes: Record<number, [DidVerificationMethodType, number]> =
   {
-    0xe7: ['ecdsa', 33],
-    0xec: ['x25519', 32],
-    0xed: ['ed25519', 32],
-    0xef: ['sr25519', 32],
+    [MULTICODEC_ECDSA_PREFIX]: ['ecdsa', 33],
+    [MULTICODEC_X25519_PREFIX]: ['x25519', 32],
+    [MULTICODEC_ED25519_PREFIX]: ['ed25519', 32],
+    [MULTICODEC_SR25519_PREFIX]: ['sr25519', 32],
   }
 const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
-  ecdsa: 0xe7,
-  ed25519: 0xed,
-  sr25519: 0xef,
-  x25519: 0xec,
+  ecdsa: MULTICODEC_ECDSA_PREFIX,
+  x25519: MULTICODEC_X25519_PREFIX,
+  ed25519: MULTICODEC_ED25519_PREFIX,
+  sr25519: MULTICODEC_SR25519_PREFIX,
 }
 
 /**
@@ -271,7 +276,10 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
  * @param input Arbitrary input.
  * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
  */
-export function validateUri(input: unknown, expectType?: 'Uri' | 'Url'): void {
+export function validateIdentifier(
+  input: unknown,
+  expectType?: 'Uri' | 'Url'
+): void {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
@@ -288,7 +296,7 @@ export function validateUri(input: unknown, expectType?: 'Uri' | 'Url'): void {
     )
   }
 
-  if (fragment === undefined && expectType === 'Url') {
+  if (!fragment && expectType === 'Url') {
     throw new SDKErrors.DidError(
       'Expected a Kilt DidUrl (containing a #fragment) but got a DidUri'
     )

@@ -126,11 +126,11 @@ export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
  */
 export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
   return (didDocument) =>
-    async function sign({ data, verificationMethodRelationship }) {
-      const keyId = didDocument[verificationMethodRelationship]?.[0]
+    async function sign({ data, verificationRelationship }) {
+      const keyId = didDocument[verificationRelationship]?.[0]
       if (keyId === undefined) {
         throw new Error(
-          `Verification method for relationship "${verificationMethodRelationship}" not found in DID "${didDocument.id}"`
+          `Verification method for relationship "${verificationRelationship}" not found in DID "${didDocument.id}"`
         )
       }
       const verificationMethod = didDocument.verificationMethod?.find(
@@ -138,7 +138,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       )
       if (verificationMethod === undefined) {
         throw new Error(
-          `Verification method for relationship "${verificationMethodRelationship}" not found in DID "${didDocument.id}"`
+          `Verification method for relationship "${verificationRelationship}" not found in DID "${didDocument.id}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })

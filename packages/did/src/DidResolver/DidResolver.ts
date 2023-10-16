@@ -28,7 +28,7 @@ import { cbor } from '@kiltprotocol/utils'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 import { toChain } from '../Did.chain.js'
-import { getFullDidUri, parse, validateUri } from '../Did.utils.js'
+import { getFullDidUri, parse, validateIdentifier } from '../Did.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
 import { isValidVerificationRelationship } from '../DidDetails/DidDetails.js'
 
@@ -124,7 +124,7 @@ export async function resolve(
   resolutionOptions: ResolutionOptions = {}
 ): Promise<ResolutionResult> {
   try {
-    validateUri(did, 'Uri')
+    validateIdentifier(did, 'Uri')
   } catch (error) {
     return {
       didResolutionMetadata: {
@@ -329,7 +329,7 @@ export async function dereference(
   const contentType = isValidContentType(accept) ? accept : DID_JSON
 
   try {
-    validateUri(didUrl)
+    validateIdentifier(didUrl)
   } catch (error) {
     return {
       dereferencingMetadata: {

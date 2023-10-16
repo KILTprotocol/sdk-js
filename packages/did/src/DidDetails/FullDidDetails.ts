@@ -46,7 +46,7 @@ const methodMapping: Record<
   web3Names: 'authentication',
 }
 
-function getVerificationMethodRelationshipForRuntimeCall(
+function getVerificationRelationshipForRuntimeCall(
   call: Extrinsic['method']
 ): SignatureVerificationRelationship | undefined {
   const { section, method } = call
@@ -59,7 +59,7 @@ function getVerificationMethodRelationshipForRuntimeCall(
   ) {
     // map all calls to their VerificationRelationship and deduplicate the items
     return (call.args[0] as unknown as Array<Extrinsic['method']>)
-      .map(getVerificationMethodRelationshipForRuntimeCall)
+      .map(getVerificationRelationshipForRuntimeCall)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
 
@@ -72,15 +72,15 @@ function getVerificationMethodRelationshipForRuntimeCall(
 }
 
 /**
- * Detect the verification relationship for a verification method which should be used to DID-authorize the provided extrinsic.
+ * Detect the relationship for a verification method which should be used to DID-authorize the provided extrinsic.
  *
  * @param extrinsic The unsigned extrinsic to inspect.
  * @returns The verification relationship.
  */
-export function getVerificationMethodRelationshipForTx(
+export function getVerificationRelationshipForTx(
   extrinsic: Extrinsic
 ): SignatureVerificationRelationship | undefined {
-  return getVerificationMethodRelationshipForRuntimeCall(extrinsic.method)
+  return getVerificationRelationshipForRuntimeCall(extrinsic.method)
 }
 
 // Max nonce value is (2^64) - 1
@@ -138,9 +138,8 @@ export async function authorizeTx(
     )
   }
 
-  const verificationMethodRelationship =
-    getVerificationMethodRelationshipForTx(extrinsic)
-  if (verificationMethodRelationship === undefined) {
+  const verificationRelationship = getVerificationRelationshipForTx(extrinsic)
+  if (verificationRelationship === undefined) {
     throw new SDKErrors.SDKError(
       'No verification relationship found for extrinsic'
     )
@@ -148,7 +147,7 @@ export async function authorizeTx(
 
   return generateDidAuthenticatedTx({
     did,
-    verificationMethodRelationship,
+    verificationRelationship,
     sign,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(did)),
@@ -158,41 +157,39 @@ export async function authorizeTx(
 
 type GroupedExtrinsics = Array<{
   extrinsics: Extrinsic[]
-  verificationMethodRelationship: SignatureVerificationRelationship
+  verificationRelationship: SignatureVerificationRelationship
 }>
 
 function groupExtrinsicsByVerificationRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
-    const verificationMethodRelationship =
-      getVerificationMethodRelationshipForTx(extrinsic)
-    if (verificationMethodRelationship === undefined) {
+    const verificationRelationship = getVerificationRelationshipForTx(extrinsic)
+    if (verificationRelationship === undefined) {
       throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )
     }
-    return { extrinsic, verificationMethodRelationship }
+    return { extrinsic, verificationRelationship }
   })
 
   const groups: GroupedExtrinsics = [
     {
       extrinsics: [first.extrinsic],
-      verificationMethodRelationship: first.verificationMethodRelationship,
+      verificationRelationship: first.verificationRelationship,
     },
   ]
 
-  rest.forEach(({ extrinsic, verificationMethodRelationship }) => {
+  rest.forEach(({ extrinsic, verificationRelationship }) => {
     const currentGroup = groups[groups.length - 1]
     const useCurrentGroup =
-      verificationMethodRelationship ===
-      currentGroup.verificationMethodRelationship
+      verificationRelationship === currentGroup.verificationRelationship
     if (useCurrentGroup) {
       currentGroup.extrinsics.push(extrinsic)
     } else {
       groups.push({
         extrinsics: [extrinsic],
-        verificationMethodRelationship,
+        verificationRelationship,
       })
     }
   })
@@ -253,11 +250,11 @@ export async function authorizeBatch({
     const call = list.length === 1 ? list[0] : batchFunction(list)
     const txCounter = increaseNonce(firstNonce, batchIndex)
 
-    const { verificationMethodRelationship } = group
+    const { verificationRelationship } = group
 
     return generateDidAuthenticatedTx({
       did,
-      verificationMethodRelationship,
+      verificationRelationship,
       sign,
       call,
       txCounter,

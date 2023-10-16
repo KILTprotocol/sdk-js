@@ -443,7 +443,7 @@ export async function getStoreTxFromInput(
 
   const { signature } = await sign({
     data: encoded,
-    verificationMethodRelationship: 'authentication',
+    verificationRelationship: 'authentication',
   })
   const encodedSignature = {
     [authenticationKey.type]: signature,
@@ -606,7 +606,7 @@ export async function getStoreTxFromDidDocument(
 
 export interface SigningOptions {
   sign: SignExtrinsicCallback
-  verificationMethodRelationship: SignatureVerificationRelationship
+  verificationRelationship: SignatureVerificationRelationship
 }
 
 /**
@@ -615,7 +615,7 @@ export interface SigningOptions {
  *
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
- * @param params.verificationMethodRelationship DID verification relationship to be used for authorization.
+ * @param params.verificationRelationship DID verification relationship to be used for authorization.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
@@ -625,7 +625,7 @@ export interface SigningOptions {
  */
 export async function generateDidAuthenticatedTx({
   did,
-  verificationMethodRelationship,
+  verificationRelationship,
   sign,
   call,
   txCounter,
@@ -646,7 +646,7 @@ export async function generateDidAuthenticatedTx({
     )
   const { signature, verificationMethod } = await sign({
     data: signableCall.toU8a(),
-    verificationMethodRelationship,
+    verificationRelationship,
     did,
   })
   const { keyType } = multibaseKeyToDidKey(

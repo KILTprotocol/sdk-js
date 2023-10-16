@@ -17,7 +17,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 
-import { multibaseKeyToDidKey, parse, validateUri } from './Did.utils.js'
+import { multibaseKeyToDidKey, parse, validateIdentifier } from './Did.utils.js'
 import { dereference } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
@@ -26,7 +26,7 @@ export type DidSignatureVerificationInput = {
   signerUrl: DidUrl
   expectedSigner?: DidUri
   allowUpgraded?: boolean
-  expectedVerificationMethodRelationship?: SignatureVerificationRelationship
+  expectedVerificationRelationship?: SignatureVerificationRelationship
   dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
 }
 
@@ -49,7 +49,7 @@ type OldDidSignatureV2 = {
 function verifyDidSignatureDataStructure(
   input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
 ): void {
-  const verificationMethodUri = (() => {
+  const verificationMethodUrl = (() => {
     if ('keyUri' in input) {
       return input.keyUri
     }
@@ -63,7 +63,7 @@ function verifyDidSignatureDataStructure(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateUri(verificationMethodUri, 'Url')
+  validateIdentifier(verificationMethodUrl, 'Url')
 }
 
 /**
@@ -76,7 +76,7 @@ function verifyDidSignatureDataStructure(
  * @param input.signerUrl DID URL of the verification method used for signing.
  * @param input.expectedSigner If given, verification fails if the controller of the signing verification method is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
- * @param input.expectedVerificationMethodRelationship Which relationship to the signer DID the verification method must have.
+ * @param input.expectedVerificationRelationship Which relationship to the signer DID the verification method must have.
  * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in [[dereference]].
  */
 export async function verifyDidSignature({
@@ -85,7 +85,7 @@ export async function verifyDidSignature({
   signerUrl,
   expectedSigner,
   allowUpgraded = false,
-  expectedVerificationMethodRelationship,
+  expectedVerificationRelationship,
   dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if signer URL points to the right did; alternatively we could check the verification method's controller
@@ -139,13 +139,13 @@ export async function verifyDidSignature({
   }
   // Check whether the provided verification method ID is included in the given verification relationship, if provided.
   if (
-    expectedVerificationMethodRelationship &&
-    !didDocument[expectedVerificationMethodRelationship]?.some(
+    expectedVerificationRelationship &&
+    !didDocument[expectedVerificationRelationship]?.some(
       (id) => id === verificationMethod.id
     )
   ) {
     throw new SDKErrors.DidError(
-      `No verification method "${signer.fragment}" for the verification method "${expectedVerificationMethodRelationship}"`
+      `No verification method "${signer.fragment}" for the verification method "${expectedVerificationRelationship}"`
     )
   }
 

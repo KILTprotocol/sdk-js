@@ -27,7 +27,8 @@ import {
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { toChain, EncodedSignature } from '../Did.chain.js'
+import type { EncodedSignature } from '../Did.chain.js'
+import { toChain } from '../Did.chain.js'
 
 /**
  *  A chain-agnostic address, which can be encoded using any network prefix.

@@ -7,7 +7,7 @@
 
 /// <reference lib="dom" />
 
-import { keypairToMultibaseKey, NewDidEncryptionKey } from '@kiltprotocol/did'
+import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
   KeyringPair,
@@ -37,14 +37,14 @@ function makeSignCallback(
   keypair: KeyringPair
 ): (didDocument: DidDocument) => SignCallback {
   return (didDocument) => {
-    return async function sign({ data, verificationMethodRelationship }) {
-      const authKeyId = didDocument[verificationMethodRelationship]?.[0]
+    return async function sign({ data, verificationRelationship }) {
+      const authKeyId = didDocument[verificationRelationship]?.[0]
       const authKey = didDocument.verificationMethod?.find(
         ({ id }) => id === authKeyId
       )
       if (authKeyId === undefined || authKey === undefined) {
         throw new Error(
-          `No verification method for purpose "${verificationMethodRelationship}" found in DID "${didDocument.id}"`
+          `No verification method for purpose "${verificationRelationship}" found in DID "${didDocument.id}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })
@@ -61,7 +61,7 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
     return {
       signature,
       verificationMethod: {
-        publicKeyMultibase: keypairToMultibaseKey(keypair),
+        publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
       },
     }
   }
@@ -121,7 +121,7 @@ async function createFullDidFromKeypair(
   const encodedDidDetails = await queryFunction(
     Did.toChain(
       Did.getFullDidUriFromVerificationMethod({
-        publicKeyMultibase: keypairToMultibaseKey(keypair),
+        publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
       })
     )
   )
@@ -198,7 +198,7 @@ async function runAll() {
   const encodedDidDetails = await queryFunction(
     Did.toChain(
       Did.getFullDidUriFromVerificationMethod({
-        publicKeyMultibase: keypairToMultibaseKey(keypair),
+        publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
       })
     )
   )
