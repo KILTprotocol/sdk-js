@@ -16,13 +16,19 @@ import type {
 import { didKeyToVerificationMethod } from '../Did.utils.js'
 
 /**
- * Possible types for a DID verification method.
+ * Possible types for a DID verification method used in digital signatures.
  */
 const signingMethodTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
 export const signingMethodTypes = signingMethodTypesC as unknown as string[]
 export type DidSigningMethodType = typeof signingMethodTypesC[number]
 // `as unknown as string[]` is a workaround for https://github.com/microsoft/TypeScript/issues/26255
 
+/**
+ * Type guard checking whether the provided input string represents one of the supported signing verification types.
+ *
+ * @param input The input string.
+ * @returns Whether the input string is an instance of [[DidSigningMethodType]].
+ */
 export function isValidVerificationMethodType(
   input: string
 ): input is DidSigningMethodType {
@@ -30,13 +36,19 @@ export function isValidVerificationMethodType(
 }
 
 /**
- * Possible types for a DID encryption verification method.
+ * Possible types for a DID verification method used in encryption.
  */
 const encryptionMethodTypesC = ['x25519'] as const
 export const encryptionMethodTypes =
   encryptionMethodTypesC as unknown as string[]
 export type DidEncryptionMethodType = typeof encryptionMethodTypesC[number]
 
+/**
+ * Type guard checking whether the provided input string represents one of the supported encryption verification types.
+ *
+ * @param input The input string.
+ * @returns Whether the input string is an instance of [[DidEncryptionMethodType]].
+ */
 export function isValidEncryptionMethodType(
   input: string
 ): input is DidEncryptionMethodType {
@@ -47,6 +59,12 @@ export type DidVerificationMethodType =
   | DidSigningMethodType
   | DidEncryptionMethodType
 
+/**
+ * Type guard checking whether the provided input string represents one of the supported signing or encryption verification types.
+ *
+ * @param input The input string.
+ * @returns Whether the input string is an instance of [[DidSigningMethodType]].
+ */
 export function isValidDidVerificationType(
   input: string
 ): input is DidSigningMethodType {
@@ -58,6 +76,12 @@ export function isValidDidVerificationType(
 export type NewVerificationMethod = Omit<VerificationMethod, 'controller'>
 export type NewService = Service
 
+/**
+ * Type guard checking whether the provided input represents one of the supported verification relationships.
+ *
+ * @param input The input.
+ * @returns Whether the input is an instance of [[VerificationRelationship]].
+ */
 export function isValidVerificationRelationship(
   input: unknown
 ): input is VerificationRelationship {

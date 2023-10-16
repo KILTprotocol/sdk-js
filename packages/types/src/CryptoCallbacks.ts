@@ -21,7 +21,7 @@ export interface SignRequestData {
   data: Uint8Array
 
   /**
-   * The DID verification method relationship to be used.
+   * The DID verification relationship to be used.
    */
   verificationRelationship: SignatureVerificationRelationship
 

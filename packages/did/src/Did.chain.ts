@@ -335,13 +335,13 @@ interface GetStoreTxInput {
   service?: NewService[]
 }
 
-type GetStoreTxSignCallbacResponse = Pick<SignResponseData, 'signature'> & {
+type GetStoreTxSignCallbackResponse = Pick<SignResponseData, 'signature'> & {
   // We don't need the key ID to dispatch the tx.
   verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase'>
 }
 export type GetStoreTxSignCallback = (
   signData: Omit<SignRequestData, 'did'>
-) => Promise<GetStoreTxSignCallbacResponse>
+) => Promise<GetStoreTxSignCallbackResponse>
 
 /**
  * Create a DID creation operation which includes the information provided.
@@ -382,14 +382,14 @@ export async function getStoreTxFromInput(
   }
 
   // For now, it only takes the first attestation key, if present.
-  if (assertionMethod !== undefined && assertionMethod.length > 1) {
+  if (assertionMethod && assertionMethod.length > 1) {
     throw new SDKErrors.DidError(
       `More than one attestation key (${assertionMethod.length}) specified. The chain can only store one.`
     )
   }
 
   // For now, it only takes the first delegation key, if present.
-  if (capabilityDelegation !== undefined && capabilityDelegation.length > 1) {
+  if (capabilityDelegation && capabilityDelegation.length > 1) {
     throw new SDKErrors.DidError(
       `More than one delegation key (${capabilityDelegation.length}) specified. The chain can only store one.`
     )

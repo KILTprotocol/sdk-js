@@ -205,7 +205,7 @@ export function verifyDataStructure(input: ICredential): void {
  *
  * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.dereferenceDidUrl - The function used to resolve the claimer's DID Document and verification method. Defaults to [[dereferenceDidUrl]].
+ * @param verificationOpts.dereferenceDidUrl - The function used to dereference the claimer's DID Document and verification method. Defaults to [[dereferenceDidUrl]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
@@ -433,7 +433,7 @@ export async function verifyCredential(
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.dereferenceDidUrl - The function used to resolve the claimer's verification method. Defaults to [[dereference]].
+ * @param options.dereferenceDidUrl - The function used to dereference the claimer's DID and verification method. Defaults to [[dereference]].
  * @returns A [[VerifiedCredential]] object, which is the orignal credential presentation with two additional properties:
  * a boolean `revoked` status flag and the `attester` DID.
  */

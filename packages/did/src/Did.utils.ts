@@ -53,6 +53,8 @@ type IDidParsingResult = {
   encodedDetails?: string
 }
 
+// Exports the params section of a DID URL as a map.
+// If multiple keys are present, only the first one is returned.
 function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
   const urlified = new URL(didUri)
   const params: Record<string, string> = {}
@@ -158,9 +160,9 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 }
 
 /**
- * Decode a multibase, multicodec representation of a verification method into its fundamental components: the public key and the key type.
+ * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
  *
- * @param publicKeyMultibase The verification method's public key multibase.
+ * @param publicKeyMultibase The verification method's public key in Multikey format (i.e., multicodec-prefixed, then multibase encoded).
  * @returns The decoded public key and [[DidKeyType]].
  */
 export function multibaseKeyToDidKey(
@@ -189,12 +191,12 @@ export function multibaseKeyToDidKey(
 }
 
 /**
- * Calculate the multibase, multicodec representation of a keypair given its type and public key.
+ * Calculate the Multikey representation of a keypair given its type and public key.
  *
- * @param keypair The input keypair to encode as multibase, multicodec.
+ * @param keypair The input keypair to encode as Multikey.
  * @param keypair.type The keypair [[DidKeyType]].
  * @param keypair.publicKey The keypair public key.
- * @returns The multicodec, multibase encoding of the provided keypair.
+ * @returns The Multikey representation (i.e., multicodec-prefixed, then multibase encoded) of the provided keypair.
  */
 export function keypairToMultibaseKey({
   type,
@@ -228,7 +230,7 @@ export function keypairToMultibaseKey({
  * @param key The DID key to export as a verification method.
  * @param key.keyType The key type.
  * @param key.publicKey The public component of the key.
- * @returns The provided key encoded as a [[ DidDocumentV2.VerificationMethod]].
+ * @returns The provided key encoded as a [[VerificationMethod]].
  */
 export function didKeyToVerificationMethod(
   controller: VerificationMethod['controller'],
@@ -286,7 +288,7 @@ export function validateIdentifier(
   const { address, queryParameters, fragment } = parse(input as DidUri)
 
   if (
-    (fragment !== undefined || queryParameters !== undefined) &&
+    (fragment || queryParameters) &&
     (expectType === 'Uri' ||
       // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
       (typeof expectType === 'boolean' && expectType === false))

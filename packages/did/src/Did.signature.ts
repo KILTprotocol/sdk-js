@@ -67,7 +67,7 @@ function verifyDidSignatureDataStructure(
 }
 
 /**
- * Verify a DID signature given the signer's DID URL.
+ * Verify a DID signature given the signer's DID URL (i.e., DID URI + verification method ID).
  * A signature verification returns false if a migrated and then deleted DID is used.
  *
  * @param input Object wrapping all input.

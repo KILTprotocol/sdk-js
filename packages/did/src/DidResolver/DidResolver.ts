@@ -37,7 +37,7 @@ const DID_JSON_LD = 'application/did+ld+json'
 const DID_CBOR = 'application/did+cbor'
 
 /**
- * Supported types for DID resolution and dereferencing.
+ * Supported content types for DID resolution and dereferencing.
  */
 export type SupportedContentType =
   | typeof DID_JSON
@@ -97,7 +97,7 @@ async function resolveInternal(
         canonicalId: getFullDidUri(did),
       },
       document: {
-        ...lightDocument,
+        id: lightDocument.id,
       },
     }
   }
@@ -219,6 +219,12 @@ type InternalDereferenceResult =
       contentStream: DereferenceContentStream
     }
 
+/**
+ * Type guard checking whether the provided input is a [[FailedDereferenceMetadata]].
+ *
+ * @param input The input to check.
+ * @returns Whether the input is a [[FailedDereferenceMetadata]].
+ */
 export function isFailedDereferenceMetadata(
   input: unknown
 ): input is FailedDereferenceMetadata {
