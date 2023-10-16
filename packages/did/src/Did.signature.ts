@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { isHex } from '@polkadot/util'
+
 import type {
   DereferenceDidUrl,
   DidDocument,
@@ -15,7 +17,6 @@ import type {
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { isHex } from '@polkadot/util'
 
 import { multibaseKeyToDidKey, parse, validateIdentifier } from './Did.utils.js'
 import { dereference } from './DidResolver/DidResolver.js'

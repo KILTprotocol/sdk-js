@@ -8,13 +8,6 @@
 // @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
-import type {
-  DidDocument,
-  DidUri,
-  ICType,
-  VerificationMethod,
-} from '@kiltprotocol/types'
-
 import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
@@ -23,6 +16,12 @@ import {
   W3C_DID_CONTEXT_URL,
   isFailedDereferenceMetadata,
 } from '@kiltprotocol/did'
+import type {
+  DidDocument,
+  DidUri,
+  ICType,
+  VerificationMethod,
+} from '@kiltprotocol/types'
 import { CType } from '@kiltprotocol/core'
 
 import { validationContexts } from './context/index.js'

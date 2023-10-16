@@ -26,7 +26,10 @@ export type UriFragment = `#${string}`
 /**
  * URL for DID resources like keys or services.
  */
-export type DidUrl = `${DidUri}${UriFragment}`
+export type DidUrl =
+  | `${DidUri}${UriFragment}`
+  // Very broad type definition, mostly for the compiler. Actual regex matching for query params is done where needed.
+  | `${DidUri}?{string}${UriFragment}`
 
 export type SignatureVerificationRelationship =
   | 'authentication'

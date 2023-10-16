@@ -214,24 +214,6 @@ export function documentFromChain(
   return didRecord
 }
 
-export function publicKeyToChain(
-  key: NewDidVerificationKey
-): EncodedVerificationKey
-export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
-
-/**
- * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
- *
- * @param key Object describing data associated with a public key.
- * @returns Data restructured to allow SCALE encoding by polkadot api.
- */
-export function publicKeyToChain(
-  key: NewDidVerificationKey | NewDidEncryptionKey
-): EncodedDidKey {
-  // TypeScript can't infer type here, so we have to add a type assertion.
-  return { [key.type]: key.publicKey } as EncodedDidKey
-}
-
 function isUri(str: string): boolean {
   try {
     const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
@@ -324,6 +306,24 @@ export type AuthorizeCallInput = {
   call: Extrinsic
   submitter: KiltAddress
   blockNumber?: AnyNumber
+}
+
+export function publicKeyToChain(
+  key: NewDidVerificationKey
+): EncodedVerificationKey
+export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
+
+/**
+ * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
+export function publicKeyToChain(
+  key: NewDidVerificationKey | NewDidEncryptionKey
+): EncodedDidKey {
+  // TypeScript can't infer type here, so we have to add a type assertion.
+  return { [key.type]: key.publicKey } as EncodedDidKey
 }
 
 interface GetStoreTxInput {

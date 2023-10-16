@@ -7,6 +7,8 @@
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
+import { BN } from '@polkadot/util'
+
 import type {
   DidUri,
   KiltAddress,
@@ -15,17 +17,15 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import { BN } from '@polkadot/util'
-
-import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 
-import { parse } from '../Did.utils.js'
 import {
   documentFromChain,
   generateDidAuthenticatedTx,
   toChain,
 } from '../Did.chain.js'
+import { parse } from '../Did.utils.js'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -165,7 +165,7 @@ function groupExtrinsicsByVerificationRelationship(
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
     const verificationRelationship = getVerificationRelationshipForTx(extrinsic)
-    if (verificationRelationship === undefined) {
+    if (!verificationRelationship) {
       throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )

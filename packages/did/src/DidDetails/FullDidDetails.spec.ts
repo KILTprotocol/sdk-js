@@ -5,16 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { BN } from '@polkadot/util'
+import { randomAsHex } from '@polkadot/util-crypto'
+
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDocument,
   KiltKeyringPair,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-
-import { BN } from '@polkadot/util'
-import { randomAsHex } from '@polkadot/util-crypto'
-import { ConfigService } from '@kiltprotocol/config'
 
 import {
   ApiMocks,

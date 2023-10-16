@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import type {
   DidUri,
   DidUrl,
@@ -13,10 +14,8 @@ import type {
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-
-import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 
@@ -272,11 +271,11 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
 }
 
 /**
- * Checks that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
+ * Checks that a string (or other input) is a valid KILT DID with or without a trailing fragment.
  * Throws otherwise.
  *
  * @param input Arbitrary input.
- * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
+ * @param expectType `Uri` if the URI is expected to have a fragment (following '#'), `Url` if it is expected not to have one. Default allows both.
  */
 export function validateIdentifier(
   input: unknown,
@@ -285,16 +284,16 @@ export function validateIdentifier(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, queryParameters, fragment } = parse(input as DidUri)
+  const { address, fragment } = parse(input as DidUri)
 
   if (
-    (fragment || queryParameters) &&
+    fragment &&
     (expectType === 'Uri' ||
       // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
       (typeof expectType === 'boolean' && expectType === false))
   ) {
     throw new SDKErrors.DidError(
-      'Expected a Kilt DidUri but got a DidUrl (containing a #fragment or a ?query_parameter)'
+      'Expected a Kilt DidUri but got a DidUrl (containing a #fragment)'
     )
   }
 

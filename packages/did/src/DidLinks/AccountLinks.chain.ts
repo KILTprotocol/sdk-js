@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { TypeDef } from '@polkadot/types/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { ApiPromise } from '@polkadot/api'
@@ -16,7 +17,6 @@ import type {
   KiltAddress,
 } from '@kiltprotocol/types'
 
-import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import {
   stringToU8a,
   U8A_WRAP_ETHEREUM,
