@@ -634,7 +634,7 @@ describe('Presentations', () => {
       [legitimation]
     )
 
-    // sign presentation using Alice's authenication verification method
+    // sign presentation using Alice's authentication verification method
     const presentation = await Credential.createPresentation({
       credential,
       signCallback: keyAlice.getSignCallback(identityAlice),
@@ -754,7 +754,7 @@ describe('create presentation', () => {
           id,
           computeKeyId(newAuthenticationKey.publicKey),
           {
-            keyType: newAuthenticationKey?.type,
+            keyType: newAuthenticationKey.type,
             publicKey: newAuthenticationKey.publicKey,
           }
         )
@@ -766,6 +766,7 @@ describe('create presentation', () => {
       const { publicKey } = Did.multibaseKeyToDidKey(
         lightDidVerificationMethod.publicKeyMultibase
       )
+      // Override the verification method ID to the computed one
       lightDidVerificationMethod.id = computeKeyId(publicKey)
       return lightDidVerificationMethod
     })()
@@ -781,35 +782,42 @@ describe('create presentation', () => {
     didUrl: DidUrl | DidUri
   ): Promise<DereferenceResult<SupportedContentType>> {
     const { did } = Did.parse(didUrl)
-    if (did === migratedClaimerLightDid.id) {
-      return {
-        contentMetadata: { canonicalId: migratedClaimerFullDid.id },
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: migratedClaimerLightDid,
+    switch (did) {
+      case migratedClaimerLightDid.id: {
+        return {
+          contentMetadata: { canonicalId: migratedClaimerFullDid.id },
+          dereferencingMetadata: { contentType: 'application/did+json' },
+          contentStream: { id: migratedClaimerLightDid.id },
+        }
+      }
+      case unmigratedClaimerLightDid.id: {
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: { contentType: 'application/did+json' },
+          contentStream: unmigratedClaimerLightDid,
+        }
+      }
+      case migratedClaimerFullDid.id: {
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: { contentType: 'application/did+json' },
+          contentStream: migratedClaimerFullDid,
+        }
+      }
+      case attester.id: {
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: { contentType: 'application/did+json' },
+          contentStream: attester,
+        }
+      }
+      default: {
+        return {
+          contentMetadata: {},
+          dereferencingMetadata: { error: 'notFound' },
+        }
       }
     }
-    if (did === unmigratedClaimerLightDid.id) {
-      return {
-        contentMetadata: {},
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: unmigratedClaimerLightDid,
-      }
-    }
-    if (did === migratedClaimerFullDid.id) {
-      return {
-        contentMetadata: {},
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: migratedClaimerFullDid,
-      }
-    }
-    if (did === attester.id) {
-      return {
-        contentMetadata: {},
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: attester,
-      }
-    }
-    return { contentMetadata: {}, dereferencingMetadata: { error: 'notFound' } }
   }
 
   beforeAll(async () => {

@@ -50,7 +50,7 @@ export function makeEncryptCallback({
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0]
-      if (keyId === undefined) {
+      if (!keyId) {
         throw new Error(`Encryption key not found in did "${didDocument.id}"`)
       }
       const verificationMethod = didDocument.verificationMethod?.find(

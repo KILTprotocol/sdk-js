@@ -77,7 +77,7 @@ describe('write and didDeleteTx', () => {
     ) as VerificationMethod
     const { keyType, publicKey: authPublicKey } =
       Did.multibaseKeyToDidKey(publicKeyMultibase)
-    const newDid = Did.createLightDidDocument({
+    const input: Did.CreateDocumentInput = {
       authentication: [{ publicKey: authPublicKey, type: keyType }] as [
         Did.NewLightDidVerificationKey
       ],
@@ -93,17 +93,19 @@ describe('write and didDeleteTx', () => {
           serviceEndpoint: ['x:test-url-2'],
         },
       ],
-    })
+    }
 
-    const tx = await Did.getStoreTxFromDidDocument(
-      newDid,
+    const tx = await Did.getStoreTxFromInput(
+      input,
       paymentAccount.address,
       key.storeDidCallback
     )
 
     await submitTx(tx, paymentAccount)
 
-    const fullDidUri = Did.getFullDidUri(newDid.id)
+    const fullDidUri = Did.getFullDidUriFromVerificationMethod({
+      publicKeyMultibase,
+    })
     const fullDidLinkedInfo = await api.call.did.query(Did.toChain(fullDidUri))
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 

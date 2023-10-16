@@ -228,6 +228,7 @@ describe('light DID', () => {
         canonicalId: did.id,
       },
       dereferencingMetadata: { contentType: 'application/did+json' },
+      contentStream: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
     const { signature, verificationMethod } = await sign({
@@ -408,6 +409,7 @@ describe('full DID', () => {
     jest.mocked(dereference).mockResolvedValue({
       contentMetadata: { deactivated: true },
       dereferencingMetadata: { contentType: 'application/did+json' },
+      contentStream: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
     const { signature, verificationMethod } = await sign({
@@ -521,7 +523,7 @@ describe('type guard', () => {
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: `did:kilt:${keypair.address}`,
+      signerUrl: `kilt:did:${keypair.address}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)

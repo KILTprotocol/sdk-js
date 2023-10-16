@@ -101,7 +101,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should be possible to lookup the nick with the given DID uri', async () => {
     const encodedDidInfo = await api.call.did.query(Did.toChain(w3nCreator.id))
     const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
-    expect(didInfo.document.alsoKnownAs).toBe([nick])
+    expect(didInfo.document.alsoKnownAs).toBe([`w3n:${nick}`])
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {

@@ -206,7 +206,6 @@ async function runAll() {
   const resolved = await Did.resolve(fullDid.id)
 
   if (
-    resolved !== undefined &&
     !resolved.didDocumentMetadata.deactivated &&
     resolved.didDocument?.id === fullDid.id
   ) {
@@ -224,10 +223,7 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(deleteTx, payer)
 
   const resolvedAgain = await Did.resolve(fullDid.id)
-  if (
-    resolvedAgain === undefined ||
-    resolvedAgain.didDocumentMetadata.deactivated
-  ) {
+  if (resolvedAgain.didDocumentMetadata.deactivated) {
     console.info('DID successfully deleted')
   } else {
     throw new Error('DID was not deleted')
