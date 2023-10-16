@@ -170,7 +170,29 @@ export async function resolveRepresentation(
     accept: DID_JSON,
   }
 ): Promise<RepresentationResolutionResult<SupportedContentType>> {
-  if (!isValidContentType(accept)) {
+  const inputTransform = (() => {
+    switch (accept) {
+      case 'application/did+json': {
+        return (didDoc: DidDocument) => JSON.stringify(didDoc)
+      }
+      case 'application/did+ld+json': {
+        return (didDoc: DidDocument) => {
+          const jsonLdDoc: JsonLd<DidDocument> = {
+            ...didDoc,
+            '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+          }
+          return JSON.stringify(jsonLdDoc)
+        }
+      }
+      case 'application/did+cbor': {
+        return (didDoc: DidDocument) => cbor.encode(didDoc)
+      }
+      default: {
+        return null
+      }
+    }
+  })()
+  if (inputTransform === null) {
     return {
       didResolutionMetadata: {
         error: 'representationNotSupported',
@@ -190,25 +212,10 @@ export async function resolveRepresentation(
     } as RepresentationResolutionResult<SupportedContentType>
   }
 
-  const bufferInput = (() => {
-    if (accept === 'application/did+json') {
-      return JSON.stringify(didDocument)
-    }
-    if (accept === 'application/did+ld+json') {
-      const jsonLdDoc: JsonLd<DidDocument> = {
-        ...didDocument,
-        '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
-      }
-      return JSON.stringify(jsonLdDoc)
-    }
-    // contentType === 'application/did+cbor
-    return cbor.encode(didDocument)
-  })()
-
   return {
     didDocumentMetadata,
     didResolutionMetadata,
-    didDocumentStream: Buffer.from(bufferInput),
+    didDocumentStream: Buffer.from(inputTransform(didDocument)),
   } as RepresentationResolutionResult<SupportedContentType>
 }
 
