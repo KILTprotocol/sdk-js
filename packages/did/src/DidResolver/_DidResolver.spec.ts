@@ -189,7 +189,7 @@ describe('When resolving a key', () => {
   })
 })
 
-describe('When resolving a service endpoint', () => {
+describe('When resolving a service', () => {
   it('correctly resolves it for a full DID if both the DID and the endpoint exist', async () => {
     const fullDid = didWithServiceEndpoints
     const serviceIdUri: DidResourceUri = `${fullDid}#service-1`
@@ -324,8 +324,8 @@ describe('When resolving a full DID', () => {
     ])
   })
 
-  it('correctly resolves the document with service endpoints', async () => {
-    // Mock transform function changed to return two service endpoints.
+  it('correctly resolves the document with services', async () => {
+    // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
 
@@ -366,7 +366,7 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the document with web3Name', async () => {
-    // Mock transform function changed to return two service endpoints.
+    // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
 
@@ -474,7 +474,7 @@ describe('When resolving a light DID', () => {
     ])
   })
 
-  it('correctly resolves the document with authentication key, encryption key, and two service endpoints', async () => {
+  it('correctly resolves the document with authentication key, encryption key, and two services', async () => {
     const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encryptionKey.publicKey, type: 'x25519' }],
@@ -590,7 +590,7 @@ describe('When resolving with the spec compliant resolver', () => {
           identifier,
         })
       })
-    // Mock transform function changed to return two service endpoints.
+    // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
 

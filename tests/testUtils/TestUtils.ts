@@ -281,7 +281,7 @@ function makeDidKeyFromKeypair({
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
  * @param generationOptions.verificationRelationships The set of verification relationships to indicate which keys must be added to the DID.
- * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
+ * @param generationOptions.endpoints The set of services that must be added to the DID.
  *
  * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
  */

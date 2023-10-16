@@ -258,17 +258,17 @@ function isUriFragment(str: string): boolean {
 }
 
 /**
- * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
+ * Performs sanity checks on service data, making sure that the following conditions are met:
  *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
- * @param endpoint A service endpoint object to check.
+ * @param endpoint A service object to check.
  */
 export function validateNewService(endpoint: NewService): void {
   const { id, serviceEndpoint } = endpoint
   if ((id as string).startsWith('did:kilt')) {
     throw new SDKErrors.DidError(
-      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URL, which is violated by id "${id}"`
     )
   }
   if (!isUriFragment(fragmentIdToChain(id))) {
@@ -346,13 +346,13 @@ export type GetStoreTxSignCallback = (
 /**
  * Create a DID creation operation which includes the information provided.
  *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys as verification methods and service endpoints.
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys as verification methods and services.
  *
- * A DID creation operation can contain at most 25 new service endpoints.
- * Additionally, each service endpoint must respect the following conditions:
- * - The service endpoint ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
- * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
- * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ * A DID creation operation can contain at most 25 new services.
+ * Additionally, each service must respect the following conditions:
+ * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
  *
  * @param input The DID keys and services to store.
  * @param submitter The KILT address authorized to submit the creation operation.
@@ -406,7 +406,7 @@ export async function getStoreTxFromInput(
     api.consts.did.maxNumberOfServicesPerDid.toNumber()
   if (service.length > maxNumberOfServicesPerDid) {
     throw new SDKErrors.DidError(
-      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID`
+      `Cannot store more than ${maxNumberOfServicesPerDid} services per DID`
     )
   }
 
@@ -456,13 +456,13 @@ export async function getStoreTxFromInput(
  * Only the first authentication, assertion, and capability delegation verification methods are considered from the input DID Document.
  * All the input DID Document key agreement verification methods are considered.
  *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and service endpoints.
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and services.
  *
- * A DID creation operation can contain at most 25 new service endpoints.
- * Additionally, each service endpoint must respect the following conditions:
- * - The service endpoint ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
- * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
- * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ * A DID creation operation can contain at most 25 new services.
+ * Additionally, each service must respect the following conditions:
+ * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
  *
  * @param input The DID Document to store.
  * @param submitter The KILT address authorized to submit the creation operation.

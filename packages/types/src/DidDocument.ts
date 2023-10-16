@@ -24,7 +24,7 @@ export type DidUri =
 export type UriFragment = `#${string}`
 
 /**
- * URL for DID resources like keys or service endpoints.
+ * URL for DID resources like keys or services.
  */
 export type DidUrl = `${DidUri}${UriFragment}` | `${DidUri}${UriFragment}`
 

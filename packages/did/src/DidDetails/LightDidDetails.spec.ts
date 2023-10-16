@@ -29,7 +29,7 @@ import {
  */
 
 describe('When creating an instance from the details', () => {
-  it('correctly assign the right sr25519 authentication key, x25519 encryption key, and service endpoints', () => {
+  it('correctly assign the right sr25519 authentication key, x25519 encryption key, and services', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
     const encKey = Crypto.makeEncryptionKeypairFromSeed(
       new Uint8Array(32).fill(1)
@@ -158,7 +158,7 @@ describe('When creating an instance from the details', () => {
 })
 
 describe('When creating an instance from a URI', () => {
-  it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
+  it('correctly assign the right authentication key, encryption key, and services', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
     const encKey = Crypto.makeEncryptionKeypairFromSeed(
       new Uint8Array(32).fill(1)

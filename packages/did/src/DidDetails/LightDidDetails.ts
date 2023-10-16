@@ -83,7 +83,7 @@ export type CreateDocumentInput = {
    */
   keyAgreement?: [NewDidEncryptionKey]
   /**
-   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
+   * The set of services associated with this DID. Each service ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
    */
   service?: NewService[]
@@ -132,7 +132,7 @@ interface SerializableStructure {
   [SERVICES_MAP_KEY]?: Array<
     Partial<Omit<NewService, 'id'>> & {
       id: string
-    } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their service endpoints.
+    } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their services.
   >
 }
 

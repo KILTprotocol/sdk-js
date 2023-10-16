@@ -172,7 +172,7 @@ describe('write and didDeleteTx', () => {
       name: 'BadDidOrigin',
     })
 
-    // We use 1 here and this should fail as there are two service endpoints stored.
+    // We use 1 here and this should fail as there are two services stored.
     call = api.tx.did.delete(new BN(1))
 
     submittable = await Did.authorizeTx(
@@ -263,7 +263,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
 
-  // Add a new service endpoint
+  // Add a new service
   const newEndpoint: Did.NewService = {
     id: '#new-endpoint',
     type: ['new-type'],
@@ -289,7 +289,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     linkedInfo.document.service?.find((s) => s.id === newEndpoint.id)
   ).toStrictEqual(newEndpoint)
 
-  // Delete the added service endpoint
+  // Delete the added service
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
     Did.fragmentIdToChain(newEndpoint.id)
   )
@@ -429,7 +429,7 @@ describe('DID migration', () => {
     expect(didDocumentMetadata.deactivated).toBe(undefined)
   })
 
-  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+  it('migrates light DID with ed25519 auth key, encryption key, and services', async () => {
     const { storeDidCallback, authentication } = makeSigningKeyTool('ed25519')
     const { keyAgreement } = makeEncryptionKeyTool(
       '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
@@ -1001,7 +1001,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      // Create the full DID with a service endpoint
+      // Create the full DID with a service
       await submitTx(tx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
@@ -1014,7 +1014,7 @@ describe('DID management batching', () => {
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
-      // Try to set a new attestation key and a duplicate service endpoint
+      // Try to set a new attestation key and a duplicate service
       const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batch,
         did: fullDid.id,
@@ -1098,7 +1098,7 @@ describe('DID management batching', () => {
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
-      // Use batchAll to set a new attestation key and a duplicate service endpoint
+      // Use batchAll to set a new attestation key and a duplicate service
       const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
         did: fullDid.id,
@@ -1130,7 +1130,7 @@ describe('DID management batching', () => {
       )
       // .setAttestationKey() extrinsic went through but it was then reverted
       expect(updatedFullDid.assertionMethod).toBeUndefined()
-      // The service endpoint will match the one manually added, and not the one set in the builder.
+      // The service will match the one manually added, and not the one set in the builder.
       expect(
         updatedFullDid.service?.find((s) => s.id === '#id-1')
       ).toStrictEqual<Service>({
@@ -1350,7 +1350,7 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to create a DID with too many service endpoints', async () => {
+    it('should not be possible to create a DID with too many services', async () => {
       // Maximum is 25
       const newServiceEndpoints = Array(25).map(
         (_, index): Did.NewService => ({
@@ -1384,35 +1384,35 @@ describe('Runtime constraints', () => {
           storeDidCallback
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"Cannot store more than 25 service endpoints per DID"`
+        `"Cannot store more than 25 services per DID"`
       )
     }, 30_000)
 
-    it('should not be possible to create a DID with a service endpoint that is too long', async () => {
+    it('should not be possible to create a DID with a service that is too long', async () => {
       const serviceId = '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceIdLength.toNumber()
       expect(serviceId.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service endpoint that has too many types', async () => {
+    it('should not be possible to create a DID with a service that has too many types', async () => {
       const types = ['type-1', 'type-2']
       const limit = api.consts.did.maxNumberOfTypesPerService.toNumber()
       expect(types.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
+    it('should not be possible to create a DID with a service that has too many URIs', async () => {
       const uris = ['x:url-1', 'x:url-2', 'x:url-3']
       const limit = api.consts.did.maxNumberOfUrlsPerService.toNumber()
       expect(uris.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service endpoint that has a type that is too long', async () => {
+    it('should not be possible to create a DID with a service that has a type that is too long', async () => {
       const type = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceTypeLength.toNumber()
       expect(type.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service endpoint that has a URI that is too long', async () => {
+    it('should not be possible to create a DID with a service that has a URI that is too long', async () => {
       const uri =
         'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceUrlLength.toNumber()
