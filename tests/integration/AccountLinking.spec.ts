@@ -352,7 +352,9 @@ describe('When there is an on-chain DID', () => {
         Did.accountToChain(genericAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
-      expect(queryByAccount.document.alsoKnownAs).toStrictEqual(['test-name'])
+      expect(queryByAccount.document.alsoKnownAs).toStrictEqual([
+        'w3n:test-name',
+      ])
     })
 
     it('should be possible for the sender to remove the link', async () => {
