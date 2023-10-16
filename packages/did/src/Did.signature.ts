@@ -10,6 +10,7 @@ import { isHex } from '@polkadot/util'
 import type {
   DereferenceDidUrl,
   DidDocument,
+  DidSignature,
   DidUri,
   DidUrl,
   SignatureVerificationRelationship,
@@ -29,11 +30,6 @@ export type DidSignatureVerificationInput = {
   allowUpgraded?: boolean
   expectedVerificationRelationship?: SignatureVerificationRelationship
   dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
-}
-
-export type DidSignature = {
-  signerUrl: DidUrl
-  signature: string
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.

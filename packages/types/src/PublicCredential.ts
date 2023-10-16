@@ -9,7 +9,7 @@ import type { HexString, BN } from './Imported'
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IClaimContents } from './Claim'
-import type { DidUri } from './DidDocument'
+import type { DidUri } from './Did'
 import type { AssetDidUri } from './AssetDid'
 
 /*

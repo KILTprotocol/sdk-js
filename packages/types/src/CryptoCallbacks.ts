@@ -9,7 +9,7 @@ import type {
   DidUri,
   SignatureVerificationRelationship,
   VerificationMethod,
-} from './DidDocument.js'
+} from './Did'
 
 /**
  * Base interface for all signing requests.

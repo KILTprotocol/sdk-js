@@ -41,6 +41,11 @@ export type VerificationRelationship =
   | SignatureVerificationRelationship
   | EncryptionRelationship
 
+export type DidSignature = {
+  signerUrl: DidUrl
+  signature: string
+}
+
 type Base58BtcMultibaseString = `z${string}`
 
 /**

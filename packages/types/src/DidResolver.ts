@@ -12,7 +12,7 @@ import type {
   VerificationMethod,
   Service,
   JsonLd,
-} from './DidDocument'
+} from './Did'
 
 /**
  * The `accept` header must not be used for the regular `resolve` function, so we enforce that statically.

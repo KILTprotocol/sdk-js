@@ -15,6 +15,7 @@ import * as Did from '@kiltprotocol/did'
 import type {
   DereferenceResult,
   DidDocument,
+  DidSignature,
   DidUri,
   DidUrl,
   IAttestation,
@@ -231,7 +232,7 @@ describe('Credential', () => {
     } as ICredentialPresentation
     builtCredentialMalformedSignature.claimerSignature = {
       signature: Crypto.hashStr('aaa'),
-    } as Did.DidSignature
+    } as DidSignature
     builtCredentialMalformedSignature.rootHash = Credential.calculateRootHash(
       builtCredentialMalformedSignature
     )

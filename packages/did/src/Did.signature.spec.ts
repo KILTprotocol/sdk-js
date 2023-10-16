@@ -11,13 +11,13 @@ import type {
   DidDocument,
   SignCallback,
   DidUrl,
+  DidSignature,
   DereferenceResult,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
-import type { DidSignature } from './Did.signature'
 import type { NewLightDidVerificationKey } from './DidDetails'
 
 import { makeSigningKeyTool } from '../../../tests/testUtils'
