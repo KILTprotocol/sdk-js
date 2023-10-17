@@ -73,7 +73,7 @@ export type ResolutionResult = {
   didDocumentMetadata: ResolutionDocumentMetadata
 }
 
-export type RepresentationResolutionOptions<Accept extends string> = {
+export type RepresentationResolutionOptions<Accept extends string = string> = {
   /**
    * The Media Type of the caller's preferred representation of the DID document.
    * The Media Type MUST be expressed as an ASCII string.
@@ -84,7 +84,7 @@ export type RepresentationResolutionOptions<Accept extends string> = {
 }
 
 export type SuccessfulRepresentationResolutionMetadata<
-  ContentType extends string
+  ContentType extends string = string
 > = {
   /**
    * The Media Type of the returned didDocumentStream.
@@ -110,17 +110,18 @@ export type FailedRepresentationResolutionMetadata = {
 }
 
 // Either success with `contentType` or failure with `error`
-export type RepresentationResolutionMetadata<ContentType extends string> =
+export type RepresentationResolutionMetadata<
+  ContentType extends string = string
+> =
   | SuccessfulRepresentationResolutionMetadata<ContentType>
   | FailedRepresentationResolutionMetadata
 
 export type RepresentationResolutionDocumentMetadata =
   ResolutionDocumentMetadata
 
-export type RepresentationResolutionResult<ContentType extends string> = Pick<
-  ResolutionResult,
-  'didDocumentMetadata'
-> & {
+export type RepresentationResolutionResult<
+  ContentType extends string = string
+> = Pick<ResolutionResult, 'didDocumentMetadata'> & {
   /**
    * If the resolution is successful, and if the resolveRepresentation function was called, this MUST be a byte stream of the resolved DID document in one of the conformant representations.
    * The byte stream might then be parsed by the caller of the resolveRepresentation function into a data model, which can in turn be validated and processed.
@@ -133,7 +134,7 @@ export type RepresentationResolutionResult<ContentType extends string> = Pick<
 /**
  * The resolve function returns the DID document in its abstract form (a map).
  */
-export interface ResolveDid<Accept extends string> {
+export interface ResolveDid<Accept extends string = string> {
   resolve: (
     /**
      * This is the DID to resolve.
@@ -161,7 +162,7 @@ export interface ResolveDid<Accept extends string> {
   ) => Promise<RepresentationResolutionResult<Accept>>
 }
 
-export type DereferenceOptions<Accept extends string> = {
+export type DereferenceOptions<Accept extends string = string> = {
   /**
    * The Media Type that the caller prefers for contentStream.
    * The Media Type MUST be expressed as an ASCII string.
@@ -170,13 +171,14 @@ export type DereferenceOptions<Accept extends string> = {
   accept?: Accept
 }
 
-export type SuccessfulDereferenceMetadata<ContentType extends string> = {
-  /**
-   * The Media Type of the returned contentStream SHOULD be expressed using this property if dereferencing is successful.
-   * The Media Type value MUST be expressed as an ASCII string.
-   */
-  contentType: ContentType
-}
+export type SuccessfulDereferenceMetadata<ContentType extends string = string> =
+  {
+    /**
+     * The Media Type of the returned contentStream SHOULD be expressed using this property if dereferencing is successful.
+     * The Media Type value MUST be expressed as an ASCII string.
+     */
+    contentType: ContentType
+  }
 export type FailedDereferenceMetadata = {
   /**
    * The error code from the dereferencing process.
@@ -192,7 +194,7 @@ export type FailedDereferenceMetadata = {
 }
 
 // Either success with `contentType` or failure with `error`
-export type DereferenceMetadata<ContentType extends string> =
+export type DereferenceMetadata<ContentType extends string = string> =
   | SuccessfulDereferenceMetadata<ContentType>
   | FailedDereferenceMetadata
 
@@ -207,7 +209,7 @@ export type DereferenceContentStream =
 
 export type DereferenceContentMetadata = ResolutionDocumentMetadata
 
-export type DereferenceResult<ContentType extends string> = {
+export type DereferenceResult<ContentType extends string = string> = {
   /**
    * A metadata structure consisting of values relating to the results of the DID URL dereferencing process.
    * This structure is REQUIRED, and in the case of an error in the dereferencing process, this MUST NOT be empty.
@@ -230,7 +232,7 @@ export type DereferenceResult<ContentType extends string> = {
   contentMetadata: DereferenceContentMetadata
 }
 
-export interface DereferenceDidUrl<Accept extends string> {
+export interface DereferenceDidUrl<Accept extends string = string> {
   dereference: (
     /**
      * A conformant DID URL as a single string.

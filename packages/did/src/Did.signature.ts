@@ -29,7 +29,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: DidUri
   allowUpgraded?: boolean
   expectedVerificationRelationship?: SignatureVerificationRelationship
-  dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
+  dereferenceDidUrl?: DereferenceDidUrl['dereference']
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -83,7 +83,7 @@ export async function verifyDidSignature({
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationRelationship,
-  dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
+  dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if signer URL points to the right did; alternatively we could check the verification method's controller
   const signer = parse(signerUrl)

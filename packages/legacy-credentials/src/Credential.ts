@@ -212,10 +212,10 @@ export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
+    dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
   }: {
     challenge?: string
-    dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
+    dereferenceDidUrl?: DereferenceDidUrl['dereference']
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -280,7 +280,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  dereferenceDidUrl?: DereferenceDidUrl<string>['dereference']
+  dereferenceDidUrl?: DereferenceDidUrl['dereference']
 }
 
 /**
@@ -442,7 +442,7 @@ export async function verifyPresentation(
   {
     ctype,
     challenge,
-    dereferenceDidUrl = dereference as DereferenceDidUrl<string>['dereference'],
+    dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
   }: VerifyOptions = {}
 ): Promise<VerifiedCredential> {
   await verifySignature(presentation, {
