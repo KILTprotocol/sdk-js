@@ -962,7 +962,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` (ignoring the provided `accept` option) representation when successfully returning a service for a DID that has not been deleted nor migrated', async () => {
-      jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
+      jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
         const { identifier } = linkedInfo.unwrap()
         const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
         const authMethod = generateAuthenticationVerificationMethod(did)
@@ -996,6 +996,54 @@ describe('DID Resolution compliance', () => {
           serviceEndpoint: ['x:url'],
         },
       })
+    })
+  })
+  it('returns the right `dereferencingMetadata.error` when the DID does not exist', async () => {
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+      )
+
+    const did: DidUri =
+      'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+    expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'notFound' },
+    })
+  })
+  it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
+    const did = 'did:kilt:test-did' as unknown as DidUri
+    expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'invalidDidUrl' },
+    })
+  })
+  it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` (the default value) when the `options.accept` value is invalid', async () => {
+    const did: DidUri =
+      'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+    expect(
+      await Did.dereference(did, {
+        accept: 'application/json' as unknown as Did.SupportedContentType,
+      })
+    ).toStrictEqual<DereferenceResult>({
+      contentMetadata: {},
+      dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+      contentStream: {
+        id: did,
+        authentication: ['#auth'],
+        verificationMethod: [
+          {
+            id: '#auth',
+            controller: did,
+            type: 'MultiKey',
+            publicKeyMultibase: Did.keypairToMultibaseKey({
+              publicKey: new Uint8Array(32).fill(0),
+              type: 'ed25519',
+            }),
+          },
+        ],
+      },
     })
   })
 })
