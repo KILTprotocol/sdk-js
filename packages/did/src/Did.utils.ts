@@ -14,7 +14,7 @@ import type {
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { Buffer, DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'

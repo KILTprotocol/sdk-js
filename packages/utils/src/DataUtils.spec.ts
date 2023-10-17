@@ -7,7 +7,7 @@
 
 import { encodeAddress } from '@polkadot/keyring'
 import type { KiltAddress } from '@kiltprotocol/types'
-import { SDKErrors, ss58Format } from './index'
+import { Buffer, SDKErrors, ss58Format } from './index'
 import { verifyKiltAddress, verifyIsHex } from './DataUtils'
 import * as Crypto from './Crypto'
 

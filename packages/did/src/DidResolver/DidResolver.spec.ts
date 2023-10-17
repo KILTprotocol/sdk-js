@@ -17,7 +17,7 @@ import {
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { Crypto, cbor } from '@kiltprotocol/utils'
+import { Crypto, cbor, Buffer } from '@kiltprotocol/utils'
 
 import { ApiMocks, makeSigningKeyTool } from '../../../../tests/testUtils'
 import { linkedInfoFromChain } from '../Did.rpc.js'

@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { cbor } from '@kiltprotocol/utils'
+import { Buffer, cbor } from '@kiltprotocol/utils'
 
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
