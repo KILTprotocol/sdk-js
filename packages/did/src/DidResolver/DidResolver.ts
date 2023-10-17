@@ -32,20 +32,24 @@ import { getFullDidUri, parse, validateIdentifier } from '../Did.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
 import { isValidVerificationRelationship } from '../DidDetails/DidDetails.js'
 
-const DID_JSON = 'application/did+json'
-const DID_JSON_LD = 'application/did+ld+json'
-const DID_CBOR = 'application/did+cbor'
+export const DID_JSON_CONTENT_TYPE = 'application/did+json'
+export const DID_JSON_LD_CONTENT_TYPE = 'application/did+ld+json'
+export const DID_CBOR_CONTENT_TYPE = 'application/did+cbor'
 
 /**
  * Supported content types for DID resolution and dereferencing.
  */
 export type SupportedContentType =
-  | typeof DID_JSON
-  | typeof DID_JSON_LD
-  | typeof DID_CBOR
+  | typeof DID_JSON_CONTENT_TYPE
+  | typeof DID_JSON_LD_CONTENT_TYPE
+  | typeof DID_CBOR_CONTENT_TYPE
 
 function isValidContentType(input: unknown): input is SupportedContentType {
-  return input === DID_JSON || input === DID_JSON_LD || input === DID_CBOR
+  return (
+    input === DID_JSON_CONTENT_TYPE ||
+    input === DID_JSON_LD_CONTENT_TYPE ||
+    input === DID_CBOR_CONTENT_TYPE
+  )
 }
 
 type InternalResolutionResult = {
@@ -167,7 +171,7 @@ export async function resolve(
 export async function resolveRepresentation(
   did: DidUri,
   { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON,
+    accept: DID_JSON_CONTENT_TYPE,
   }
 ): Promise<RepresentationResolutionResult<SupportedContentType>> {
   const inputTransform = (() => {
@@ -214,7 +218,10 @@ export async function resolveRepresentation(
 
   return {
     didDocumentMetadata,
-    didResolutionMetadata,
+    didResolutionMetadata: {
+      ...didResolutionMetadata,
+      contentType: accept,
+    },
     didDocumentStream: Buffer.from(inputTransform(didDocument)),
   } as RepresentationResolutionResult<SupportedContentType>
 }
@@ -335,11 +342,13 @@ export async function dereference(
   didUrl: DidUri | DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON,
+    accept: DID_JSON_CONTENT_TYPE,
   }
 ): Promise<DereferenceResult<SupportedContentType>> {
   // The spec does not include an error for unsupported content types for dereferences
-  const contentType = isValidContentType(accept) ? accept : DID_JSON
+  const contentType = isValidContentType(accept)
+    ? accept
+    : DID_JSON_CONTENT_TYPE
 
   try {
     validateIdentifier(didUrl)
@@ -363,23 +372,34 @@ export async function dereference(
     }
   }
 
-  const stream = (() => {
+  const [stream, contentTypeValue] = (() => {
+    const s = dereferenceResult.contentStream as any
+    // Stream is a not DID Document, ignore the `contentType`.
+    if (s.type !== undefined) {
+      return [dereferenceResult.contentStream, DID_JSON_CONTENT_TYPE]
+    }
     if (contentType === 'application/did+json') {
-      return dereferenceResult.contentStream
+      return [dereferenceResult.contentStream, contentType]
     }
     if (contentType === 'application/did+ld+json') {
-      return {
-        ...dereferenceResult.contentStream,
-        '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
-      }
+      return [
+        {
+          ...dereferenceResult.contentStream,
+          '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+        },
+        contentType,
+      ]
     }
     // contentType === 'application/did+cbor'
-    return Buffer.from(cbor.encode(dereferenceResult.contentStream))
+    return [
+      Buffer.from(cbor.encode(dereferenceResult.contentStream)),
+      contentType,
+    ]
   })()
 
   return {
     dereferencingMetadata: {
-      contentType,
+      contentType: contentTypeValue as SupportedContentType,
     },
     contentMetadata: dereferenceResult.contentMetadata,
     contentStream: stream,

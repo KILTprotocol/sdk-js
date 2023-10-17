@@ -11,12 +11,13 @@ import {
   DidUri,
   DidUrl,
   KiltAddress,
+  RepresentationResolutionResult,
   ResolutionResult,
   Service,
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, cbor } from '@kiltprotocol/utils'
 
 import { ApiMocks, makeSigningKeyTool } from '../../../../tests/testUtils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
@@ -642,6 +643,359 @@ describe('When resolving a light DID', () => {
       didDocument: {
         id: migratedDid,
       },
+    })
+  })
+})
+
+describe('DID Resolution compliance', () => {
+  beforeAll(() => {
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockImplementation(async (identifier) => {
+        return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+          identifier,
+          accounts: [],
+          w3n: null,
+          serviceEndpoints: [
+            {
+              id: 'foo',
+              serviceTypes: ['type-service-1'],
+              urls: ['x:url-service-1'],
+            },
+          ],
+          details: {
+            authenticationKey: '01234567890123456789012345678901',
+            keyAgreementKeys: [],
+            delegationKey: null,
+            attestationKey: null,
+            publicKeys: [],
+            lastTxCounter: 123,
+            deposit: {
+              owner: addressWithAuthenticationKey,
+              amount: 0,
+            },
+          },
+        })
+      })
+    jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const authMethod = generateAuthenticationVerificationMethod(did)
+
+      return {
+        accounts: [],
+        document: {
+          id: did,
+          authentication: [authMethod.id],
+          verificationMethod: [authMethod],
+        },
+      }
+    })
+  })
+  describe('resolve(did, resolutionOptions) → « didResolutionMetadata, didDocument, didDocumentMetadata »', () => {
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata` when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+        didDocument: {
+          id: did,
+          authentication: ['#auth'],
+          verificationMethod: [
+            {
+              id: '#auth',
+              controller: did,
+              type: 'MultiKey',
+              publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKey: new Uint8Array(32).fill(0),
+                type: 'ed25519',
+              }),
+            },
+          ],
+        },
+      })
+    })
+    it('returns the right `didResolutionMetadata.error` when the DID does not exist', async () => {
+      jest
+        .spyOn(mockedApi.call.did, 'query')
+        .mockResolvedValueOnce(
+          augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+        )
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'notFound' },
+      })
+    })
+    it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
+      const did = 'did:kilt:test-did' as unknown as DidUri
+      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'invalidDid' },
+      })
+    })
+  })
+
+  describe('resolveRepresentation(did, resolutionOptions) → « didResolutionMetadata, didDocumentStream, didDocumentMetadata »', () => {
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.resolveRepresentation(did)
+      ).toStrictEqual<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        didDocumentStream: Buffer.from(
+          JSON.stringify({
+            id: did,
+            authentication: ['#auth'],
+            verificationMethod: [
+              {
+                id: '#auth',
+                controller: did,
+                type: 'MultiKey',
+                publicKeyMultibase: Did.keypairToMultibaseKey({
+                  publicKey: new Uint8Array(32).fill(0),
+                  type: 'ed25519',
+                }),
+              },
+            ],
+          })
+        ),
+      })
+    })
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.resolveRepresentation(did, {
+          accept: 'application/did+ld+json',
+        })
+      ).toStrictEqual<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { contentType: Did.DID_JSON_LD_CONTENT_TYPE },
+        didDocumentStream: Buffer.from(
+          JSON.stringify({
+            id: did,
+            authentication: ['#auth'],
+            verificationMethod: [
+              {
+                id: '#auth',
+                controller: did,
+                type: 'MultiKey',
+                publicKeyMultibase: Did.keypairToMultibaseKey({
+                  publicKey: new Uint8Array(32).fill(0),
+                  type: 'ed25519',
+                }),
+              },
+            ],
+            '@context': [Did.W3C_DID_CONTEXT_URL, Did.KILT_DID_CONTEXT_URL],
+          })
+        ),
+      })
+    })
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.resolveRepresentation(did, {
+          accept: 'application/did+cbor',
+        })
+      ).toMatchObject<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
+        didDocumentStream: Buffer.from(
+          cbor.encode({
+            id: did,
+            authentication: ['#auth'],
+            verificationMethod: [
+              {
+                id: '#auth',
+                controller: did,
+                type: 'MultiKey',
+                publicKeyMultibase: Did.keypairToMultibaseKey({
+                  publicKey: new Uint8Array(32).fill(0),
+                  type: 'ed25519',
+                }),
+              },
+            ],
+          })
+        ),
+      })
+    })
+    it('returns the right `didResolutionMetadata.error` when the DID does not exist', async () => {
+      jest
+        .spyOn(mockedApi.call.did, 'query')
+        .mockResolvedValueOnce(
+          augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+        )
+
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.resolveRepresentation(did)
+      ).toStrictEqual<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'notFound' },
+      })
+    })
+    it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
+      const did = 'did:kilt:test-did' as unknown as DidUri
+      expect(
+        await Did.resolveRepresentation(did)
+      ).toStrictEqual<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'invalidDid' },
+      })
+    })
+    it('returns the right `didResolutionMetadata.error` when the requested content type is not supported', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.resolveRepresentation(did, {
+          accept: 'application/json' as Did.SupportedContentType,
+        })
+      ).toStrictEqual<RepresentationResolutionResult>({
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'representationNotSupported' },
+      })
+    })
+  })
+
+  describe('dereference(didUrl, dereferenceOptions) → « dereferencingMetadata, contentStream, contentMetadata »', () => {
+    it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        contentStream: {
+          id: did,
+          authentication: ['#auth'],
+          verificationMethod: [
+            {
+              id: '#auth',
+              controller: did,
+              type: 'MultiKey',
+              publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKey: new Uint8Array(32).fill(0),
+                type: 'ed25519',
+              }),
+            },
+          ],
+        },
+      })
+    })
+    it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.dereference(did, { accept: 'application/did+ld+json' })
+      ).toStrictEqual<DereferenceResult>({
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: Did.DID_JSON_LD_CONTENT_TYPE },
+        contentStream: {
+          id: did,
+          authentication: ['#auth'],
+          verificationMethod: [
+            {
+              id: '#auth',
+              controller: did,
+              type: 'MultiKey',
+              publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKey: new Uint8Array(32).fill(0),
+                type: 'ed25519',
+              }),
+            },
+          ],
+          '@context': [Did.W3C_DID_CONTEXT_URL, Did.KILT_DID_CONTEXT_URL],
+        },
+      })
+    })
+    it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
+      const did: DidUri =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+      expect(
+        await Did.dereference(did, { accept: 'application/did+cbor' })
+      ).toStrictEqual<DereferenceResult>({
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
+        contentStream: Buffer.from(
+          cbor.encode({
+            id: did,
+            authentication: ['#auth'],
+            verificationMethod: [
+              {
+                id: '#auth',
+                controller: did,
+                type: 'MultiKey',
+                publicKeyMultibase: Did.keypairToMultibaseKey({
+                  publicKey: new Uint8Array(32).fill(0),
+                  type: 'ed25519',
+                }),
+              },
+            ],
+          })
+        ),
+      })
+    })
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` (ignoring the provided `accept` option) representation when successfully returning a verification method for a DID that has not been deleted nor migrated', async () => {
+      const didUrl: DidUrl =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth'
+      expect(
+        await Did.dereference(didUrl, { accept: 'application/did+cbor' })
+      ).toStrictEqual<DereferenceResult>({
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        contentStream: {
+          id: '#auth',
+          controller:
+            'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+          type: 'MultiKey',
+          publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKey: new Uint8Array(32).fill(0),
+            type: 'ed25519',
+          }),
+        },
+      })
+    })
+    it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` (ignoring the provided `accept` option) representation when successfully returning a service for a DID that has not been deleted nor migrated', async () => {
+      jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
+        const { identifier } = linkedInfo.unwrap()
+        const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+        const authMethod = generateAuthenticationVerificationMethod(did)
+
+        return {
+          accounts: [],
+          document: {
+            id: did,
+            authentication: [authMethod.id],
+            verificationMethod: [authMethod],
+            service: [
+              {
+                id: '#id-1',
+                type: ['type'],
+                serviceEndpoint: ['x:url'],
+              },
+            ],
+          },
+        }
+      })
+      const didUrl: DidUrl =
+        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1'
+      expect(
+        await Did.dereference(didUrl, { accept: 'application/did+cbor' })
+      ).toStrictEqual<DereferenceResult>({
+        contentMetadata: {},
+        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        contentStream: {
+          id: '#id-1',
+          type: ['type'],
+          serviceEndpoint: ['x:url'],
+        },
+      })
     })
   })
 })
