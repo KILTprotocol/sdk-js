@@ -48,8 +48,8 @@ describe('When there is an on-chain DID', () => {
 
   describe('and a tx sender willing to link its account', () => {
     beforeAll(async () => {
-      didKey = makeSigningKeyTool()
-      newDidKey = makeSigningKeyTool()
+      didKey = await makeSigningKeyTool()
+      newDidKey = await makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
@@ -67,7 +67,7 @@ describe('When there is an on-chain DID', () => {
       const signedTx = await Did.authorizeTx(
         did.id,
         associateSenderTx,
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -99,7 +99,7 @@ describe('When there is an on-chain DID', () => {
       const signedTx = await Did.authorizeTx(
         newDid.id,
         associateSenderTx,
-        newDidKey.getSignCallback(newDid),
+        await newDidKey.getSigners(newDid),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -159,11 +159,13 @@ describe('When there is an on-chain DID', () => {
           skip = true
           return
         }
-        const keyTool = makeSigningKeyTool(keyType as KiltKeyringPair['type'])
+        const keyTool = await makeSigningKeyTool(
+          keyType as KiltKeyringPair['type']
+        )
         keypair = keyTool.keypair
         keypairChain = Did.accountToChain(keypair.address)
-        didKey = makeSigningKeyTool()
-        newDidKey = makeSigningKeyTool()
+        didKey = await makeSigningKeyTool()
+        newDidKey = await makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
         newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
       }, 40_000)
@@ -180,7 +182,7 @@ describe('When there is an on-chain DID', () => {
         const signedTx = await Did.authorizeTx(
           did.id,
           api.tx.didLookup.associateAccount(...args),
-          didKey.getSignCallback(did),
+          await didKey.getSigners(did),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -218,7 +220,7 @@ describe('When there is an on-chain DID', () => {
         const signedTx = await Did.authorizeTx(
           newDid.id,
           api.tx.didLookup.associateAccount(...args),
-          newDidKey.getSignCallback(newDid),
+          await newDidKey.getSigners(newDid),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -250,7 +252,7 @@ describe('When there is an on-chain DID', () => {
         const signedTx = await Did.authorizeTx(
           newDid.id,
           removeLinkTx,
-          newDidKey.getSignCallback(newDid),
+          await newDidKey.getSigners(newDid),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -290,8 +292,8 @@ describe('When there is an on-chain DID', () => {
         genericAccount.address,
         BalanceUtils.convertToTxUnit(new BN(10), 1)
       )
-      didKey = makeSigningKeyTool()
-      newDidKey = makeSigningKeyTool()
+      didKey = await makeSigningKeyTool()
+      newDidKey = await makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
@@ -305,7 +307,7 @@ describe('When there is an on-chain DID', () => {
       const signedTx = await Did.authorizeTx(
         did.id,
         api.tx.didLookup.associateAccount(...args),
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -338,7 +340,7 @@ describe('When there is an on-chain DID', () => {
       const signedTx = await Did.authorizeTx(
         did.id,
         web3NameClaimTx,
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       await submitTx(signedTx, paymentAccount)

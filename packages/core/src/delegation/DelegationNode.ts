@@ -12,11 +12,10 @@ import type {
   IAttestation,
   IDelegationHierarchyDetails,
   IDelegationNode,
-  SignCallback,
+  SignerInterface,
   SubmittableExtrinsic,
-  DidUrl,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, Signers, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 
@@ -259,38 +258,34 @@ export class DelegationNode implements IDelegationNode {
    * This is required to anchor the delegation node on chain in order to enforce the delegate's consent.
    *
    * @param delegateDid The DID of the delegate.
-   * @param sign The callback to sign the delegation creation details for the delegate.
+   * @param signers An array of signer interfaces, one of which will be selected to sign the delegation creation details for the delegate.
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegateSign(
     delegateDid: DidDocument,
-    sign: SignCallback
+    signers: SignerInterface[]
   ): Promise<Did.EncodedSignature> {
-    const delegateSignature = await sign({
+    const { byDid, verifiableOnChain } = Signers.select
+    const signer = await Signers.selectSigner(
+      signers,
+      verifiableOnChain(),
+      byDid(delegateDid, {
+        verificationRelationship: 'authentication',
+      })
+    )
+    if (!signer) {
+      throw new Error(
+        'no signer available for on-chain verifiable signatures by an authentication key'
+      )
+    }
+    const delegateSignature = await signer.sign({
       data: this.generateHash(),
-      did: delegateDid.id,
-      verificationRelationship: 'authentication',
     })
-    const signerUrl =
-      `${delegateDid.id}${delegateSignature.verificationMethod.id}` as DidUrl
-    const { fragment } = Did.parse(signerUrl)
-    if (!fragment) {
-      throw new SDKErrors.DidError(
-        `DID verification method URL "${signerUrl}" couldn't be parsed`
-      )
-    }
-    const verificationMethod = delegateDid.verificationMethod?.find(
-      ({ id }) => id === fragment
-    )
-    if (!verificationMethod) {
-      throw new SDKErrors.DidError(
-        `Verification method "${signerUrl}" was not found on DID: "${delegateDid.id}"`
-      )
-    }
-    return Did.didSignatureToChain(
-      verificationMethod,
-      delegateSignature.signature
-    )
+
+    return Did.didSignatureToChain({
+      signature: delegateSignature,
+      algorithm: signer.algorithm,
+    })
   }
 
   /**

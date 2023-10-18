@@ -13,6 +13,7 @@ import type {
   DidUrl,
   DidSignature,
   DereferenceResult,
+  SignerInterface,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -24,7 +25,6 @@ import { makeSigningKeyTool } from '../../../tests/testUtils'
 import {
   isDidSignature,
   signatureFromJson,
-  signatureToJson,
   verifyDidSignature,
 } from './Did.signature'
 import { dereference, SupportedContentType } from './DidResolver/DidResolver'
@@ -39,14 +39,17 @@ jest
 describe('light DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
-  let sign: SignCallback
-  beforeAll(() => {
-    const keyTool = makeSigningKeyTool()
+  let authenticationSigner: SignerInterface
+  beforeAll(async () => {
+    const keyTool = await makeSigningKeyTool()
     keypair = keyTool.keypair
     did = createLightDidDocument({
       authentication: keyTool.authentication,
     })
-    sign = keyTool.getSignCallback(did)
+    authenticationSigner = (await keyTool.getSigners(did)).find(
+      ({ id }) => id === did.id + did.authentication?.[0]
+    )!
+    expect(authenticationSigner).toBeDefined()
   })
 
   beforeEach(() => {
@@ -73,16 +76,15 @@ describe('light DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
+    expect(signature).toBeInstanceOf(Uint8Array)
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -90,13 +92,13 @@ describe('light DID', () => {
 
   it('deserializes old did signature (with `keyId` property) to new format', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, keyUri } = signatureToJson(
-      await sign({
+    const signature = Crypto.u8aToHex(
+      await authenticationSigner.sign({
         data: Crypto.coToUInt8(SIGNED_STRING),
-        did: did.id,
-        verificationRelationship: 'authentication',
       })
     )
+    const keyUri = authenticationSigner.id as DidUrl
+
     const oldSignature = {
       signature,
       keyId: keyUri,
@@ -110,16 +112,14 @@ describe('light DID', () => {
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: SIGNED_BYTES,
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -127,16 +127,14 @@ describe('light DID', () => {
 
   it('fails if relationship does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'assertionMethod',
       })
     ).rejects.toThrow()
@@ -144,13 +142,9 @@ describe('light DID', () => {
 
   it('fails if verification method id does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    // eslint-disable-next-line prefer-const
-    let { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
-    const wrongVerificationMethodId = `${verificationMethod.id}1a`
     jest.mocked(dereference).mockResolvedValue({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
@@ -159,7 +153,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${wrongVerificationMethodId}` as DidUrl,
+        signerUrl: `${authenticationSigner.id}1a` as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -167,16 +161,14 @@ describe('light DID', () => {
 
   it('fails if signature does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -185,18 +177,16 @@ describe('light DID', () => {
   it('fails if verification method id malformed', async () => {
     jest.mocked(dereference).mockRestore()
     const SIGNED_STRING = 'signed string'
-    // eslint-disable-next-line prefer-const
-    let { signature, verificationMethod } = await sign({
+
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
-    const malformedVerificationId = verificationMethod.id.replace('#', '?')
+
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${malformedVerificationId}` as DidUrl,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -211,16 +201,14 @@ describe('light DID', () => {
       contentStream: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -236,21 +224,19 @@ describe('light DID', () => {
 
   it('detects signer expectation mismatch if signature is by unrelated did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
 
     const expectedSigner = createLightDidDocument({
-      authentication: makeSigningKeyTool().authentication,
+      authentication: (await makeSigningKeyTool()).authentication,
     }).id
 
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedSigner,
         expectedVerificationRelationship: 'authentication',
       })
@@ -259,10 +245,8 @@ describe('light DID', () => {
 
   it('allows variations of the same light did', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
 
     const authKey = did.verificationMethod?.find(
@@ -292,7 +276,7 @@ describe('light DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
+        signerUrl: authenticationSigner.id as DidUrl,
         expectedSigner,
         expectedVerificationRelationship: 'authentication',
       })

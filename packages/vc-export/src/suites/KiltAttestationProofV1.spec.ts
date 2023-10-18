@@ -27,6 +27,7 @@ import type {
   ICType,
   KiltAddress,
   KiltKeyringPair,
+  SignerInterface,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
@@ -446,17 +447,11 @@ describe('issuance', () => {
   let issuanceSuite: KiltAttestationV1Suite
   let toBeSigned: CredentialStub
 
-  const didSigner: KiltAttestationProofV1.DidSigner = {
-    did: attestedVc.issuer,
-    signer: async () => ({
-      signature: new Uint8Array(32),
-      verificationMethod: {
-        controller: attestedVc.issuer,
-        type: 'Multikey',
-        id: '#test',
-        publicKeyMultibase: 'zasd',
-      },
-    }),
+  const { issuer } = attestedVc
+  const signer: SignerInterface = {
+    sign: async () => new Uint8Array(32),
+    algorithm: 'Sr25519',
+    id: `${issuer}#1`,
   }
   const transactionHandler: KiltAttestationProofV1.TxHandler = {
     account: attester,
@@ -484,7 +479,8 @@ describe('issuance', () => {
     let newCred: Partial<Types.KiltCredentialV1> =
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
-        didSigner,
+        issuer,
+        [signer],
         transactionHandler
       )
     newCred = await vcjs.issue({
@@ -542,7 +538,8 @@ describe('issuance', () => {
       {
         ...toBeSigned,
       },
-      didSigner,
+      issuer,
+      [signer],
       transactionHandler
     )
     newCred = (await vcjs.issue({

@@ -10,10 +10,9 @@
 import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
-  KeyringPair,
   KiltEncryptionKeypair,
   KiltKeyringPair,
-  SignCallback,
+  SignerInterface,
 } from '@kiltprotocol/types'
 
 const { kilt } = window
@@ -33,26 +32,6 @@ const {
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
-function makeSignCallback(
-  keypair: KeyringPair
-): (didDocument: DidDocument) => SignCallback {
-  return (didDocument) => {
-    return async function sign({ data, verificationRelationship }) {
-      const authKeyId = didDocument[verificationRelationship]?.[0]
-      const authKey = didDocument.verificationMethod?.find(
-        ({ id }) => id === authKeyId
-      )
-      if (authKeyId === undefined || authKey === undefined) {
-        throw new Error(
-          `No verification method for purpose "${verificationRelationship}" found in DID "${didDocument.id}"`
-        )
-      }
-      const signature = keypair.sign(data, { withType: false })
-      return { signature, verificationMethod: authKey }
-    }
-  }
-}
-
 type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
@@ -67,21 +46,32 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   }
 }
 
-function makeSigningKeypair(
+async function makeSigningKeypair(
   seed: string,
   type: KiltKeyringPair['type'] = 'sr25519'
-): {
+): Promise<{
   keypair: KiltKeyringPair
-  getSignCallback: (didDocument: DidDocument) => SignCallback
+  getSigners: (didDocument: DidDocument) => Promise<SignerInterface[]>
   storeDidCallback: StoreDidCallback
-} {
+}> {
   const keypair = Crypto.makeKeypairFromUri(seed, type)
-  const getSignCallback = makeSignCallback(keypair)
+
+  const getSigners: (
+    didDocument: DidDocument
+  ) => Promise<SignerInterface[]> = async (didDocument) => {
+    return (
+      await Promise.all(
+        didDocument.verificationMethod?.map(({ id }) =>
+          kilt.Utils.Signers.getSignersForKeypair({ keypair, keyUri: id })
+        ) ?? []
+      )
+    ).flat()
+  }
   const storeDidCallback = makeStoreDidCallback(keypair)
 
   return {
     keypair,
-    getSignCallback,
+    getSigners,
     storeDidCallback,
   }
 }
@@ -138,8 +128,8 @@ async function runAll() {
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const payer = Crypto.makeKeypairFromUri(FaucetSeed)
 
-  const { keypair: aliceKeypair, getSignCallback: aliceSign } =
-    makeSigningKeypair('//Alice')
+  const { keypair: aliceKeypair, getSigners: aliceSign } =
+    await makeSigningKeypair('//Alice')
   const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
   const alice = await createFullDidFromKeypair(
     payer,
@@ -150,7 +140,7 @@ async function runAll() {
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const { keypair: bobKeypair } = makeSigningKeypair('//Bob')
+  const { keypair: bobKeypair } = await makeSigningKeypair('//Bob')
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
   const bob = await createFullDidFromKeypair(
     payer,
@@ -182,7 +172,7 @@ async function runAll() {
 
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, getSignCallback, storeDidCallback } = makeSigningKeypair(
+  const { keypair, getSigners, storeDidCallback } = await makeSigningKeypair(
     '//Foo',
     'ed25519'
   )
@@ -217,7 +207,7 @@ async function runAll() {
   const deleteTx = await Did.authorizeTx(
     fullDid.id,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
-    getSignCallback(fullDid),
+    await getSigners(fullDid),
     payer.address
   )
   await Blockchain.signAndSubmitTx(deleteTx, payer)
@@ -243,7 +233,7 @@ async function runAll() {
   const cTypeStoreTx = await Did.authorizeTx(
     alice.id,
     api.tx.ctype.add(CType.toChain(DriversLicense)),
-    aliceSign(alice),
+    await aliceSign(alice),
     payer.address
   )
   await Blockchain.signAndSubmitTx(cTypeStoreTx, payer)
@@ -275,8 +265,8 @@ async function runAll() {
     throw new Error('Claim content inside Credential mismatching')
   }
 
-  const issued = await KiltAttestationProofV1.issue(credential, {
-    didSigner: { did: alice.id, signer: aliceSign(alice) },
+  const issued = await KiltAttestationProofV1.issue(credential, alice.id, {
+    signers: await aliceSign(alice),
     transactionHandler: {
       account: payer.address,
       signAndSubmit: async (tx) => {

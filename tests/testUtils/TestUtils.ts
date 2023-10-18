@@ -15,7 +15,7 @@ import type {
   KiltAddress,
   KiltEncryptionKeypair,
   KiltKeyringPair,
-  SignCallback,
+  SignerInterface,
   SubmittableExtrinsic,
   UriFragment,
   VerificationMethod,
@@ -33,7 +33,7 @@ import type {
   NewService,
 } from '@kiltprotocol/did'
 
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
@@ -121,40 +121,6 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   }
 }
 
-export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
-
-/**
- * Generates a callback that can be used for signing.
- *
- * @param keypair The keypair to use for signing.
- * @returns The callback.
- */
-export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
-  return (didDocument) =>
-    async function sign({ data, verificationRelationship }) {
-      const keyId = didDocument[verificationRelationship]?.[0]
-      if (keyId === undefined) {
-        throw new Error(
-          `Verification method for relationship "${verificationRelationship}" not found in DID "${didDocument.id}"`
-        )
-      }
-      const verificationMethod = didDocument.verificationMethod?.find(
-        (vm) => vm.id === keyId
-      )
-      if (verificationMethod === undefined) {
-        throw new Error(
-          `Verification method for relationship "${verificationRelationship}" not found in DID "${didDocument.id}"`
-        )
-      }
-      const signature = keypair.sign(data, { withType: false })
-
-      return {
-        signature,
-        verificationMethod,
-      }
-    }
-}
-
 type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 /**
@@ -179,7 +145,7 @@ export function makeStoreDidCallback(
 
 export interface KeyTool {
   keypair: KiltKeyringPair
-  getSignCallback: KeyToolSignCallback
+  getSigners: (doc: DidDocument) => Promise<SignerInterface[]>
   storeDidCallback: StoreDidCallback
   authentication: [NewLightDidVerificationKey]
 }
@@ -190,16 +156,27 @@ export interface KeyTool {
  * @param type The type to use for the keypair.
  * @returns The keypair, matching sign callback, a key usable as DID authentication key.
  */
-export function makeSigningKeyTool(
+export async function makeSigningKeyTool(
   type: KiltKeyringPair['type'] = 'sr25519'
-): KeyTool {
+): Promise<KeyTool> {
   const keypair = Crypto.makeKeypairFromSeed(undefined, type)
-  const getSignCallback = makeSignCallback(keypair)
+  const getSigners: (
+    didDocument: DidDocument
+  ) => Promise<SignerInterface[]> = async (didDocument) => {
+    return (
+      await Promise.all(
+        didDocument.verificationMethod?.map(({ id }) =>
+          Signers.getSignersForKeypair({ keypair, keyUri: didDocument.id + id })
+        ) ?? []
+      )
+    ).flat()
+  }
+
   const storeDidCallback = makeStoreDidCallback(keypair)
 
   return {
     keypair,
-    getSignCallback,
+    getSigners,
     storeDidCallback,
     authentication: [keypair as NewLightDidVerificationKey],
   }

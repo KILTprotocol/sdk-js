@@ -21,12 +21,13 @@ import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType } from '@kiltprotocol/core'
 import {
   isDidSignature,
+  resolve,
   dereference,
   signatureFromJson,
-  signatureToJson,
   verifyDidSignature,
 } from '@kiltprotocol/did'
 import type {
+  DidUrl,
   Did,
   Hash,
   IAttestation,
@@ -35,10 +36,11 @@ import type {
   ICredential,
   ICredentialPresentation,
   IDelegationNode,
-  SignCallback,
+  SignerInterface,
   DereferenceDidUrl,
+  DidDocument,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, DataUtils, SDKErrors, Signers } from '@kiltprotocol/utils'
 import * as Claim from './Claim.js'
 import { hashClaimContents } from './Claim.js'
 
@@ -505,28 +507,33 @@ function getAttributes(credential: ICredential): Set<string> {
   return new Set(Object.keys(credential.claim.contents))
 }
 
+const { verifiableOnChain, byDid } = Signers.select
+
 /**
  * Creates a public presentation which can be sent to a verifier.
  * This presentation is signed.
  *
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
- * @param presentationOptions.signCallback The callback to sign the presentation.
+ * @param presentationOptions.signers An array of signer interfaces, one of which will be selected to sign the presentation.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
+ * @param presentationOptions.didDocument The credential owner's DID document; if omitted, it will be resolved from the blockchain.
  * @returns A deep copy of the Credential with all but `publicAttributes` removed.
  */
 export async function createPresentation({
   credential,
-  signCallback,
+  signers,
   selectedAttributes,
   challenge,
+  didDocument,
 }: {
   credential: ICredential
-  signCallback: SignCallback
+  signers: SignerInterface[]
   selectedAttributes?: string[]
   challenge?: string
+  didDocument?: DidDocument
 }): Promise<ICredentialPresentation> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -541,16 +548,30 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const signature = await signCallback({
+  if (!didDocument) {
+    didDocument = (await resolve(credential.claim.owner)).didDocument
+  }
+  if (!didDocument) {
+    throw new Error('claimer DID cannot be resolved')
+  }
+  const signer = await Signers.selectSigner(
+    signers,
+    verifiableOnChain(),
+    byDid(didDocument, { verificationRelationship: 'authentication' })
+  )
+  if (!signer) {
+    throw new Error('no suitable signer available')
+  }
+
+  const signature = await signer?.sign({
     data: makeSigningData(presentation, challenge),
-    did: credential.claim.owner,
-    verificationRelationship: 'authentication',
   })
 
   return {
     ...presentation,
     claimerSignature: {
-      ...signatureToJson(signature),
+      signature: Crypto.u8aToHex(signature),
+      keyUri: signer.id as DidUrl,
       ...(challenge && { challenge }),
     },
   }

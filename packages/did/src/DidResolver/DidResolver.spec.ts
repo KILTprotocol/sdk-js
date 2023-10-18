@@ -487,7 +487,7 @@ describe('When resolving a full DID', () => {
       .mockResolvedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
-    const randomKeypair = makeSigningKeyTool().authentication[0]
+    const randomKeypair = (await makeSigningKeyTool()).authentication[0]
     const randomDid = Did.getFullDidFromVerificationMethod({
       publicKeyMultibase: Did.keypairToMultibaseKey(randomKeypair),
     })

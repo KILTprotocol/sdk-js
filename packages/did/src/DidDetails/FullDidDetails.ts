@@ -10,14 +10,15 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
+  DidDocument,
   Did,
   KiltAddress,
   SignatureVerificationRelationship,
-  SignExtrinsicCallback,
+  SignerInterface,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, Signers } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import {
@@ -26,6 +27,7 @@ import {
   toChain,
 } from '../Did.chain.js'
 import { parse } from '../Did.utils.js'
+import { resolve } from '../DidResolver/DidResolver.js'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -110,21 +112,23 @@ async function getNextNonce(did: Did): Promise<BN> {
   return increaseNonce(currentNonce)
 }
 
+const { verifiableOnChain, byDid } = Signers.select
+
 /**
  * Signs and returns the provided unsigned extrinsic with the right DID verification method, if present. Otherwise, it will throw an error.
  *
- * @param did The DID data.
+ * @param did The DID or DID Document of the authorizing DID.
  * @param extrinsic The unsigned extrinsic to sign.
- * @param sign The callback to sign the operation.
+ * @param signers An array of signer interfaces. The function will select the appropriate signer for signing this extrinsic.
  * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
  * @param signingOptions The signing options.
  * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
  * @returns The DID-signed submittable extrinsic.
  */
 export async function authorizeTx(
-  did: Did,
+  did: Did | DidDocument,
   extrinsic: Extrinsic,
-  sign: SignExtrinsicCallback,
+  signers: SignerInterface[],
   submitterAccount: KiltAddress,
   {
     txCounter,
@@ -132,7 +136,16 @@ export async function authorizeTx(
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
-  if (parse(did).type === 'light') {
+  let didUri: Did
+  let didDocument: DidDocument | undefined
+  if (typeof did === 'string') {
+    didUri = did
+  } else {
+    didUri = did.id
+    didDocument = did
+  }
+
+  if (parse(didUri).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
@@ -145,12 +158,26 @@ export async function authorizeTx(
     )
   }
 
+  if (!didDocument) {
+    didDocument = (await resolve(didUri)).didDocument as DidDocument
+  }
+  if (!didDocument?.id) {
+    throw new Error('failed to resolve signer DID')
+  }
+  const signer = await Signers.selectSigner(
+    signers,
+    verifiableOnChain(),
+    byDid(didDocument, { verificationRelationship })
+  )
+  if (typeof signer === 'undefined') {
+    throw new Error('incompatible signers') // TODO: improve error message
+  }
+
   return generateDidAuthenticatedTx({
-    did,
-    verificationRelationship,
-    sign,
+    did: didUri,
+    signer,
     call: extrinsic,
-    txCounter: txCounter || (await getNextNonce(did)),
+    txCounter: txCounter || (await getNextNonce(didUri)),
     submitter: submitterAccount,
   })
 }
@@ -202,9 +229,9 @@ function groupExtrinsicsByVerificationRelationship(
  *
  * @param input The object with named parameters.
  * @param input.batchFunction The batch function to use, for example `api.tx.utility.batchAll`.
- * @param input.did The DID document.
+ * @param input.did The DID or DID Document of the authorizing DID.
  * @param input.extrinsics The array of unsigned extrinsics to sign.
- * @param input.sign The callback to sign the operation.
+ * @param input.signers An array of signer interfaces. The function will select the appropriate signer for signing each extrinsic.
  * @param input.submitter The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
  * @param input.nonce The optional nonce to use for the first batch, next batches will use incremented value.
  * @returns The DID-signed submittable extrinsic.
@@ -214,14 +241,14 @@ export async function authorizeBatch({
   did,
   extrinsics,
   nonce,
-  sign,
+  signers,
   submitter,
 }: {
   batchFunction: SubmittableExtrinsicFunction<'promise'>
-  did: Did
+  did: Did | DidDocument
   extrinsics: Extrinsic[]
   nonce?: BN
-  sign: SignExtrinsicCallback
+  signers: SignerInterface[]
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {
@@ -230,20 +257,37 @@ export async function authorizeBatch({
     )
   }
 
-  if (parse(did).type === 'light') {
+  let didUri: Did
+  let didDocument: DidDocument | undefined
+  if (typeof did === 'string') {
+    didUri = did
+  } else {
+    didUri = did.id
+    didDocument = did
+  }
+
+  if (parse(didUri).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
   }
 
   if (extrinsics.length === 1) {
-    return authorizeTx(did, extrinsics[0], sign, submitter, {
+    return authorizeTx(did, extrinsics[0], signers, submitter, {
       txCounter: nonce,
     })
   }
 
   const groups = groupExtrinsicsByVerificationRelationship(extrinsics)
-  const firstNonce = nonce || (await getNextNonce(did))
+  const firstNonce = nonce || (await getNextNonce(didUri))
+
+  // resolve DID document beforehand to avoid resolving in loop
+  if (!didDocument) {
+    didDocument = (await resolve(didUri)).didDocument
+  }
+  if (typeof didDocument?.id !== 'string') {
+    throw new Error('failed to resolve signer DID')
+  }
 
   const promises = groups.map(async (group, batchIndex) => {
     const list = group.extrinsics
@@ -252,10 +296,18 @@ export async function authorizeBatch({
 
     const { verificationRelationship } = group
 
+    const signer = await Signers.selectSigner(
+      signers,
+      verifiableOnChain(),
+      byDid(didDocument!, { verificationRelationship })
+    )
+    if (typeof signer === 'undefined') {
+      throw new Error('incompatible signers') // TODO: improve error message
+    }
+
     return generateDidAuthenticatedTx({
-      did,
-      verificationRelationship,
-      sign,
+      did: didUri,
+      signer,
       call,
       txCounter,
       submitter,
