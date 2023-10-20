@@ -17,7 +17,8 @@ import {
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { Crypto, cbor, Buffer } from '@kiltprotocol/utils'
+import { Crypto, cbor } from '@kiltprotocol/utils'
+import { stringToU8a } from '@polkadot/util'
 
 import { ApiMocks, makeSigningKeyTool } from '../../../../tests/testUtils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
@@ -747,7 +748,7 @@ describe('DID Resolution compliance', () => {
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
-        didDocumentStream: Buffer.from(
+        didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
             authentication: ['#auth'],
@@ -776,7 +777,7 @@ describe('DID Resolution compliance', () => {
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { contentType: Did.DID_JSON_LD_CONTENT_TYPE },
-        didDocumentStream: Buffer.from(
+        didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
             authentication: ['#auth'],
@@ -806,7 +807,7 @@ describe('DID Resolution compliance', () => {
       ).toMatchObject<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
-        didDocumentStream: Buffer.from(
+        didDocumentStream: Uint8Array.from(
           cbor.encode({
             id: did,
             authentication: ['#auth'],
@@ -922,7 +923,7 @@ describe('DID Resolution compliance', () => {
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
         dereferencingMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
-        contentStream: Buffer.from(
+        contentStream: Uint8Array.from(
           cbor.encode({
             id: did,
             authentication: ['#auth'],

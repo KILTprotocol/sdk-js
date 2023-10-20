@@ -8,7 +8,6 @@
 import * as string from '@polkadot/util/string'
 import nacl from 'tweetnacl'
 import * as Crypto from './Crypto'
-import { Buffer } from './index.js'
 
 const messageStr = 'This is a test'
 const message = new Uint8Array(string.stringToU8a(messageStr))

@@ -127,7 +127,7 @@ export type RepresentationResolutionResult<
    * The byte stream might then be parsed by the caller of the resolveRepresentation function into a data model, which can in turn be validated and processed.
    * If the resolution is unsuccessful, this value MUST be an empty stream.
    */
-  didDocumentStream?: Buffer
+  didDocumentStream?: Uint8Array
   didResolutionMetadata: RepresentationResolutionMetadata<ContentType>
 }
 
@@ -205,7 +205,7 @@ export type DereferenceContentStream =
   | JsonLd<VerificationMethod>
   | Service
   | JsonLd<Service>
-  | Buffer
+  | Uint8Array
 
 export type DereferenceContentMetadata = ResolutionDocumentMetadata
 

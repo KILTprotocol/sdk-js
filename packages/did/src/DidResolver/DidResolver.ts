@@ -22,8 +22,9 @@ import type {
   ResolutionResult,
 } from '@kiltprotocol/types'
 
+import { stringToU8a } from '@polkadot/util'
 import { ConfigService } from '@kiltprotocol/config'
-import { Buffer, cbor } from '@kiltprotocol/utils'
+import { cbor } from '@kiltprotocol/utils'
 
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
@@ -177,7 +178,7 @@ export async function resolveRepresentation(
   const inputTransform = (() => {
     switch (accept) {
       case 'application/did+json': {
-        return (didDoc: DidDocument) => JSON.stringify(didDoc)
+        return (didDoc: DidDocument) => stringToU8a(JSON.stringify(didDoc))
       }
       case 'application/did+ld+json': {
         return (didDoc: DidDocument) => {
@@ -185,11 +186,11 @@ export async function resolveRepresentation(
             ...didDoc,
             '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
           }
-          return JSON.stringify(jsonLdDoc)
+          return stringToU8a(JSON.stringify(jsonLdDoc))
         }
       }
       case 'application/did+cbor': {
-        return (didDoc: DidDocument) => cbor.encode(didDoc)
+        return (didDoc: DidDocument) => Uint8Array.from(cbor.encode(didDoc))
       }
       default: {
         return null
@@ -222,7 +223,7 @@ export async function resolveRepresentation(
       ...didResolutionMetadata,
       contentType: accept,
     },
-    didDocumentStream: Buffer.from(inputTransform(didDocument)),
+    didDocumentStream: inputTransform(didDocument),
   } as RepresentationResolutionResult<SupportedContentType>
 }
 
@@ -392,7 +393,7 @@ export async function dereference(
     }
     // contentType === 'application/did+cbor'
     return [
-      Buffer.from(cbor.encode(dereferenceResult.contentStream)),
+      Uint8Array.from(cbor.encode(dereferenceResult.contentStream)),
       contentType,
     ]
   })()
