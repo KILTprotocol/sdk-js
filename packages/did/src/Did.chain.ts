@@ -40,6 +40,7 @@ import type {
   DidSigningMethodType,
   NewDidVerificationKey,
   NewDidEncryptionKey,
+  BaseNewDidKey,
 } from './DidDetails/DidDetails.js'
 
 import {
@@ -484,120 +485,51 @@ export async function getStoreTxFromDidDocument(
     verificationMethod,
   } = input
 
-  const authKey = (() => {
-    const authenticationMethodId = authentication?.[0]
-    if (authenticationMethodId === undefined) {
+  const [authKey, assertKey, delKey, ...encKeys] = [
+    authentication?.[0],
+    assertionMethod?.[0],
+    capabilityDelegation?.[0],
+    ...(keyAgreement ?? []),
+  ].map((keyId): BaseNewDidKey | undefined => {
+    if (!keyId) {
+      return undefined
+    }
+    const key = verificationMethod?.find((vm) => vm.id === keyId)
+    if (key === undefined) {
       throw new SDKErrors.DidError(
-        'Cannot create a DID without an authentication method.'
+        `A verification method with ID "${keyId}" was not found in the \`verificationMethod\` property of the provided DID Document.`
       )
     }
-    const authVerificationMethod = verificationMethod?.find(
-      (vm) => vm.id === authenticationMethodId
-    )
-    if (authVerificationMethod === undefined) {
+    const { keyType, publicKey } = multibaseKeyToDidKey(key.publicKeyMultibase)
+    if (
+      !isValidVerificationMethodType(keyType) &&
+      !isValidEncryptionMethodType(keyType)
+    ) {
       throw new SDKErrors.DidError(
-        `Cannot find the authentication method with ID "${authenticationMethodId}" in the \`verificationMethod\` property.`
-      )
-    }
-    const { keyType, publicKey } = multibaseKeyToDidKey(
-      authVerificationMethod.publicKeyMultibase
-    )
-    if (!isValidVerificationMethodType(keyType)) {
-      throw new SDKErrors.DidError(
-        `Provided authentication key has an unsupported key type "${keyType}".`
+        `Verification method with ID "${keyId}" has an unsupported type "${keyType}".`
       )
     }
     return {
       type: keyType,
       publicKey,
-    } as NewDidVerificationKey
-  })()
+    }
+  })
 
-  const keyAgreementKeys = (() => {
-    if (keyAgreement === undefined || keyAgreement.length === 0) {
-      return undefined
-    }
-    return keyAgreement.map((k) => {
-      const vm = verificationMethod?.find((_vm) => _vm.id === k)
-      if (vm === undefined) {
-        throw new SDKErrors.DidError(
-          `Cannot find the key agreement method with ID "${k}" in the \`verificationMethod\` property.`
-        )
-      }
-      const { keyType, publicKey } = multibaseKeyToDidKey(vm.publicKeyMultibase)
-      if (!isValidEncryptionMethodType(keyType)) {
-        throw new SDKErrors.DidError(
-          `The key agreement key with ID "${k}" has an unsupported key type ${keyType}.`
-        )
-      }
-      return {
-        type: keyType,
-        publicKey,
-      } as NewDidEncryptionKey
-    })
-  })()
-
-  const assertionMethodKey = (() => {
-    const assertionMethodId = assertionMethod?.[0]
-    if (assertionMethodId === undefined) {
-      return undefined
-    }
-    const assertionVerificationMethod = verificationMethod?.find(
-      (vm) => vm.id === assertionMethodId
+  if (authKey === undefined) {
+    throw new SDKErrors.DidError(
+      'Cannot create a DID without an authentication method.'
     )
-    if (assertionVerificationMethod === undefined) {
-      throw new SDKErrors.DidError(
-        `Cannot find the assertion method with ID "${assertionMethodId}" in the \`verificationMethod\` property.`
-      )
-    }
-    const { keyType, publicKey } = multibaseKeyToDidKey(
-      assertionVerificationMethod.publicKeyMultibase
-    )
-    if (!isValidVerificationMethodType(keyType)) {
-      throw new SDKErrors.DidError(
-        `The assertion method key with ID "${assertionMethodId}" has an unsupported key type ${keyType}.`
-      )
-    }
-    return {
-      type: keyType,
-      publicKey,
-    } as NewDidVerificationKey
-  })()
-
-  const capabilityDelegationKey = (() => {
-    const capabilityDelegationId = capabilityDelegation?.[0]
-    if (capabilityDelegationId === undefined) {
-      return undefined
-    }
-    const capabilityDelegationVerificationMethod = verificationMethod?.find(
-      (vm) => vm.id === capabilityDelegationId
-    )
-    if (capabilityDelegationVerificationMethod === undefined) {
-      throw new SDKErrors.DidError(
-        `Cannot find the capability delegation method with ID "${capabilityDelegationId}" in the \`verificationMethod\` property.`
-      )
-    }
-    const { keyType, publicKey } = multibaseKeyToDidKey(
-      capabilityDelegationVerificationMethod.publicKeyMultibase
-    )
-    if (!isValidVerificationMethodType(keyType)) {
-      throw new SDKErrors.DidError(
-        `The capability delegation method key with ID "${capabilityDelegationId}" has an unsupported key type ${keyType}.`
-      )
-    }
-    return {
-      type: keyType,
-      publicKey,
-    } as NewDidVerificationKey
-  })()
+  }
 
   const storeTxInput: GetStoreTxInput = {
-    authentication: [authKey],
-    assertionMethod: assertionMethodKey ? [assertionMethodKey] : undefined,
-    capabilityDelegation: capabilityDelegationKey
-      ? [capabilityDelegationKey]
+    authentication: [authKey as NewDidVerificationKey],
+    assertionMethod: assertKey
+      ? [assertKey as NewDidVerificationKey]
       : undefined,
-    keyAgreement: keyAgreementKeys,
+    capabilityDelegation: delKey
+      ? [delKey as NewDidVerificationKey]
+      : undefined,
+    keyAgreement: encKeys as NewDidEncryptionKey[],
     service,
   }
 
