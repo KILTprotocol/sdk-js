@@ -73,7 +73,7 @@ export const types11000: RegistryTypes = {
     },
   },
   DidIdentityProviderError: {
-    _enum: ['DidNotFound', 'InternalError'],
+    _enum: ['DidNotFound', 'Internal'],
   },
   DidMerkleProofError: {
     _enum: [
@@ -81,7 +81,7 @@ export const types11000: RegistryTypes = {
       'KeyNotFound',
       'LinkedAccountNotFound',
       'Web3NameNotFound',
-      'InternalError',
+      'Internal',
     ],
   },
 }
