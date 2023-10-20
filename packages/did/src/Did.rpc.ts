@@ -204,9 +204,8 @@ export function linkedInfoFromChain(
     did.service = services
   }
 
-  const web3Name = w3n.isNone ? undefined : w3n.unwrap().toHuman()
-  if (web3Name !== undefined) {
-    did.alsoKnownAs = [`w3n:${web3Name}`]
+  if (w3n.isSome) {
+    did.alsoKnownAs = [`w3n:${w3n.unwrap().toHuman()}`]
   }
   const linkedAccounts = connectedAccountsFromChain(accounts, networkPrefix)
 
