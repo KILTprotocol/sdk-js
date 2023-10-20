@@ -58,4 +58,30 @@ export const types11000: RegistryTypes = {
   Web3NameMerkleValue: 'BlockNumber',
   LinkedAccountMerkleKey: 'PalletDidLookupLinkableAccountLinkableAccountId',
   LinkedAccountMerkleValue: 'Null',
+  RuntimeApiDipProofError: {
+    _enum: {
+      IdentityNotFound: null,
+      IdentityProviderError: 'CombineError',
+      MerkleProofError: 'DidMerkleProofError',
+    },
+  },
+  CombineError: {
+    _enum: {
+      A: 'DidIdentityProviderError',
+      B: 'DidIdentityProviderError',
+      C: 'DidIdentityProviderError',
+    },
+  },
+  DidIdentityProviderError: {
+    _enum: ['DidNotFound', 'InternalError'],
+  },
+  DidMerkleProofError: {
+    _enum: [
+      'DidNotFound',
+      'KeyNotFound',
+      'LinkedAccountNotFound',
+      'Web3NameNotFound',
+      'InternalError',
+    ],
+  },
 }
