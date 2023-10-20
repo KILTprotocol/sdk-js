@@ -6,7 +6,7 @@
  */
 
 // We don't export the `add*VerificationMethod` functions, they are meant to be used internally
-export {
+export type {
   BaseNewDidKey,
   DidEncryptionMethodType,
   DidSigningMethodType,
