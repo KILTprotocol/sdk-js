@@ -181,7 +181,6 @@ describe('light DID', () => {
     const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
     })
-
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,

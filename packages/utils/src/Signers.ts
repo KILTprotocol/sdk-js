@@ -53,18 +53,19 @@ export const DID_PALLET_SUPPORTED_ALGORITHMS = Object.freeze([
  * Signer that produces an ECDSA signature over a Blake2b-256 digest of the message using the secp256k1 curve.
  * The signature has a recovery bit appended to the end, allowing public key recovery.
  *
- * @param root0
- * @param root0.keyUri
- * @param root0.publicKey
- * @param root0.secretKey
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
+ * @param input.publicKey The corresponding public key. May be omitted.
+ * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
 export async function polkadotEcdsaSigner({
   secretKey,
-  keyUri,
+  keyUri, // TODO: I think this should just be called id
 }: {
-  publicKey?: Uint8Array
-  secretKey: Uint8Array
   keyUri: string
+  secretKey: Uint8Array
+  publicKey?: Uint8Array
 }): Promise<SignerInterface> {
   return {
     id: keyUri,
@@ -79,19 +80,19 @@ export async function polkadotEcdsaSigner({
  * Signer that produces an ECDSA signature over a Keccak-256 digest of the message using the secp256k1 curve.
  * The signature has a recovery bit appended to the end, allowing public key recovery.
  *
- * @param input
- * @param input.keyUri
- * @param input.publicKey
- * @param input.secretKey
- * @returns
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
+ * @param input.publicKey The corresponding public key. May be omitted.
+ * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
 export async function ethereumEcdsaSigner({
   secretKey,
   keyUri,
 }: {
-  publicKey?: Uint8Array
-  secretKey: Uint8Array
   keyUri: string
+  secretKey: Uint8Array
+  publicKey?: Uint8Array
 }): Promise<SignerInterface> {
   return {
     id: keyUri,
@@ -105,19 +106,19 @@ export async function ethereumEcdsaSigner({
 /**
  * Signer that produces an ES256K signature over the message.
  *
- * @param input
- * @param input.keyUri
- * @param input.publicKey
- * @param input.secretKey
- * @returns
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
+ * @param input.publicKey The corresponding public key. May be omitted.
+ * @returns A signer interface capable of making ES256K signatures.
  */
 export async function es256kSigner({
   secretKey,
   keyUri,
 }: {
-  publicKey?: Uint8Array
-  secretKey: Uint8Array
   keyUri: string
+  secretKey: Uint8Array
+  publicKey?: Uint8Array
 }): Promise<SignerInterface> {
   // only exists to map secretKey to seed
   return es256kSignerWrapped({ seed: secretKey, keyUri })
@@ -126,19 +127,19 @@ export async function es256kSigner({
 /**
  * Signer that produces an Ed25519 signature over the message.
  *
- * @param input
- * @param input.keyUri
- * @param input.publicKey
- * @param input.secretKey
- * @returns
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.secretKey A 32 byte Ed25519 secret key. Some key representations append the public key to the private key; to allow these, all bytes after the 32nd byte will be dropped.
+ * @param input.publicKey The corresponding public key. May be omitted.
+ * @returns A signer interface capable of making Ed25519 signatures.
  */
 export async function ed25519Signer({
   secretKey,
   keyUri,
 }: {
-  publicKey?: Uint8Array
-  secretKey: Uint8Array
   keyUri: string
+  secretKey: Uint8Array
+  publicKey?: Uint8Array
 }): Promise<SignerInterface> {
   // polkadot ed25519 private keys are a concatenation of private and public key for some reason
   return ed25519SignerWrapped({ seed: secretKey.slice(0, 32), keyUri })
@@ -147,11 +148,11 @@ export async function ed25519Signer({
 /**
  * Signer that produces an Sr25519 signature over the message.
  *
- * @param input
- * @param input.keyUri
- * @param input.publicKey
- * @param input.secretKey
- * @returns
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.secretKey A 64 byte Sr25519 secret key.
+ * @param input.publicKey The corresponding 32 byte public key.
+ * @returns A signer interface capable of making Sr25519 signatures.
  */
 export async function sr25519Signer({
   secretKey,
@@ -188,14 +189,17 @@ const signerFactory = {
 }
 
 /**
- * @param root0
- * @param root0.keypair
- * @param root0.algorithm
- * @param root0.keyUri
+ * Creates a signer interface based on an existing keypair and an algorithm descriptor.
+ *
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.keypair A polkadot {@link KeyringPair} or combination of `secretKey` & `publicKey`.
+ * @param input.algorithm An algorithm identifier from the {@link ALGORITHMS} map.
+ * @returns A signer interface.
  */
 export async function signerFromKeypair({
-  keypair,
   keyUri,
+  keypair,
   algorithm,
 }: {
   keypair: Keypair | KeyringPair
@@ -256,19 +260,22 @@ function algsForKeyType(keyType: string): string[] {
 }
 
 /**
- * @param root0
- * @param root0.keypair
- * @param root0.type
- * @param root0.keyUri
+ * Based on an existing keypair and its type, creates all available signers that work with this key type.
+ *
+ * @param input Holds all function arguments.
+ * @param input.keyUri Sets the signer's id property.
+ * @param input.keypair A polkadot {@link KeyringPair} or combination of `secretKey` & `publicKey`.
+ * @param input.type If `keypair` is not a {@link KeyringPair}, provide the key type here; otherwise, this is ignored.
+ * @returns An array of signer interfaces based on the keypair and type.
  */
 export async function getSignersForKeypair({
+  keyUri,
   keypair,
   type = (keypair as KeyringPair).type,
-  keyUri,
 }: {
+  keyUri?: string
   keypair: Keypair | KeyringPair
   type?: string
-  keyUri?: string
 }): Promise<SignerInterface[]> {
   if (!type) {
     throw new Error('type is required if keypair.type is not given')
@@ -282,12 +289,15 @@ export async function getSignersForKeypair({
 }
 
 export interface SignerSelector {
-  (signer: SignerInterface): boolean
+  (signer: SignerInterface): boolean // TODO: allow async
 }
 
 /**
- * @param signers
- * @param selectors
+ * Filters signer interfaces, returning only those accepted by all selectors.
+ *
+ * @param signers An array of signer interfaces.
+ * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
+ * @returns An array of those signers for which all selectors returned `true`.
  */
 export async function selectSigners(
   signers: readonly SignerInterface[],
@@ -299,8 +309,11 @@ export async function selectSigners(
 }
 
 /**
- * @param signers
- * @param selectors
+ * Finds a suiteable signer interfaces in an array of signers, returning the first signer accepted by all selectors.
+ *
+ * @param signers An array of signer interfaces.
+ * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
+ * @returns The first signer for which all selectors returned `true`, or `undefined` if none meet selection criteria.
  */
 export async function selectSigner(
   signers: readonly SignerInterface[],
@@ -311,17 +324,36 @@ export async function selectSigner(
   })
 }
 
-function byId(id: string): SignerSelector {
-  return (signer) => signer.id === id
+/**
+ * Select signers based on (key) ids.
+ *
+ * @param ids Allowed signer/key ids to filter for.
+ * @returns A selector identifying signers whose id property is in `ids`.
+ */
+function byId(ids: readonly string[]): SignerSelector {
+  return ({ id }) => ids.includes(id)
 }
-
+/**
+ * Select signers based on algorithm identifiers.
+ *
+ * @param algorithms Allowed algorithms to filter for.
+ * @returns A selector identifying signers whose algorithm property is in `algorithms`.
+ */
 function byAlgorithm(algorithms: readonly string[]): SignerSelector {
   return (signer) =>
     algorithms.some(
       (algorithm) => algorithm.toLowerCase() === signer.algorithm.toLowerCase()
     )
 }
-
+/**
+ * Select signers based on the association of key ids with a given DID.
+ *
+ * @param didDocument DidDocument of the DID, on which the signer id must be listed as a verification method.
+ * @param options Additional optional filter criteria.
+ * @param options.verificationRelationship If set, the signer id must be listed under this verification relationship on the DidDocument.
+ * @param options.controller If set, only verificationMethods with this controller are considered.
+ * @returns A selector identifying signers whose id is associated with the DidDocument.
+ */
 function byDid(
   didDocument: DidDocument,
   {

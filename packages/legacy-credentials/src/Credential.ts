@@ -548,10 +548,10 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  if (!didDocument) {
-    didDocument = (await resolve(credential.claim.owner)).didDocument
-  }
-  if (!didDocument) {
+  const didDoc =
+    didDocument ?? (await resolve(credential.claim.owner)).didDocument
+
+  if (!didDoc) {
     throw new Error(
       `Unable to sign: Failed to resolve claimer DID ${credential.claim.owner}`
     )
@@ -559,12 +559,12 @@ export async function createPresentation({
   const signer = await Signers.selectSigner(
     signers,
     verifiableOnChain(),
-    byDid(didDocument, { verificationRelationship: 'authentication' })
+    byDid(didDoc, { verificationRelationship: 'authentication' })
   )
   if (!signer) {
     throw new SDKErrors.NoSuitableSignerError(undefined, {
       signerRequirements: {
-        did: didDocument.id,
+        did: didDoc.id,
         algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
         verificationRelationship: 'authentication',
       },
