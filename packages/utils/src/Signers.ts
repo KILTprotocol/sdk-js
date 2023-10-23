@@ -26,7 +26,12 @@ import {
 import type { SignerInterface } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 
-import type { DidDocument, KeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDocument,
+  DidUrl,
+  KeyringPair,
+  UriFragment,
+} from '@kiltprotocol/types'
 
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b', // could also be called ES256K-R-Blake2b
@@ -322,25 +327,55 @@ function byDid(
     verificationRelationship,
   }: { verificationRelationship?: string; controller?: string } = {}
 ): SignerSelector {
-  return (signer) => {
-    const vm = didDocument.verificationMethod?.find(
-      ({ id }) => id === signer.id || didDocument.id + id === signer.id // deal with relative DID URLs as ids
+  let eligibleVMs = didDocument.verificationMethod
+  // TODO: not super happy about this throwing; can I attach a diagnostics property to the returned function instead that will inform why this will never select a signer?
+  if (!Array.isArray(eligibleVMs) || eligibleVMs.length === 0) {
+    throw new Error(
+      `DID ${didDocument.id} not fit for signing: No verification methods are associated with the signer DID document. It may be that this DID has been deactivated.`
     )
-    if (!vm) {
-      return false
+  }
+  if (controller) {
+    eligibleVMs = eligibleVMs.filter(
+      ({ controller: ctr }) => controller === ctr
+    )
+  }
+  // helps deal with relative DID URLs as ids
+  function absoluteId(id: string): DidUrl {
+    if (id.startsWith(didDocument.id)) {
+      return id as DidUrl
     }
-    if (controller && controller !== vm.controller) {
-      return false
+    if (id.startsWith('#')) {
+      return `${didDocument.id}${id as UriFragment}`
     }
+    return `${didDocument.id}#${id}`
+  }
+  let eligibleIds = eligibleVMs.map(({ id }) => absoluteId(id))
+  if (typeof verificationRelationship === 'string') {
     if (
-      typeof verificationRelationship === 'string' &&
-      didDocument[verificationRelationship]?.some?.(
-        (id: string) => id === signer.id || didDocument.id + id === signer.id // deal with relative DID URLs as ids
-      ) !== true
+      !Array.isArray(didDocument[verificationRelationship]) ||
+      didDocument[verificationRelationship].length === 0
     ) {
-      return false
+      throw new Error(
+        `DID ${didDocument.id} not fit for signing: No verification methods available for the requested verification relationship ("${verificationRelationship}").`
+      )
     }
-    return true
+    eligibleIds = eligibleIds.filter((eligibleId) =>
+      didDocument[verificationRelationship].some?.(
+        (VrId: string) => VrId === eligibleId || absoluteId(VrId) === eligibleId // TODO: check if leading equality check does indeed help increase performance
+      )
+    )
+  }
+  if (eligibleIds.length === 0) {
+    throw new Error(
+      `DID ${
+        didDocument.id
+      } not fit for signing: The verification methods associated with this DID's document do not match the requested controller and/or verification relationship: ${JSON.stringify(
+        { controller, verificationRelationship }
+      )}.`
+    )
+  }
+  return ({ id }) => {
+    return eligibleIds.includes(id as DidUrl)
   }
 }
 

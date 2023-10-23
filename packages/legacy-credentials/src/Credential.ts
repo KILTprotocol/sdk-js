@@ -530,8 +530,8 @@ export async function createPresentation({
   didDocument,
 }: {
   credential: ICredential
-  signers: SignerInterface[]
-  selectedAttributes?: string[]
+  signers: readonly SignerInterface[]
+  selectedAttributes?: readonly string[]
   challenge?: string
   didDocument?: DidDocument
 }): Promise<ICredentialPresentation> {
@@ -552,7 +552,9 @@ export async function createPresentation({
     didDocument = (await resolve(credential.claim.owner)).didDocument
   }
   if (!didDocument) {
-    throw new Error('claimer DID cannot be resolved')
+    throw new Error(
+      `Unable to sign: Failed to resolve claimer DID ${credential.claim.owner}`
+    )
   }
   const signer = await Signers.selectSigner(
     signers,
@@ -560,7 +562,9 @@ export async function createPresentation({
     byDid(didDocument, { verificationRelationship: 'authentication' })
   )
   if (!signer) {
-    throw new Error('no suitable signer available')
+    throw new Error(
+      `Unable to sign: No signer given for on-chain verifiable signatures by an authentication key related to ${didDocument.id}`
+    )
   }
 
   const signature = await signer?.sign({
