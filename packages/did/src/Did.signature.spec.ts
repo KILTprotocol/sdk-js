@@ -9,14 +9,13 @@ import type {
   KiltKeyringPair,
   KeyringPair,
   DidDocument,
-  SignCallback,
   DidUrl,
   DidSignature,
   DereferenceResult,
   SignerInterface,
 } from '@kiltprotocol/types'
 
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, Signers } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
 import type { NewLightDidVerificationKey } from './DidDetails'
@@ -286,8 +285,8 @@ describe('light DID', () => {
 describe('full DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
-  let sign: SignCallback
-  beforeAll(() => {
+  let signer: SignerInterface & { id: DidUrl }
+  beforeAll(async () => {
     keypair = Crypto.makeKeypairFromSeed()
     did = {
       id: `did:kilt:${keypair.address}`,
@@ -301,15 +300,11 @@ describe('full DID', () => {
         },
       ],
     }
-    sign = async ({ data, did: signingDid }) => ({
-      signature: keypair.sign(data),
-      verificationMethod: {
-        id: '#0x12345',
-        controller: signingDid,
-        type: 'Multikey',
-        publicKeyMultibase: keypairToMultibaseKey(keypair),
-      },
-    })
+    signer = (await Signers.signerFromKeypair({
+      keypair,
+      keyUri: `${did.id}#0x12345`,
+      algorithm: 'Ed25519',
+    })) as SignerInterface & { id: DidUrl }
   })
 
   beforeEach(() => {
@@ -336,16 +331,14 @@ describe('full DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await signer.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedVerificationRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -353,16 +346,14 @@ describe('full DID', () => {
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const { signature, verificationMethod } = await sign({
+    const signature = await signer.sign({
       data: SIGNED_BYTES,
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedVerificationRelationship: 'authentication',
       })
     ).resolves.not.toThrow()
@@ -375,16 +366,14 @@ describe('full DID', () => {
       contentStream: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await signer.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -396,16 +385,14 @@ describe('full DID', () => {
       dereferencingMetadata: { error: 'notFound' },
     })
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await signer.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedVerificationRelationship: 'authentication',
       })
     ).rejects.toThrow()
@@ -413,10 +400,8 @@ describe('full DID', () => {
 
   it('accepts signature of full did for light did if enabled', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, verificationMethod } = await sign({
+    const signature = await signer.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
-      did: did.id,
-      verificationRelationship: 'authentication',
     })
 
     const authKey = did.verificationMethod?.find(
@@ -438,7 +423,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedSigner,
         expectedVerificationRelationship: 'authentication',
       })
@@ -448,7 +433,7 @@ describe('full DID', () => {
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        signerUrl: `${did.id}${verificationMethod.id}`,
+        signerUrl: signer.id,
         expectedSigner,
         allowUpgraded: true,
         expectedVerificationRelationship: 'authentication',

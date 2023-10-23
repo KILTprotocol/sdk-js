@@ -48,7 +48,6 @@ import type {
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignExtrinsicCallback,
   SignerInterface,
 } from '@kiltprotocol/types'
 import * as CType from '../ctype/index.js'
@@ -660,11 +659,6 @@ export type AttestationHandler = (
   blockHash: Uint8Array
   timestamp?: number
 }>
-
-export interface DidSigner {
-  did: Did
-  signer: SignExtrinsicCallback
-}
 
 export type TxHandler = {
   account: KiltAddress
