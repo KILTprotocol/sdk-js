@@ -8,6 +8,7 @@
 // @ts-expect-error not a typescript module
 import jsonld from 'jsonld' // cjs module
 
+import { base58Encode } from '@polkadot/util-crypto'
 import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
@@ -15,6 +16,7 @@ import {
   dereference as dereferenceDid,
   W3C_DID_CONTEXT_URL,
   isFailedDereferenceMetadata,
+  multibaseKeyToDidKey,
 } from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -79,15 +81,65 @@ export const kiltContextsLoader: DocumentLoader = async (url) => {
   throw new Error(`not a known Kilt context: ${url}`)
 }
 
+type LegacyVerificationMethodType =
+  | 'Sr25519VerificationKey2020'
+  | 'Ed25519VerificationKey2018'
+  | 'EcdsaSecp256k1VerificationKey2019'
+  | 'X25519KeyAgreementKey2019'
+type LegacyVerificationMethod = Pick<
+  VerificationMethod,
+  'id' | 'controller'
+> & { publicKeyBase58: string; type: LegacyVerificationMethodType }
+
+// Returns legacy representations of a KILT DID verification method.
 export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as DidUri)
   const { dereferencingMetadata, contentStream } = await dereferenceDid(did)
   if (isFailedDereferenceMetadata(dereferencingMetadata)) {
     throw new Error(dereferencingMetadata.error)
   }
+  const didDocument = (() => {
+    if (contentStream === undefined) {
+      return {}
+    }
+    const doc = { ...contentStream } as DidDocument
+    doc.verificationMethod = doc.verificationMethod?.map(
+      (vm): LegacyVerificationMethod => {
+        // Bail early if the returned document is already in legacy format
+        if (vm.type !== 'Multikey') {
+          return vm as unknown as LegacyVerificationMethod
+        }
+        const { controller, id, publicKeyMultibase } = vm
+        const { keyType, publicKey } = multibaseKeyToDidKey(publicKeyMultibase)
+        const publicKeyBase58 = base58Encode(publicKey)
+        const verificationMethodType: LegacyVerificationMethodType = (() => {
+          switch (keyType) {
+            case 'ed25519':
+              return 'Ed25519VerificationKey2018'
+            case 'sr25519':
+              return 'Sr25519VerificationKey2020'
+            case 'ecdsa':
+              return 'EcdsaSecp256k1VerificationKey2019'
+            case 'x25519':
+              return 'X25519KeyAgreementKey2019'
+            default:
+              throw new Error(`Unsupported key type "${keyType}"`)
+          }
+        })()
+        return {
+          controller,
+          id,
+          publicKeyBase58,
+          type: verificationMethodType,
+        }
+      }
+    ) as unknown as VerificationMethod[]
+    return doc
+  })()
+
   // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
   const document = (await jsonld.frame(
-    contentStream ?? {},
+    didDocument,
     {
       // add did contexts to make sure we get a compacted representation
       '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],

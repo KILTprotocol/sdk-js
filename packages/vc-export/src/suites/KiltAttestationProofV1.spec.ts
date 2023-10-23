@@ -313,8 +313,7 @@ describe('vc-js', () => {
     it('creates and verifies a signed presentation (sr25519)', async () => {
       const signer = {
         sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        // TODO: This goes against the signer interface of the rest of the SDK, where `id` is supposed to be only the verification method ID. Change this.
-        id: `${didDocument.id}${didDocument.authentication![0]}`,
+        id: didDocument.id + didDocument.authentication![0],
       }
       const signingSuite = new Sr25519Signature2020({ signer })
 
@@ -450,13 +449,13 @@ describe('issuance', () => {
   const didSigner: KiltAttestationProofV1.DidSigner = {
     did: attestedVc.issuer,
     signer: async () => ({
+      signature: new Uint8Array(32),
       verificationMethod: {
         controller: attestedVc.issuer,
         type: 'Multikey',
         id: '#test',
         publicKeyMultibase: 'zasd',
       },
-      signature: new Uint8Array(32),
     }),
   }
   const transactionHandler: KiltAttestationProofV1.TxHandler = {

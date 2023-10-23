@@ -91,8 +91,7 @@ beforeAll(async () => {
 it('issues and verifies a signed credential', async () => {
   const signer = {
     sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-    // TODO: This goes against the signer interface of the rest of the SDK, where `id` is supposed to be only the verification method ID. Change this.
-    id: `${didDocument.id}${didDocument.assertionMethod![0]}`,
+    id: didDocument.id + didDocument.assertionMethod![0],
   }
   const attestationSigner = new Sr25519Signature2020({ signer })
 
@@ -117,23 +116,36 @@ it('issues and verifies a signed credential', async () => {
   expect(result).not.toHaveProperty('error')
   expect(result).toHaveProperty('verified', true)
 
-  const authenticationMethod = didDocument.verificationMethod?.find(({ id }) =>
-    id.includes('authentication')
-  )
-  const assertionMethod = didDocument.verificationMethod?.find(({ id }) =>
-    id.includes('assertion')
-  )
-  const { publicKey } = Did.multibaseKeyToDidKey(
-    assertionMethod!.publicKeyMultibase
-  )
-  const publicKeyBase58 = base58Encode(publicKey)
+  const authenticationMethod = (() => {
+    const m = didDocument.verificationMethod?.find(({ id }) =>
+      id.includes('authentication')
+    )
+    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const publicKeyBase58 = base58Encode(publicKey)
+    return {
+      ...m,
+      id: didDocument.id + m!.id,
+      publicKeyBase58,
+    }
+  })()
+  const assertionMethod = (() => {
+    const m = didDocument.verificationMethod?.find(({ id }) =>
+      id.includes('assertion')
+    )
+    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const publicKeyBase58 = base58Encode(publicKey)
+    return {
+      ...m,
+      id: didDocument.id + m!.id,
+      publicKeyBase58,
+    }
+  })()
 
   result = await vcjs.verifyCredential({
     credential: verifiableCredential,
     suite: new Sr25519Signature2020({
       key: new Sr25519VerificationKey2020({
         ...assertionMethod,
-        publicKeyBase58,
       }),
     }),
     documentLoader,
@@ -146,7 +158,6 @@ it('issues and verifies a signed credential', async () => {
     suite: new Sr25519Signature2020({
       key: new Sr25519VerificationKey2020({
         ...authenticationMethod,
-        publicKeyBase58: authenticationMethod!.publicKeyMultibase.substring(1),
       }),
     }),
     documentLoader,
