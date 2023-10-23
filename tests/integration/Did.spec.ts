@@ -61,11 +61,9 @@ describe('write and didDeleteTx', () => {
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await getStoreTxFromDidDocument(
-      did,
-      otherAccount.address,
-      key.storeDidCallback
-    )
+    const tx = await getStoreTxFromDidDocument(did, otherAccount.address, [
+      key.storeDidSigner,
+    ])
 
     await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({
       isBadOrigin: true,
@@ -96,11 +94,9 @@ describe('write and didDeleteTx', () => {
       ],
     }
 
-    const tx = await Did.getStoreTx(
-      input,
-      paymentAccount.address,
-      key.storeDidCallback
-    )
+    const tx = await Did.getStoreTx(input, paymentAccount.address, [
+      key.storeDidSigner,
+    ])
 
     await submitTx(tx, paymentAccount)
 
@@ -241,14 +237,12 @@ describe('write and didDeleteTx', () => {
 })
 
 it('creates and updates DID, and then reclaims the deposit back', async () => {
-  const { keypair, getSigners, storeDidCallback } = await makeSigningKeyTool()
+  const { keypair, getSigners, storeDidSigner } = await makeSigningKeyTool()
   const newDid = await createMinimalLightDidFromKeypair(keypair)
 
-  const tx = await getStoreTxFromDidDocument(
-    newDid,
-    paymentAccount.address,
-    storeDidCallback
-  )
+  const tx = await getStoreTxFromDidDocument(newDid, paymentAccount.address, [
+    storeDidSigner,
+  ])
 
   await submitTx(tx, paymentAccount)
 
@@ -337,7 +331,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
 describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-    const { storeDidCallback, authentication } = await makeSigningKeyTool(
+    const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
     const { keyAgreement } = makeEncryptionKeyTool(
@@ -351,7 +345,7 @@ describe('DID migration', () => {
     const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
-      storeDidCallback
+      [storeDidSigner]
     )
 
     await submitTx(storeTx, paymentAccount)
@@ -400,7 +394,7 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
-    const { authentication, storeDidCallback } = await makeSigningKeyTool()
+    const { authentication, storeDidSigner } = await makeSigningKeyTool()
     const lightDid = Did.createLightDidDocument({
       authentication,
     })
@@ -408,7 +402,7 @@ describe('DID migration', () => {
     const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
-      storeDidCallback
+      [storeDidSigner]
     )
 
     await submitTx(storeTx, paymentAccount)
@@ -451,7 +445,7 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and services', async () => {
-    const { storeDidCallback, authentication } = await makeSigningKeyTool(
+    const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
     const { keyAgreement } = makeEncryptionKeyTool(
@@ -473,7 +467,7 @@ describe('DID migration', () => {
     const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
-      storeDidCallback
+      [storeDidSigner]
     )
 
     await submitTx(storeTx, paymentAccount)
@@ -548,7 +542,7 @@ describe('DID authorization', () => {
   let signers: SignerInterface[]
 
   beforeAll(async () => {
-    const { getSigners, storeDidCallback, authentication } =
+    const { getSigners, storeDidSigner, authentication } =
       await makeSigningKeyTool('ed25519')
 
     const createTx = await Did.getStoreTx(
@@ -558,7 +552,7 @@ describe('DID authorization', () => {
         capabilityDelegation: authentication,
       },
       paymentAccount.address,
-      storeDidCallback
+      [storeDidSigner]
     )
     await submitTx(createTx, paymentAccount)
     const didLinkedInfo = await api.call.did.query(
@@ -620,7 +614,7 @@ describe('DID authorization', () => {
 describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID', async () => {
-      const { storeDidCallback, authentication } = await makeSigningKeyTool()
+      const { storeDidSigner, authentication } = await makeSigningKeyTool()
       const extrinsic = await Did.getStoreTx(
         {
           authentication,
@@ -669,7 +663,7 @@ describe('DID management batching', () => {
           ],
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       await submitTx(extrinsic, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
@@ -763,7 +757,7 @@ describe('DID management batching', () => {
     })
 
     it('Build a minimal full DID with an Ecdsa key', async () => {
-      const { keypair, storeDidCallback } = await makeSigningKeyTool('ecdsa')
+      const { keypair, storeDidSigner } = await makeSigningKeyTool('ecdsa')
       const didAuthKey: Did.NewDidVerificationKey = {
         publicKey: keypair.publicKey,
         type: 'ecdsa',
@@ -772,7 +766,7 @@ describe('DID management batching', () => {
       const extrinsic = await Did.getStoreTx(
         { authentication: [didAuthKey] },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       await submitTx(extrinsic, paymentAccount)
 
@@ -805,7 +799,7 @@ describe('DID management batching', () => {
 
   describe('FullDidUpdateBuilder', () => {
     it('Build from a complete full DID and remove everything but the authentication key', async () => {
-      const { keypair, getSigners, storeDidCallback, authentication } =
+      const { keypair, getSigners, storeDidSigner, authentication } =
         await makeSigningKeyTool()
 
       const createTx = await Did.getStoreTx(
@@ -847,7 +841,7 @@ describe('DID management batching', () => {
           ],
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       await submitTx(createTx, paymentAccount)
 
@@ -922,7 +916,7 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('Correctly handles rotation of the authentication key', async () => {
-      const { authentication, getSigners, storeDidCallback } =
+      const { authentication, getSigners, storeDidSigner } =
         await makeSigningKeyTool()
       const {
         authentication: [newAuthKey],
@@ -931,7 +925,7 @@ describe('DID management batching', () => {
       const createTx = await Did.getStoreTx(
         { authentication },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       await submitTx(createTx, paymentAccount)
 
@@ -1013,7 +1007,7 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('simple `batch` succeeds despite failures of some extrinsics', async () => {
-      const { authentication, getSigners, storeDidCallback } =
+      const { authentication, getSigners, storeDidSigner } =
         await makeSigningKeyTool()
       const tx = await Did.getStoreTx(
         {
@@ -1027,7 +1021,7 @@ describe('DID management batching', () => {
           ],
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       // Create the full DIgetStoreTx
       await submitTx(tx, paymentAccount)
@@ -1098,7 +1092,7 @@ describe('DID management batching', () => {
     }, 60_000)
 
     it('batchAll fails if any extrinsics fails', async () => {
-      const { authentication, getSigners, storeDidCallback } =
+      const { authentication, getSigners, storeDidSigner } =
         await makeSigningKeyTool()
       const createTx = await Did.getStoreTx(
         {
@@ -1112,7 +1106,7 @@ describe('DID management batching', () => {
           ],
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       await submitTx(createTx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
@@ -1333,14 +1327,14 @@ describe('DID extrinsics batching', () => {
 
 describe('Runtime constraints', () => {
   let testAuthKey: Did.NewDidVerificationKey
-  let storeDidCallback: Did.GetStoreTxSignCallback
+  let storeDidSigner: SignerInterface
   beforeAll(async () => {
     const tool = await makeSigningKeyTool('ed25519')
     testAuthKey = {
       publicKey: tool.keypair.publicKey,
       type: 'ed25519',
     }
-    storeDidCallback = tool.storeDidCallback
+    storeDidSigner = tool.storeDidSigner
   })
   describe('DID creation', () => {
     it('should not be possible to create a DID with too many encryption keys', async () => {
@@ -1357,7 +1351,7 @@ describe('Runtime constraints', () => {
           keyAgreement: newKeyAgreementKeys,
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       // One more than the maximum
       newKeyAgreementKeys.push({
@@ -1372,7 +1366,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          storeDidCallback
+          [storeDidSigner]
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The number of key agreement keys in the creation operation is greater than the maximum allowed, which is 10"`
@@ -1394,7 +1388,7 @@ describe('Runtime constraints', () => {
           service: newServiceEndpoints,
         },
         paymentAccount.address,
-        storeDidCallback
+        [storeDidSigner]
       )
       // One more than the maximum
       newServiceEndpoints.push({
@@ -1410,7 +1404,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          storeDidCallback
+          [storeDidSigner]
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"Cannot store more than 25 services per DID"`

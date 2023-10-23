@@ -361,27 +361,27 @@ describe('Different deposits scenarios', () => {
     testFullDidFive = await createFullDidFromLightDid(
       keys[4].keypair,
       testDidFive,
-      keys[4].storeDidCallback
+      [keys[4].storeDidSigner]
     )
     testFullDidSix = await createFullDidFromLightDid(
       keys[5].keypair,
       testDidSix,
-      keys[5].storeDidCallback
+      [keys[5].storeDidSigner]
     )
     testFullDidSeven = await createFullDidFromLightDid(
       keys[6].keypair,
       testDidSeven,
-      keys[6].storeDidCallback
+      [keys[6].storeDidSigner]
     )
     testFullDidEight = await createFullDidFromLightDid(
       keys[7].keypair,
       testDidEight,
-      keys[7].storeDidCallback
+      [keys[7].storeDidSigner]
     )
     testFullDidNine = await createFullDidFromLightDid(
       keys[8].keypair,
       testDidNine,
-      keys[8].storeDidCallback
+      [keys[8].storeDidSigner]
     )
     testFullDidTen = await createFullDidFromSeed(
       keys[9].keypair,

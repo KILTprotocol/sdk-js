@@ -118,7 +118,7 @@ export class NoSuitableSignerError extends SDKError {
     message?: string,
     options?: ErrorOptions & {
       signerRequirements?: Record<string, unknown>
-      availableSigners?: SignerInterface[]
+      availableSigners?: readonly SignerInterface[]
     }
   ) {
     const { signerRequirements, availableSigners } = options ?? {}

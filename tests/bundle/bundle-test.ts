@@ -32,27 +32,13 @@ const {
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
-type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
-
-function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
-  return async function sign({ data }) {
-    const signature = keypair.sign(data, { withType: false })
-    return {
-      signature,
-      verificationMethod: {
-        publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
-      },
-    }
-  }
-}
-
 async function makeSigningKeypair(
   seed: string,
   type: KiltKeyringPair['type'] = 'sr25519'
 ): Promise<{
   keypair: KiltKeyringPair
   getSigners: (didDocument: DidDocument) => Promise<SignerInterface[]>
-  storeDidCallback: StoreDidCallback
+  storeDidSigners: SignerInterface[]
 }> {
   const keypair = Crypto.makeKeypairFromUri(seed, type)
 
@@ -67,12 +53,15 @@ async function makeSigningKeypair(
       )
     ).flat()
   }
-  const storeDidCallback = makeStoreDidCallback(keypair)
+  const storeDidSigners = await kilt.Utils.Signers.getSignersForKeypair({
+    keypair,
+    keyUri: keypair.address,
+  })
 
   return {
     keypair,
     getSigners,
-    storeDidCallback,
+    storeDidSigners,
   }
 }
 
@@ -93,7 +82,10 @@ async function createFullDidFromKeypair(
   encryptionKey: NewDidEncryptionKey
 ) {
   const api = ConfigService.get('api')
-  const sign = makeStoreDidCallback(keypair)
+  const signers = await kilt.Utils.Signers.getSignersForKeypair({
+    keypair,
+    keyUri: keypair.address,
+  })
 
   const storeTx = await Did.getStoreTx(
     {
@@ -103,7 +95,7 @@ async function createFullDidFromKeypair(
       keyAgreement: [encryptionKey],
     },
     payer.address,
-    sign
+    signers
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
@@ -172,7 +164,7 @@ async function runAll() {
 
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, getSigners, storeDidCallback } = await makeSigningKeypair(
+  const { keypair, getSigners, storeDidSigners } = await makeSigningKeypair(
     '//Foo',
     'ed25519'
   )
@@ -180,7 +172,7 @@ async function runAll() {
   const didStoreTx = await Did.getStoreTx(
     { authentication: [keypair] },
     payer.address,
-    storeDidCallback
+    storeDidSigners
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 

@@ -22,11 +22,8 @@ import type {
   KiltAddress,
   Service,
   SignerInterface,
-  SignRequestData,
-  SignResponseData,
   SubmittableExtrinsic,
   UriFragment,
-  VerificationMethod,
 } from '@kiltprotocol/types'
 
 import { ConfigService } from '@kiltprotocol/config'
@@ -329,14 +326,6 @@ interface GetStoreTxInput {
   service?: NewService[]
 }
 
-type GetStoreTxSignCallbackResponse = Pick<SignResponseData, 'signature'> & {
-  // We don't need the key ID to dispatch the tx.
-  verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase'>
-}
-export type GetStoreTxSignCallback = (
-  signData: Omit<SignRequestData, 'did'>
-) => Promise<GetStoreTxSignCallbackResponse>
-
 /**
  * Create a DID creation operation which includes the information provided.
  *
@@ -350,14 +339,15 @@ export type GetStoreTxSignCallback = (
  *
  * @param input The DID keys and services to store.
  * @param submitter The KILT address authorized to submit the creation operation.
- * @param sign The sign callback. The authentication key has to be used.
+ * @param signers An array of signer interfaces. A suitable signer will be selected if available.
+ * The signer has to use the authentication public key encoded as a Kilt Address or as a hex string as its id.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function getStoreTx(
   input: GetStoreTxInput,
   submitter: KiltAddress,
-  sign: GetStoreTxSignCallback
+  signers: readonly SignerInterface[]
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
@@ -435,9 +425,27 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const { signature } = await sign({
+  const signer = await Signers.selectSigner(
+    signers,
+    Signers.select.verifiableOnChain(),
+    Signers.select.byId([did, Crypto.u8aToHex(authenticationKey.publicKey)])
+  )
+
+  if (!signer) {
+    throw new SDKErrors.NoSuitableSignerError(
+      'Did creation requires an account signer where the address is equal to the Did identifier (did:kilt:{identifier}).',
+      {
+        availableSigners: signers,
+        signerRequirements: {
+          id: [did, Crypto.u8aToHex(authenticationKey.publicKey)], // TODO: we could compute the key id and accept it too, or accept light Dids as signers
+          algorithm: [Signers.DID_PALLET_SUPPORTED_ALGORITHMS],
+        },
+      }
+    )
+  }
+
+  const signature = await signer.sign({
     data: encoded,
-    verificationRelationship: 'authentication',
   })
   const encodedSignature = {
     [authenticationKey.type]: signature,
