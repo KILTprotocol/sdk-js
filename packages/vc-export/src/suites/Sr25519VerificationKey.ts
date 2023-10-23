@@ -88,6 +88,9 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
       throw new TypeError('The "publicKeyBase58" property is required.')
     }
     this.privateKeyBase58 = options.privateKeyBase58
+    if (options.id !== undefined && options.id.startsWith('#')) {
+      this.id = `${this.controller}${options.id}`
+    }
   }
 
   /**

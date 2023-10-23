@@ -313,7 +313,8 @@ describe('vc-js', () => {
     it('creates and verifies a signed presentation (sr25519)', async () => {
       const signer = {
         sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        id: didDocument.authentication?.[0],
+        // TODO: This goes against the signer interface of the rest of the SDK, where `id` is supposed to be only the verification method ID. Change this.
+        id: `${didDocument.id}${didDocument.authentication![0]}`,
       }
       const signingSuite = new Sr25519Signature2020({ signer })
 
@@ -451,7 +452,7 @@ describe('issuance', () => {
     signer: async () => ({
       verificationMethod: {
         controller: attestedVc.issuer,
-        type: 'MultiKey',
+        type: 'Multikey',
         id: '#test',
         publicKeyMultibase: 'zasd',
       },

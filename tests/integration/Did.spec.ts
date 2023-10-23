@@ -126,7 +126,7 @@ describe('write and didDeleteTx', () => {
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: fullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey({
             type: 'sr25519',
@@ -353,13 +353,13 @@ describe('DID migration', () => {
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
@@ -408,7 +408,7 @@ describe('DID migration', () => {
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
@@ -469,13 +469,13 @@ describe('DID migration', () => {
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDidUri,
-          type: 'MultiKey',
+          type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
@@ -661,13 +661,13 @@ describe('DID management batching', () => {
           expect.objectContaining({
             // Authentication
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           }),
           // Assertion method
           expect.objectContaining({
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'sr25519',
               publicKey: new Uint8Array(32).fill(1),
@@ -676,7 +676,7 @@ describe('DID management batching', () => {
           // Capability delegation
           expect.objectContaining({
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ecdsa',
               publicKey: new Uint8Array(33).fill(1),
@@ -685,7 +685,7 @@ describe('DID management batching', () => {
           // Key agreement 1
           expect.objectContaining({
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(1),
@@ -694,7 +694,7 @@ describe('DID management batching', () => {
           // Key agreement 2
           expect.objectContaining({
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(2),
@@ -703,7 +703,7 @@ describe('DID management batching', () => {
           // Key agreement 3
           expect.objectContaining({
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(3),
@@ -765,7 +765,7 @@ describe('DID management batching', () => {
           // Authentication
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey(didAuthKey),
           }),
         ],
@@ -881,7 +881,7 @@ describe('DID management batching', () => {
           // Authentication
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: finalFullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               publicKey: keypair.publicKey,
               type: 'sr25519',
@@ -959,7 +959,7 @@ describe('DID management batching', () => {
           // Authentication
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: finalFullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               publicKey: newAuthKey.publicKey,
               type: 'ed25519',
@@ -1048,7 +1048,7 @@ describe('DID management batching', () => {
           expect.objectContaining({
             // Authentication and assertionMethod
             controller: fullDid.id,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           }),
         ],

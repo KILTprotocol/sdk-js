@@ -86,7 +86,7 @@ function generateAuthenticationVerificationMethod(
   return {
     id: '#auth',
     controller,
-    type: 'MultiKey',
+    type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(0),
       type: 'ed25519',
@@ -100,7 +100,7 @@ function generateEncryptionVerificationMethod(
   return {
     id: '#enc',
     controller,
-    type: 'MultiKey',
+    type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(1),
       type: 'x25519',
@@ -114,7 +114,7 @@ function generateAssertionVerificationMethod(
   return {
     id: '#att',
     controller,
-    type: 'MultiKey',
+    type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(2),
       type: 'sr25519',
@@ -128,7 +128,7 @@ function generateCapabilityDelegationVerificationMethod(
   return {
     id: '#del',
     controller,
-    type: 'MultiKey',
+    type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
       publicKey: new Uint8Array(33).fill(3),
       type: 'ecdsa',
@@ -294,7 +294,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithAuthenticationKey,
             id: '#auth',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
@@ -343,7 +343,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithAllKeys,
             id: '#auth',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
@@ -352,7 +352,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithAllKeys,
             id: '#enc',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(1),
@@ -361,7 +361,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithAllKeys,
             id: '#att',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'sr25519',
               publicKey: new Uint8Array(32).fill(2),
@@ -370,7 +370,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithAllKeys,
             id: '#del',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ecdsa',
               publicKey: new Uint8Array(33).fill(3),
@@ -414,7 +414,7 @@ describe('When resolving a full DID', () => {
           {
             controller: fullDidWithServiceEndpoints,
             id: '#auth',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
@@ -466,7 +466,7 @@ describe('When resolving a full DID', () => {
           {
             controller: didWithAuthenticationKey,
             id: '#auth',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
@@ -541,7 +541,7 @@ describe('When resolving a light DID', () => {
           {
             controller: lightDidWithAuthenticationKey.id,
             id: '#authentication',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               ...authKey,
               type: 'sr25519',
@@ -573,7 +573,7 @@ describe('When resolving a light DID', () => {
           {
             controller: lightDid.id,
             id: '#authentication',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               ...authKey,
               type: 'sr25519',
@@ -582,7 +582,7 @@ describe('When resolving a light DID', () => {
           {
             controller: lightDid.id,
             id: '#encryption',
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey(encryptionKey),
           },
         ],
@@ -707,7 +707,7 @@ describe('DID Resolution compliance', () => {
             {
               id: '#auth',
               controller: did,
-              type: 'MultiKey',
+              type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
@@ -756,7 +756,7 @@ describe('DID Resolution compliance', () => {
               {
                 id: '#auth',
                 controller: did,
-                type: 'MultiKey',
+                type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
@@ -785,7 +785,7 @@ describe('DID Resolution compliance', () => {
               {
                 id: '#auth',
                 controller: did,
-                type: 'MultiKey',
+                type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
@@ -815,7 +815,7 @@ describe('DID Resolution compliance', () => {
               {
                 id: '#auth',
                 controller: did,
-                type: 'MultiKey',
+                type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
@@ -879,7 +879,7 @@ describe('DID Resolution compliance', () => {
             {
               id: '#auth',
               controller: did,
-              type: 'MultiKey',
+              type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
@@ -904,7 +904,7 @@ describe('DID Resolution compliance', () => {
             {
               id: '#auth',
               controller: did,
-              type: 'MultiKey',
+              type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
@@ -931,7 +931,7 @@ describe('DID Resolution compliance', () => {
               {
                 id: '#auth',
                 controller: did,
-                type: 'MultiKey',
+                type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
@@ -954,7 +954,7 @@ describe('DID Resolution compliance', () => {
           id: '#auth',
           controller:
             'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-          type: 'MultiKey',
+          type: 'Multikey',
           publicKeyMultibase: Did.keypairToMultibaseKey({
             publicKey: new Uint8Array(32).fill(0),
             type: 'ed25519',
@@ -1037,7 +1037,7 @@ describe('DID Resolution compliance', () => {
           {
             id: '#auth',
             controller: did,
-            type: 'MultiKey',
+            type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               publicKey: new Uint8Array(32).fill(0),
               type: 'ed25519',

@@ -59,7 +59,7 @@ export type VerificationMethod = {
   /**
    * The type of the verification method. This is fixed for KILT DIDs.
    */
-  type: 'MultiKey'
+  type: 'Multikey'
   /**
    * The controller of the verification method.
    */

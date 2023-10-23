@@ -8,6 +8,7 @@
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
+import { base58Encode } from '@polkadot/util-crypto'
 import { Types, init, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
@@ -90,7 +91,8 @@ beforeAll(async () => {
 it('issues and verifies a signed credential', async () => {
   const signer = {
     sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-    id: didDocument.assertionMethod![0],
+    // TODO: This goes against the signer interface of the rest of the SDK, where `id` is supposed to be only the verification method ID. Change this.
+    id: `${didDocument.id}${didDocument.assertionMethod![0]}`,
   }
   const attestationSigner = new Sr25519Signature2020({ signer })
 
@@ -121,13 +123,17 @@ it('issues and verifies a signed credential', async () => {
   const assertionMethod = didDocument.verificationMethod?.find(({ id }) =>
     id.includes('assertion')
   )
+  const { publicKey } = Did.multibaseKeyToDidKey(
+    assertionMethod!.publicKeyMultibase
+  )
+  const publicKeyBase58 = base58Encode(publicKey)
 
   result = await vcjs.verifyCredential({
     credential: verifiableCredential,
     suite: new Sr25519Signature2020({
       key: new Sr25519VerificationKey2020({
         ...assertionMethod,
-        publicKeyBase58: assertionMethod!.publicKeyMultibase.substring(1),
+        publicKeyBase58,
       }),
     }),
     documentLoader,

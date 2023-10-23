@@ -334,7 +334,7 @@ describe('full DID', () => {
           controller: `did:kilt:${keypair.address}`,
           id: '#0x12345',
           publicKeyMultibase: keypairToMultibaseKey(keypair),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
       ],
     }
@@ -343,7 +343,7 @@ describe('full DID', () => {
       verificationMethod: {
         id: '#0x12345',
         controller: signingDid,
-        type: 'MultiKey',
+        type: 'Multikey',
         publicKeyMultibase: keypairToMultibaseKey(keypair),
       },
     })

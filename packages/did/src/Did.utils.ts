@@ -253,7 +253,7 @@ export function didKeyToVerificationMethod(
   return {
     controller,
     id,
-    type: 'MultiKey',
+    type: 'Multikey',
     publicKeyMultibase: u8aToString(
       multibaseEncode('base58btc', Uint8Array.from(multiCodecPublicKey))
     ) as `z${string}`,

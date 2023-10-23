@@ -11,6 +11,7 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import jsigs from 'jsonld-signatures' // cjs module
 
 import { KiltCredentialV1, Types } from '@kiltprotocol/core'
+import { KILT_DID_CONTEXT_URL, multibaseKeyToDidKey } from '@kiltprotocol/did'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'
@@ -184,6 +185,8 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
     let contextUrl
     if (verificationMethod.type === 'Sr25519VerificationKey2020') {
       contextUrl = SUITE_CONTEXT_URL
+    } else if (verificationMethod.type === 'Multikey') {
+      contextUrl = KILT_DID_CONTEXT_URL
     } else {
       throw new Error(`Unsupported key type "${verificationMethod.type}".`)
     }
@@ -230,11 +233,16 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
 
     const verificationMethod =
       typeof document === 'string' ? JSON.parse(document) : document
+    const { publicKey } = multibaseKeyToDidKey(
+      verificationMethod.publicKeyMultibase
+    )
+    const publicKeyBase58 = base58Encode(publicKey)
 
     await this.assertVerificationMethod({ verificationMethod })
     const verificationKey = (
       await Sr25519VerificationKey2020.from({
         ...verificationMethod,
+        publicKeyBase58,
       })
     ).export({ publicKey: true, includeContext: true })
     return verificationKey

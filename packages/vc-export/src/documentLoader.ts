@@ -81,9 +81,7 @@ export const kiltContextsLoader: DocumentLoader = async (url) => {
 
 export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as DidUri)
-  const { dereferencingMetadata, contentStream } = await dereferenceDid(did, {
-    accept: 'application/did+ld+json',
-  })
+  const { dereferencingMetadata, contentStream } = await dereferenceDid(did)
   if (isFailedDereferenceMetadata(dereferencingMetadata)) {
     throw new Error(dereferencingMetadata.error)
   }

@@ -65,7 +65,7 @@ describe('When creating an instance from the details', () => {
             publicKey: authKey.publicKey,
             type: 'sr25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
         {
           controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
@@ -74,7 +74,7 @@ describe('When creating an instance from the details', () => {
             publicKey: encKey.publicKey,
             type: 'x25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
       ],
       service: [
@@ -117,7 +117,7 @@ describe('When creating an instance from the details', () => {
             publicKey: authKey.publicKey,
             type: 'ed25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
         {
           controller: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
@@ -126,7 +126,7 @@ describe('When creating an instance from the details', () => {
             publicKey: encKey.publicKey,
             type: 'x25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
       ],
     })
@@ -198,7 +198,7 @@ describe('When creating an instance from a URI', () => {
             publicKey: authKey.publicKey,
             type: 'sr25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
         {
           controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
@@ -207,7 +207,7 @@ describe('When creating an instance from a URI', () => {
             publicKey: encKey.publicKey,
             type: 'x25519',
           }),
-          type: 'MultiKey',
+          type: 'Multikey',
         },
       ],
       service: [
