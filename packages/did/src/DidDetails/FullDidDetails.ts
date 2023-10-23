@@ -176,6 +176,7 @@ export async function authorizeTx(
         verificationRelationship,
         algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
       },
+      availableSigners: signers,
     })
   }
 
@@ -314,6 +315,7 @@ export async function authorizeBatch({
           verificationRelationship,
           algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
         },
+        availableSigners: signers,
       })
     }
 

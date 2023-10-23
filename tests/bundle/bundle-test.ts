@@ -48,7 +48,10 @@ async function makeSigningKeypair(
     return (
       await Promise.all(
         didDocument.verificationMethod?.map(({ id }) =>
-          kilt.Utils.Signers.getSignersForKeypair({ keypair, keyUri: id })
+          kilt.Utils.Signers.getSignersForKeypair({
+            keypair,
+            keyUri: didDocument.id + id,
+          })
         ) ?? []
       )
     ).flat()
