@@ -274,9 +274,13 @@ export class DelegationNode implements IDelegationNode {
       })
     )
     if (!signer) {
-      throw new Error(
-        `Unable to sign: No signer given for on-chain verifiable signatures by an authentication key related to ${delegateDid.id}`
-      )
+      throw new SDKErrors.NoSuitableSignerError(undefined, {
+        signerRequirements: {
+          did: delegateDid.id,
+          verificationRelationship: 'authentication',
+          algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+        },
+      })
     }
     const signature = await signer.sign({
       data: this.generateHash(),

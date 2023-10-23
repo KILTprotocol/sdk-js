@@ -33,6 +33,8 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 
+import { DidError } from './SDKErrors.js'
+
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b', // could also be called ES256K-R-Blake2b
   ECRECOVER_SECP256K1_KECCAK: 'Ecrecover-Secp256k1-Keccak', // could also be called ES256K-R-Keccak
@@ -330,7 +332,7 @@ function byDid(
   let eligibleVMs = didDocument.verificationMethod
   // TODO: not super happy about this throwing; can I attach a diagnostics property to the returned function instead that will inform why this will never select a signer?
   if (!Array.isArray(eligibleVMs) || eligibleVMs.length === 0) {
-    throw new Error(
+    throw new DidError(
       `DID ${didDocument.id} not fit for signing: No verification methods are associated with the signer DID document. It may be that this DID has been deactivated.`
     )
   }
@@ -355,7 +357,7 @@ function byDid(
       !Array.isArray(didDocument[verificationRelationship]) ||
       didDocument[verificationRelationship].length === 0
     ) {
-      throw new Error(
+      throw new DidError(
         `DID ${didDocument.id} not fit for signing: No verification methods available for the requested verification relationship ("${verificationRelationship}").`
       )
     }
@@ -366,7 +368,7 @@ function byDid(
     )
   }
   if (eligibleIds.length === 0) {
-    throw new Error(
+    throw new DidError(
       `DID ${
         didDocument.id
       } not fit for signing: The verification methods associated with this DID's document do not match the requested controller and/or verification relationship: ${JSON.stringify(

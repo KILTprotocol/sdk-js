@@ -13,6 +13,8 @@
 
 /* eslint-disable max-classes-per-file */
 
+import type { SignerInterface } from '@kiltprotocol/types'
+
 export class SDKError extends Error {
   constructor(message?: string, options?: ErrorOptions) {
     super(message, options)
@@ -44,8 +46,6 @@ export class UnsupportedKeyError extends SDKError {
 export class EncryptionError extends SDKError {}
 
 export class DidError extends SDKError {}
-
-export class DidExporterError extends SDKError {}
 
 export class DidBatchError extends SDKError {}
 
@@ -112,6 +112,34 @@ export class ClaimNonceMapMalformedError extends SDKError {
 }
 
 export class SignatureMalformedError extends SDKError {}
+
+export class NoSuitableSignerError extends SDKError {
+  constructor(
+    message?: string,
+    options?: ErrorOptions & {
+      signerRequirements?: Record<string, unknown>
+      availableSigners?: SignerInterface[]
+    }
+  ) {
+    const { signerRequirements, availableSigners } = options ?? {}
+    const msgs = [message ?? 'No suitable signers provided to this function.']
+    if (signerRequirements) {
+      msgs.push(
+        `Expected signer matching conditions ${JSON.stringify(
+          signerRequirements,
+          null,
+          2
+        )}.`
+      )
+    }
+    if (availableSigners) {
+      msgs.push(
+        `Signers available: ${JSON.stringify(availableSigners, null, 2)}.`
+      )
+    }
+    super(msgs.join('\n'), options)
+  }
+}
 
 export class DidSubjectMismatchError extends SDKError {
   constructor(actual: string, expected: string) {

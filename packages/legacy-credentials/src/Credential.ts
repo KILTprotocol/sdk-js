@@ -562,9 +562,13 @@ export async function createPresentation({
     byDid(didDocument, { verificationRelationship: 'authentication' })
   )
   if (!signer) {
-    throw new Error(
-      `Unable to sign: No signer given for on-chain verifiable signatures by an authentication key related to ${didDocument.id}`
-    )
+    throw new SDKErrors.NoSuitableSignerError(undefined, {
+      signerRequirements: {
+        did: didDocument.id,
+        algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+        verificationRelationship: 'authentication',
+      },
+    })
   }
 
   const signature = await signer?.sign({

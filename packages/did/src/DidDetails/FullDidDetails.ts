@@ -162,7 +162,7 @@ export async function authorizeTx(
     didDocument = (await resolve(didUri)).didDocument as DidDocument
   }
   if (!didDocument?.id) {
-    throw new Error('failed to resolve signer DID')
+    throw new SDKErrors.DidNotFoundError('failed to resolve signer DID')
   }
   const signer = await Signers.selectSigner(
     signers,
@@ -170,7 +170,13 @@ export async function authorizeTx(
     byDid(didDocument, { verificationRelationship })
   )
   if (typeof signer === 'undefined') {
-    throw new Error('incompatible signers') // TODO: improve error message
+    throw new SDKErrors.NoSuitableSignerError(undefined, {
+      signerRequirements: {
+        did: didDocument.id,
+        verificationRelationship,
+        algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+      },
+    })
   }
 
   return generateDidAuthenticatedTx({
@@ -286,7 +292,7 @@ export async function authorizeBatch({
     didDocument = (await resolve(didUri)).didDocument
   }
   if (typeof didDocument?.id !== 'string') {
-    throw new Error('failed to resolve signer DID')
+    throw new SDKErrors.DidNotFoundError('failed to resolve signer DID')
   }
 
   const promises = groups.map(async (group, batchIndex) => {
@@ -299,10 +305,16 @@ export async function authorizeBatch({
     const signer = await Signers.selectSigner(
       signers,
       verifiableOnChain(),
-      byDid(didDocument!, { verificationRelationship })
+      byDid(didDocument as DidDocument, { verificationRelationship })
     )
     if (typeof signer === 'undefined') {
-      throw new Error('incompatible signers') // TODO: improve error message
+      throw new SDKErrors.NoSuitableSignerError(undefined, {
+        signerRequirements: {
+          did: (didDocument as DidDocument).id,
+          verificationRelationship,
+          algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+        },
+      })
     }
 
     return generateDidAuthenticatedTx({
