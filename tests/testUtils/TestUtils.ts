@@ -12,9 +12,11 @@ import type {
   DidDocument,
   EncryptCallback,
   KeyringPair,
+  KiltAddress,
   KiltEncryptionKeypair,
   KiltKeyringPair,
   SignCallback,
+  SubmittableExtrinsic,
   UriFragment,
   VerificationMethod,
   VerificationRelationship,
@@ -23,12 +25,15 @@ import type {
   BaseNewDidKey,
   ChainDidKey,
   DidVerificationMethodType,
+  GetStoreTxSignCallback,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
+  NewDidVerificationKey,
+  NewDidEncryptionKey,
   NewService,
 } from '@kiltprotocol/did'
 
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
@@ -150,7 +155,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
     }
 }
 
-type StoreDidCallback = Parameters<typeof Did.getStoreTxFromInput>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -392,6 +397,92 @@ export async function createLocalDemoFullDidFromLightDid(
   }
 }
 
+/**
+ * Create a DID creation operation which would write to chain the DID Document provided as input.
+ * Only the first authentication, assertion, and capability delegation verification methods are considered from the input DID Document.
+ * All the input DID Document key agreement verification methods are considered.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and services.
+ *
+ * A DID creation operation can contain at most 25 new services.
+ * Additionally, each service must respect the following conditions:
+ * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ *
+ * @param input The DID Document to store.
+ * @param submitter The KILT address authorized to submit the creation operation.
+ * @param sign The sign callback. The authentication key has to be used.
+ *
+ * @returns The SubmittableExtrinsic for the DID creation operation.
+ */
+export async function getStoreTxFromDidDocument(
+  input: DidDocument,
+  submitter: KiltAddress,
+  sign: GetStoreTxSignCallback
+): Promise<SubmittableExtrinsic> {
+  const {
+    authentication,
+    assertionMethod,
+    keyAgreement,
+    capabilityDelegation,
+    service,
+    verificationMethod,
+  } = input
+
+  const [authKey, assertKey, delKey, ...encKeys] = [
+    authentication?.[0],
+    assertionMethod?.[0],
+    capabilityDelegation?.[0],
+    ...(keyAgreement ?? []),
+  ].map((keyId): BaseNewDidKey | undefined => {
+    if (!keyId) {
+      return undefined
+    }
+    const key = verificationMethod?.find((vm) => vm.id === keyId)
+    if (key === undefined) {
+      throw new SDKErrors.DidError(
+        `A verification method with ID "${keyId}" was not found in the \`verificationMethod\` property of the provided DID Document.`
+      )
+    }
+    const { keyType, publicKey } = Did.multibaseKeyToDidKey(
+      key.publicKeyMultibase
+    )
+    if (
+      !Did.isValidDidVerificationType(keyType) &&
+      !Did.isValidEncryptionMethodType(keyType)
+    ) {
+      throw new SDKErrors.DidError(
+        `Verification method with ID "${keyId}" has an unsupported type "${keyType}".`
+      )
+    }
+    return {
+      type: keyType,
+      publicKey,
+    }
+  })
+
+  if (authKey === undefined) {
+    throw new SDKErrors.DidError(
+      'Cannot create a DID without an authentication method.'
+    )
+  }
+
+  const storeTxInput: Parameters<typeof Did.getStoreTx>[0] = {
+    authentication: [authKey as NewDidVerificationKey],
+    assertionMethod: assertKey
+      ? [assertKey as NewDidVerificationKey]
+      : undefined,
+    capabilityDelegation: delKey
+      ? [delKey as NewDidVerificationKey]
+      : undefined,
+    keyAgreement: encKeys as NewDidEncryptionKey[],
+    service,
+  }
+
+  return Did.getStoreTx(storeTxInput, submitter, sign)
+}
+
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
   payer: KiltKeyringPair,
@@ -408,7 +499,7 @@ export async function createFullDidFromLightDid(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fullDidDocumentToBeCreated.authentication![0],
   ]
-  const tx = await Did.getStoreTxFromDidDocument(
+  const tx = await getStoreTxFromDidDocument(
     fullDidDocumentToBeCreated,
     payer.address,
     sign

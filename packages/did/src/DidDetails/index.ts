@@ -16,5 +16,9 @@ export type {
   NewService,
   NewVerificationMethod,
 } from './DidDetails.js'
+export {
+  isValidDidVerificationType,
+  isValidEncryptionMethodType,
+} from './DidDetails.js'
 export * from './LightDidDetails.js'
 export * from './FullDidDetails.js'

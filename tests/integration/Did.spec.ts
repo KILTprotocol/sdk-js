@@ -28,6 +28,7 @@ import {
   createMinimalLightDidFromKeypair,
   makeEncryptionKeyTool,
   makeSigningKeyTool,
+  getStoreTxFromDidDocument,
 } from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
@@ -60,7 +61,7 @@ describe('write and didDeleteTx', () => {
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await Did.getStoreTxFromDidDocument(
+    const tx = await getStoreTxFromDidDocument(
       did,
       otherAccount.address,
       key.storeDidCallback
@@ -95,7 +96,7 @@ describe('write and didDeleteTx', () => {
       ],
     }
 
-    const tx = await Did.getStoreTxFromInput(
+    const tx = await Did.getStoreTx(
       input,
       paymentAccount.address,
       key.storeDidCallback
@@ -231,7 +232,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { keypair, getSignCallback, storeDidCallback } = makeSigningKeyTool()
   const newDid = await createMinimalLightDidFromKeypair(keypair)
 
-  const tx = await Did.getStoreTxFromDidDocument(
+  const tx = await getStoreTxFromDidDocument(
     newDid,
     paymentAccount.address,
     storeDidCallback
@@ -333,7 +334,7 @@ describe('DID migration', () => {
       keyAgreement,
     })
 
-    const storeTx = await Did.getStoreTxFromDidDocument(
+    const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -388,7 +389,7 @@ describe('DID migration', () => {
       authentication,
     })
 
-    const storeTx = await Did.getStoreTxFromDidDocument(
+    const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -449,7 +450,7 @@ describe('DID migration', () => {
       service,
     })
 
-    const storeTx = await Did.getStoreTxFromDidDocument(
+    const storeTx = await getStoreTxFromDidDocument(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -526,7 +527,7 @@ describe('DID authorization', () => {
     makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
-    const createTx = await Did.getStoreTxFromInput(
+    const createTx = await Did.getStoreTx(
       {
         authentication,
         assertionMethod: authentication,
@@ -595,7 +596,7 @@ describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID', async () => {
       const { storeDidCallback, authentication } = makeSigningKeyTool()
-      const extrinsic = await Did.getStoreTxFromInput(
+      const extrinsic = await Did.getStoreTx(
         {
           authentication,
           assertionMethod: [
@@ -743,7 +744,7 @@ describe('DID management batching', () => {
         type: 'ecdsa',
       }
 
-      const extrinsic = await Did.getStoreTxFromInput(
+      const extrinsic = await Did.getStoreTx(
         { authentication: [didAuthKey] },
         paymentAccount.address,
         storeDidCallback
@@ -782,7 +783,7 @@ describe('DID management batching', () => {
       const { keypair, getSignCallback, storeDidCallback, authentication } =
         makeSigningKeyTool()
 
-      const createTx = await Did.getStoreTxFromInput(
+      const createTx = await Did.getStoreTx(
         {
           authentication,
           keyAgreement: [
@@ -902,7 +903,7 @@ describe('DID management batching', () => {
         authentication: [newAuthKey],
       } = makeSigningKeyTool('ed25519')
 
-      const createTx = await Did.getStoreTxFromInput(
+      const createTx = await Did.getStoreTx(
         { authentication },
         paymentAccount.address,
         storeDidCallback
@@ -989,7 +990,7 @@ describe('DID management batching', () => {
     it('simple `batch` succeeds despite failures of some extrinsics', async () => {
       const { authentication, getSignCallback, storeDidCallback } =
         makeSigningKeyTool()
-      const tx = await Did.getStoreTxFromInput(
+      const tx = await Did.getStoreTx(
         {
           authentication,
           service: [
@@ -1003,7 +1004,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      // Create the full DID with a service
+      // Create the full DIgetStoreTx
       await submitTx(tx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
@@ -1074,7 +1075,7 @@ describe('DID management batching', () => {
     it('batchAll fails if any extrinsics fails', async () => {
       const { authentication, getSignCallback, storeDidCallback } =
         makeSigningKeyTool()
-      const createTx = await Did.getStoreTxFromInput(
+      const createTx = await Did.getStoreTx(
         {
           authentication,
           service: [
@@ -1324,7 +1325,7 @@ describe('Runtime constraints', () => {
           type: 'x25519',
         })
       )
-      await Did.getStoreTxFromInput(
+      await Did.getStoreTx(
         {
           authentication: [testAuthKey],
           keyAgreement: newKeyAgreementKeys,
@@ -1338,7 +1339,7 @@ describe('Runtime constraints', () => {
         type: 'x25519',
       })
       await expect(
-        Did.getStoreTxFromInput(
+        Did.getStoreTx(
           {
             authentication: [testAuthKey],
             keyAgreement: newKeyAgreementKeys,
@@ -1353,7 +1354,7 @@ describe('Runtime constraints', () => {
     }, 30_000)
 
     it('should not be possible to create a DID with too many services', async () => {
-      // Maximum is 25
+      // MaxgetStoreTx
       const newServiceEndpoints = Array(25).map(
         (_, index): Did.NewService => ({
           id: `#service-${index}`,
@@ -1361,7 +1362,7 @@ describe('Runtime constraints', () => {
           serviceEndpoint: [`x:url-${index}`],
         })
       )
-      await Did.getStoreTxFromInput(
+      await Did.getStoreTx(
         {
           authentication: [testAuthKey],
           service: newServiceEndpoints,
@@ -1376,7 +1377,7 @@ describe('Runtime constraints', () => {
         serviceEndpoint: ['x:url-100'],
       })
       await expect(
-        Did.getStoreTxFromInput(
+        Did.getStoreTx(
           {
             authentication: [testAuthKey],
             service: newServiceEndpoints,
@@ -1391,7 +1392,7 @@ describe('Runtime constraints', () => {
     }, 30_000)
 
     it('should not be possible to create a DID with a service that is too long', async () => {
-      const serviceId = '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const serviceId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceIdLength.toNumber()
       expect(serviceId.length).toBeGreaterThan(limit)
     })

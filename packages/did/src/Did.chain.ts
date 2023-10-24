@@ -18,7 +18,6 @@ import type {
 import type {
   BN,
   Deposit,
-  DidDocument,
   DidUri,
   KiltAddress,
   Service,
@@ -40,13 +39,9 @@ import type {
   DidSigningMethodType,
   NewDidVerificationKey,
   NewDidEncryptionKey,
-  BaseNewDidKey,
 } from './DidDetails/DidDetails.js'
 
-import {
-  isValidVerificationMethodType,
-  isValidEncryptionMethodType,
-} from './DidDetails/DidDetails.js'
+import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
 import {
   multibaseKeyToDidKey,
   keypairToMultibaseKey,
@@ -361,7 +356,7 @@ export type GetStoreTxSignCallback = (
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
-export async function getStoreTxFromInput(
+export async function getStoreTx(
   input: GetStoreTxInput,
   submitter: KiltAddress,
   sign: GetStoreTxSignCallback
@@ -450,90 +445,6 @@ export async function getStoreTxFromInput(
     [authenticationKey.type]: signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
-}
-
-/**
- * Create a DID creation operation which would write to chain the DID Document provided as input.
- * Only the first authentication, assertion, and capability delegation verification methods are considered from the input DID Document.
- * All the input DID Document key agreement verification methods are considered.
- *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and services.
- *
- * A DID creation operation can contain at most 25 new services.
- * Additionally, each service must respect the following conditions:
- * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
- * - The service has at most 1 service type, with a value that is at most 50 bytes long.
- * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
- *
- * @param input The DID Document to store.
- * @param submitter The KILT address authorized to submit the creation operation.
- * @param sign The sign callback. The authentication key has to be used.
- *
- * @returns The SubmittableExtrinsic for the DID creation operation.
- */
-export async function getStoreTxFromDidDocument(
-  input: DidDocument,
-  submitter: KiltAddress,
-  sign: GetStoreTxSignCallback
-): Promise<SubmittableExtrinsic> {
-  const {
-    authentication,
-    assertionMethod,
-    keyAgreement,
-    capabilityDelegation,
-    service,
-    verificationMethod,
-  } = input
-
-  const [authKey, assertKey, delKey, ...encKeys] = [
-    authentication?.[0],
-    assertionMethod?.[0],
-    capabilityDelegation?.[0],
-    ...(keyAgreement ?? []),
-  ].map((keyId): BaseNewDidKey | undefined => {
-    if (!keyId) {
-      return undefined
-    }
-    const key = verificationMethod?.find((vm) => vm.id === keyId)
-    if (key === undefined) {
-      throw new SDKErrors.DidError(
-        `A verification method with ID "${keyId}" was not found in the \`verificationMethod\` property of the provided DID Document.`
-      )
-    }
-    const { keyType, publicKey } = multibaseKeyToDidKey(key.publicKeyMultibase)
-    if (
-      !isValidVerificationMethodType(keyType) &&
-      !isValidEncryptionMethodType(keyType)
-    ) {
-      throw new SDKErrors.DidError(
-        `Verification method with ID "${keyId}" has an unsupported type "${keyType}".`
-      )
-    }
-    return {
-      type: keyType,
-      publicKey,
-    }
-  })
-
-  if (authKey === undefined) {
-    throw new SDKErrors.DidError(
-      'Cannot create a DID without an authentication method.'
-    )
-  }
-
-  const storeTxInput: GetStoreTxInput = {
-    authentication: [authKey as NewDidVerificationKey],
-    assertionMethod: assertKey
-      ? [assertKey as NewDidVerificationKey]
-      : undefined,
-    capabilityDelegation: delKey
-      ? [delKey as NewDidVerificationKey]
-      : undefined,
-    keyAgreement: encKeys as NewDidEncryptionKey[],
-    service,
-  }
-
-  return getStoreTxFromInput(storeTxInput, submitter, sign)
 }
 
 export interface SigningOptions {

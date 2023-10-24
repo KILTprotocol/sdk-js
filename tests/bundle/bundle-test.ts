@@ -53,7 +53,7 @@ function makeSignCallback(
   }
 }
 
-type StoreDidCallback = Parameters<typeof Did.getStoreTxFromInput>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
@@ -105,7 +105,7 @@ async function createFullDidFromKeypair(
   const api = ConfigService.get('api')
   const sign = makeStoreDidCallback(keypair)
 
-  const storeTx = await Did.getStoreTxFromInput(
+  const storeTx = await Did.getStoreTx(
     {
       authentication: [keypair],
       assertionMethod: [keypair],
@@ -187,7 +187,7 @@ async function runAll() {
     'ed25519'
   )
 
-  const didStoreTx = await Did.getStoreTxFromInput(
+  const didStoreTx = await Did.getStoreTx(
     { authentication: [keypair] },
     payer.address,
     storeDidCallback
