@@ -55,7 +55,7 @@ type IDidParsingResult = {
 
 // Exports the params section of a DID URL as a map.
 // If multiple keys are present, only the first one is returned.
-// If no query params are present, returns null.
+// If no query params are present, returns undefined.
 function exportQueryParamsFromUri(
   didUri: DidUrl
 ): Record<string, string> | undefined {
