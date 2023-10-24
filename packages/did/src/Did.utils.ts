@@ -57,13 +57,7 @@ type IDidParsingResult = {
 // If multiple keys are present, only the first one is returned.
 function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
   const urlified = new URL(didUri)
-  const params: Record<string, string> = {}
-  urlified.searchParams.forEach((value, key) => {
-    if (params[key] === undefined) {
-      params[key] = value
-    }
-  })
-  return params
+  return Object.fromEntries(urlified.searchParams)
 }
 
 /**
