@@ -28,7 +28,7 @@ jest.mock('@digitalbazaar/http-client', () => ({}))
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
-  dereference: jest.fn(),
+  resolve: jest.fn(),
 }))
 
 const documentLoader = combineDocumentLoaders([
@@ -58,24 +58,24 @@ export async function makeFakeDid() {
     ],
   }
 
-  jest.mocked(Did.dereference).mockImplementation(async (did) => {
+  jest.mocked(Did.resolve).mockImplementation(async (did) => {
     if (did.includes('light')) {
       return {
-        contentMetadata: {},
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: Did.parseDocumentFromLightDid(did, false),
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+        didDocument: Did.parseDocumentFromLightDid(did, false),
       }
     }
     if (did.startsWith(didDocument.id)) {
       return {
-        contentMetadata: {},
-        dereferencingMetadata: { contentType: 'application/did+json' },
-        contentStream: didDocument,
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+        didDocument,
       }
     }
     return {
-      contentMetadata: {},
-      dereferencingMetadata: { error: 'notFound' },
+      didDocumentMetadata: {},
+      didResolutionMetadata: { error: 'notFound' },
     }
   })
   return { didDocument, keypair }

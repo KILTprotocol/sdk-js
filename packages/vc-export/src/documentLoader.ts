@@ -13,9 +13,8 @@ import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
   parse,
-  dereference as dereferenceDid,
+  resolve as resolveDid,
   W3C_DID_CONTEXT_URL,
-  isFailedDereferenceMetadata,
   multibaseKeyToDidKey,
 } from '@kiltprotocol/did'
 import type {
@@ -94,15 +93,12 @@ type LegacyVerificationMethod = Pick<
 // Returns legacy representations of a KILT DID verification method.
 export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as DidUri)
-  const { dereferencingMetadata, contentStream } = await dereferenceDid(did)
-  if (isFailedDereferenceMetadata(dereferencingMetadata)) {
-    throw new Error(dereferencingMetadata.error)
-  }
+  const { didDocument: resolvedDidDocument } = await resolveDid(did)
   const didDocument = (() => {
-    if (contentStream === undefined) {
+    if (resolvedDidDocument === undefined) {
       return {}
     }
-    const doc = { ...contentStream } as DidDocument
+    const doc: DidDocument = { ...resolvedDidDocument }
     doc.verificationMethod = doc.verificationMethod?.map(
       (vm): LegacyVerificationMethod => {
         // Bail early if the returned document is already in legacy format
@@ -138,7 +134,7 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
   })()
 
   // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
-  const document = (await jsonld.frame(
+  const jsonLdDocument = (await jsonld.frame(
     didDocument,
     {
       // add did contexts to make sure we get a compacted representation
@@ -157,28 +153,28 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
     } as jsonld.Options.Frame
   )) as DidDocument | VerificationMethod
   // The signature suites expect key-related json-LD contexts; we add them here
-  switch ((document as { type: string }).type) {
+  switch ((jsonLdDocument as { type: string }).type) {
     // these 4 are currently used
     case Sr25519VerificationKey2020.suite:
-      document['@context'].push(Sr25519VerificationKey2020.SUITE_CONTEXT)
+      jsonLdDocument['@context'].push(Sr25519VerificationKey2020.SUITE_CONTEXT)
       break
     case 'Ed25519VerificationKey2018':
-      document['@context'].push(
+      jsonLdDocument['@context'].push(
         'https://w3id.org/security/suites/ed25519-2018/v1'
       )
       break
     case 'EcdsaSecp256k1VerificationKey2019':
-      document['@context'].push('https://w3id.org/security/v1')
+      jsonLdDocument['@context'].push('https://w3id.org/security/v1')
       break
     case 'X25519KeyAgreementKey2019':
-      document['@context'].push(
+      jsonLdDocument['@context'].push(
         'https://w3id.org/security/suites/x25519-2019/v1'
       )
       break
     default:
       break
   }
-  return { contextUrl: undefined, documentUrl: url, document }
+  return { contextUrl: undefined, documentUrl: url, document: jsonLdDocument }
 }
 
 const loader = CType.newCachingCTypeLoader()
