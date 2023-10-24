@@ -55,9 +55,18 @@ type IDidParsingResult = {
 
 // Exports the params section of a DID URL as a map.
 // If multiple keys are present, only the first one is returned.
-function exportQueryParamsFromUri(didUri: DidUrl): Record<string, string> {
-  const urlified = new URL(didUri)
-  return Object.fromEntries(urlified.searchParams)
+// If no query params are present, returns null.
+function exportQueryParamsFromUri(
+  didUri: DidUrl
+): Record<string, string> | undefined {
+  try {
+    const urlified = new URL(didUri)
+    return urlified.searchParams.size > 0
+      ? Object.fromEntries(urlified.searchParams)
+      : undefined
+  } catch {
+    throw new SDKErrors.InvalidDidFormatError(didUri)
+  }
 }
 
 /**
@@ -75,14 +84,7 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     const version = versionString
       ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
-    const queryParameters = (() => {
-      try {
-        const queryParams = exportQueryParamsFromUri(didUri as DidUrl)
-        return Object.keys(queryParams).length > 0 ? queryParams : undefined
-      } catch {
-        throw new SDKErrors.InvalidDidFormatError(didUri)
-      }
-    })()
+    const queryParameters = exportQueryParamsFromUri(didUri as DidUrl)
     return {
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
@@ -106,14 +108,7 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     const version = versionString
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
-    const queryParameters = (() => {
-      try {
-        const queryParams = exportQueryParamsFromUri(didUri as DidUrl)
-        return Object.keys(queryParams).length > 0 ? queryParams : undefined
-      } catch {
-        throw new SDKErrors.InvalidDidFormatError(didUri)
-      }
-    })()
+    const queryParameters = exportQueryParamsFromUri(didUri as DidUrl)
     return {
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
