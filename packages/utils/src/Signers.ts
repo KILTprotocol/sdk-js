@@ -343,7 +343,7 @@ export async function selectSigner<
  * @param ids Allowed signer/key ids to filter for.
  * @returns A selector identifying signers whose id property is in `ids`.
  */
-function byId(ids: readonly string[]): SignerSelector {
+function bySignerId(ids: readonly string[]): SignerSelector {
   return ({ id }) => ids.includes(id)
 }
 /**
@@ -431,7 +431,7 @@ function verifiableOnChain(): SignerSelector {
 }
 
 export const select = {
-  byId,
+  bySignerId,
   byAlgorithm,
   byDid,
   verifiableOnChain,

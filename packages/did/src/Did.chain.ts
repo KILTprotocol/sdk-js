@@ -421,7 +421,10 @@ export async function getStoreTx(
   const signer = await Signers.selectSigner(
     signers,
     Signers.select.verifiableOnChain(),
-    Signers.select.byId([did, Crypto.u8aToHex(authenticationKey.publicKey)])
+    Signers.select.bySignerId([
+      did,
+      Crypto.u8aToHex(authenticationKey.publicKey),
+    ])
   )
 
   if (!signer) {
