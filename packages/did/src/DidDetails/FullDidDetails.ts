@@ -113,6 +113,26 @@ async function getNextNonce(did: Did): Promise<BN> {
   return increaseNonce(currentNonce)
 }
 
+async function conditionalLoadDocument(
+  didOrDidDocument: Did | DidDocument
+): Promise<DidDocument> {
+  if (typeof didOrDidDocument === 'string') {
+    const { didDocument, didDocumentMetadata } = await resolve(didOrDidDocument)
+    if (!didDocument || didDocumentMetadata.deactivated === true) {
+      throw new SDKErrors.DidNotFoundError('Failed to resolve signer DID')
+    }
+    return didDocument
+  }
+  if (typeof didOrDidDocument.id === 'string') {
+    return didOrDidDocument
+  }
+  throw new SDKErrors.InvalidDidFormatError(
+    `Expected a valid DID or DID Document, got ${JSON.stringify(
+      didOrDidDocument
+    )}`
+  )
+}
+
 const { verifiableOnChain, byDid } = Signers.select
 
 /**
@@ -137,16 +157,9 @@ export async function authorizeTx(
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
-  let didUri: Did
-  let didDocument: DidDocument | undefined
-  if (typeof did === 'string') {
-    didUri = did
-  } else {
-    didUri = did.id
-    didDocument = did
-  }
+  const didDocument = await conditionalLoadDocument(did)
 
-  if (parse(didUri).type === 'light') {
+  if (parse(didDocument.id).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
@@ -159,12 +172,6 @@ export async function authorizeTx(
     )
   }
 
-  if (!didDocument) {
-    didDocument = (await resolve(didUri)).didDocument as DidDocument
-  }
-  if (!didDocument?.id) {
-    throw new SDKErrors.DidNotFoundError('failed to resolve signer DID')
-  }
   const signer = await Signers.selectSigner<SignerInterface<string, DidUrl>>(
     signers,
     verifiableOnChain(),
@@ -182,10 +189,10 @@ export async function authorizeTx(
   }
 
   return generateDidAuthenticatedTx({
-    did: didUri,
+    did: didDocument.id,
     signer,
     call: extrinsic,
-    txCounter: txCounter || (await getNextNonce(didUri)),
+    txCounter: txCounter || (await getNextNonce(didDocument.id)),
     submitter: submitterAccount,
   })
 }
@@ -265,16 +272,10 @@ export async function authorizeBatch({
     )
   }
 
-  let didUri: Did
-  let didDocument: DidDocument | undefined
-  if (typeof did === 'string') {
-    didUri = did
-  } else {
-    didUri = did.id
-    didDocument = did
-  }
+  // resolve DID document beforehand to avoid resolving in loop
+  const didDocument = await conditionalLoadDocument(did)
 
-  if (parse(didUri).type === 'light') {
+  if (parse(didDocument.id).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
@@ -287,15 +288,7 @@ export async function authorizeBatch({
   }
 
   const groups = groupExtrinsicsByVerificationRelationship(extrinsics)
-  const firstNonce = nonce || (await getNextNonce(didUri))
-
-  // resolve DID document beforehand to avoid resolving in loop
-  if (!didDocument) {
-    didDocument = (await resolve(didUri)).didDocument
-  }
-  if (typeof didDocument?.id !== 'string') {
-    throw new SDKErrors.DidNotFoundError('failed to resolve signer DID')
-  }
+  const firstNonce = nonce || (await getNextNonce(didDocument.id))
 
   const promises = groups.map(async (group, batchIndex) => {
     const list = group.extrinsics
@@ -321,7 +314,7 @@ export async function authorizeBatch({
     }
 
     return generateDidAuthenticatedTx({
-      did: didUri,
+      did: didDocument.id,
       signer,
       call,
       txCounter,

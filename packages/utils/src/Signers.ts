@@ -313,9 +313,9 @@ export async function selectSigners<
   signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
 ): Promise<SelectedSigners[]> {
-  return signers.filter((signer): signer is SelectedSigners => {
-    return selectors.every((selector) => selector(signer))
-  })
+  return signers.filter((signer): signer is SelectedSigners =>
+    selectors.every((selector) => selector(signer))
+  )
 }
 
 /**
@@ -332,9 +332,9 @@ export async function selectSigner<
   signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
 ): Promise<SelectedSigner | undefined> {
-  return signers.find((signer): signer is SelectedSigner => {
-    return selectors.every((selector) => selector(signer))
-  })
+  return signers.find((signer): signer is SelectedSigner =>
+    selectors.every((selector) => selector(signer))
+  )
 }
 
 /**
