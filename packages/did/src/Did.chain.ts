@@ -19,6 +19,7 @@ import type {
   BN,
   Deposit,
   Did,
+  DidUrl,
   KiltAddress,
   Service,
   SignerInterface,
@@ -291,14 +292,6 @@ export function serviceFromChain(
   }
 }
 
-export type AuthorizeCallInput = {
-  did: Did
-  txCounter: AnyNumber
-  call: Extrinsic
-  submitter: KiltAddress
-  blockNumber?: AnyNumber
-}
-
 export function publicKeyToChain(
   key: NewDidVerificationKey
 ): EncodedVerificationKey
@@ -482,8 +475,18 @@ export function didSignatureToChain({
   return { [keyType]: signature } as EncodedSignature
 }
 
-export interface SigningOptions {
-  signer: SignerInterface
+export type AuthorizeCallInput = {
+  did: Did
+  txCounter: AnyNumber
+  call: Extrinsic
+  submitter: KiltAddress
+  blockNumber?: AnyNumber
+  signer: SignerInterface<
+    | typeof Signers.ALGORITHMS.SR25519
+    | typeof Signers.ALGORITHMS.ED25519
+    | typeof Signers.ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B,
+    DidUrl
+  >
 }
 
 /**
@@ -506,7 +509,7 @@ export async function generateDidAuthenticatedTx({
   txCounter,
   submitter,
   blockNumber,
-}: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
+}: AuthorizeCallInput): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
   const signableCall =
     api.registry.createType<DidDidDetailsDidAuthorizedCallOperation>(

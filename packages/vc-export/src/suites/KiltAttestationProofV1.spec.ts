@@ -23,6 +23,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
+  DidUrl,
   HexString,
   ICType,
   KiltAddress,
@@ -448,7 +449,7 @@ describe('issuance', () => {
   let toBeSigned: CredentialStub
 
   const { issuer } = attestedVc
-  const signer: SignerInterface = {
+  const signer: SignerInterface<'Sr25519', DidUrl> = {
     sign: async () => new Uint8Array(32),
     algorithm: 'Sr25519',
     id: `${issuer}#1`,

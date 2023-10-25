@@ -10,6 +10,7 @@ import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 import type {
   DecryptCallback,
   DidDocument,
+  DidUrl,
   EncryptCallback,
   KeyringPair,
   KiltAddress,
@@ -130,7 +131,7 @@ type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
  */
 export async function makeStoreDidSigner(
   keypair: KiltKeyringPair
-): Promise<SignerInterface> {
+): Promise<SignerInterface<string, KiltAddress>> {
   const signers = await Signers.getSignersForKeypair({
     keypair,
     keyUri: keypair.address,
@@ -139,12 +140,14 @@ export async function makeStoreDidSigner(
     signers,
     Signers.select.verifiableOnChain()
   )
-  return signer as SignerInterface
+  return signer!
 }
 
 export interface KeyTool {
   keypair: KiltKeyringPair
-  getSigners: (doc: DidDocument) => Promise<SignerInterface[]>
+  getSigners: (
+    doc: DidDocument
+  ) => Promise<Array<SignerInterface<string, DidUrl>>>
   storeDidSigner: SignerInterface
   authentication: [NewLightDidVerificationKey]
 }
@@ -161,11 +164,16 @@ export async function makeSigningKeyTool(
   const keypair = Crypto.makeKeypairFromSeed(undefined, type)
   const getSigners: (
     didDocument: DidDocument
-  ) => Promise<SignerInterface[]> = async (didDocument) => {
+  ) => Promise<Array<SignerInterface<string, DidUrl>>> = async (
+    didDocument
+  ) => {
     return (
       await Promise.all(
         didDocument.verificationMethod?.map(({ id }) =>
-          Signers.getSignersForKeypair({ keypair, keyUri: didDocument.id + id })
+          Signers.getSignersForKeypair({
+            keypair,
+            keyUri: `${didDocument.id}${id}`,
+          })
         ) ?? []
       )
     ).flat()

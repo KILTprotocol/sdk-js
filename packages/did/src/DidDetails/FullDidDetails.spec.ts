@@ -36,6 +36,7 @@ jest.mock('../DidResolver/DidResolver', () => {
     ...jest.requireActual('../DidResolver/DidResolver'),
     resolve: jest.fn(),
     dereference: jest.fn(),
+    resolveRepresentation: jest.fn(),
   }
 })
 jest.mock('../Did.chain')

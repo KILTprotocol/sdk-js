@@ -12,6 +12,7 @@ import { BN } from '@polkadot/util'
 import type {
   DidDocument,
   Did,
+  DidUrl,
   KiltAddress,
   SignatureVerificationRelationship,
   SignerInterface,
@@ -182,7 +183,7 @@ export async function authorizeTx(
 
   return generateDidAuthenticatedTx({
     did: didUri,
-    signer,
+    signer: signer as SignerInterface<string, DidUrl>,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(didUri)),
     submitter: submitterAccount,
@@ -321,7 +322,7 @@ export async function authorizeBatch({
 
     return generateDidAuthenticatedTx({
       did: didUri,
-      signer,
+      signer: signer as SignerInterface<string, DidUrl>,
       call,
       txCounter,
       submitter,

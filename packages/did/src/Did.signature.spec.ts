@@ -38,7 +38,7 @@ jest
 describe('light DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
-  let authenticationSigner: SignerInterface
+  let authenticationSigner: SignerInterface<string, DidUrl>
   beforeAll(async () => {
     const keyTool = await makeSigningKeyTool()
     keypair = keyTool.keypair
@@ -285,7 +285,7 @@ describe('light DID', () => {
 describe('full DID', () => {
   let keypair: KiltKeyringPair
   let did: DidDocument
-  let signer: SignerInterface & { id: DidUrl }
+  let signer: SignerInterface<string, DidUrl>
   beforeAll(async () => {
     keypair = Crypto.makeKeypairFromSeed()
     did = {
@@ -300,11 +300,11 @@ describe('full DID', () => {
         },
       ],
     }
-    signer = (await Signers.signerFromKeypair({
+    signer = await Signers.signerFromKeypair({
       keypair,
       keyUri: `${did.id}#0x12345`,
       algorithm: 'Ed25519',
-    })) as SignerInterface & { id: DidUrl }
+    })
   })
 
   beforeEach(() => {

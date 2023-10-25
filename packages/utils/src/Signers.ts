@@ -23,10 +23,10 @@ import {
   createSigner as ed25519SignerWrapped,
   cryptosuite as ed25519Suite,
 } from '@kiltprotocol/eddsa-jcs-2022'
-import type { SignerInterface } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 
 import type {
+  SignerInterface,
   DidDocument,
   DidUrl,
   KeyringPair,
@@ -59,14 +59,16 @@ export const DID_PALLET_SUPPORTED_ALGORITHMS = Object.freeze([
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
-export async function polkadotEcdsaSigner({
+export async function polkadotEcdsaSigner<Id extends string>({
   secretKey,
   keyUri, // TODO: I think this should just be called id
 }: {
-  keyUri: string
+  keyUri: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
-}): Promise<SignerInterface> {
+}): Promise<
+  SignerInterface<typeof ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B, Id>
+> {
   return {
     id: keyUri,
     algorithm: ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B,
@@ -86,14 +88,14 @@ export async function polkadotEcdsaSigner({
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
-export async function ethereumEcdsaSigner({
+export async function ethereumEcdsaSigner<Id extends string>({
   secretKey,
   keyUri,
 }: {
-  keyUri: string
+  keyUri: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
-}): Promise<SignerInterface> {
+}): Promise<SignerInterface<typeof ALGORITHMS.ECRECOVER_SECP256K1_KECCAK, Id>> {
   return {
     id: keyUri,
     algorithm: ALGORITHMS.ECRECOVER_SECP256K1_KECCAK,
@@ -112,16 +114,18 @@ export async function ethereumEcdsaSigner({
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ES256K signatures.
  */
-export async function es256kSigner({
+export async function es256kSigner<Id extends string>({
   secretKey,
   keyUri,
 }: {
-  keyUri: string
+  keyUri: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
-}): Promise<SignerInterface> {
+}): Promise<SignerInterface<typeof ALGORITHMS.ES256K, Id>> {
   // only exists to map secretKey to seed
-  return es256kSignerWrapped({ seed: secretKey, keyUri })
+  return es256kSignerWrapped({ seed: secretKey, keyUri }) as Promise<
+    SignerInterface<typeof ALGORITHMS.ES256K, Id>
+  >
 }
 
 /**
@@ -133,16 +137,19 @@ export async function es256kSigner({
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making Ed25519 signatures.
  */
-export async function ed25519Signer({
+export async function ed25519Signer<Id extends string>({
   secretKey,
   keyUri,
 }: {
-  keyUri: string
+  keyUri: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
-}): Promise<SignerInterface> {
+}): Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>> {
   // polkadot ed25519 private keys are a concatenation of private and public key for some reason
-  return ed25519SignerWrapped({ seed: secretKey.slice(0, 32), keyUri })
+  return ed25519SignerWrapped({
+    seed: secretKey.slice(0, 32),
+    keyUri,
+  }) as Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>>
 }
 
 /**
@@ -154,15 +161,15 @@ export async function ed25519Signer({
  * @param input.publicKey The corresponding 32 byte public key.
  * @returns A signer interface capable of making Sr25519 signatures.
  */
-export async function sr25519Signer({
+export async function sr25519Signer<Id extends string>({
   secretKey,
   keyUri,
   publicKey,
 }: {
   publicKey: Uint8Array
   secretKey: Uint8Array
-  keyUri: string
-}): Promise<SignerInterface> {
+  keyUri: Id
+}): Promise<SignerInterface<typeof ALGORITHMS.SR25519, Id>> {
   await cryptoWaitReady()
   return {
     id: keyUri,
@@ -197,26 +204,26 @@ const signerFactory = {
  * @param input.algorithm An algorithm identifier from the {@link ALGORITHMS} map.
  * @returns A signer interface.
  */
-export async function signerFromKeypair({
+export async function signerFromKeypair<Alg extends string, Id extends string>({
   keyUri,
   keypair,
   algorithm,
 }: {
   keypair: Keypair | KeyringPair
-  algorithm: string
-  keyUri?: string
-}): Promise<SignerInterface> {
-  const makeSigner: (x: {
+  algorithm: Alg
+  keyUri?: Id
+}): Promise<SignerInterface<Alg, Id>> {
+  const makeSigner = signerFactory[algorithm] as (x: {
     secretKey: Uint8Array
     publicKey: Uint8Array
-    keyUri: string
-  }) => Promise<SignerInterface> = signerFactory[algorithm]
+    keyUri: Id
+  }) => Promise<SignerInterface<Alg, Id>>
   if (typeof makeSigner !== 'function') {
     throw new Error(`unknown algorithm ${algorithm}`)
   }
 
   if (!('secretKey' in keypair) && 'encodePkcs8' in keypair) {
-    const id = keyUri ?? keypair.address
+    const id = keyUri ?? (keypair.address as Id)
     return {
       id,
       algorithm,
@@ -237,7 +244,7 @@ export async function signerFromKeypair({
   return makeSigner({
     secretKey,
     publicKey,
-    keyUri: keyUri ?? encodeAddress(publicKey, 38),
+    keyUri: keyUri ?? (encodeAddress(publicKey, 38) as Id),
   })
 }
 
@@ -268,21 +275,21 @@ function algsForKeyType(keyType: string): string[] {
  * @param input.type If `keypair` is not a {@link KeyringPair}, provide the key type here; otherwise, this is ignored.
  * @returns An array of signer interfaces based on the keypair and type.
  */
-export async function getSignersForKeypair({
+export async function getSignersForKeypair<Id extends string>({
   keyUri,
   keypair,
   type = (keypair as KeyringPair).type,
 }: {
-  keyUri?: string
+  keyUri?: Id
   keypair: Keypair | KeyringPair
   type?: string
-}): Promise<SignerInterface[]> {
+}): Promise<Array<SignerInterface<string, Id>>> {
   if (!type) {
     throw new Error('type is required if keypair.type is not given')
   }
   const algorithms = algsForKeyType(type)
   return Promise.all(
-    algorithms.map<Promise<SignerInterface>>(async (algorithm) => {
+    algorithms.map<Promise<SignerInterface<string, Id>>>(async (algorithm) => {
       return signerFromKeypair({ keypair, keyUri, algorithm })
     })
   )
@@ -299,10 +306,10 @@ export interface SignerSelector {
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns An array of those signers for which all selectors returned `true`.
  */
-export async function selectSigners(
-  signers: readonly SignerInterface[],
+export async function selectSigners<T extends SignerInterface>(
+  signers: readonly T[],
   ...selectors: readonly SignerSelector[]
-): Promise<SignerInterface[]> {
+): Promise<T[]> {
   return signers.filter((signer) => {
     return selectors.every((selector) => selector(signer))
   })
@@ -315,10 +322,10 @@ export async function selectSigners(
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns The first signer for which all selectors returned `true`, or `undefined` if none meet selection criteria.
  */
-export async function selectSigner(
-  signers: readonly SignerInterface[],
+export async function selectSigner<T extends SignerInterface>(
+  signers: readonly T[],
   ...selectors: readonly SignerSelector[]
-): Promise<SignerInterface | undefined> {
+): Promise<T | undefined> {
   return signers.find((signer) => {
     return selectors.every((selector) => selector(signer))
   })

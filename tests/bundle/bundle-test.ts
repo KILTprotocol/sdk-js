@@ -10,6 +10,7 @@
 import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
+  DidUrl,
   KiltEncryptionKeypair,
   KiltKeyringPair,
   SignerInterface,
@@ -37,20 +38,24 @@ async function makeSigningKeypair(
   type: KiltKeyringPair['type'] = 'sr25519'
 ): Promise<{
   keypair: KiltKeyringPair
-  getSigners: (didDocument: DidDocument) => Promise<SignerInterface[]>
+  getSigners: (
+    didDocument: DidDocument
+  ) => Promise<Array<SignerInterface<string, DidUrl>>>
   storeDidSigners: SignerInterface[]
 }> {
   const keypair = Crypto.makeKeypairFromUri(seed, type)
 
   const getSigners: (
     didDocument: DidDocument
-  ) => Promise<SignerInterface[]> = async (didDocument) => {
+  ) => Promise<Array<SignerInterface<string, DidUrl>>> = async (
+    didDocument
+  ) => {
     return (
       await Promise.all(
         didDocument.verificationMethod?.map(({ id }) =>
           kilt.Utils.Signers.getSignersForKeypair({
             keypair,
-            keyUri: didDocument.id + id,
+            keyUri: `${didDocument.id}${id}`,
           })
         ) ?? []
       )
