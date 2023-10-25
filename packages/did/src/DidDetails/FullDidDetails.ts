@@ -165,7 +165,7 @@ export async function authorizeTx(
   if (!didDocument?.id) {
     throw new SDKErrors.DidNotFoundError('failed to resolve signer DID')
   }
-  const signer = await Signers.selectSigner(
+  const signer = await Signers.selectSigner<SignerInterface<string, DidUrl>>(
     signers,
     verifiableOnChain(),
     byDid(didDocument, { verificationRelationship })
@@ -183,7 +183,7 @@ export async function authorizeTx(
 
   return generateDidAuthenticatedTx({
     did: didUri,
-    signer: signer as SignerInterface<string, DidUrl>,
+    signer,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(didUri)),
     submitter: submitterAccount,
@@ -304,7 +304,7 @@ export async function authorizeBatch({
 
     const { verificationRelationship } = group
 
-    const signer = await Signers.selectSigner(
+    const signer = await Signers.selectSigner<SignerInterface<string, DidUrl>>(
       signers,
       verifiableOnChain(),
       byDid(didDocument as DidDocument, { verificationRelationship })
@@ -322,7 +322,7 @@ export async function authorizeBatch({
 
     return generateDidAuthenticatedTx({
       did: didUri,
-      signer: signer as SignerInterface<string, DidUrl>,
+      signer,
       call,
       txCounter,
       submitter,

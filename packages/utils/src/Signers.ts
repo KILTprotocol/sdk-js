@@ -306,11 +306,14 @@ export interface SignerSelector {
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns An array of those signers for which all selectors returned `true`.
  */
-export async function selectSigners<T extends SignerInterface>(
-  signers: readonly T[],
+export async function selectSigners<
+  SelectedSigners extends AllSigners, // eslint-disable-line no-use-before-define
+  AllSigners extends SignerInterface = SignerInterface
+>(
+  signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
-): Promise<T[]> {
-  return signers.filter((signer) => {
+): Promise<SelectedSigners[]> {
+  return signers.filter((signer): signer is SelectedSigners => {
     return selectors.every((selector) => selector(signer))
   })
 }
@@ -322,11 +325,14 @@ export async function selectSigners<T extends SignerInterface>(
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns The first signer for which all selectors returned `true`, or `undefined` if none meet selection criteria.
  */
-export async function selectSigner<T extends SignerInterface>(
-  signers: readonly T[],
+export async function selectSigner<
+  SelectedSigner extends AllSigners, // eslint-disable-line no-use-before-define
+  AllSigners extends SignerInterface = SignerInterface
+>(
+  signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
-): Promise<T | undefined> {
-  return signers.find((signer) => {
+): Promise<SelectedSigner | undefined> {
+  return signers.find((signer): signer is SelectedSigner => {
     return selectors.every((selector) => selector(signer))
   })
 }
