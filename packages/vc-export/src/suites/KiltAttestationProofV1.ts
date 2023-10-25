@@ -212,7 +212,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   public async anchorCredential(
     input: CredentialStub,
     issuer: DidDocument | Did,
-    signers: SignerInterface[],
+    signers: readonly SignerInterface[],
     transactionHandler: KiltAttestationProofV1.TxHandler
   ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
     const { credentialSubject, type } = input

@@ -128,7 +128,7 @@ const { verifiableOnChain, byDid } = Signers.select
 export async function authorizeTx(
   did: Did | DidDocument,
   extrinsic: Extrinsic,
-  signers: SignerInterface[],
+  signers: readonly SignerInterface[],
   submitterAccount: KiltAddress,
   {
     txCounter,
@@ -255,7 +255,7 @@ export async function authorizeBatch({
   did: Did | DidDocument
   extrinsics: Extrinsic[]
   nonce?: BN
-  signers: SignerInterface[]
+  signers: readonly SignerInterface[]
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {

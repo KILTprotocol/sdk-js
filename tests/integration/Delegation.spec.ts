@@ -54,7 +54,7 @@ let attesterKey: KeyTool
 async function writeHierarchy(
   delegator: DidDocument,
   cTypeId: ICType['$id'],
-  signers: SignerInterface[]
+  signers: readonly SignerInterface[]
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
     account: delegator.id,

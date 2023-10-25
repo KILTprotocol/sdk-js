@@ -263,7 +263,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async delegateSign(
     delegateDid: DidDocument,
-    signers: SignerInterface[]
+    signers: readonly SignerInterface[]
   ): Promise<Did.EncodedSignature> {
     const { byDid, verifiableOnChain } = Signers.select
     const signer = await Signers.selectSigner(

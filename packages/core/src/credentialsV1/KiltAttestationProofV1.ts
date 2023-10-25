@@ -667,7 +667,7 @@ export type TxHandler = {
 }
 
 export type IssueOpts = {
-  signers: SignerInterface[]
+  signers: readonly SignerInterface[]
   transactionHandler: TxHandler
 } & Parameters<typeof authorizeTx>[4]
 

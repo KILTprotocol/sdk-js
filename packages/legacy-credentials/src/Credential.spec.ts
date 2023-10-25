@@ -471,7 +471,7 @@ describe('Presentations', () => {
     attesterDid: KiltDid,
     contents: IClaim['contents'],
     legitimations: ICredential[],
-    signers: SignerInterface[]
+    signers: readonly SignerInterface[]
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
     const claim = Claim.fromCTypeAndClaimContents(
