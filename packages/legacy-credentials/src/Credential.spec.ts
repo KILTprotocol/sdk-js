@@ -641,7 +641,7 @@ describe('Presentations', () => {
       signCallback: keyAlice.getSignCallback(identityAlice),
     })
     // but replace signer key reference with authentication verification method of light did
-    presentation.claimerSignature.signerUrl = `${identityDave.id}${
+    presentation.claimerSignature.keyUri = `${identityDave.id}${
       identityDave.authentication![0]
     }`
 

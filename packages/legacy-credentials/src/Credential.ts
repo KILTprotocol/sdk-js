@@ -233,7 +233,7 @@ export async function verifySignature(
     // allow full did to sign presentation if owned by corresponding light did
     allowUpgraded: true,
     expectedVerificationRelationship: 'authentication',
-    signerUrl: claimerSignature.signerUrl,
+    signerUrl: claimerSignature.keyUri,
     dereferenceDidUrl,
   })
 }

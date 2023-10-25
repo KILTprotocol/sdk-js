@@ -38,22 +38,15 @@ type OldDidSignatureV1 = {
   signature: string
   keyId: DidUrl
 }
-type OldDidSignatureV2 = {
-  signature: string
-  keyUri: DidUrl
-}
 
 function verifyDidSignatureDataStructure(
-  input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
+  input: DidSignature | OldDidSignatureV1
 ): void {
   const verificationMethodUrl = (() => {
-    if ('keyUri' in input) {
-      return input.keyUri
-    }
     if ('keyId' in input) {
       return input.keyId
     }
-    return input.signerUrl
+    return input.keyUri
   })()
   if (!isHex(input.signature)) {
     throw new SDKErrors.SignatureMalformedError(
@@ -161,7 +154,7 @@ export async function verifyDidSignature({
  */
 export function isDidSignature(
   input: unknown
-): input is DidSignature | OldDidSignatureV1 | OldDidSignatureV2 {
+): input is DidSignature | OldDidSignatureV1 {
   try {
     verifyDidSignatureDataStructure(input as DidSignature)
     return true
@@ -184,30 +177,27 @@ export function signatureToJson({
 }: SignResponseData): DidSignature {
   return {
     signature: Crypto.u8aToHex(signature),
-    signerUrl: `${verificationMethod.controller}${verificationMethod.id}`,
+    keyUri: `${verificationMethod.controller}${verificationMethod.id}`,
   }
 }
 
 /**
  * Deserializes a [[DidSignature]] for signature verification.
- * Handles backwards compatibility to an older version of the interface where the `verificationMethodUri` property was called either `keyUri` or `keyId`.
+ * Handles backwards compatibility to an older version of the interface where the `verificationMethodUri` property was called `keyId`.
  *
  * @param input A [[DidSignature]] object.
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
  */
 export function signatureFromJson(
-  input: DidSignature | OldDidSignatureV1 | OldDidSignatureV2
+  input: DidSignature | OldDidSignatureV1
 ): Pick<SignResponseData, 'signature'> & {
   signerUrl: DidUrl
 } {
   const signerUrl = (() => {
-    if ('keyUri' in input) {
-      return input.keyUri
-    }
     if ('keyId' in input) {
       return input.keyId
     }
-    return input.signerUrl
+    return input.keyUri
   })()
   const signature = Crypto.coToUInt8(input.signature)
   return { signature, signerUrl }

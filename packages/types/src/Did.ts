@@ -42,7 +42,8 @@ export type VerificationRelationship =
   | EncryptionRelationship
 
 export type DidSignature = {
-  signerUrl: DidUrl
+  // Name `keyUri` kept for retro-compatibility
+  keyUri: DidUrl
   signature: string
 }
 

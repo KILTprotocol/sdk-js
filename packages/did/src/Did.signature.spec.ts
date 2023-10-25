@@ -90,7 +90,7 @@ describe('light DID', () => {
 
   it('deserializes old did signature (with `keyId` property) to new format', async () => {
     const SIGNED_STRING = 'signed string'
-    const { signature, signerUrl } = signatureToJson(
+    const { signature, keyUri } = signatureToJson(
       await sign({
         data: Crypto.coToUInt8(SIGNED_STRING),
         did: did.id,
@@ -99,33 +99,13 @@ describe('light DID', () => {
     )
     const oldSignature = {
       signature,
-      keyId: signerUrl,
+      keyId: keyUri,
     }
 
     const deserialized = signatureFromJson(oldSignature)
     expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.signerUrl).toStrictEqual(signerUrl)
+    expect(deserialized.signerUrl).toStrictEqual(keyUri)
     expect(deserialized).not.toHaveProperty('keyId')
-  })
-
-  it('deserializes old did signature (with `keyUri` property) to new format', async () => {
-    const SIGNED_STRING = 'signed string'
-    const { signature, signerUrl } = signatureToJson(
-      await sign({
-        data: Crypto.coToUInt8(SIGNED_STRING),
-        did: did.id,
-        verificationRelationship: 'authentication',
-      })
-    )
-    const oldSignature = {
-      signature,
-      keyUri: signerUrl,
-    }
-
-    const deserialized = signatureFromJson(oldSignature)
-    expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.signerUrl).toStrictEqual(signerUrl)
-    expect(deserialized).not.toHaveProperty('keyUri')
   })
 
   it('verifies did signature over bytes', async () => {
@@ -248,7 +228,7 @@ describe('light DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      signerUrl: `${did.id}${did.authentication![0]}`,
+      keyUri: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -495,7 +475,7 @@ describe('full DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      signerUrl: `${did.id}${did.authentication![0]}`,
+      keyUri: `${did.id}${did.authentication![0]}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -511,31 +491,31 @@ describe('type guard', () => {
   it('rejects malformed signer URL', () => {
     let signature: DidSignature = {
       // @ts-expect-error
-      signerUrl: `did:kilt:${keypair.address}?mykey`,
+      keyUri: `did:kilt:${keypair.address}?mykey`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: `kilt:did:${keypair.address}#mykey`,
+      keyUri: `kilt:did:${keypair.address}#mykey`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: `kilt:did:${keypair.address}`,
+      keyUri: `kilt:did:${keypair.address}`,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: keypair.address,
+      keyUri: keypair.address,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: '',
+      keyUri: '',
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -543,7 +523,7 @@ describe('type guard', () => {
 
   it('rejects unexpected signature type', () => {
     const signature: DidSignature = {
-      signerUrl: `did:kilt:${keypair.address}#mykey` as DidUrl,
+      keyUri: `did:kilt:${keypair.address}#mykey` as DidUrl,
       signature: '',
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -556,14 +536,14 @@ describe('type guard', () => {
 
   it('rejects incomplete objects', () => {
     let signature: DidSignature = {
-      signerUrl: `did:kilt:${keypair.address}#mykey` as DidUrl,
+      keyUri: `did:kilt:${keypair.address}#mykey` as DidUrl,
       // @ts-expect-error
       signature: undefined,
     }
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: undefined,
+      keyUri: undefined,
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(false)
@@ -574,14 +554,14 @@ describe('type guard', () => {
     expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
-      signerUrl: `did:kilt:${keypair.address}#mykey`,
+      keyUri: `did:kilt:${keypair.address}#mykey`,
     }
     expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = {}
     expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
-    signature = { signerUrl: null, signature: null }
+    signature = { keyUri: null, signature: null }
     expect(isDidSignature(signature)).toBe(false)
   })
 })
