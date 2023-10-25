@@ -302,7 +302,7 @@ describe('full DID', () => {
     }
     signer = await Signers.signerFromKeypair({
       keypair,
-      keyUri: `${did.id}#0x12345`,
+      id: `${did.id}#0x12345`,
       algorithm: 'Ed25519',
     })
   })

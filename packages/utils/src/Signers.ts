@@ -54,23 +54,23 @@ export const DID_PALLET_SUPPORTED_ALGORITHMS = Object.freeze([
  * The signature has a recovery bit appended to the end, allowing public key recovery.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
 export async function polkadotEcdsaSigner<Id extends string>({
   secretKey,
-  keyUri, // TODO: I think this should just be called id
+  id,
 }: {
-  keyUri: Id
+  id: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
 }): Promise<
   SignerInterface<typeof ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B, Id>
 > {
   return {
-    id: keyUri,
+    id,
     algorithm: ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B,
     sign: async ({ data }) => {
       return secp256k1Sign(data, { secretKey }, 'blake2')
@@ -83,21 +83,21 @@ export async function polkadotEcdsaSigner<Id extends string>({
  * The signature has a recovery bit appended to the end, allowing public key recovery.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ECDSA signatures with recovery bit added.
  */
 export async function ethereumEcdsaSigner<Id extends string>({
   secretKey,
-  keyUri,
+  id,
 }: {
-  keyUri: Id
+  id: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
 }): Promise<SignerInterface<typeof ALGORITHMS.ECRECOVER_SECP256K1_KECCAK, Id>> {
   return {
-    id: keyUri,
+    id,
     algorithm: ALGORITHMS.ECRECOVER_SECP256K1_KECCAK,
     sign: async ({ data }) => {
       return secp256k1Sign(data, { secretKey }, 'keccak')
@@ -109,21 +109,21 @@ export async function ethereumEcdsaSigner<Id extends string>({
  * Signer that produces an ES256K signature over the message.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making ES256K signatures.
  */
 export async function es256kSigner<Id extends string>({
   secretKey,
-  keyUri,
+  id,
 }: {
-  keyUri: Id
+  id: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
 }): Promise<SignerInterface<typeof ALGORITHMS.ES256K, Id>> {
   // only exists to map secretKey to seed
-  return es256kSignerWrapped({ seed: secretKey, keyUri }) as Promise<
+  return es256kSignerWrapped({ seed: secretKey, keyUri: id }) as Promise<
     SignerInterface<typeof ALGORITHMS.ES256K, Id>
   >
 }
@@ -132,23 +132,23 @@ export async function es256kSigner<Id extends string>({
  * Signer that produces an Ed25519 signature over the message.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.secretKey A 32 byte Ed25519 secret key. Some key representations append the public key to the private key; to allow these, all bytes after the 32nd byte will be dropped.
  * @param input.publicKey The corresponding public key. May be omitted.
  * @returns A signer interface capable of making Ed25519 signatures.
  */
 export async function ed25519Signer<Id extends string>({
   secretKey,
-  keyUri,
+  id,
 }: {
-  keyUri: Id
+  id: Id
   secretKey: Uint8Array
   publicKey?: Uint8Array
 }): Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>> {
   // polkadot ed25519 private keys are a concatenation of private and public key for some reason
   return ed25519SignerWrapped({
     seed: secretKey.slice(0, 32),
-    keyUri,
+    keyUri: id,
   }) as Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>>
 }
 
@@ -156,23 +156,23 @@ export async function ed25519Signer<Id extends string>({
  * Signer that produces an Sr25519 signature over the message.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.secretKey A 64 byte Sr25519 secret key.
  * @param input.publicKey The corresponding 32 byte public key.
  * @returns A signer interface capable of making Sr25519 signatures.
  */
 export async function sr25519Signer<Id extends string>({
   secretKey,
-  keyUri,
+  id,
   publicKey,
 }: {
   publicKey: Uint8Array
   secretKey: Uint8Array
-  keyUri: Id
+  id: Id
 }): Promise<SignerInterface<typeof ALGORITHMS.SR25519, Id>> {
   await cryptoWaitReady()
   return {
-    id: keyUri,
+    id,
     algorithm: ALGORITHMS.SR25519,
     sign: async ({ data }: { data: Uint8Array }) => {
       return sr25519Sign(data, { secretKey, publicKey })
@@ -199,33 +199,33 @@ const signerFactory = {
  * Creates a signer interface based on an existing keypair and an algorithm descriptor.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.keypair A polkadot {@link KeyringPair} or combination of `secretKey` & `publicKey`.
  * @param input.algorithm An algorithm identifier from the {@link ALGORITHMS} map.
  * @returns A signer interface.
  */
 export async function signerFromKeypair<Alg extends string, Id extends string>({
-  keyUri,
+  id,
   keypair,
   algorithm,
 }: {
   keypair: Keypair | KeyringPair
   algorithm: Alg
-  keyUri?: Id
+  id?: Id
 }): Promise<SignerInterface<Alg, Id>> {
   const makeSigner = signerFactory[algorithm] as (x: {
     secretKey: Uint8Array
     publicKey: Uint8Array
-    keyUri: Id
+    id: Id
   }) => Promise<SignerInterface<Alg, Id>>
   if (typeof makeSigner !== 'function') {
     throw new Error(`unknown algorithm ${algorithm}`)
   }
 
   if (!('secretKey' in keypair) && 'encodePkcs8' in keypair) {
-    const id = keyUri ?? (keypair.address as Id)
+    const signerId = id ?? (keypair.address as Id)
     return {
-      id,
+      id: signerId,
       algorithm,
       sign: async (signData) => {
         // TODO: can probably be optimized; but care must be taken to respect keyring locking
@@ -233,7 +233,7 @@ export async function signerFromKeypair<Alg extends string, Id extends string>({
         const { sign } = await makeSigner({
           secretKey,
           publicKey: keypair.publicKey,
-          keyUri: id,
+          id: signerId,
         })
         return sign(signData)
       },
@@ -244,7 +244,7 @@ export async function signerFromKeypair<Alg extends string, Id extends string>({
   return makeSigner({
     secretKey,
     publicKey,
-    keyUri: keyUri ?? (encodeAddress(publicKey, 38) as Id),
+    id: id ?? (encodeAddress(publicKey, 38) as Id),
   })
 }
 
@@ -270,17 +270,17 @@ function algsForKeyType(keyType: string): string[] {
  * Based on an existing keypair and its type, creates all available signers that work with this key type.
  *
  * @param input Holds all function arguments.
- * @param input.keyUri Sets the signer's id property.
+ * @param input.id Sets the signer's id property.
  * @param input.keypair A polkadot {@link KeyringPair} or combination of `secretKey` & `publicKey`.
  * @param input.type If `keypair` is not a {@link KeyringPair}, provide the key type here; otherwise, this is ignored.
  * @returns An array of signer interfaces based on the keypair and type.
  */
 export async function getSignersForKeypair<Id extends string>({
-  keyUri,
+  id,
   keypair,
   type = (keypair as KeyringPair).type,
 }: {
-  keyUri?: Id
+  id?: Id
   keypair: Keypair | KeyringPair
   type?: string
 }): Promise<Array<SignerInterface<string, Id>>> {
@@ -290,7 +290,7 @@ export async function getSignersForKeypair<Id extends string>({
   const algorithms = algsForKeyType(type)
   return Promise.all(
     algorithms.map<Promise<SignerInterface<string, Id>>>(async (algorithm) => {
-      return signerFromKeypair({ keypair, keyUri, algorithm })
+      return signerFromKeypair({ keypair, id, algorithm })
     })
   )
 }

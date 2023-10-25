@@ -134,7 +134,7 @@ export async function makeStoreDidSigner(
 ): Promise<SignerInterface<string, KiltAddress>> {
   const signers = await Signers.getSignersForKeypair({
     keypair,
-    keyUri: keypair.address,
+    id: keypair.address,
   })
   const signer = await Signers.selectSigner(
     signers,
@@ -172,7 +172,7 @@ export async function makeSigningKeyTool(
         didDocument.verificationMethod?.map(({ id }) =>
           Signers.getSignersForKeypair({
             keypair,
-            keyUri: `${didDocument.id}${id}`,
+            id: `${didDocument.id}${id}`,
           })
         ) ?? []
       )

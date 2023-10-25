@@ -55,7 +55,7 @@ async function makeSigningKeypair(
         didDocument.verificationMethod?.map(({ id }) =>
           kilt.Utils.Signers.getSignersForKeypair({
             keypair,
-            keyUri: `${didDocument.id}${id}`,
+            id: `${didDocument.id}${id}`,
           })
         ) ?? []
       )
@@ -63,7 +63,7 @@ async function makeSigningKeypair(
   }
   const storeDidSigners = await kilt.Utils.Signers.getSignersForKeypair({
     keypair,
-    keyUri: keypair.address,
+    id: keypair.address,
   })
 
   return {
@@ -92,7 +92,7 @@ async function createFullDidFromKeypair(
   const api = ConfigService.get('api')
   const signers = await kilt.Utils.Signers.getSignersForKeypair({
     keypair,
-    keyUri: keypair.address,
+    id: keypair.address,
   })
 
   const storeTx = await Did.getStoreTx(
