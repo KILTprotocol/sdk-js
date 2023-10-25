@@ -104,7 +104,7 @@ describe('light DID', () => {
 
     const deserialized = signatureFromJson(oldSignature)
     expect(deserialized.signature).toBeInstanceOf(Uint8Array)
-    expect(deserialized.signerUrl).toStrictEqual(keyUri)
+    expect(deserialized.keyUri).toStrictEqual(keyUri)
     expect(deserialized).not.toHaveProperty('keyId')
   })
 

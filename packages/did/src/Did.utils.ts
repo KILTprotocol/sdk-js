@@ -8,7 +8,7 @@
 import { u8aToString } from '@polkadot/util'
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import type {
-  DidUri,
+  Did,
   DidUrl,
   KeyringPair,
   KiltAddress,
@@ -26,7 +26,7 @@ const LIGHT_DID_LATEST_VERSION = 1
 // The latest version for KILT full DIDs.
 const FULL_DID_LATEST_VERSION = 1
 
-// NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
+// NOTICE: The following regex patterns must be kept in sync with `Did` type in @kiltprotocol/types
 
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
@@ -43,7 +43,7 @@ const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
 type IDidParsingResult = {
-  did: DidUri
+  did: Did
   version: number
   type: 'light' | 'full'
   address: KiltAddress
@@ -56,37 +56,37 @@ type IDidParsingResult = {
 // Exports the params section of a DID URL as a map.
 // If multiple keys are present, only the first one is returned.
 // If no query params are present, returns undefined.
-function exportQueryParamsFromUri(
-  didUri: DidUrl
+function exportQueryParamsFromDidUrl(
+  did: DidUrl
 ): Record<string, string> | undefined {
   try {
-    const urlified = new URL(didUri)
+    const urlified = new URL(did)
     return urlified.searchParams.size > 0
       ? Object.fromEntries(urlified.searchParams)
       : undefined
   } catch {
-    throw new SDKErrors.InvalidDidFormatError(didUri)
+    throw new SDKErrors.InvalidDidFormatError(did)
   }
 }
 
 /**
- * Parses a KILT DID uri and returns the information contained within in a structured form.
+ * Parses a KILT DID or a DID URL and returns the information contained within in a structured form.
  *
- * @param didUri A KILT DID uri as a string.
- * @returns Object containing information extracted from the DID uri.
+ * @param did A KILT DID or a DID URL as a string.
+ * @returns Object containing information extracted from the input string.
  */
-export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
-  // Then we check if it conforms to either a full or a light DID URL.
-  let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
+export function parse(did: Did | DidUrl): IDidParsingResult {
+  // Then we check if it conforms to either a full or a light DID.
+  let matches = FULL_KILT_DID_REGEX.exec(did)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
     const address = matches.address as KiltAddress
     const version = versionString
       ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
-    const queryParameters = exportQueryParamsFromUri(didUri as DidUrl)
+    const queryParameters = exportQueryParamsFromDidUrl(did as DidUrl)
     return {
-      did: didUri.replace(fragment || '', '') as DidUri,
+      did: did.replace(fragment || '', '') as Did,
       version,
       type: 'full',
       address,
@@ -96,7 +96,7 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
   }
 
   // If it fails to parse full DID, try with light DID
-  matches = LIGHT_KILT_DID_REGEX.exec(didUri)?.groups
+  matches = LIGHT_KILT_DID_REGEX.exec(did)?.groups
   if (matches) {
     const {
       authKeyType,
@@ -108,9 +108,9 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     const version = versionString
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
-    const queryParameters = exportQueryParamsFromUri(didUri as DidUrl)
+    const queryParameters = exportQueryParamsFromDidUrl(did as DidUrl)
     return {
-      did: didUri.replace(fragment || '', '') as DidUri,
+      did: did.replace(fragment || '', '') as Did,
       version,
       type: 'light',
       address,
@@ -121,7 +121,7 @@ export function parse(didUri: DidUri | DidUrl): IDidParsingResult {
     }
   }
 
-  throw new SDKErrors.InvalidDidFormatError(didUri)
+  throw new SDKErrors.InvalidDidFormatError(did)
 }
 
 type DecodedVerificationMethod = {
@@ -214,7 +214,7 @@ export function keypairToMultibaseKey({
 /**
  * Convert a DID key to a `MultiKey` verification method.
  *
- * @param controller The verification method controller's DID URI.
+ * @param controller The verification method controller's DID.
  * @param id The verification method ID.
  * @param key The DID key to export as a verification method.
  * @param key.keyType The key type.
@@ -252,11 +252,11 @@ export function didKeyToVerificationMethod(
 /**
  * Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
  *
- * @param didA A KILT DID uri as a string.
- * @param didB A second KILT DID uri as a string.
+ * @param didA A KILT DID  as a string.
+ * @param didB A second KILT DID  as a string.
  * @returns Whether didA and didB refer to the same DID subject.
  */
-export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
+export function isSameSubject(didA: Did, didB: Did): boolean {
   return parse(didA).address === parse(didB).address
 }
 
@@ -265,31 +265,31 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
  * Throws otherwise.
  *
  * @param input Arbitrary input.
- * @param expectType `Uri` if the URI is expected to have a fragment (following '#'), `Url` if it is expected not to have one. Default allows both.
+ * @param expectType `Did` if the the input is expected to have a fragment (following '#'), `DidUrl` if it is expected not to have one. Default allows both.
  */
-export function validateIdentifier(
+export function validateDid(
   input: unknown,
-  expectType?: 'Uri' | 'Url'
+  expectType?: 'Did' | 'DidUrl'
 ): void {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parse(input as DidUri)
+  const { address, fragment } = parse(input as DidUrl)
 
   if (
     fragment &&
-    (expectType === 'Uri' ||
+    (expectType === 'Did' ||
       // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
       (typeof expectType === 'boolean' && expectType === false))
   ) {
     throw new SDKErrors.DidError(
-      'Expected a Kilt DidUri but got a DidUrl (containing a #fragment)'
+      'Expected a Kilt Did but got a DidUrl (containing a #fragment)'
     )
   }
 
-  if (!fragment && expectType === 'Url') {
+  if (!fragment && expectType === 'DidUrl') {
     throw new SDKErrors.DidError(
-      'Expected a Kilt DidUrl (containing a #fragment) but got a DidUri'
+      'Expected a Kilt DidUrl (containing a #fragment) but got a Did'
     )
   }
 
@@ -318,32 +318,32 @@ export function getAddressFromVerificationMethod({
 }
 
 /**
- * Builds the URI a light DID will have after it’s stored on the blockchain.
+ * Builds the full DID a light DID will have after it’s stored on the blockchain.
  *
- * @param didOrAddress The URI of the light DID. Internally it’s used with the DID "address" as well.
- * @param version The version of the DID URI to use.
- * @returns The expected full DID URI.
+ * @param didOrAddress The light DID. Internally it’s used with the DID "address" as well.
+ * @param version The version of the DID to use.
+ * @returns The expected full DID.
  */
-export function getFullDidUri(
-  didOrAddress: DidUri | KiltAddress,
+export function getFullDid(
+  didOrAddress: Did | KiltAddress,
   version = FULL_DID_LATEST_VERSION
-): DidUri {
+): Did {
   const address = DataUtils.isKiltAddress(didOrAddress)
     ? didOrAddress
-    : parse(didOrAddress as DidUri).address
+    : parse(didOrAddress as Did).address
   const versionString = version === 1 ? '' : `v${version}`
-  return `did:kilt:${versionString}${address}` as DidUri
+  return `did:kilt:${versionString}${address}` as Did
 }
 
 /**
- * Builds the URI of a full DID if it is created with the authentication verification method derived from the provided public key.
+ * Builds the  of a full DID if it is created with the authentication verification method derived from the provided public key.
  *
  * @param verificationMethod The DID verification method.
- * @returns The expected full DID URI.
+ * @returns The expected full DID .
  */
-export function getFullDidUriFromVerificationMethod(
+export function getFullDidFromVerificationMethod(
   verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase'>
-): DidUri {
+): Did {
   const address = getAddressFromVerificationMethod(verificationMethod)
-  return getFullDidUri(address)
+  return getFullDid(address)
 }

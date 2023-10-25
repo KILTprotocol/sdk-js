@@ -120,7 +120,7 @@ async function createFullDidFromKeypair(
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
   const encodedDidDetails = await queryFunction(
     Did.toChain(
-      Did.getFullDidUriFromVerificationMethod({
+      Did.getFullDidFromVerificationMethod({
         publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
       })
     )
@@ -197,7 +197,7 @@ async function runAll() {
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
   const encodedDidDetails = await queryFunction(
     Did.toChain(
-      Did.getFullDidUriFromVerificationMethod({
+      Did.getFullDidFromVerificationMethod({
         publicKeyMultibase: Did.keypairToMultibaseKey(keypair),
       })
     )

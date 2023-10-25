@@ -6,7 +6,7 @@
  */
 
 import type {
-  DidUri,
+  Did,
   SignatureVerificationRelationship,
   VerificationMethod,
 } from './Did'
@@ -28,7 +28,7 @@ export interface SignRequestData {
   /**
    * The DID to be used for signing.
    */
-  did: DidUri
+  did: Did
 }
 
 /**
@@ -74,7 +74,7 @@ export interface EncryptRequestData {
   /**
    * The DID to be used for encryption.
    */
-  did: DidUri
+  did: Did
 }
 
 /**

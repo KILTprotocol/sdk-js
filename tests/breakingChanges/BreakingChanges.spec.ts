@@ -40,7 +40,7 @@ function makeLightDidFromSeed(seed: string) {
 
 describe('Breaking Changes', () => {
   describe('Light DID', () => {
-    it('does not break the light did uri generation', () => {
+    it('does not break the light did generation', () => {
       const { did } = makeLightDidFromSeed(
         '0x127f2375faf3472c2f94ffcdd5424590b27294631f2cb8041407e501bc97c44c'
       )

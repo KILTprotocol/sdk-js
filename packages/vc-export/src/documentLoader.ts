@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/did'
 import type {
   DidDocument,
-  DidUri,
+  Did,
   ICType,
   VerificationMethod,
 } from '@kiltprotocol/types'
@@ -92,7 +92,7 @@ type LegacyVerificationMethod = Pick<
 
 // Returns legacy representations of a KILT DID verification method.
 export const kiltDidLoader: DocumentLoader = async (url) => {
-  const { did } = parse(url as DidUri)
+  const { did } = parse(url as Did)
   const { didDocument: resolvedDidDocument } = await resolveDid(did)
   const didDocument = (() => {
     if (resolvedDidDocument === undefined) {
@@ -133,7 +133,7 @@ export const kiltDidLoader: DocumentLoader = async (url) => {
     return doc
   })()
 
-  // Framing can help us resolve to the requested resource (did or did uri). This way we return either a key or the full DID document, depending on what was requested.
+  // Framing can help us resolve to the requested resource (did or did url). This way we return either a key or the full DID document, depending on what was requested.
   const jsonLdDocument = (await jsonld.frame(
     didDocument,
     {

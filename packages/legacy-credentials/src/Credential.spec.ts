@@ -16,7 +16,7 @@ import type {
   DereferenceResult,
   DidDocument,
   DidSignature,
-  DidUri,
+  Did as KiltDid,
   DidUrl,
   IAttestation,
   IClaim,
@@ -50,7 +50,7 @@ const testCType = CType.fromProperties('Credential', {
 })
 
 function buildCredential(
-  claimerDid: DidUri,
+  claimerDid: KiltDid,
   contents: IClaimContents,
   legitimations: ICredential[]
 ): ICredential {
@@ -444,7 +444,7 @@ describe('Presentations', () => {
   let migratedAndDeletedLightDid: DidDocument
 
   async function dereferenceDidUrl(
-    didUrl: DidUrl | DidUri
+    didUrl: DidUrl | KiltDid
   ): Promise<DereferenceResult<SupportedContentType>> {
     const { did } = Did.parse(didUrl)
     const didDocument = [
@@ -468,7 +468,7 @@ describe('Presentations', () => {
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
   async function buildPresentation(
     claimer: DidDocument,
-    attesterDid: DidUri,
+    attesterDid: KiltDid,
     contents: IClaim['contents'],
     legitimations: ICredential[],
     sign: SignCallback
@@ -748,7 +748,7 @@ describe('create presentation', () => {
     lightDidForId: DidDocument,
     newAuthenticationKey?: NewDidVerificationKey
   ): DidDocument {
-    const id = Did.getFullDidUri(lightDidForId.id)
+    const id = Did.getFullDid(lightDidForId.id)
     const authMethod = (() => {
       if (newAuthenticationKey !== undefined) {
         return didKeyToVerificationMethod(
@@ -780,7 +780,7 @@ describe('create presentation', () => {
   }
 
   async function dereferenceDidUrl(
-    didUrl: DidUrl | DidUri
+    didUrl: DidUrl | KiltDid
   ): Promise<DereferenceResult<SupportedContentType>> {
     const { did } = Did.parse(didUrl)
     switch (did) {

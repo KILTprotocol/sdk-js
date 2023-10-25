@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { ConfigService } from '@kiltprotocol/config'
-import type { CTypeHash, DidUri, IAttestation } from '@kiltprotocol/types'
+import type { CTypeHash, Did, IAttestation } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { ApiMocks } from '../../../../tests/testUtils'
@@ -22,7 +22,7 @@ beforeAll(() => {
 })
 
 describe('Attestation', () => {
-  const identityAlice: DidUri =
+  const identityAlice: Did =
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
 
   const cTypeHash: CTypeHash =

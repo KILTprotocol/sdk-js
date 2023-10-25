@@ -8,7 +8,7 @@
 import type {
   CTypeHash,
   DidDocument,
-  DidUri,
+  Did as KiltDid,
   IAttestation,
   IDelegationHierarchyDetails,
   IDelegationNode,
@@ -58,7 +58,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: DidUri
+  public readonly account: KiltDid
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -350,7 +350,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    dids: DidUri | DidUri[]
+    dids: KiltDid | KiltDid[]
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     const acceptedDids = Array.isArray(dids) ? dids : [dids]
     if (acceptedDids.includes(this.account)) {
@@ -403,7 +403,7 @@ export class DelegationNode implements IDelegationNode {
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(did: KiltDid): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
       throw new SDKErrors.UnauthorizedError(

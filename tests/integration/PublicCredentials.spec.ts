@@ -6,7 +6,7 @@
  */
 
 import type {
-  AssetDidUri,
+  AssetDid,
   DidDocument,
   HexString,
   IPublicCredential,
@@ -42,7 +42,7 @@ let attesterKey: KeyTool
 
 let api: ApiPromise
 // Generate a random asset ID
-let assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
+let assetId: AssetDid = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
 let latestCredential: IPublicCredentialInput
 
 async function issueCredential(
@@ -345,7 +345,7 @@ describe('When there is an issued public credential', () => {
     const credentialWithDifferentSubject = {
       ...credential,
       subject:
-        'did:asset:eip155:1.erc721:0x6d19295A5E47199D823D8793942b21a256ef1A4d' as AssetDidUri,
+        'did:asset:eip155:1.erc721:0x6d19295A5E47199D823D8793942b21a256ef1A4d' as AssetDid,
     }
     await expect(
       PublicCredentials.verifyCredential(credentialWithDifferentSubject)
@@ -383,7 +383,7 @@ describe('When there is an issued public credential', () => {
   it('should not be verified when another party receives it if it has different attester info', async () => {
     const credentialWithDifferentAttester = {
       ...credential,
-      attester: Did.getFullDidUri(devAlice.address),
+      attester: Did.getFullDid(devAlice.address),
     }
     await expect(
       PublicCredentials.verifyCredential(credentialWithDifferentAttester)

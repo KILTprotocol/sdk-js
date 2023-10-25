@@ -12,7 +12,11 @@ import { base58Encode } from '@polkadot/util-crypto'
 import { Types, init, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import type { DidDocument, DidUri, KiltKeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDocument,
+  Did as KiltDid,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 
 import {
   combineDocumentLoaders,
@@ -41,17 +45,17 @@ export async function makeFakeDid() {
   await init()
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument: DidDocument = {
-    id: ingosCredential.credentialSubject.id as DidUri,
+    id: ingosCredential.credentialSubject.id as KiltDid,
     authentication: ['#authentication'],
     assertionMethod: ['#assertion'],
     verificationMethod: [
       Did.didKeyToVerificationMethod(
-        ingosCredential.credentialSubject.id as DidUri,
+        ingosCredential.credentialSubject.id as KiltDid,
         '#authentication',
         { ...keypair, keyType: keypair.type }
       ),
       Did.didKeyToVerificationMethod(
-        ingosCredential.credentialSubject.id as DidUri,
+        ingosCredential.credentialSubject.id as KiltDid,
         '#assertion',
         { ...keypair, keyType: keypair.type }
       ),

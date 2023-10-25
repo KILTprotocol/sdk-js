@@ -11,8 +11,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import { CType } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import type {
-  AssetDidUri,
-  DidUri,
+  AssetDid,
+  Did as KiltDid,
   IAssetClaim,
   IClaimContents,
   IPublicCredential,
@@ -39,7 +39,7 @@ const assetIdentifier =
 
 // Build a public credential with fake attestation (i.e., attester, block number, revocation status) information.
 function buildCredential(
-  assetDid: AssetDidUri,
+  assetDid: AssetDid,
   contents: IClaimContents
 ): IPublicCredential {
   const claim: IAssetClaim = {
@@ -48,7 +48,7 @@ function buildCredential(
     subject: assetDid,
   }
   const credential = PublicCredential.fromClaim(claim)
-  const attester: DidUri = Did.getFullDidUri(devAlice.address)
+  const attester: KiltDid = Did.getFullDid(devAlice.address)
   return {
     ...credential,
     attester,

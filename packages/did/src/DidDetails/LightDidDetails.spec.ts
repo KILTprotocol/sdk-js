@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidDocument, DidUri } from '@kiltprotocol/types'
+import type { DidDocument, Did, DidUrl } from '@kiltprotocol/types'
 
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -157,7 +157,7 @@ describe('When creating an instance from the details', () => {
   })
 })
 
-describe('When creating an instance from a URI', () => {
+describe('When creating an instance from a light DID', () => {
   it('correctly assign the right authentication key, encryption key, and services', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
     const encKey = Crypto.makeEncryptionKeypairFromSeed(
@@ -248,19 +248,19 @@ describe('When creating an instance from a URI', () => {
       service,
     })
 
-    const uriWithFragment: DidUri = `${expectedLightDid.id}#authentication`
+    const didWithFragment: DidUrl = `${expectedLightDid.id}#authentication`
 
-    expect(() => parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
+    expect(() => parseDocumentFromLightDid(didWithFragment, true)).toThrow()
     expect(() =>
-      parseDocumentFromLightDid(uriWithFragment, false)
+      parseDocumentFromLightDid(didWithFragment, false)
     ).not.toThrow()
   })
 
-  it('fail if the URI is not correct', () => {
+  it('fail if the DID is not correct', () => {
     const validKiltAddress = Crypto.makeKeypairFromSeed()
-    const incorrectURIs = [
+    const incorrectDIDs = [
       'did:kilt:light:sdasdsadas',
-      // @ts-ignore not a valid DID uri
+      // @ts-ignore not a valid DID
       'random-uri',
       'did:kilt:light',
       'did:kilt:light:',
@@ -271,8 +271,8 @@ describe('When creating an instance from a URI', () => {
       // Random encoded details
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
-    incorrectURIs.forEach((uri) => {
-      expect(() => parseDocumentFromLightDid(uri as DidUri)).toThrow()
+    incorrectDIDs.forEach((did) => {
+      expect(() => parseDocumentFromLightDid(did as Did)).toThrow()
     })
   })
 })

@@ -31,8 +31,8 @@ import type { IEventData, Signer } from '@polkadot/types/types'
 
 import {
   authorizeTx,
-  getFullDidUri,
-  validateIdentifier,
+  getFullDid,
+  validateDid,
   fromChain as didFromChain,
 } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors, Caip19 } from '@kiltprotocol/utils'
@@ -43,7 +43,7 @@ import type {
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
 import type {
-  DidUri,
+  Did,
   ICType,
   IDelegationNode,
   KiltAddress,
@@ -220,7 +220,7 @@ async function verifyAttestedAt(
 ): Promise<{
   verified: boolean
   timestamp: number
-  attester: DidUri
+  attester: Did
   cTypeId: ICType['$id']
   delegationId: IDelegationNode['id'] | null
 }> {
@@ -256,7 +256,7 @@ async function verifyAttestedAt(
     Option<Hash> | Option<RuntimeCommonAuthorizationAuthorizationId>
   ] &
     IEventData
-  const attester = getFullDidUri(encodeAddress(att.toU8a(), 38))
+  const attester = getFullDid(encodeAddress(att.toU8a(), 38))
   const cTypeId = CType.hashToId(cTypeHash.toHex())
   const delegationId = authorization.isSome
     ? (
@@ -276,7 +276,7 @@ async function verifyAttestedAt(
 async function verifyAuthoritiesInHierarchy(
   api: ApiPromise,
   nodeId: Uint8Array | string,
-  delegators: Set<DidUri>
+  delegators: Set<Did>
 ): Promise<void> {
   const node = (await api.query.delegation.delegationNodes(nodeId)).unwrapOr(
     null
@@ -347,7 +347,7 @@ export async function verify(
   validateCredentialStructure(credential)
   const { nonTransferable, credentialStatus, credentialSubject, issuer } =
     credential
-  validateIdentifier(issuer, 'Uri')
+  validateDid(issuer, 'Did')
   await validateSubject(credential, opts)
   // 4. check nonTransferable
   if (nonTransferable !== true)
@@ -660,7 +660,7 @@ export type AttestationHandler = (
 }>
 
 export interface DidSigner {
-  did: DidUri
+  did: Did
   signer: SignExtrinsicCallback
 }
 

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidDocument, DidUri } from '@kiltprotocol/types'
+import type { DidDocument, Did } from '@kiltprotocol/types'
 
 import {
   base58Decode,
@@ -203,8 +203,8 @@ function deserializeAdditionalLightDidDetails(
 }
 
 /**
- * Create [[DidDocument]] of a light DID using the provided verification methods and services.
- * Sets proper verification method IDs, builds light DID URI.
+ * Create a light [[DidDocument]] using the provided verification methods and services.
+ * Sets proper verification method IDs, builds light DID Document.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
  *
  * @param input The input.
@@ -236,14 +236,14 @@ export function createLightDidDocument({
   })
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
-  const uri =
-    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
+  const did =
+    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as Did
 
-  const did: DidDocument = {
-    id: uri,
+  const didDocument: DidDocument = {
+    id: did,
     authentication: [authenticationKeyId],
     verificationMethod: [
-      didKeyToVerificationMethod(uri, authenticationKeyId, {
+      didKeyToVerificationMethod(did, authenticationKeyId, {
         keyType: authentication[0].type,
         publicKey: authentication[0].publicKey,
       }),
@@ -254,30 +254,30 @@ export function createLightDidDocument({
   if (keyAgreement !== undefined) {
     const { publicKey, type } = keyAgreement[0]
     addKeypairAsVerificationMethod(
-      did,
+      didDocument,
       { id: encryptionKeyId, publicKey, type },
       'keyAgreement'
     )
   }
 
-  return did
+  return didDocument
 }
 
 /**
- * Create [[DidDocument]] of a light DID by parsing the provided input URI.
+ * Create a light [[DidDocument]] by parsing the provided input DID.
  * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
  * For the DIDs you have received from external sources use [[resolve]] etc.
  *
  * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
  *
- * @param uri The DID URI to parse.
- * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
+ * @param did The DID to parse.
+ * @param failIfFragmentPresent Whether to fail when parsing the DID in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
  *
  * @returns The resulting [[DidDocument]].
  */
 export function parseDocumentFromLightDid(
-  uri: DidUri,
+  did: Did,
   failIfFragmentPresent = true
 ): DidDocument {
   const {
@@ -287,16 +287,16 @@ export function parseDocumentFromLightDid(
     fragment,
     type,
     authKeyTypeEncoding,
-  } = parse(uri)
+  } = parse(did)
 
   if (type !== 'light') {
     throw new SDKErrors.DidError(
-      `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
+      `Cannot build a light DID Document from the provided DID "${did}" because it does not refer to a light DID`
     )
   }
   if (fragment && failIfFragmentPresent) {
     throw new SDKErrors.DidError(
-      `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
+      `Cannot build a light DID Document from the provided DID "${did}" because it has a fragment`
     )
   }
   const keyType =

@@ -9,7 +9,7 @@ import type {
   IAttestation,
   IDelegationHierarchyDetails,
   ICredential,
-  DidUri,
+  Did as KiltDid,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -49,7 +49,7 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.validateIdentifier(input.owner, 'Uri')
+  Did.validateDid(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()
@@ -65,7 +65,7 @@ export function verifyDataStructure(input: IAttestation): void {
  */
 export function fromCredentialAndDid(
   credential: ICredential,
-  attesterDid: DidUri
+  attesterDid: KiltDid
 ): IAttestation {
   const attestation = {
     claimHash: credential.rootHash,

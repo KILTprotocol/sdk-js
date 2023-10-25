@@ -8,7 +8,7 @@
 import { ConfigService } from '@kiltprotocol/config'
 import {
   DereferenceResult,
-  DidUri,
+  Did as KiltDid,
   DidUrl,
   KiltAddress,
   RepresentationResolutionResult,
@@ -27,13 +27,13 @@ import * as Did from '../index.js'
 
 const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const didWithAuthenticationKey: DidUri = `did:kilt:${addressWithAuthenticationKey}`
+const didWithAuthenticationKey: KiltDid = `did:kilt:${addressWithAuthenticationKey}`
 const addressWithAllKeys = `4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp`
-const didWithAllKeys: DidUri = `did:kilt:${addressWithAllKeys}`
+const didWithAllKeys: KiltDid = `did:kilt:${addressWithAllKeys}`
 const addressWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN`
-const didWithServiceEndpoints: DidUri = `did:kilt:${addressWithServiceEndpoints}`
+const didWithServiceEndpoints: KiltDid = `did:kilt:${addressWithServiceEndpoints}`
 const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
-const deletedDid: DidUri = `did:kilt:${deletedAddress}`
+const deletedDid: KiltDid = `did:kilt:${deletedAddress}`
 
 const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
   'did',
@@ -48,7 +48,7 @@ beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
   ConfigService.set({ api: mockedApi })
 
-  // Mock `api.call.did.query(didUri)`
+  // Mock `api.call.did.query(did)`
   // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
   jest
     .spyOn(mockedApi.call.did, 'query')
@@ -81,7 +81,7 @@ beforeAll(() => {
 })
 
 function generateAuthenticationVerificationMethod(
-  controller: DidUri
+  controller: KiltDid
 ): VerificationMethod {
   return {
     id: '#auth',
@@ -95,7 +95,7 @@ function generateAuthenticationVerificationMethod(
 }
 
 function generateEncryptionVerificationMethod(
-  controller: DidUri
+  controller: KiltDid
 ): VerificationMethod {
   return {
     id: '#enc',
@@ -109,7 +109,7 @@ function generateEncryptionVerificationMethod(
 }
 
 function generateAssertionVerificationMethod(
-  controller: DidUri
+  controller: KiltDid
 ): VerificationMethod {
   return {
     id: '#att',
@@ -123,7 +123,7 @@ function generateAssertionVerificationMethod(
 }
 
 function generateCapabilityDelegationVerificationMethod(
-  controller: DidUri
+  controller: KiltDid
 ): VerificationMethod {
   return {
     id: '#del',
@@ -146,10 +146,10 @@ function generateServiceEndpoint(serviceId: UriFragment): Service {
 }
 
 jest.mock('../Did.rpc.js')
-// By default its mock returns a DIDDocument with the test authentication key, test service, and the URI derived from the identifier provided in the resolution.
+// By default its mock returns a DIDDocument with the test authentication key, test service, and the DID derived from the identifier provided in the resolution.
 jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
   const { identifier } = linkedInfo.unwrap()
-  const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+  const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
   const authMethod = generateAuthenticationVerificationMethod(did)
 
   return {
@@ -215,7 +215,9 @@ describe('When resolving a service', () => {
     const serviceIdUrl: DidUrl = `${fullDid}#service-1`
 
     expect(
-      await Did.dereference(serviceIdUrl, { accept: 'application/did+json' })
+      await Did.dereference(serviceIdUrl, {
+        accept: 'application/did+json',
+      })
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { contentType: 'application/did+json' },
@@ -231,7 +233,7 @@ describe('When resolving a service', () => {
     // Mock transform function changed to not return any services (twice).
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -245,7 +247,7 @@ describe('When resolving a service', () => {
     })
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -309,7 +311,7 @@ describe('When resolving a full DID', () => {
     // Mock transform function changed to return all keys for the DIDDocument.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
       const encMethod = generateEncryptionVerificationMethod(did)
       const attMethod = generateAssertionVerificationMethod(did)
@@ -385,7 +387,7 @@ describe('When resolving a full DID', () => {
     // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -441,7 +443,7 @@ describe('When resolving a full DID', () => {
     // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -486,7 +488,7 @@ describe('When resolving a full DID', () => {
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     const randomKeypair = makeSigningKeyTool().authentication[0]
-    const randomDid = Did.getFullDidUriFromVerificationMethod({
+    const randomDid = Did.getFullDidFromVerificationMethod({
       publicKeyMultibase: Did.keypairToMultibaseKey(randomKeypair),
     })
     expect(await Did.resolve(randomDid)).toStrictEqual<ResolutionResult>({
@@ -623,7 +625,7 @@ describe('When resolving a light DID', () => {
         },
       })
     )
-    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
+    const migratedDid: KiltDid = `did:kilt:light:00${addressWithAuthenticationKey}`
     expect(await Did.resolve(migratedDid)).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: { canonicalId: didWithAuthenticationKey },
       didResolutionMetadata: {},
@@ -637,7 +639,7 @@ describe('When resolving a light DID', () => {
     // Mock the resolved DID as deleted.
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
-    const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
+    const migratedDid: KiltDid = `did:kilt:light:00${deletedAddress}`
     expect(await Did.resolve(migratedDid)).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: { deactivated: true },
       didResolutionMetadata: {},
@@ -680,7 +682,7 @@ describe('DID Resolution compliance', () => {
       })
     jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
-      const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -695,7 +697,7 @@ describe('DID Resolution compliance', () => {
   })
   describe('resolve(did, resolutionOptions) → « didResolutionMetadata, didDocument, didDocumentMetadata »', () => {
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata` when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
@@ -723,7 +725,7 @@ describe('DID Resolution compliance', () => {
         .mockResolvedValueOnce(
           augmentedApi.createType('Option<RawDidLinkedInfo>', null)
         )
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
@@ -731,7 +733,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-      const did = 'did:kilt:test-did' as unknown as DidUri
+      const did = 'did:kilt:test-did' as unknown as KiltDid
       expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'invalidDid' },
@@ -741,7 +743,7 @@ describe('DID Resolution compliance', () => {
 
   describe('resolveRepresentation(did, resolutionOptions) → « didResolutionMetadata, didDocumentStream, didDocumentMetadata »', () => {
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.resolveRepresentation(did)
@@ -768,7 +770,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.resolveRepresentation(did, {
@@ -776,7 +778,9 @@ describe('DID Resolution compliance', () => {
         })
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
-        didResolutionMetadata: { contentType: Did.DID_JSON_LD_CONTENT_TYPE },
+        didResolutionMetadata: {
+          contentType: Did.DID_JSON_LD_CONTENT_TYPE,
+        },
         didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
@@ -798,7 +802,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.resolveRepresentation(did, {
@@ -833,7 +837,7 @@ describe('DID Resolution compliance', () => {
           augmentedApi.createType('Option<RawDidLinkedInfo>', null)
         )
 
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.resolveRepresentation(did)
@@ -843,7 +847,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-      const did = 'did:kilt:test-did' as unknown as DidUri
+      const did = 'did:kilt:test-did' as unknown as KiltDid
       expect(
         await Did.resolveRepresentation(did)
       ).toStrictEqual<RepresentationResolutionResult>({
@@ -852,7 +856,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns the right `didResolutionMetadata.error` when the requested content type is not supported', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.resolveRepresentation(did, {
@@ -867,7 +871,7 @@ describe('DID Resolution compliance', () => {
 
   describe('dereference(didUrl, dereferenceOptions) → « dereferencingMetadata, contentStream, contentMetadata »', () => {
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
@@ -890,13 +894,15 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.dereference(did, { accept: 'application/did+ld+json' })
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
-        dereferencingMetadata: { contentType: Did.DID_JSON_LD_CONTENT_TYPE },
+        dereferencingMetadata: {
+          contentType: Did.DID_JSON_LD_CONTENT_TYPE,
+        },
         contentStream: {
           id: did,
           authentication: ['#auth'],
@@ -916,7 +922,7 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: DidUri =
+      const did: KiltDid =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
         await Did.dereference(did, { accept: 'application/did+cbor' })
@@ -965,7 +971,7 @@ describe('DID Resolution compliance', () => {
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` (ignoring the provided `accept` option) representation when successfully returning a service for a DID that has not been deleted nor migrated', async () => {
       jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
         const { identifier } = linkedInfo.unwrap()
-        const did: DidUri = `did:kilt:${identifier as unknown as KiltAddress}`
+        const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
         const authMethod = generateAuthenticationVerificationMethod(did)
 
         return {
@@ -1006,7 +1012,7 @@ describe('DID Resolution compliance', () => {
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
 
-    const did: DidUri =
+    const did: KiltDid =
       'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
     expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
@@ -1014,14 +1020,14 @@ describe('DID Resolution compliance', () => {
     })
   })
   it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-    const did = 'did:kilt:test-did' as unknown as DidUri
+    const did = 'did:kilt:test-did' as unknown as KiltDid
     expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'invalidDidUrl' },
     })
   })
   it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` (the default value) when the `options.accept` value is invalid', async () => {
-    const did: DidUri =
+    const did: KiltDid =
       'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
     expect(
       await Did.dereference(did, {

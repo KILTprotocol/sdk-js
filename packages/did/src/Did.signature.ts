@@ -11,7 +11,7 @@ import type {
   DereferenceDidUrl,
   DidDocument,
   DidSignature,
-  DidUri,
+  Did,
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
@@ -19,14 +19,14 @@ import type {
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { multibaseKeyToDidKey, parse, validateIdentifier } from './Did.utils.js'
+import { multibaseKeyToDidKey, parse, validateDid } from './Did.utils.js'
 import { dereference } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
   signerUrl: DidUrl
-  expectedSigner?: DidUri
+  expectedSigner?: Did
   allowUpgraded?: boolean
   expectedVerificationRelationship?: SignatureVerificationRelationship
   dereferenceDidUrl?: DereferenceDidUrl['dereference']
@@ -53,11 +53,11 @@ function verifyDidSignatureDataStructure(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateIdentifier(verificationMethodUrl, 'Url')
+  validateDid(verificationMethodUrl, 'DidUrl')
 }
 
 /**
- * Verify a DID signature given the signer's DID URL (i.e., DID URI + verification method ID).
+ * Verify a DID signature given the signer's DID URL (i.e., DID + verification method ID).
  * A signature verification returns false if a migrated and then deleted DID is used.
  *
  * @param input Object wrapping all input.
@@ -99,7 +99,7 @@ export async function verifyDidSignature({
   }
   if (signer.fragment === undefined) {
     throw new SDKErrors.DidError(
-      `Signer DID URL "${signerUrl}" is not a valid DID resource.`
+      `Signer DID URL "${signerUrl}" does not point to a valid resource under the signer's DID Document.`
     )
   }
 
@@ -112,7 +112,7 @@ export async function verifyDidSignature({
       `Error validating the DID signature. Cannot fetch DID Document or the verification method for "${signerUrl}".`
     )
   }
-  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  // If the light DID has been upgraded we consider the old key ID invalid, the full DID should be used instead.
   if (contentMetadata.canonicalId !== undefined) {
     throw new SDKErrors.DidResolveUpgradedDidError()
   }
@@ -183,7 +183,7 @@ export function signatureToJson({
 
 /**
  * Deserializes a [[DidSignature]] for signature verification.
- * Handles backwards compatibility to an older version of the interface where the `verificationMethodUri` property was called `keyId`.
+ * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
  *
  * @param input A [[DidSignature]] object.
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
@@ -191,14 +191,14 @@ export function signatureToJson({
 export function signatureFromJson(
   input: DidSignature | OldDidSignatureV1
 ): Pick<SignResponseData, 'signature'> & {
-  signerUrl: DidUrl
+  keyUri: DidUrl
 } {
-  const signerUrl = (() => {
+  const keyUri = (() => {
     if ('keyId' in input) {
       return input.keyId
     }
     return input.keyUri
   })()
   const signature = Crypto.coToUInt8(input.signature)
-  return { signature, signerUrl }
+  return { signature, keyUri }
 }

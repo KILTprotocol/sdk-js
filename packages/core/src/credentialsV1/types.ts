@@ -9,7 +9,7 @@
 
 import type {
   VerificationMethod,
-  DidUri,
+  Did,
   Caip2ChainId,
   IClaimContents,
   ICType,
@@ -96,7 +96,7 @@ export interface VerifiablePresentation {
   '@context': [typeof W3C_CREDENTIAL_CONTEXT_URL, ...string[]]
   type: [typeof W3C_PRESENTATION_TYPE, ...string[]]
   verifiableCredential: VerifiableCredential | VerifiableCredential[]
-  holder: DidUri
+  holder: Did
   proof?: Proof | Proof[]
   expirationDate?: string
   issuanceDate?: string
@@ -134,14 +134,14 @@ export interface KiltAttesterLegitimationV1 extends IssuerBacking {
 export interface KiltAttesterDelegationV1 extends IssuerBacking {
   id: `kilt:delegation/${string}`
   type: typeof KILT_ATTESTER_DELEGATION_V1_TYPE
-  delegators?: DidUri[]
+  delegators?: Did[]
 }
 
 export interface CredentialSubject extends IClaimContents {
   '@context': {
     '@vocab': string
   }
-  id: DidUri
+  id: Did
 }
 
 export interface KiltCredentialV1 extends VerifiableCredential {
@@ -166,7 +166,7 @@ export interface KiltCredentialV1 extends VerifiableCredential {
   /**
    * The entity that issued the credential.
    */
-  issuer: DidUri
+  issuer: Did
   /**
    * If true, this credential can only be presented and used by its subject.
    */

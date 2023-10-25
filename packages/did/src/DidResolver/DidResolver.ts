@@ -12,7 +12,7 @@ import type {
   DereferenceResult,
   DidDocument,
   DidResolver,
-  DidUri,
+  Did,
   DidUrl,
   FailedDereferenceMetadata,
   JsonLd,
@@ -29,7 +29,7 @@ import { cbor } from '@kiltprotocol/utils'
 import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 import { toChain } from '../Did.chain.js'
-import { getFullDidUri, parse, validateIdentifier } from '../Did.utils.js'
+import { getFullDid, parse, validateDid } from '../Did.utils.js'
 import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
 import { isValidVerificationRelationship } from '../DidDetails/DidDetails.js'
 
@@ -59,7 +59,7 @@ type InternalResolutionResult = {
 }
 
 async function resolveInternal(
-  did: DidUri
+  did: Did
 ): Promise<InternalResolutionResult | null> {
   const { type } = parse(did)
   const api = ConfigService.get('api')
@@ -99,7 +99,7 @@ async function resolveInternal(
   if (document !== undefined) {
     return {
       documentMetadata: {
-        canonicalId: getFullDidUri(did),
+        canonicalId: getFullDid(did),
       },
       document: {
         id: lightDocument.id,
@@ -124,12 +124,12 @@ async function resolveInternal(
  * @returns The resolution result for the `resolve` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
  */
 export async function resolve(
-  did: DidUri,
+  did: Did,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolutionOptions: ResolutionOptions = {}
 ): Promise<ResolutionResult> {
   try {
-    validateIdentifier(did, 'Uri')
+    validateDid(did, 'Did')
   } catch (error) {
     return {
       didResolutionMetadata: {
@@ -170,7 +170,7 @@ export async function resolve(
  * @returns The resolution result for the `resolveRepresentation` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
  */
 export async function resolveRepresentation(
-  did: DidUri,
+  did: Did,
   { accept }: DereferenceOptions<SupportedContentType> = {
     accept: DID_JSON_CONTENT_TYPE,
   }
@@ -247,7 +247,7 @@ export function isFailedDereferenceMetadata(
 }
 
 async function dereferenceInternal(
-  didUrl: DidUri | DidUrl,
+  didUrl: Did | DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dereferenceOptions: DereferenceOptions<SupportedContentType>
 ): Promise<InternalDereferenceResult> {
@@ -340,7 +340,7 @@ async function dereferenceInternal(
  * @returns The resolution result for the `dereference` function as specified in the W3C DID specifications (https://www.w3.org/TR/did-core/#did-url-dereferencing).
  */
 export async function dereference(
-  didUrl: DidUri | DidUrl,
+  didUrl: Did | DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { accept }: DereferenceOptions<SupportedContentType> = {
     accept: DID_JSON_CONTENT_TYPE,
@@ -352,7 +352,7 @@ export async function dereference(
     : DID_JSON_CONTENT_TYPE
 
   try {
-    validateIdentifier(didUrl)
+    validateDid(didUrl)
   } catch (error) {
     return {
       dereferencingMetadata: {

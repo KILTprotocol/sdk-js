@@ -8,18 +8,18 @@
 import type { KiltAddress } from './Address'
 
 type AuthenticationKeyType = '00' | '01'
-type DidUriVersion = '' | `v${string}:`
-type LightDidEncodedData = '' | `:${string}`
+type DidVersion = '' | `v${string}:`
+type LightDidDocumentEncodedData = '' | `:${string}`
 
 /**
- * A string containing a KILT DID Uri.
+ * A string containing a KILT DID.
  */
-export type DidUri =
-  | `did:kilt:${DidUriVersion}${KiltAddress}`
-  | `did:kilt:light:${DidUriVersion}${AuthenticationKeyType}${KiltAddress}${LightDidEncodedData}`
+export type Did =
+  | `did:kilt:${DidVersion}${KiltAddress}`
+  | `did:kilt:light:${DidVersion}${AuthenticationKeyType}${KiltAddress}${LightDidDocumentEncodedData}`
 
 /**
- * The fragment part of the DID URI including the `#` character.
+ * The fragment part of the DID including the `#` character.
  */
 export type UriFragment = `#${string}`
 
@@ -27,9 +27,9 @@ export type UriFragment = `#${string}`
  * URL for DID resources like keys or services.
  */
 export type DidUrl =
-  | `${DidUri}${UriFragment}`
+  | `${Did}${UriFragment}`
   // Very broad type definition, mostly for the compiler. Actual regex matching for query params is done where needed.
-  | `${DidUri}?{string}${UriFragment}`
+  | `${Did}?{string}${UriFragment}`
 
 export type SignatureVerificationRelationship =
   | 'authentication'
@@ -64,7 +64,7 @@ export type VerificationMethod = {
   /**
    * The controller of the verification method.
    */
-  controller: DidUri
+  controller: Did
   /*
    * The multicodec-prefixed, multibase-encoded verification method's public key.
    */
@@ -90,7 +90,7 @@ export type Service = {
 }
 
 export type DidDocument = {
-  id: DidUri
+  id: Did
   alsoKnownAs?: string[]
   verificationMethod?: VerificationMethod[]
   authentication?: UriFragment[]

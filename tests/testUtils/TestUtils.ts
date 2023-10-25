@@ -311,7 +311,7 @@ export async function createLocalDemoFullDidFromKeypair(
     publicKey,
     id: authKeyId,
   } = makeDidKeyFromKeypair(keypair)
-  const id = Did.getFullDidUriFromVerificationMethod({
+  const id = Did.getFullDidFromVerificationMethod({
     publicKeyMultibase: Did.keypairToMultibaseKey({
       type: keyType,
       publicKey,

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri } from '@kiltprotocol/types'
+import type { Did } from '@kiltprotocol/types'
 
 export interface JSigsSigner {
   sign: (data: { data: Uint8Array }) => Promise<Uint8Array>
@@ -24,5 +24,5 @@ export interface JSigsVerificationResult {
   verified: boolean
   error?: Error
   purposeResult?: { verified: boolean; error?: Error }
-  verificationMethod?: { id: string; type: string; controller: DidUri }
+  verificationMethod?: { id: string; type: string; controller: Did }
 }

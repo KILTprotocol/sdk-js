@@ -6,7 +6,7 @@
  */
 
 import type {
-  DidUri,
+  Did,
   DidDocument,
   DidUrl,
   VerificationMethod,
@@ -45,7 +45,7 @@ export type ResolutionDocumentMetadata = {
    * The relationship is a statement that the canonicalId value is logically equivalent to the id property value and that the canonicalId value is defined by the DID method to be the canonical ID for the DID subject in the scope of the containing DID document.
    * A canonicalId value MUST be produced by, and a form of, the same DID method as the id property value. (e.g., did:example:abc == did:example:ABC).
    */
-  canonicalId?: DidUri
+  canonicalId?: Did
 }
 
 export type ResolutionResult = {
@@ -140,7 +140,7 @@ export interface ResolveDid<Accept extends string = string> {
      * This is the DID to resolve.
      * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
      */
-    did: DidUri,
+    did: Did,
     /**
      * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
      * This input is REQUIRED, but the structure MAY be empty.
@@ -153,7 +153,7 @@ export interface ResolveDid<Accept extends string = string> {
      * This is the DID to resolve.
      * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
      */
-    did: DidUri,
+    did: Did,
     /**
      * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
      * This input is REQUIRED, but the structure MAY be empty.
@@ -239,7 +239,7 @@ export interface DereferenceDidUrl<Accept extends string = string> {
      * This is the DID URL to dereference.
      * To dereference a DID fragment, the complete DID URL including the DID fragment MUST be used. This input is REQUIRED.
      */
-    didUrl: DidUri | DidUrl,
+    didUrl: Did | DidUrl,
     /**
      * A metadata structure consisting of input options to the dereference function in addition to the didUrl itself.
      * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.

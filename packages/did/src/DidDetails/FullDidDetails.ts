@@ -10,7 +10,7 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidUri,
+  Did,
   KiltAddress,
   SignatureVerificationRelationship,
   SignExtrinsicCallback,
@@ -101,7 +101,7 @@ function increaseNonce(currentNonce: BN, increment = 1): BN {
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-async function getNextNonce(did: DidUri): Promise<BN> {
+async function getNextNonce(did: Did): Promise<BN> {
   const api = ConfigService.get('api')
   const queried = await api.query.did.did(toChain(did))
   const currentNonce = queried.isSome
@@ -122,7 +122,7 @@ async function getNextNonce(did: DidUri): Promise<BN> {
  * @returns The DID-signed submittable extrinsic.
  */
 export async function authorizeTx(
-  did: DidUri,
+  did: Did,
   extrinsic: Extrinsic,
   sign: SignExtrinsicCallback,
   submitterAccount: KiltAddress,
@@ -218,7 +218,7 @@ export async function authorizeBatch({
   submitter,
 }: {
   batchFunction: SubmittableExtrinsicFunction<'promise'>
-  did: DidUri
+  did: Did
   extrinsics: Extrinsic[]
   nonce?: BN
   sign: SignExtrinsicCallback

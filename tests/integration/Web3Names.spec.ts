@@ -91,14 +91,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
     await submitTx(authorizedTx, paymentAccount)
   }, 30_000)
 
-  it('should be possible to lookup the DID uri with the given nick', async () => {
+  it('should be possible to lookup the DID with the given nick', async () => {
     const {
       document: { id },
     } = Did.linkedInfoFromChain(await api.call.did.queryByWeb3Name(nick))
     expect(id).toStrictEqual(w3nCreator.id)
   }, 30_000)
 
-  it('should be possible to lookup the nick with the given DID uri', async () => {
+  it('should be possible to lookup the nick with the given DID', async () => {
     const encodedDidInfo = await api.call.did.query(Did.toChain(w3nCreator.id))
     const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
     expect(didInfo.document.alsoKnownAs).toStrictEqual([`w3n:${nick}`])

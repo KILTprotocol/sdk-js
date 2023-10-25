@@ -9,7 +9,7 @@ import type { AccountId } from '@polkadot/types/interfaces'
 import type { PublicCredentialsCredentialsCredential } from '@kiltprotocol/augment-api'
 import type {
   HexString,
-  DidUri,
+  Did as KiltDid,
   IAssetClaim,
   ICType,
   IDelegationNode,
@@ -30,7 +30,7 @@ import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 /**
  * Calculates the ID of a [[IPublicCredentialInput]], to be used to retrieve the full credential content from the blockchain.
  *
- * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[DidUri]] and then Blake2b hashing the result.
+ * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[Did]] and then Blake2b hashing the result.
  *
  * @param credential The input credential object.
  * @param attester The DID of the credential attester.
@@ -38,7 +38,7 @@ import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
  */
 export function getIdForCredential(
   credential: IPublicCredentialInput,
-  attester: DidUri
+  attester: KiltDid
 ): HexString {
   const api = ConfigService.get('api')
 
@@ -62,7 +62,7 @@ function verifyClaimStructure(input: IAssetClaim | PartialAssetClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if (input.subject) {
-    AssetDid.validateUri(input.subject)
+    AssetDid.validateDid(input.subject)
   }
   if (input.contents) {
     Object.entries(input.contents).forEach(([key, value]) => {

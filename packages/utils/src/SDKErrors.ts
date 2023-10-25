@@ -116,7 +116,7 @@ export class SignatureMalformedError extends SDKError {}
 export class DidSubjectMismatchError extends SDKError {
   constructor(actual: string, expected: string) {
     super(
-      `The DID "${actual}" doesn't match the DID Document's URI "${expected}"`
+      `The DID "${actual}" doesn't match the DID Document's id "${expected}"`
     )
   }
 }

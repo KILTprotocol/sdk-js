@@ -18,7 +18,7 @@ import type {
 import type {
   BN,
   Deposit,
-  DidUri,
+  Did,
   KiltAddress,
   Service,
   SignatureVerificationRelationship,
@@ -46,7 +46,7 @@ import {
   multibaseKeyToDidKey,
   keypairToMultibaseKey,
   getAddressFromVerificationMethod,
-  getFullDidUri,
+  getFullDid,
   parse,
 } from './Did.utils.js'
 
@@ -66,7 +66,7 @@ export type EncodedSignature = EncodedVerificationKey
  * @param did The DID to format.
  * @returns The blockchain-formatted DID.
  */
-export function toChain(did: DidUri): ChainDidIdentifier {
+export function toChain(did: Did): ChainDidIdentifier {
   return parse(did).address
 }
 
@@ -81,13 +81,13 @@ export function fragmentIdToChain(id: UriFragment): string {
 }
 
 /**
- * Convert the DID data from blockchain format to the DID URI.
+ * Convert the DID data from blockchain format to the DID.
  *
  * @param encoded The chain-formatted DID.
- * @returns The DID URI.
+ * @returns The DID.
  */
-export function fromChain(encoded: AccountId32): DidUri {
-  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
+export function fromChain(encoded: AccountId32): Did {
+  return getFullDid(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 /**
@@ -237,7 +237,7 @@ function isUriFragment(str: string): boolean {
 
 /**
  * Performs sanity checks on service data, making sure that the following conditions are met:
- *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URL.
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service object to check.
@@ -297,7 +297,7 @@ export function serviceFromChain(
 }
 
 export type AuthorizeCallInput = {
-  did: DidUri
+  did: Did
   txCounter: AnyNumber
   call: Extrinsic
   submitter: KiltAddress

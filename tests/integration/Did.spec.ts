@@ -104,14 +104,15 @@ describe('write and didDeleteTx', () => {
 
     await submitTx(tx, paymentAccount)
 
-    const fullDidUri = Did.getFullDidUriFromVerificationMethod({
+    const fullDid = Did.getFullDidFromVerificationMethod({
       publicKeyMultibase,
     })
-    const fullDidLinkedInfo = await api.call.did.query(Did.toChain(fullDidUri))
-    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
+    const fullDidLinkedInfo = await api.call.did.query(Did.toChain(fullDid))
+    const { document: fullDidDocument } =
+      Did.linkedInfoFromChain(fullDidLinkedInfo)
 
-    expect(fullDid).toMatchObject(<Partial<DidDocument>>{
-      id: fullDidUri,
+    expect(fullDidDocument).toMatchObject(<Partial<DidDocument>>{
+      id: fullDid,
       service: [
         {
           id: '#test-id-1',
@@ -126,7 +127,7 @@ describe('write and didDeleteTx', () => {
       ],
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: fullDidUri,
+          controller: fullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -136,14 +137,14 @@ describe('write and didDeleteTx', () => {
         }),
       ],
     })
-    expect(fullDid.authentication).toHaveLength(1)
-    expect(fullDid.keyAgreement).toBe(undefined)
-    expect(fullDid.assertionMethod).toBe(undefined)
-    expect(fullDid.capabilityDelegation).toBe(undefined)
+    expect(fullDidDocument.authentication).toHaveLength(1)
+    expect(fullDidDocument.keyAgreement).toBe(undefined)
+    expect(fullDidDocument.assertionMethod).toBe(undefined)
+    expect(fullDidDocument.capabilityDelegation).toBe(undefined)
   }, 60_000)
 
   it('should return no results for empty accounts', async () => {
-    const emptyDid = Did.getFullDidUri(makeSigningKeyTool().keypair.address)
+    const emptyDid = Did.getFullDid(makeSigningKeyTool().keypair.address)
 
     const encodedDid = Did.toChain(emptyDid)
     expect((await api.call.did.query(encodedDid)).isSome).toBe(false)
@@ -152,7 +153,7 @@ describe('write and didDeleteTx', () => {
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
     const fullDidLinkedInfo = await api.call.did.query(
-      Did.toChain(Did.getFullDidUri(did.id))
+      Did.toChain(Did.getFullDid(did.id))
     )
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
@@ -197,7 +198,7 @@ describe('write and didDeleteTx', () => {
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
     const fullDidLinkedInfo = await api.call.did.query(
-      Did.toChain(Did.getFullDidUri(did.id))
+      Did.toChain(Did.getFullDid(did.id))
     )
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
@@ -242,7 +243,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDidLinkedInfo = await api.call.did.query(
-    Did.toChain(Did.getFullDidUri(newDid.id))
+    Did.toChain(Did.getFullDid(newDid.id))
   )
   let { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
@@ -262,7 +263,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDidLinkedInfo = await api.call.did.query(
-    Did.toChain(Did.getFullDidUri(newDid.id))
+    Did.toChain(Did.getFullDid(newDid.id))
   )
   fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
 
@@ -341,45 +342,47 @@ describe('DID migration', () => {
     )
 
     await submitTx(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.getFullDidUri(lightDid.id)
+    const migratedFullDid = Did.getFullDid(lightDid.id)
     const migratedFullDidLinkedInfo = await api.call.did.query(
-      Did.toChain(migratedFullDidUri)
+      Did.toChain(migratedFullDid)
     )
-    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+    const { document: migratedFullDidDocument } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
-    expect(migratedFullDid).toMatchObject(<Partial<DidDocument>>{
-      id: migratedFullDidUri,
+    expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
+      id: migratedFullDid,
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: migratedFullDidUri,
+          controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: migratedFullDidUri,
+          controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
       ],
     })
-    expect(migratedFullDid.authentication).toHaveLength(1)
-    expect(migratedFullDid.keyAgreement).toHaveLength(1)
-    expect(migratedFullDid.assertionMethod).toBe(undefined)
-    expect(migratedFullDid.capabilityDelegation).toBe(undefined)
+    expect(migratedFullDidDocument.authentication).toHaveLength(1)
+    expect(migratedFullDidDocument.keyAgreement).toHaveLength(1)
+    expect(migratedFullDidDocument.assertionMethod).toBe(undefined)
+    expect(migratedFullDidDocument.capabilityDelegation).toBe(undefined)
 
     expect(
-      (await api.call.did.query(Did.toChain(migratedFullDid.id))).isSome
+      (await api.call.did.query(Did.toChain(migratedFullDidDocument.id))).isSome
     ).toBe(true)
 
     const { didDocumentMetadata } = (await Did.resolve(
       lightDid.id
     )) as ResolutionResult
 
-    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(
+      migratedFullDidDocument.id
+    )
     expect(didDocumentMetadata.deactivated).toBe(undefined)
   })
 
@@ -396,39 +399,41 @@ describe('DID migration', () => {
     )
 
     await submitTx(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.getFullDidUri(lightDid.id)
+    const migratedFullDid = Did.getFullDid(lightDid.id)
     const migratedFullDidLinkedInfo = await api.call.did.query(
-      Did.toChain(migratedFullDidUri)
+      Did.toChain(migratedFullDid)
     )
-    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+    const { document: migratedFullDidDocument } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
-    expect(migratedFullDid).toMatchObject(<Partial<DidDocument>>{
-      id: migratedFullDidUri,
+    expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
+      id: migratedFullDid,
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: migratedFullDidUri,
+          controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
       ],
     })
-    expect(migratedFullDid.authentication).toHaveLength(1)
-    expect(migratedFullDid.keyAgreement).toBe(undefined)
-    expect(migratedFullDid.assertionMethod).toBe(undefined)
-    expect(migratedFullDid.capabilityDelegation).toBe(undefined)
+    expect(migratedFullDidDocument.authentication).toHaveLength(1)
+    expect(migratedFullDidDocument.keyAgreement).toBe(undefined)
+    expect(migratedFullDidDocument.assertionMethod).toBe(undefined)
+    expect(migratedFullDidDocument.capabilityDelegation).toBe(undefined)
 
     expect(
-      (await api.call.did.query(Did.toChain(migratedFullDid.id))).isSome
+      (await api.call.did.query(Did.toChain(migratedFullDidDocument.id))).isSome
     ).toBe(true)
 
     const { didDocumentMetadata } = (await Did.resolve(
       lightDid.id
     )) as ResolutionResult
 
-    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(
+      migratedFullDidDocument.id
+    )
     expect(didDocumentMetadata.deactivated).toBe(undefined)
   })
 
@@ -457,25 +462,25 @@ describe('DID migration', () => {
     )
 
     await submitTx(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.getFullDidUri(lightDid.id)
+    const migratedFullDid = Did.getFullDid(lightDid.id)
     const migratedFullDidLinkedInfo = await api.call.did.query(
-      Did.toChain(migratedFullDidUri)
+      Did.toChain(migratedFullDid)
     )
-    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+    const { document: migratedFullDidDocument } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
-    expect(migratedFullDid).toMatchObject(<Partial<DidDocument>>{
-      id: migratedFullDidUri,
+    expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
+      id: migratedFullDid,
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: migratedFullDidUri,
+          controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
-          controller: migratedFullDidUri,
+          controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
@@ -489,19 +494,21 @@ describe('DID migration', () => {
         },
       ],
     })
-    expect(migratedFullDid.authentication).toHaveLength(1)
-    expect(migratedFullDid.keyAgreement).toHaveLength(1)
-    expect(migratedFullDid.assertionMethod).toBe(undefined)
-    expect(migratedFullDid.capabilityDelegation).toBe(undefined)
+    expect(migratedFullDidDocument.authentication).toHaveLength(1)
+    expect(migratedFullDidDocument.keyAgreement).toHaveLength(1)
+    expect(migratedFullDidDocument.assertionMethod).toBe(undefined)
+    expect(migratedFullDidDocument.capabilityDelegation).toBe(undefined)
 
-    const encodedDid = Did.toChain(migratedFullDid.id)
+    const encodedDid = Did.toChain(migratedFullDidDocument.id)
     expect((await api.call.did.query(encodedDid)).isSome).toBe(true)
 
     const { didDocumentMetadata } = (await Did.resolve(
       lightDid.id
     )) as ResolutionResult
 
-    expect(didDocumentMetadata.canonicalId).toStrictEqual(migratedFullDid.id)
+    expect(didDocumentMetadata.canonicalId).toStrictEqual(
+      migratedFullDidDocument.id
+    )
     expect(didDocumentMetadata.deactivated).toBe(undefined)
 
     // Remove and claim the deposit back
@@ -539,7 +546,7 @@ describe('DID authorization', () => {
     await submitTx(createTx, paymentAccount)
     const didLinkedInfo = await api.call.did.query(
       Did.toChain(
-        Did.getFullDidUriFromVerificationMethod({
+        Did.getFullDidFromVerificationMethod({
           publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
         })
       )
@@ -649,7 +656,7 @@ describe('DID management batching', () => {
       await submitTx(extrinsic, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           })
         )
@@ -753,7 +760,7 @@ describe('DID management batching', () => {
 
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(didAuthKey),
           })
         )
@@ -828,7 +835,7 @@ describe('DID management batching', () => {
 
       const initialFullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           })
         )
@@ -912,7 +919,7 @@ describe('DID management batching', () => {
 
       const initialFullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           })
         )
@@ -1008,7 +1015,7 @@ describe('DID management batching', () => {
       await submitTx(tx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           })
         )
@@ -1092,7 +1099,7 @@ describe('DID management batching', () => {
       await submitTx(createTx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidUriFromVerificationMethod({
+          Did.getFullDidFromVerificationMethod({
             publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
           })
         )

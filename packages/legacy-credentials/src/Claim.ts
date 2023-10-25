@@ -20,7 +20,7 @@
 import { CType } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import type {
-  DidUri,
+  Did as KiltDid,
   HexString,
   ICType,
   IClaim,
@@ -143,7 +143,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if ('owner' in input) {
-    Did.validateIdentifier(input.owner, 'Uri')
+    Did.validateDid(input.owner, 'Did')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
@@ -184,7 +184,7 @@ export function fromNestedCTypeClaim(
   cTypeInput: ICType,
   nestedCType: ICType[],
   claimContents: IClaim['contents'],
-  claimOwner: DidUri
+  claimOwner: KiltDid
 ): IClaim {
   CType.verifyClaimAgainstNestedSchemas(cTypeInput, nestedCType, claimContents)
 
@@ -198,7 +198,7 @@ export function fromNestedCTypeClaim(
 }
 
 /**
- * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[DidUri]].
+ * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[Did]].
  *
  * @param cType [[ICType]] for which the Claim will be built.
  * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
@@ -208,7 +208,7 @@ export function fromNestedCTypeClaim(
 export function fromCTypeAndClaimContents(
   cType: ICType,
   claimContents: IClaim['contents'],
-  claimOwner: DidUri
+  claimOwner: KiltDid
 ): IClaim {
   CType.verifyDataStructure(cType)
   CType.verifyClaimAgainstSchema(claimContents, cType)
