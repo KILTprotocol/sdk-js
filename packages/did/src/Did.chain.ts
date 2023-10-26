@@ -471,7 +471,7 @@ export function didSignatureToChain({
       : lower
   if (!isValidVerificationMethodType(keyType)) {
     throw new SDKErrors.DidError(
-      `encodedDidSignature requires a verification key. A key of type "${keyType}" was used instead`
+      `encodedDidSignature requires a signature algorithm in ${Signers.DID_PALLET_SUPPORTED_ALGORITHMS}. A key of type "${algorithm}" was used instead`
     )
   }
 
