@@ -55,7 +55,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const { keypair, getSignCallback } = makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
       getSignCallback(ctypeCreator),
       keypair.address
@@ -71,7 +71,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const cType = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
@@ -83,7 +83,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         cType.$id
       )
       expect(originalCtype).toStrictEqual(cType)
-      expect(creator).toBe(ctypeCreator.uri)
+      expect(creator).toBe(ctypeCreator.id)
       await expect(CType.verifyStored(originalCtype)).resolves.not.toThrow()
     }
   }, 40_000)
@@ -92,7 +92,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const cType = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
@@ -101,7 +101,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     const storeTx2 = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx2 = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx2,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
@@ -115,7 +115,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     if (hasBlockNumbers) {
       const retrievedCType = await CType.fetchFromChain(cType.$id)
-      expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+      expect(retrievedCType.creator).toBe(ctypeCreator.id)
     }
   }, 45_000)
 

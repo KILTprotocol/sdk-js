@@ -76,7 +76,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: someDid.uri,
+    owner: someDid.id,
     revoked: false,
   }
   const storeTx = api.tx.attestation.add(
@@ -85,7 +85,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     null
   )
   const tx = await Did.authorizeTx(
-    someDid.uri,
+    someDid.id,
     storeTx,
     key.getSignCallback(someDid),
     paymentAccount.address

@@ -6,12 +6,12 @@
  */
 
 import type {
-  AssetDidUri,
+  AssetDid,
   CTypeHash,
   IDelegationNode,
   IPublicCredentialInput,
   IPublicCredential,
-  DidUri,
+  Did,
   HexString,
 } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
@@ -29,11 +29,11 @@ import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { SDKErrors, cbor } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
-import { validateUri } from '../dids/index.js'
+import { validateDid } from '../dids/index.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
-  subject: AssetDidUri
+  subject: AssetDid
   claims: HexString
   authorization: IDelegationNode['id'] | null
 }
@@ -68,12 +68,12 @@ function credentialInputFromChain({
   subject,
 }: PublicCredentialsCredentialsCredential): IPublicCredentialInput {
   const credentialSubject = subject.toUtf8()
-  validateUri(credentialSubject)
+  validateDid(credentialSubject)
   return {
     claims: cbor.decode(claims),
     cTypeHash: ctypeHash.toHex(),
     delegationId: authorization.unwrapOr(undefined)?.toHex() ?? null,
-    subject: credentialSubject as AssetDidUri,
+    subject: credentialSubject as AssetDid,
   }
 }
 
@@ -86,9 +86,9 @@ export interface PublicCredentialEntry {
    */
   ctypeHash: HexString
   /**
-   * DID URI of the attester.
+   * DID of the attester.
    */
-  attester: DidUri
+  attester: Did
   /**
    * Flag indicating whether the credential is currently revoked.
    */
@@ -244,13 +244,13 @@ export async function fetchCredentialFromChain(
 /**
  * Retrieves from the blockchain the [[IPublicCredential]]s that have been issued to the provided AssetDID.
  *
- * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDidUri]].
+ * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDid]].
  *
  * @param subject The AssetDID of the subject.
  * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fetchCredentialsFromChain(
-  subject: AssetDidUri
+  subject: AssetDid
 ): Promise<IPublicCredential[]> {
   const api = ConfigService.get('api')
 

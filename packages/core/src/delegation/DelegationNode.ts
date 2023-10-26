@@ -8,13 +8,13 @@
 import type {
   CTypeHash,
   DidDocument,
-  DidUri,
-  DidVerificationKey,
+  Did as KiltDid,
   IAttestation,
   IDelegationHierarchyDetails,
   IDelegationNode,
   SignCallback,
   SubmittableExtrinsic,
+  DidUrl,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -58,7 +58,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: DidUri
+  public readonly account: KiltDid
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -268,23 +268,27 @@ export class DelegationNode implements IDelegationNode {
   ): Promise<Did.EncodedSignature> {
     const delegateSignature = await sign({
       data: this.generateHash(),
-      did: delegateDid.uri,
-      keyRelationship: 'authentication',
+      did: delegateDid.id,
+      verificationRelationship: 'authentication',
     })
-    const { fragment } = Did.parse(delegateSignature.keyUri)
+    const signerUrl =
+      `${delegateDid.id}${delegateSignature.verificationMethod.id}` as DidUrl
+    const { fragment } = Did.parse(signerUrl)
     if (!fragment) {
       throw new SDKErrors.DidError(
-        `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
+        `DID verification method URL "${signerUrl}" couldn't be parsed`
       )
     }
-    const key = Did.getKey(delegateDid, fragment)
-    if (!key) {
+    const verificationMethod = delegateDid.verificationMethod?.find(
+      ({ id }) => id === fragment
+    )
+    if (!verificationMethod) {
       throw new SDKErrors.DidError(
-        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
+        `Verification method "${signerUrl}" was not found on DID: "${delegateDid.id}"`
       )
     }
     return Did.didSignatureToChain(
-      key as DidVerificationKey,
+      verificationMethod,
       delegateSignature.signature
     )
   }
@@ -346,7 +350,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    dids: DidUri | DidUri[]
+    dids: KiltDid | KiltDid[]
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     const acceptedDids = Array.isArray(dids) ? dids : [dids]
     if (acceptedDids.includes(this.account)) {
@@ -399,7 +403,7 @@ export class DelegationNode implements IDelegationNode {
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(did: KiltDid): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
       throw new SDKErrors.UnauthorizedError(

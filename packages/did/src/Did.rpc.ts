@@ -7,74 +7,42 @@
 
 import type { Option, Vec } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
-import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {
   RawDidLinkedInfo,
-  KiltSupportDeposit,
-  DidDidDetailsDidPublicKeyDetails,
   DidDidDetails,
   DidServiceEndpointsDidEndpoint,
   PalletDidLookupLinkableAccountLinkableAccountId,
 } from '@kiltprotocol/augment-api'
-import type {
-  Deposit,
-  DidDocument,
-  DidEncryptionKey,
-  DidKey,
-  DidServiceEndpoint,
-  DidUri,
-  DidVerificationKey,
-  KiltAddress,
-  UriFragment,
-  BN,
-} from '@kiltprotocol/types'
+import type { DidDocument, KiltAddress, Service } from '@kiltprotocol/types'
 
+import { ss58Format } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { u8aToString } from '@polkadot/util'
-import { Crypto, ss58Format } from '@kiltprotocol/utils'
 
-import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
-import { getFullDidUri } from './Did.utils.js'
+import type {
+  Address,
+  SubstrateAddress,
+} from './DidLinks/AccountLinks.chain.js'
+import type {
+  ChainDidDetails,
+  ChainDidEncryptionKey,
+  ChainDidKey,
+  ChainDidVerificationKey,
+} from './Did.chain.js'
 
-function fromChain(encoded: AccountId32): DidUri {
-  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
-}
+import {
+  depositFromChain,
+  fragmentIdToChain,
+  fromChain,
+  publicKeyFromChain,
+} from './Did.chain.js'
 
-type RpcDocument = Pick<
-  DidDocument,
-  'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
-> & {
-  lastTxCounter: BN
-  deposit: Deposit
-}
+import { didKeyToVerificationMethod } from './Did.utils.js'
+import { addKeypairAsVerificationMethod } from './DidDetails/DidDetails.js'
 
-function depositFromChain(deposit: KiltSupportDeposit): Deposit {
-  return {
-    owner: Crypto.encodeAddress(deposit.owner, ss58Format),
-    amount: deposit.amount.toBn(),
-  }
-}
-
-function didPublicKeyDetailsFromChain(
-  keyId: Hash,
-  keyDetails: DidDidDetailsDidPublicKeyDetails
-): DidKey {
-  const key = keyDetails.key.isPublicEncryptionKey
-    ? keyDetails.key.asPublicEncryptionKey
-    : keyDetails.key.asPublicVerificationKey
-  return {
-    id: `#${keyId.toHex()}`,
-    type: key.type.toLowerCase() as DidKey['type'],
-    publicKey: key.value.toU8a(),
-  }
-}
-
-function resourceIdToChain(id: UriFragment): string {
-  return id.replace(/^#/, '')
-}
-
-function documentFromChain(encoded: DidDidDetails): RpcDocument {
+function documentFromChain(
+  encoded: DidDidDetails
+): Omit<ChainDidDetails, 'service'> {
   const {
     publicKeys,
     authenticationKey,
@@ -85,29 +53,28 @@ function documentFromChain(encoded: DidDidDetails): RpcDocument {
     deposit,
   } = encoded
 
-  const keys: Record<string, DidKey> = [...publicKeys.entries()]
-    .map(([keyId, keyDetails]) =>
-      didPublicKeyDetailsFromChain(keyId, keyDetails)
-    )
+  const keys: Record<string, ChainDidKey> = [...publicKeys.entries()]
+    .map(([keyId, keyDetails]) => publicKeyFromChain(keyId, keyDetails))
     .reduce((res, key) => {
-      res[resourceIdToChain(key.id)] = key
+      res[fragmentIdToChain(key.id)] = key
       return res
     }, {})
 
-  const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
+  const authentication = keys[
+    authenticationKey.toHex()
+  ] as ChainDidVerificationKey
 
-  const didRecord: RpcDocument = {
+  const didRecord: ChainDidDetails = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
     deposit: depositFromChain(deposit),
   }
-
   if (attestationKey.isSome) {
-    const key = keys[attestationKey.unwrap().toHex()] as DidVerificationKey
+    const key = keys[attestationKey.unwrap().toHex()] as ChainDidVerificationKey
     didRecord.assertionMethod = [key]
   }
   if (delegationKey.isSome) {
-    const key = keys[delegationKey.unwrap().toHex()] as DidVerificationKey
+    const key = keys[delegationKey.unwrap().toHex()] as ChainDidVerificationKey
     didRecord.capabilityDelegation = [key]
   }
 
@@ -116,27 +83,25 @@ function documentFromChain(encoded: DidDidDetails): RpcDocument {
   )
   if (keyAgreementKeyIds.length > 0) {
     didRecord.keyAgreement = keyAgreementKeyIds.map(
-      (id) => keys[id] as DidEncryptionKey
+      (id) => keys[id] as ChainDidEncryptionKey
     )
   }
 
   return didRecord
 }
 
-function serviceFromChain(
-  encoded: DidServiceEndpointsDidEndpoint
-): DidServiceEndpoint {
+function serviceFromChain(encoded: DidServiceEndpointsDidEndpoint): Service {
   const { id, serviceTypes, urls } = encoded
   return {
-    id: `#${u8aToString(id)}`,
-    type: serviceTypes.map(u8aToString),
-    serviceEndpoint: urls.map(u8aToString),
+    id: `#${id.toUtf8()}`,
+    type: serviceTypes.map((type) => type.toUtf8()),
+    serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
 }
 
 function servicesFromChain(
   encoded: DidServiceEndpointsDidEndpoint[]
-): DidServiceEndpoint[] {
+): Service[] {
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
 }
 
@@ -170,14 +135,8 @@ function connectedAccountsFromChain(
   )
 }
 
-/**
- * Web3Name is the type of nickname for a DID.
- */
-export type Web3Name = string
-
-export interface DidInfo {
+export interface LinkedDidInfo {
   document: DidDocument
-  web3Name?: Web3Name
   accounts: Address[]
 }
 
@@ -191,30 +150,67 @@ export interface DidInfo {
 export function linkedInfoFromChain(
   encoded: Option<RawDidLinkedInfo>,
   networkPrefix = ss58Format
-): DidInfo {
+): LinkedDidInfo {
   const { identifier, accounts, w3n, serviceEndpoints, details } =
     encoded.unwrap()
 
-  const didRec = documentFromChain(details)
+  const {
+    authentication,
+    keyAgreement,
+    capabilityDelegation,
+    assertionMethod,
+  } = documentFromChain(details)
   const did: DidDocument = {
-    uri: fromChain(identifier),
-    authentication: didRec.authentication,
-    assertionMethod: didRec.assertionMethod,
-    capabilityDelegation: didRec.capabilityDelegation,
-    keyAgreement: didRec.keyAgreement,
+    id: fromChain(identifier),
+    authentication: [authentication[0].id],
+    verificationMethod: [
+      didKeyToVerificationMethod(fromChain(identifier), authentication[0].id, {
+        keyType: authentication[0].type,
+        publicKey: authentication[0].publicKey,
+      }),
+    ],
   }
 
-  const service = servicesFromChain(serviceEndpoints)
-  if (service.length > 0) {
-    did.service = service
+  if (keyAgreement !== undefined && keyAgreement.length > 0) {
+    keyAgreement.forEach(({ id, publicKey, type }) => {
+      addKeypairAsVerificationMethod(
+        did,
+        { id, publicKey, type },
+        'keyAgreement'
+      )
+    })
   }
 
-  const web3Name = w3n.isNone ? undefined : w3n.unwrap().toHuman()
+  if (assertionMethod !== undefined) {
+    const { id, type, publicKey } = assertionMethod[0]
+    addKeypairAsVerificationMethod(
+      did,
+      { id, publicKey, type },
+      'assertionMethod'
+    )
+  }
+
+  if (capabilityDelegation !== undefined) {
+    const { id, type, publicKey } = capabilityDelegation[0]
+    addKeypairAsVerificationMethod(
+      did,
+      { id, publicKey, type },
+      'capabilityDelegation'
+    )
+  }
+
+  const services = servicesFromChain(serviceEndpoints)
+  if (services.length > 0) {
+    did.service = services
+  }
+
+  if (w3n.isSome) {
+    did.alsoKnownAs = [`w3n:${w3n.unwrap().toHuman()}`]
+  }
   const linkedAccounts = connectedAccountsFromChain(accounts, networkPrefix)
 
   return {
     document: did,
-    web3Name,
     accounts: linkedAccounts,
   }
 }

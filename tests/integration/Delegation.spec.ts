@@ -57,14 +57,14 @@ async function writeHierarchy(
   sign: SignCallback
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
-    account: delegator.uri,
+    account: delegator.id,
     permissions: [Permission.DELEGATE],
     cTypeHash: CType.idToHash(cTypeId),
   })
 
   const storeTx = await rootNode.getStoreTx()
   const authorizedStoreTx = await Did.authorizeTx(
-    delegator.uri,
+    delegator.id,
     storeTx,
     sign,
     paymentAccount.address
@@ -86,13 +86,13 @@ async function addDelegation(
   const delegationNode = DelegationNode.newNode({
     hierarchyId,
     parentId,
-    account: delegate.uri,
+    account: delegate.id,
     permissions,
   })
   const signature = await delegationNode.delegateSign(delegate, delegateSign)
   const storeTx = await delegationNode.getStoreTx(signature)
   const authorizedStoreTx = await Did.authorizeTx(
-    delegator.uri,
+    delegator.id,
     storeTx,
     delegatorSign,
     paymentAccount.address
@@ -118,7 +118,7 @@ beforeAll(async () => {
 
   const storeTx = api.tx.ctype.add(CType.toChain(driversLicenseCType))
   const authorizedStoreTx = await Did.authorizeTx(
-    attester.uri,
+    attester.id,
     storeTx,
     attesterKey.getSignCallback(attester),
     paymentAccount.address
@@ -180,7 +180,7 @@ describe('and attestation rights have been delegated', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.uri
+      claimer.id
     )
     const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
@@ -197,7 +197,7 @@ describe('and attestation rights have been delegated', () => {
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,
-      attester.uri
+      attester.id
     )
     const storeTx = api.tx.attestation.add(
       attestation.claimHash,
@@ -205,7 +205,7 @@ describe('and attestation rights have been delegated', () => {
       { Delegation: { subjectNodeId: delegatedNode.id } }
     )
     const authorizedStoreTx = await Did.authorizeTx(
-      attester.uri,
+      attester.id,
       storeTx,
       attesterKey.getSignCallback(attester),
       paymentAccount.address
@@ -224,7 +224,7 @@ describe('and attestation rights have been delegated', () => {
       Delegation: { maxChecks: 1 },
     })
     const authorizedStoreTx2 = await Did.authorizeTx(
-      root.uri,
+      root.id,
       revokeTx,
       rootKey.getSignCallback(root),
       paymentAccount.address
@@ -273,9 +273,9 @@ describe('revocation', () => {
     )
 
     // Test revocation
-    const revokeTx = await delegationA.getRevokeTx(delegator.uri)
+    const revokeTx = await delegationA.getRevokeTx(delegator.id)
     const authorizedRevokeTx = await Did.authorizeTx(
-      delegator.uri,
+      delegator.id,
       revokeTx,
       delegatorSign,
       paymentAccount.address
@@ -288,7 +288,7 @@ describe('revocation', () => {
     // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     const removeTx = await delegationA.getRemoveTx()
     const authorizedRemoveTx = await Did.authorizeTx(
-      delegator.uri,
+      delegator.id,
       removeTx,
       delegatorSign,
       paymentAccount.address
@@ -321,7 +321,7 @@ describe('revocation', () => {
     )
     const revokeTx = api.tx.delegation.revokeDelegation(delegationRoot.id, 1, 1)
     const authorizedRevokeTx = await Did.authorizeTx(
-      firstDelegate.uri,
+      firstDelegate.id,
       revokeTx,
       firstDelegateSign,
       paymentAccount.address
@@ -334,9 +334,9 @@ describe('revocation', () => {
     })
     await expect(delegationRoot.verify()).resolves.not.toThrow()
 
-    const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.uri)
+    const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.id)
     const authorizedRevokeTx2 = await Did.authorizeTx(
-      firstDelegate.uri,
+      firstDelegate.id,
       revokeTx2,
       firstDelegateSign,
       paymentAccount.address
@@ -368,9 +368,9 @@ describe('revocation', () => {
       secondDelegateSign
     )
     delegationRoot = await delegationRoot.getLatestState()
-    const revokeTx = await delegationRoot.getRevokeTx(delegator.uri)
+    const revokeTx = await delegationRoot.getRevokeTx(delegator.id)
     const authorizedRevokeTx = await Did.authorizeTx(
-      delegator.uri,
+      delegator.id,
       revokeTx,
       delegatorSign,
       paymentAccount.address
@@ -438,7 +438,7 @@ describe('handling queries to data not on chain', () => {
         permissions: [0],
         hierarchyId: randomAsHex(32),
         parentId: randomAsHex(32),
-        account: attester.uri,
+        account: attester.id,
       }).getAttestationHashes()
     ).toEqual([])
   })

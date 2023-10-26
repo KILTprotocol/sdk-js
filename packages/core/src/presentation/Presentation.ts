@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri } from '@kiltprotocol/types'
+import type { Did } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
 import {
@@ -134,7 +134,7 @@ export function assertHolderCanPresentCredentials({
   holder,
   verifiableCredential,
 }: {
-  holder: DidUri
+  holder: Did
   verifiableCredential: VerifiableCredential[] | VerifiableCredential
 }): void {
   const credentials = Array.isArray(verifiableCredential)
@@ -164,7 +164,7 @@ export function assertHolderCanPresentCredentials({
  */
 export function create(
   VCs: VerifiableCredential[],
-  holder: DidUri,
+  holder: Did,
   {
     validFrom,
     validUntil,

@@ -40,4 +40,4 @@ export type Caip19AssetId =
 /**
  * A string containing an AssetDID as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetDidUri = `did:asset:${Caip2ChainId}.${Caip19AssetId}`
+export type AssetDid = `did:asset:${Caip2ChainId}.${Caip19AssetId}`

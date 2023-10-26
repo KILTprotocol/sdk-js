@@ -37,8 +37,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let otherWeb3NameCreator: DidDocument
   let paymentAccount: KiltKeyringPair
   let otherPaymentAccount: KeyringPair
-  let nick: Did.Web3Name
-  let differentNick: Did.Web3Name
+  let nick: string
+  let differentNick: string
 
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
@@ -68,7 +68,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = api.tx.web3Names.claim(nick)
     const bobbyBroke = makeSigningKeyTool().keypair
     const authorizedTx = await Did.authorizeTx(
-      w3nCreator.uri,
+      w3nCreator.id,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       bobbyBroke.address
@@ -82,7 +82,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should be possible to create a w3n name with enough tokens', async () => {
     const tx = api.tx.web3Names.claim(nick)
     const authorizedTx = await Did.authorizeTx(
-      w3nCreator.uri,
+      w3nCreator.id,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
@@ -91,23 +91,23 @@ describe('When there is an Web3NameCreator and a payer', () => {
     await submitTx(authorizedTx, paymentAccount)
   }, 30_000)
 
-  it('should be possible to lookup the DID uri with the given nick', async () => {
+  it('should be possible to lookup the DID with the given nick', async () => {
     const {
-      document: { uri },
+      document: { id },
     } = Did.linkedInfoFromChain(await api.call.did.queryByWeb3Name(nick))
-    expect(uri).toStrictEqual(w3nCreator.uri)
+    expect(id).toStrictEqual(w3nCreator.id)
   }, 30_000)
 
-  it('should be possible to lookup the nick with the given DID uri', async () => {
-    const encodedDidInfo = await api.call.did.query(Did.toChain(w3nCreator.uri))
+  it('should be possible to lookup the nick with the given DID', async () => {
+    const encodedDidInfo = await api.call.did.query(Did.toChain(w3nCreator.id))
     const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
-    expect(didInfo.web3Name).toBe(nick)
+    expect(didInfo.document.alsoKnownAs).toStrictEqual([`w3n:${nick}`])
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {
     const tx = api.tx.web3Names.claim(nick)
     const authorizedTx = await Did.authorizeTx(
-      otherWeb3NameCreator.uri,
+      otherWeb3NameCreator.id,
       tx,
       otherW3NCreatorKey.getSignCallback(otherWeb3NameCreator),
       paymentAccount.address
@@ -124,7 +124,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should not be possible to create a second w3n for the same did', async () => {
     const tx = api.tx.web3Names.claim('nick2')
     const authorizedTx = await Did.authorizeTx(
-      w3nCreator.uri,
+      w3nCreator.id,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
@@ -156,7 +156,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     // prepare the w3n on chain
     const prepareTx = api.tx.web3Names.claim(differentNick)
     const prepareAuthorizedTx = await Did.authorizeTx(
-      w3nCreator.uri,
+      w3nCreator.id,
       prepareTx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
@@ -165,7 +165,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
     const tx = api.tx.web3Names.releaseByOwner()
     const authorizedTx = await Did.authorizeTx(
-      w3nCreator.uri,
+      w3nCreator.id,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address

@@ -22,7 +22,7 @@ import jsonld from 'jsonld' // cjs module
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import type {
-  ConformingDidDocument,
+  DidDocument,
   HexString,
   ICType,
   KiltAddress,
@@ -59,7 +59,7 @@ import { makeFakeDid } from './Sr25519Signature2020.spec'
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
-  resolveCompliant: jest.fn(),
+  resolve: jest.fn(),
   authorizeTx: jest.fn(),
 }))
 
@@ -154,7 +154,7 @@ let suite: KiltAttestationV1Suite
 let purpose: KiltAttestationProofV1Purpose
 let proof: Types.KiltAttestationProofV1
 let keypair: KiltKeyringPair
-let didDocument: ConformingDidDocument
+let didDocument: DidDocument
 
 beforeAll(async () => {
   suite = new KiltAttestationV1Suite({
@@ -313,7 +313,7 @@ describe('vc-js', () => {
     it('creates and verifies a signed presentation (sr25519)', async () => {
       const signer = {
         sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        id: didDocument.authentication[0],
+        id: didDocument.id + didDocument.authentication![0],
       }
       const signingSuite = new Sr25519Signature2020({ signer })
 
@@ -357,7 +357,7 @@ describe('vc-js', () => {
       })
       const edSigner = {
         sign: async ({ data }: { data: Uint8Array }) => edKeypair.sign(data),
-        id: lightDid.uri + lightDid.authentication[0].id,
+        id: lightDid.id + lightDid.authentication?.[0],
       }
       const signingSuite = new Ed25519Signature2020({ signer: edSigner })
 
@@ -368,7 +368,7 @@ describe('vc-js', () => {
 
       let presentation = vcjs.createPresentation({
         verifiableCredential: attestedVc,
-        holder: lightDid.uri,
+        holder: lightDid.id,
       })
 
       presentation = await vcjs.signPresentation({
@@ -450,7 +450,12 @@ describe('issuance', () => {
     did: attestedVc.issuer,
     signer: async () => ({
       signature: new Uint8Array(32),
-      keyType: 'sr25519' as const,
+      verificationMethod: {
+        controller: attestedVc.issuer,
+        type: 'Multikey',
+        id: '#test',
+        publicKeyMultibase: 'zasd',
+      },
     }),
   }
   const transactionHandler: KiltAttestationProofV1.TxHandler = {

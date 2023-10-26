@@ -1533,6 +1533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digitalbazaar/multikey-context@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@digitalbazaar/multikey-context@npm:1.0.0"
+  checksum: e651253ce101a0a5de0e46de5c6f7c936aa07fd14e5b14d38ba57c105eaa2490c256245482bc1f5173269a992cab2ebe5eec6c26523f0e61aae03d3a6788cc6b
+  languageName: node
+  linkType: hard
+
 "@digitalbazaar/security-context@npm:^1.0.0":
   version: 1.0.0
   resolution: "@digitalbazaar/security-context@npm:1.0.0"
@@ -2012,6 +2019,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
+    "@digitalbazaar/multikey-context": ^1.0.0
     "@digitalbazaar/security-context": ^1.0.0
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
@@ -2023,6 +2031,7 @@ __metadata:
     "@polkadot/types-codec": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    multibase: ^4.0.6
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -2123,6 +2132,13 @@ __metadata:
     jsonld-signatures: ^11.0.0
   languageName: unknown
   linkType: soft
+
+"@multiformats/base-x@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@multiformats/base-x@npm:4.0.1"
+  checksum: ecbf84bdd7613fd795e4a41f20f3e8cc7df8bbee84690b7feed383d45a638ed228a80ff6f5c930373cbf24539f64857b66023ee3c1e914f6bac9995c76414a87
+  languageName: node
+  linkType: hard
 
 "@noble/curves@npm:1.0.0":
   version: 1.0.0
@@ -7265,6 +7281,15 @@ fsevents@^2.3.2:
   version: 2.1.3
   resolution: "ms@npm:2.1.3"
   checksum: aa92de608021b242401676e35cfa5aa42dd70cbdc082b916da7fb925c542173e36bce97ea3e804923fe92c0ad991434e4a38327e15a1b5b5f945d66df615ae6d
+  languageName: node
+  linkType: hard
+
+"multibase@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "multibase@npm:4.0.6"
+  dependencies:
+    "@multiformats/base-x": ^4.0.1
+  checksum: 891ce47f509c6070d2306e7e00aef3ef41fbb50a848a1e1bec5e75ca63c5032015a436cf09e9e3939b5b2ca81e74804151eb410a388f10e9aabf7a2f5a35d272
   languageName: node
   linkType: hard
 

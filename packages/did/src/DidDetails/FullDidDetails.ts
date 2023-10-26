@@ -10,11 +10,11 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidUri,
+  Did,
   KiltAddress,
+  SignatureVerificationRelationship,
   SignExtrinsicCallback,
   SubmittableExtrinsic,
-  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -30,7 +30,10 @@ import { parse } from '../Did.utils.js'
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
 // TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
-const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
+const methodMapping: Record<
+  string,
+  SignatureVerificationRelationship | undefined
+> = {
   attestation: 'assertionMethod',
   ctype: 'assertionMethod',
   delegation: 'capabilityDelegation',
@@ -43,20 +46,20 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-function getKeyRelationshipForMethod(
+function getVerificationRelationshipForRuntimeCall(
   call: Extrinsic['method']
-): VerificationKeyRelationship | undefined {
+): SignatureVerificationRelationship | undefined {
   const { section, method } = call
 
-  // get the VerificationKeyRelationship of a batched call
+  // get the VerificationRelationship of a batched call
   if (
     section === 'utility' &&
     ['batch', 'batchAll', 'forceBatch'].includes(method) &&
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
-    // map all calls to their VerificationKeyRelationship and deduplicate the items
+    // map all calls to their VerificationRelationship and deduplicate the items
     return (call.args[0] as unknown as Array<Extrinsic['method']>)
-      .map(getKeyRelationshipForMethod)
+      .map(getVerificationRelationshipForRuntimeCall)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
 
@@ -69,15 +72,15 @@ function getKeyRelationshipForMethod(
 }
 
 /**
- * Detect the key relationship for a key which should be used to DID-authorize the provided extrinsic.
+ * Detect the relationship for a verification method which should be used to DID-authorize the provided extrinsic.
  *
  * @param extrinsic The unsigned extrinsic to inspect.
- * @returns The key relationship.
+ * @returns The verification relationship.
  */
-export function getKeyRelationshipForTx(
+export function getVerificationRelationshipForTx(
   extrinsic: Extrinsic
-): VerificationKeyRelationship | undefined {
-  return getKeyRelationshipForMethod(extrinsic.method)
+): SignatureVerificationRelationship | undefined {
+  return getVerificationRelationshipForRuntimeCall(extrinsic.method)
 }
 
 // Max nonce value is (2^64) - 1
@@ -98,7 +101,7 @@ function increaseNonce(currentNonce: BN, increment = 1): BN {
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-async function getNextNonce(did: DidUri): Promise<BN> {
+async function getNextNonce(did: Did): Promise<BN> {
   const api = ConfigService.get('api')
   const queried = await api.query.did.did(toChain(did))
   const currentNonce = queried.isSome
@@ -108,7 +111,7 @@ async function getNextNonce(did: DidUri): Promise<BN> {
 }
 
 /**
- * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will throw an error.
+ * Signs and returns the provided unsigned extrinsic with the right DID verification method, if present. Otherwise, it will throw an error.
  *
  * @param did The DID data.
  * @param extrinsic The unsigned extrinsic to sign.
@@ -119,7 +122,7 @@ async function getNextNonce(did: DidUri): Promise<BN> {
  * @returns The DID-signed submittable extrinsic.
  */
 export async function authorizeTx(
-  did: DidUri,
+  did: Did,
   extrinsic: Extrinsic,
   sign: SignExtrinsicCallback,
   submitterAccount: KiltAddress,
@@ -135,14 +138,16 @@ export async function authorizeTx(
     )
   }
 
-  const keyRelationship = getKeyRelationshipForTx(extrinsic)
-  if (keyRelationship === undefined) {
-    throw new SDKErrors.SDKError('No key relationship found for extrinsic')
+  const verificationRelationship = getVerificationRelationshipForTx(extrinsic)
+  if (verificationRelationship === undefined) {
+    throw new SDKErrors.SDKError(
+      'No verification relationship found for extrinsic'
+    )
   }
 
   return generateDidAuthenticatedTx({
     did,
-    keyRelationship,
+    verificationRelationship,
     sign,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(did)),
@@ -152,38 +157,39 @@ export async function authorizeTx(
 
 type GroupedExtrinsics = Array<{
   extrinsics: Extrinsic[]
-  keyRelationship: VerificationKeyRelationship
+  verificationRelationship: SignatureVerificationRelationship
 }>
 
-function groupExtrinsicsByKeyRelationship(
+function groupExtrinsicsByVerificationRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
-    const keyRelationship = getKeyRelationshipForTx(extrinsic)
-    if (!keyRelationship) {
+    const verificationRelationship = getVerificationRelationshipForTx(extrinsic)
+    if (!verificationRelationship) {
       throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )
     }
-    return { extrinsic, keyRelationship }
+    return { extrinsic, verificationRelationship }
   })
 
   const groups: GroupedExtrinsics = [
     {
       extrinsics: [first.extrinsic],
-      keyRelationship: first.keyRelationship,
+      verificationRelationship: first.verificationRelationship,
     },
   ]
 
-  rest.forEach(({ extrinsic, keyRelationship }) => {
+  rest.forEach(({ extrinsic, verificationRelationship }) => {
     const currentGroup = groups[groups.length - 1]
-    const useCurrentGroup = keyRelationship === currentGroup.keyRelationship
+    const useCurrentGroup =
+      verificationRelationship === currentGroup.verificationRelationship
     if (useCurrentGroup) {
       currentGroup.extrinsics.push(extrinsic)
     } else {
       groups.push({
         extrinsics: [extrinsic],
-        keyRelationship,
+        verificationRelationship,
       })
     }
   })
@@ -192,7 +198,7 @@ function groupExtrinsicsByKeyRelationship(
 }
 
 /**
- * Authorizes/signs a list of extrinsics grouping them in batches by required key type.
+ * Authorizes/signs a list of extrinsics grouping them in batches by required verification relationship.
  *
  * @param input The object with named parameters.
  * @param input.batchFunction The batch function to use, for example `api.tx.utility.batchAll`.
@@ -212,7 +218,7 @@ export async function authorizeBatch({
   submitter,
 }: {
   batchFunction: SubmittableExtrinsicFunction<'promise'>
-  did: DidUri
+  did: Did
   extrinsics: Extrinsic[]
   nonce?: BN
   sign: SignExtrinsicCallback
@@ -236,7 +242,7 @@ export async function authorizeBatch({
     })
   }
 
-  const groups = groupExtrinsicsByKeyRelationship(extrinsics)
+  const groups = groupExtrinsicsByVerificationRelationship(extrinsics)
   const firstNonce = nonce || (await getNextNonce(did))
 
   const promises = groups.map(async (group, batchIndex) => {
@@ -244,11 +250,11 @@ export async function authorizeBatch({
     const call = list.length === 1 ? list[0] : batchFunction(list)
     const txCounter = increaseNonce(firstNonce, batchIndex)
 
-    const { keyRelationship } = group
+    const { verificationRelationship } = group
 
     return generateDidAuthenticatedTx({
       did,
-      keyRelationship,
+      verificationRelationship,
       sign,
       call,
       txCounter,

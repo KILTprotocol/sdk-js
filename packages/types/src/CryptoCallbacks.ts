@@ -6,11 +6,10 @@
  */
 
 import type {
-  DidResourceUri,
-  DidUri,
-  DidVerificationKey,
-  VerificationKeyRelationship,
-} from './DidDocument.js'
+  Did,
+  SignatureVerificationRelationship,
+  VerificationMethod,
+} from './Did'
 
 /**
  * Base interface for all signing requests.
@@ -22,14 +21,14 @@ export interface SignRequestData {
   data: Uint8Array
 
   /**
-   * The did key relationship to be used.
+   * The DID verification relationship to be used.
    */
-  keyRelationship: VerificationKeyRelationship
+  verificationRelationship: SignatureVerificationRelationship
 
   /**
    * The DID to be used for signing.
    */
-  did: DidUri
+  did: Did
 }
 
 /**
@@ -41,13 +40,9 @@ export interface SignResponseData {
    */
   signature: Uint8Array
   /**
-   * The did key uri used for signing.
+   * The DID verification method used for signing.
    */
-  keyUri: DidResourceUri
-  /**
-   * The did key type used for signing.
-   */
-  keyType: DidVerificationKey['type']
+  verificationMethod: VerificationMethod
 }
 
 /**
@@ -62,7 +57,7 @@ export type SignCallback = (
  */
 export type SignExtrinsicCallback = (
   signData: SignRequestData
-) => Promise<Omit<SignResponseData, 'keyUri'>>
+) => Promise<SignResponseData>
 
 /**
  * Base interface for encryption requests.
@@ -79,7 +74,7 @@ export interface EncryptRequestData {
   /**
    * The DID to be used for encryption.
    */
-  did: DidUri
+  did: Did
 }
 
 /**
@@ -95,9 +90,9 @@ export interface EncryptResponseData {
    */
   nonce: Uint8Array
   /**
-   * The did key uri used for the encryption.
+   * The DID verification method used for the encryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: VerificationMethod
 }
 
 /**
@@ -124,9 +119,9 @@ export interface DecryptRequestData {
    */
   nonce: Uint8Array
   /**
-   * The did key uri, which should be used for decryption.
+   * The DID verification method, which should be used for decryption.
    */
-  keyUri: DidResourceUri
+  verificationMethod: VerificationMethod
 }
 
 export interface DecryptResponseData {

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri, IAttestation, IDelegationNode } from '@kiltprotocol/types'
+import type { Did, IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import { DelegationNode } from './DelegationNode.js'
@@ -39,7 +39,7 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
  * @returns 0 if `attester` is the owner of `attestation`, the number of delegation nodes traversed otherwise.
  */
 export async function countNodeDepth(
-  attester: DidUri,
+  attester: Did,
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0

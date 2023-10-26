@@ -8,12 +8,13 @@
 // @ts-expect-error not a typescript module
 import * as vcjs from '@digitalbazaar/vc'
 
+import { base58Encode } from '@polkadot/util-crypto'
 import { Types, init, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
-  ConformingDidDocument,
-  DidUri,
+  DidDocument,
+  Did as KiltDid,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 
@@ -31,7 +32,7 @@ jest.mock('@digitalbazaar/http-client', () => ({}))
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),
-  resolveCompliant: jest.fn(),
+  resolve: jest.fn(),
 }))
 
 const documentLoader = combineDocumentLoaders([
@@ -43,35 +44,37 @@ const documentLoader = combineDocumentLoaders([
 export async function makeFakeDid() {
   await init()
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
-  const didDocument = Did.exportToDidDocument(
-    {
-      uri: ingosCredential.credentialSubject.id as DidUri,
-      authentication: [
-        {
-          ...keypair,
-          id: '#authentication',
-        },
-      ],
-      assertionMethod: [{ ...keypair, id: '#assertion' }],
-    },
-    'application/json'
-  )
-  jest.mocked(Did.resolveCompliant).mockImplementation(async (did) => {
+  const didDocument: DidDocument = {
+    id: ingosCredential.credentialSubject.id as KiltDid,
+    authentication: ['#authentication'],
+    assertionMethod: ['#assertion'],
+    verificationMethod: [
+      Did.didKeyToVerificationMethod(
+        ingosCredential.credentialSubject.id as KiltDid,
+        '#authentication',
+        { ...keypair, keyType: keypair.type }
+      ),
+      Did.didKeyToVerificationMethod(
+        ingosCredential.credentialSubject.id as KiltDid,
+        '#assertion',
+        { ...keypair, keyType: keypair.type }
+      ),
+    ],
+  }
+
+  jest.mocked(Did.resolve).mockImplementation(async (did) => {
     if (did.includes('light')) {
       return {
-        didDocument: Did.exportToDidDocument(
-          Did.parseDocumentFromLightDid(did, false),
-          'application/json'
-        ),
         didDocumentMetadata: {},
         didResolutionMetadata: {},
+        didDocument: Did.parseDocumentFromLightDid(did, false),
       }
     }
     if (did.startsWith(didDocument.id)) {
       return {
-        didDocument,
         didDocumentMetadata: {},
         didResolutionMetadata: {},
+        didDocument,
       }
     }
     return {
@@ -82,7 +85,7 @@ export async function makeFakeDid() {
   return { didDocument, keypair }
 }
 
-let didDocument: ConformingDidDocument
+let didDocument: DidDocument
 let keypair: KiltKeyringPair
 
 beforeAll(async () => {
@@ -92,7 +95,7 @@ beforeAll(async () => {
 it('issues and verifies a signed credential', async () => {
   const signer = {
     sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-    id: didDocument.assertionMethod![0],
+    id: didDocument.id + didDocument.assertionMethod![0],
   }
   const attestationSigner = new Sr25519Signature2020({ signer })
 
@@ -117,13 +120,36 @@ it('issues and verifies a signed credential', async () => {
   expect(result).not.toHaveProperty('error')
   expect(result).toHaveProperty('verified', true)
 
+  const authenticationMethod = (() => {
+    const m = didDocument.verificationMethod?.find(({ id }) =>
+      id.includes('authentication')
+    )
+    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const publicKeyBase58 = base58Encode(publicKey)
+    return {
+      ...m,
+      id: didDocument.id + m!.id,
+      publicKeyBase58,
+    }
+  })()
+  const assertionMethod = (() => {
+    const m = didDocument.verificationMethod?.find(({ id }) =>
+      id.includes('assertion')
+    )
+    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const publicKeyBase58 = base58Encode(publicKey)
+    return {
+      ...m,
+      id: didDocument.id + m!.id,
+      publicKeyBase58,
+    }
+  })()
+
   result = await vcjs.verifyCredential({
     credential: verifiableCredential,
     suite: new Sr25519Signature2020({
       key: new Sr25519VerificationKey2020({
-        ...didDocument.verificationMethod.find(({ id }) =>
-          id.includes('assertion')
-        )!,
+        ...assertionMethod,
       }),
     }),
     documentLoader,
@@ -135,9 +161,7 @@ it('issues and verifies a signed credential', async () => {
     credential: verifiableCredential,
     suite: new Sr25519Signature2020({
       key: new Sr25519VerificationKey2020({
-        ...didDocument.verificationMethod.find(({ id }) =>
-          id.includes('authentication')
-        )!,
+        ...authenticationMethod,
       }),
     }),
     documentLoader,

@@ -9,7 +9,7 @@ import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
 
 import { parse } from '@kiltprotocol/did'
-import type { DidUri } from '@kiltprotocol/types'
+import type { Did } from '@kiltprotocol/types'
 
 import {
   attestation,
@@ -77,7 +77,7 @@ describe('proofs', () => {
   })
 
   it('checks delegation node owners', async () => {
-    const delegator: DidUri = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
+    const delegator: Did = `did:kilt:${encodeAddress(randomAsU8a(32), 38)}`
     const credentialWithDelegators: KiltCredentialV1 = {
       ...VC,
       federatedTrustModel: VC.federatedTrustModel?.map((i) => {
