@@ -5,8 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Did } from '@kiltprotocol/types'
-import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
+import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
+import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
+import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+
+import { resolve } from '@kiltprotocol/did'
+import type { Did, DidDocument, SignerInterface } from '@kiltprotocol/types'
+import { JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
@@ -17,6 +23,9 @@ import type {
   VerifiableCredential,
   VerifiablePresentation,
 } from '../credentialsV1/types.js'
+import {
+  createProof,
+} from './DataIntegrity.js'
 
 export const presentationSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -148,39 +157,61 @@ export function assertHolderCanPresentCredentials({
   })
 }
 
+const {
+  select: { byAlgorithm, byDid },
+} = Signers
+
 /**
- * Creates a Verifiable Presentation from one or more Verifiable Credentials.
- * This should be signed before sending to a verifier to provide authentication.
+ * Creates a Verifiable Presentation from one or more Verifiable Credentials, then signs it.
  *
- * @param VCs One or more Verifiable Credentials.
- * @param holder The holder of the credentials in the presentation, which also signs the presentation.
- * @param verificationOptions Options to restrict the validity of a presentation to a specific audience or time frame.
- * @param verificationOptions.verifier Identifier of the verifier to prevent unintended re-use of the presentation.
- * @param verificationOptions.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
+ * @param args Object holding all function arguments.
+ * @param args.credentials Array of one or more Verifiable Credentials.
+ * @param args.holder The DID or DID Document of the holder of the credentials in the presentation, which also signs the presentation.
+ * The DID Document will be resolved by this function if not passed in.
+ * @param args.signers One or more signers associated with the `holder` to be used for signing the presentation.
+ * If omitted, the signing step is skipped.
+ * @param args.cryptosuites One or more cryptosuites that take care of processing and normalizing the presentation document. The actual suite used will be based on a match between `algorithm`s supported by the `signers` and the suite's `requiredAlgorithm`.
+ * @param args.purpose Controls the `proofPurpose` property and which verificationMethods can be used for signing.
+ * Defaults to 'authentication'.
+ * @param args.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
  * Represented as `issuanceDate` on the presentation.
- * @param verificationOptions.validUntil A Date or date-time string indicating when the presentation is no longer valid.
+ * @param args.validUntil A Date or date-time string indicating when the presentation is no longer valid.
  * Represented as `expirationDate` on the presentation.
- * @returns An (unsigned) Verifiable Presentation containing the original VCs with its proofs.
+ * @param args.verifier Identifier (e.g., DID) of the verifier to prevent unauthorized re-use of the presentation.
+ * @param args.challenge A challenge supplied by the verifier in a challenge-response protocol, which allows verifiers to assure presentation freshness, preventing unauthorized re-use.
+ * @returns A Verifiable Presentation containing the original VCs with its proofs.
+ * If no `signers` are given, the presentation is unsigned.
  */
-export function create(
-  VCs: VerifiableCredential[],
-  holder: Did,
-  {
-    validFrom,
-    validUntil,
-    verifier,
-  }: {
-    verifier?: string
-    validFrom?: Date | string
-    validUntil?: Date | string
-  } = {}
-): VerifiablePresentation {
-  const verifiableCredential = VCs.length === 1 ? VCs[0] : VCs
+export async function create({
+  credentials,
+  holder,
+  validFrom,
+  validUntil,
+  verifier,
+  signers,
+  cryptosuites = [eddsaSuite, ecdsaSuite, sr25519Suite],
+  purpose = 'authentication',
+  challenge,
+}: {
+  credentials: VerifiableCredential[]
+  holder: Did | DidDocument
+  signers?: readonly SignerInterface[]
+  verifier?: string
+  validFrom?: Date | string
+  validUntil?: Date | string
+  cryptosuites?: ReadonlyArray<CryptoSuite<any>>
+  purpose?: string
+  challenge?: string
+}): Promise<VerifiablePresentation> {
+  const holderDid = typeof holder === 'string' ? holder : holder.id
+
+  const verifiableCredential =
+    credentials.length === 1 ? credentials[0] : credentials
   const presentation: VerifiablePresentation = {
     '@context': [W3C_CREDENTIAL_CONTEXT_URL],
     type: [W3C_PRESENTATION_TYPE],
     verifiableCredential,
-    holder,
+    holder: holderDid,
   }
   if (typeof validFrom !== 'undefined') {
     presentation.issuanceDate = new Date(validFrom).toISOString()
@@ -194,5 +225,48 @@ export function create(
 
   validateStructure(presentation)
   assertHolderCanPresentCredentials(presentation)
-  return presentation
+
+  if (!signers) {
+    return presentation
+  }
+
+  const holderDocument =
+    typeof holder === 'string' ? (await resolve(holder)).didDocument : holder
+
+  if (!holderDocument?.id) {
+    throw new SDKErrors.DidNotFoundError(
+      `Failed to resolve holder DID ${holderDid}`
+    )
+  }
+
+  const requiredAlgorithms = cryptosuites.map(
+    ({ requiredAlgorithm }) => requiredAlgorithm
+  )
+
+  const signer = await Signers.selectSigner(
+    signers,
+    byAlgorithm(requiredAlgorithms),
+    byDid(holderDocument, {
+      verificationRelationship: purpose,
+      controller: holderDid,
+    })
+  )
+  if (!signer) {
+    throw new SDKErrors.NoSuitableSignerError(undefined, {
+      signerRequirements: {
+        algorithm: requiredAlgorithms,
+        did: holderDid,
+        verificationRelationship: purpose,
+      },
+      availableSigners: signers,
+    })
+  }
+  const suite = cryptosuites.find(
+    ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
+  )! // We've matched the suite to the algorithms earlier, so this will return the right suite
+  return createProof(presentation, suite, signer, {
+    purpose,
+    challenge,
+    // domain: verifier,
+  })
 }
