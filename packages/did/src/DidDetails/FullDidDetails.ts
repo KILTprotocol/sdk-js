@@ -12,7 +12,6 @@ import { BN } from '@polkadot/util'
 import type {
   DidDocument,
   Did,
-  DidUrl,
   KiltAddress,
   SignatureVerificationRelationship,
   SignerInterface,
@@ -23,6 +22,7 @@ import { SDKErrors, Signers } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import {
+  DidPalletSigner,
   documentFromChain,
   generateDidAuthenticatedTx,
   toChain,
@@ -172,7 +172,7 @@ export async function authorizeTx(
     )
   }
 
-  const signer = await Signers.selectSigner<SignerInterface<string, DidUrl>>(
+  const signer = await Signers.selectSigner<DidPalletSigner>(
     signers,
     verifiableOnChain(),
     byDid(didDocument, { verificationRelationship })
@@ -297,7 +297,7 @@ export async function authorizeBatch({
 
     const { verificationRelationship } = group
 
-    const signer = await Signers.selectSigner<SignerInterface<string, DidUrl>>(
+    const signer = await Signers.selectSigner<DidPalletSigner>(
       signers,
       verifiableOnChain(),
       byDid(didDocument as DidDocument, { verificationRelationship })

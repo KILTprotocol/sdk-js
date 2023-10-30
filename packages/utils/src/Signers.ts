@@ -7,23 +7,24 @@
 
 import { decodePair } from '@polkadot/keyring/pair/decode'
 import {
-  cryptoWaitReady,
   encodeAddress,
   randomAsHex,
   secp256k1Sign,
-  sr25519Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
 import {
-  createSigner as es256kSignerWrapped,
+  createSigner as es256kSigner,
   cryptosuite as es256kSuite,
-} from '@kiltprotocol/ecdsa-secp256k1-jcs-2023'
+} from '@kiltprotocol/es256k-jcs-2023'
 import {
-  createSigner as ed25519SignerWrapped,
+  createSigner as ed25519Signer,
   cryptosuite as ed25519Suite,
 } from '@kiltprotocol/eddsa-jcs-2022'
-import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+import {
+  cryptosuite as sr25519Suite,
+  createSigner as sr25519Signer,
+} from '@kiltprotocol/sr25519-jcs-2023'
 
 import type {
   SignerInterface,
@@ -36,8 +37,8 @@ import type {
 import { DidError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
-  ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b', // could also be called ES256K-R-Blake2b
-  ECRECOVER_SECP256K1_KECCAK: 'Ecrecover-Secp256k1-Keccak', // could also be called ES256K-R-Keccak
+  ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b' as const, // could also be called ES256K-R-Blake2b
+  ECRECOVER_SECP256K1_KECCAK: 'Ecrecover-Secp256k1-Keccak' as const, // could also be called ES256K-R-Keccak
   ES256K: es256kSuite.requiredAlgorithm,
   SR25519: sr25519Suite.requiredAlgorithm,
   ED25519: ed25519Suite.requiredAlgorithm,
@@ -48,6 +49,12 @@ export const DID_PALLET_SUPPORTED_ALGORITHMS = Object.freeze([
   ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B,
   ALGORITHMS.SR25519,
 ])
+
+export type KnownAlgorithms = typeof ALGORITHMS[keyof typeof ALGORITHMS]
+export type DidPalletSupportedAlgorithms =
+  typeof DID_PALLET_SUPPORTED_ALGORITHMS[number]
+
+export { ed25519Signer, es256kSigner }
 
 /**
  * Signer that produces an ECDSA signature over a Blake2b-256 digest of the message using the secp256k1 curve.
@@ -105,81 +112,6 @@ export async function ethereumEcdsaSigner<Id extends string>({
   }
 }
 
-/**
- * Signer that produces an ES256K signature over the message.
- *
- * @param input Holds all function arguments.
- * @param input.id Sets the signer's id property.
- * @param input.secretKey A 32 byte ECDSA secret key on the secp256k1 curve.
- * @param input.publicKey The corresponding public key. May be omitted.
- * @returns A signer interface capable of making ES256K signatures.
- */
-export async function es256kSigner<Id extends string>({
-  secretKey,
-  id,
-}: {
-  id: Id
-  secretKey: Uint8Array
-  publicKey?: Uint8Array
-}): Promise<SignerInterface<typeof ALGORITHMS.ES256K, Id>> {
-  // only exists to map secretKey to seed
-  return es256kSignerWrapped({ seed: secretKey, keyUri: id }) as Promise<
-    SignerInterface<typeof ALGORITHMS.ES256K, Id>
-  >
-}
-
-/**
- * Signer that produces an Ed25519 signature over the message.
- *
- * @param input Holds all function arguments.
- * @param input.id Sets the signer's id property.
- * @param input.secretKey A 32 byte Ed25519 secret key. Some key representations append the public key to the private key; to allow these, all bytes after the 32nd byte will be dropped.
- * @param input.publicKey The corresponding public key. May be omitted.
- * @returns A signer interface capable of making Ed25519 signatures.
- */
-export async function ed25519Signer<Id extends string>({
-  secretKey,
-  id,
-}: {
-  id: Id
-  secretKey: Uint8Array
-  publicKey?: Uint8Array
-}): Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>> {
-  // polkadot ed25519 private keys are a concatenation of private and public key for some reason
-  return ed25519SignerWrapped({
-    seed: secretKey.slice(0, 32),
-    keyUri: id,
-  }) as Promise<SignerInterface<typeof ALGORITHMS.ED25519, Id>>
-}
-
-/**
- * Signer that produces an Sr25519 signature over the message.
- *
- * @param input Holds all function arguments.
- * @param input.id Sets the signer's id property.
- * @param input.secretKey A 64 byte Sr25519 secret key.
- * @param input.publicKey The corresponding 32 byte public key.
- * @returns A signer interface capable of making Sr25519 signatures.
- */
-export async function sr25519Signer<Id extends string>({
-  secretKey,
-  id,
-  publicKey,
-}: {
-  publicKey: Uint8Array
-  secretKey: Uint8Array
-  id: Id
-}): Promise<SignerInterface<typeof ALGORITHMS.SR25519, Id>> {
-  await cryptoWaitReady()
-  return {
-    id,
-    algorithm: ALGORITHMS.SR25519,
-    sign: async ({ data }: { data: Uint8Array }) => {
-      return sr25519Sign(data, { secretKey, publicKey })
-    },
-  }
-}
-
 function extractPk(pair: KeyringPair): Uint8Array {
   const pw = randomAsHex()
   const encoded = pair.encodePkcs8(pw)
@@ -204,7 +136,10 @@ const signerFactory = {
  * @param input.algorithm An algorithm identifier from the {@link ALGORITHMS} map.
  * @returns A signer interface.
  */
-export async function signerFromKeypair<Alg extends string, Id extends string>({
+export async function signerFromKeypair<
+  Alg extends KnownAlgorithms,
+  Id extends string
+>({
   id,
   keypair,
   algorithm,
@@ -248,7 +183,7 @@ export async function signerFromKeypair<Alg extends string, Id extends string>({
   })
 }
 
-function algsForKeyType(keyType: string): string[] {
+function algsForKeyType(keyType: string): KnownAlgorithms[] {
   switch (keyType.toLowerCase()) {
     case 'ed25519':
       return [ALGORITHMS.ED25519]
@@ -283,13 +218,13 @@ export async function getSignersForKeypair<Id extends string>({
   id?: Id
   keypair: Keypair | KeyringPair
   type?: string
-}): Promise<Array<SignerInterface<string, Id>>> {
+}): Promise<Array<SignerInterface<KnownAlgorithms, Id>>> {
   if (!type) {
     throw new Error('type is required if keypair.type is not given')
   }
   const algorithms = algsForKeyType(type)
   return Promise.all(
-    algorithms.map<Promise<SignerInterface<string, Id>>>(async (algorithm) => {
+    algorithms.map(async (algorithm) => {
       return signerFromKeypair({ keypair, id, algorithm })
     })
   )

@@ -2037,34 +2037,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/ecdsa-secp256k1-jcs-2023@npm:0.0.1-rc.2":
-  version: 0.0.1-rc.2
-  resolution: "@kiltprotocol/ecdsa-secp256k1-jcs-2023@npm:0.0.1-rc.2"
+"@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.0.1-rc.2
-    "@noble/curves": ^1.1.0
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
     "@scure/base": ^1.1.1
-  checksum: ba083c296ddfb54f917e3bb6751e5e69089d11a22dfa395a8b2c912edb5282abf6837823541040c91e889e807672df5374a2523f9bab9908cb672cbbf3cf8f22
+  checksum: c3127e4f98e37216752e52314aa3e173d32327819fc88ba69fdba7bfbb014ca61cf271eb01864274c1c25813edbf07975c8dc829708dc525f7425ea2a38ab7d9
   languageName: node
   linkType: hard
 
-"@kiltprotocol/eddsa-jcs-2022@npm:0.0.1-rc.2":
-  version: 0.0.1-rc.2
-  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.0.1-rc.2"
+"@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.0.1-rc.2
-    "@noble/curves": ^1.1.0
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
     "@scure/base": ^1.1.1
-  checksum: dd96d116e4580e3d6aa611bbe6d0e3010c69032073ee27a69e1867bcd8fbc95e7054710c81655584575b36e9eedd37f8e530fd55010891934f5afba43fbd801d
+  checksum: 843437a6806c10728fedc6cfa45f408aa9278263d64fce7c5057515d06fed74bc9ea702d932cc24543daff66a1b9935389b0a1453ea45d59111b46b59b19ad56
   languageName: node
   linkType: hard
 
-"@kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.0.1-rc.2":
-  version: 0.0.1-rc.2
-  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.0.1-rc.2"
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1"
   dependencies:
     canonicalize: ^2.0.0
-  checksum: f342051b94d4eff1cfbe2ed2445432e91180d4fcdb5a354312f197fd292b29109b9bd2d9de1bcfec53a1ecd1a61155badb54c761a2a4de95e33205ebc9c3de2f
+    multibase: ^4.0.6
+  checksum: fefc3c86bdb0a732f5851155cedf1743eedace4cf03fa5fbeb37f321c3cf87e9ac1704328e0d69d3cb80203e9afc07b6849907816c402bcd90b7c18b99177d40
   languageName: node
   linkType: hard
 
@@ -2102,14 +2103,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/sr25519-jcs-2023@npm:0.0.1-rc.2":
-  version: 0.0.1-rc.2
-  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.0.1-rc.2"
+"@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.0.1-rc.2
-    "@polkadot/util-crypto": ^12.3.2
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@polkadot/util-crypto": ^12.0.1
     "@scure/base": ^1.1.1
-  checksum: 573ba2dee062d0af9f18b3805a8156987c613af22f271df5c6f28b332e428efaebedc248e2a88aeffde43bfd224ab1df66928949ebce09d871fd517931ef1d52
+  checksum: 8253c03b8c9daef61bc2155ee64894a568f4b591c941dc0bb668839475ed8d8fcf1048339710805e3046cb3ea603ed58c5e857887c4c67b602af098c2a92fb52
   languageName: node
   linkType: hard
 
@@ -2140,9 +2141,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
-    "@kiltprotocol/ecdsa-secp256k1-jcs-2023": 0.0.1-rc.2
-    "@kiltprotocol/eddsa-jcs-2022": 0.0.1-rc.2
-    "@kiltprotocol/sr25519-jcs-2023": 0.0.1-rc.2
+    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
+    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
+    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
+    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
@@ -2185,7 +2187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:1.0.0, @noble/curves@npm:^1.1.0":
+"@noble/curves@npm:1.0.0, @noble/curves@npm:^1.0.0":
   version: 1.0.0
   resolution: "@noble/curves@npm:1.0.0"
   dependencies:
@@ -2517,7 +2519,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.2.1, @polkadot/util-crypto@npm:^12.3.2":
+"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.0.1, @polkadot/util-crypto@npm:^12.2.1":
   version: 12.2.1
   resolution: "@polkadot/util-crypto@npm:12.2.1"
   dependencies:

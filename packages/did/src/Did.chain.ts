@@ -478,18 +478,18 @@ export function didSignatureToChain({
   return { [keyType]: signature } as EncodedSignature
 }
 
+export type DidPalletSigner = SignerInterface<
+  Signers.DidPalletSupportedAlgorithms,
+  DidUrl
+>
+
 export type AuthorizeCallInput = {
   did: Did
   txCounter: AnyNumber
   call: Extrinsic
   submitter: KiltAddress
   blockNumber?: AnyNumber
-  signer: SignerInterface<
-    | typeof Signers.ALGORITHMS.SR25519
-    | typeof Signers.ALGORITHMS.ED25519
-    | typeof Signers.ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B,
-    DidUrl
-  >
+  signer: DidPalletSigner
 }
 
 /**
