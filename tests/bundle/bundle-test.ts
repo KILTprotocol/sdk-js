@@ -307,6 +307,16 @@ async function runAll() {
 
   Presentation.validateStructure(presentation)
   console.info('Presentation structure validated')
+
+  const result = await Presentation.verify(presentation, { challenge })
+  if (result.verified) {
+    console.info('Presentation verified')
+  } else {
+    throw new Error(
+      ['Presentation failed to verify', ...(result.errors ?? [])].join('\n  '),
+      { cause: result }
+    )
+  }
 }
 
 window.runAll = runAll

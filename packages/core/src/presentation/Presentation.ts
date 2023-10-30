@@ -19,12 +19,20 @@ import {
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from '../credentialsV1/constants.js'
+import {
+  KiltAttestationProofV1,
+  KiltRevocationStatusV1,
+  Types,
+} from '../credentialsV1/index.js'
 import type {
+  KiltCredentialV1,
   VerifiableCredential,
   VerifiablePresentation,
 } from '../credentialsV1/types.js'
 import {
+  DataIntegrityProof,
   createProof,
+  verifyProof,
 } from './DataIntegrity.js'
 
 export const presentationSchema: JsonSchema.Schema = {
@@ -269,4 +277,160 @@ export async function create({
     challenge,
     // domain: verifier,
   })
+}
+
+type VerificationResult = {
+  verified: boolean
+  errors?: string[]
+}
+type PresentationResult = VerificationResult & {
+  presentation: VerificationResult
+  credentials: Array<VerificationResult & { status?: VerificationResult }>
+}
+
+/**
+ * @param presentation
+ * @param root0
+ * @param root0.now
+ * @param root0.domain
+ * @param root0.challenge
+ * @param root0.verifier
+ * @param root0.tolerance
+ */
+export async function verify(
+  presentation: VerifiablePresentation,
+  {
+    now = Date.now(),
+    tolerance = 0,
+    domain,
+    challenge,
+    verifier,
+  }: {
+    now?: number
+    domain?: string
+    challenge?: string
+    verifier?: string
+    tolerance?: number
+  } = {}
+): Promise<PresentationResult> {
+  const presentationResult: Required<VerificationResult> = {
+    verified: true,
+    errors: [],
+  }
+  try {
+    validateStructure(presentation)
+    if (presentation.verifier && verifier !== presentation.verifier) {
+      presentationResult.errors.push(
+        'presentation.verifier is set but does not match the verifier option'
+      )
+    }
+    if (
+      presentation.issuanceDate &&
+      Date.parse(presentation.issuanceDate) > now + tolerance
+    ) {
+      presentationResult.errors.push('presentation.issuanceDate > now')
+    }
+    if (
+      presentation.expirationDate &&
+      Date.parse(presentation.expirationDate) < now - tolerance
+    ) {
+      presentationResult.errors.push('presentation.expirationDate < now')
+    }
+    const proofs = (
+      Array.isArray(presentation.proof)
+        ? presentation.proof
+        : [presentation.proof]
+    ) as DataIntegrityProof[]
+    const results = await Promise.allSettled(
+      proofs.map((proof) =>
+        verifyProof(
+          { ...presentation, proof },
+          {
+            cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
+            domain,
+            challenge,
+            expectedController: presentation.holder,
+          }
+        )
+      )
+    )
+    if (!results.some((r) => r.status === 'fulfilled' && r.value === true)) {
+      presentationResult.verified = false
+      results.forEach((r, idx) => {
+        if (r.status === 'rejected' && Boolean(r.reason)) {
+          presentationResult.errors.push(`proof[${idx}]: ${String(r.reason)}`)
+        }
+      })
+    }
+    assertHolderCanPresentCredentials(presentation)
+  } catch (e) {
+    presentationResult.errors.push(String(e))
+  }
+  if (presentationResult.errors.length > 0) {
+    presentationResult.verified = false
+  }
+  if (presentationResult.verified !== true) {
+    return {
+      verified: false,
+      errors: presentationResult.errors,
+      presentation: presentationResult,
+      credentials: [],
+    }
+  }
+  const credentials = Array.isArray(presentation.verifiableCredential)
+    ? presentation.verifiableCredential
+    : [presentation.verifiableCredential]
+
+  const credentialResults = await Promise.all(
+    credentials.map(async ({ proof, ...credential }) => {
+      const proofs = Array.isArray(proof) ? proof : [proof]
+      const proofResult = await Promise.allSettled(
+        proofs.map((p) =>
+          KiltAttestationProofV1.verify(
+            credential as KiltCredentialV1,
+            p as Types.KiltAttestationProofV1
+          )
+        )
+      )
+      if (proofResult.some((r) => r.status === 'fulfilled') !== true) {
+        return {
+          verified: false,
+          errors: proofResult.reduce<string[]>((errors, r, idx) => {
+            if (r.status === 'rejected' && Boolean(r.reason)) {
+              errors.push(`proof[${idx}]: ${String(r.reason)}`)
+            }
+            return errors
+          }, []),
+        }
+      }
+      const status: VerificationResult = {
+        verified: true,
+      }
+      try {
+        await KiltRevocationStatusV1.check(credential as KiltCredentialV1)
+      } catch (e) {
+        status.verified = false
+        status.errors = status.errors
+          ? [...status.errors, String(e)]
+          : [String(e)]
+      }
+      return { verified: true, status }
+    })
+  )
+  const verified =
+    presentationResult.verified === true &&
+    credentialResults.every((result) => result.verified === true)
+  const errors = [
+    ...presentationResult.errors,
+    ...credentialResults.flatMap((result) => [
+      ...(result.errors ?? []),
+      ...(result.status?.errors ?? []),
+    ]),
+  ]
+  return {
+    verified,
+    errors: errors.length > 0 ? errors : undefined,
+    presentation: presentationResult,
+    credentials: credentialResults,
+  }
 }

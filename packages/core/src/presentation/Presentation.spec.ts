@@ -6,7 +6,7 @@
  */
 
 import { createSigner, cryptosuite } from '@kiltprotocol/sr25519-jcs-2023'
-import { sr25519PairFromSeed } from '@polkadot/util-crypto'
+import { randomAsHex, sr25519PairFromSeed } from '@polkadot/util-crypto'
 
 import { didKeyToVerificationMethod, resolve } from '@kiltprotocol/did'
 import type { Did } from '@kiltprotocol/types'
@@ -14,6 +14,7 @@ import type { Did } from '@kiltprotocol/types'
 import { createProof, verifyProof } from './DataIntegrity'
 import {
   create as createPresentation,
+  verify as verifyPresentation,
 } from './Presentation'
 
 const credential = {
@@ -140,5 +141,68 @@ describe('verification', () => {
         expectedProofPurpose: 'assertionMethod',
       })
     ).resolves.toBe(true)
+  })
+
+  it('verifies a signed presentation', async () => {
+    const signer = await createSigner({
+      seed,
+      id: signerDid + keyId,
+    })
+    const challenge = randomAsHex()
+    const presentation = await createPresentation({
+      credentials: [
+        // credential
+      ],
+      holder: signerDid,
+      signers: [signer],
+      // purpose: 'authentication',
+      verifier: 'did:web:example.com',
+      challenge,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 10_000),
+    })
+
+    const result = await verifyPresentation(presentation, {
+      verifier: 'did:web:example.com',
+      challenge,
+    })
+
+    // console.log(result)
+
+    expect(result).toMatchObject({
+      verified: true,
+      presentation: { verified: true },
+    })
+
+    await expect(
+      verifyPresentation(presentation, {
+        verifier: 'did:web:example.de',
+        challenge,
+      })
+    ).resolves.toMatchObject({
+      verified: false,
+      presentation: { verified: false },
+    })
+
+    await expect(
+      verifyPresentation(presentation, {
+        verifier: 'did:web:example.com',
+        challenge: `${challenge}00`,
+      })
+    ).resolves.toMatchObject({
+      verified: false,
+      presentation: { verified: false },
+    })
+
+    presentation.verifiableCredential = [credential]
+    await expect(
+      verifyPresentation(presentation, {
+        verifier: 'did:web:example.com',
+        challenge,
+      })
+    ).resolves.toMatchObject({
+      verified: false,
+      presentation: { verified: false },
+    })
   })
 })
