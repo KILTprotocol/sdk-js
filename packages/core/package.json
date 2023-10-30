@@ -40,6 +40,7 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.1",
     "@kiltprotocol/type-definitions": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
