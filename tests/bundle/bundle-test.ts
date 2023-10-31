@@ -313,7 +313,7 @@ async function runAll() {
     console.info('Presentation verified')
   } else {
     throw new Error(
-      ['Presentation failed to verify', ...(result.errors ?? [])].join('\n  '),
+      ['Presentation failed to verify', ...(result.error ?? [])].join('\n  '),
       { cause: result }
     )
   }
