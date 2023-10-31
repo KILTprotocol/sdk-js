@@ -30,7 +30,7 @@ import type {
   VerifiableCredential,
   VerifiablePresentation,
 } from '../credentialsV1/types.js'
-import * as DataIntegrity from './DataIntegrity.js'
+import * as DataIntegrity from '../proofs/DataIntegrity.js'
 import {
   ProofSetResult,
   VerificationResult,

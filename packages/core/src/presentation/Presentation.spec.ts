@@ -11,7 +11,7 @@ import { randomAsHex, sr25519PairFromSeed } from '@polkadot/util-crypto'
 import { didKeyToVerificationMethod, resolve } from '@kiltprotocol/did'
 import type { Did } from '@kiltprotocol/types'
 
-import { createProof, verifyProof } from './DataIntegrity'
+import { createProof, verifyProof } from '../proofs/DataIntegrity'
 import {
   create as createPresentation,
   verify as verifyPresentation,
