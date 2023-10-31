@@ -179,6 +179,7 @@ async function retrieveVerificationMethod(
 /**
  * @param document
  * @param document.proof
+ * @param proof
  * @param proofOptions
  * @param proofOptions.cryptosuites
  * @param proofOptions.expectedProofPurpose
@@ -187,7 +188,8 @@ async function retrieveVerificationMethod(
  * @param proofOptions.expectedController
  */
 export async function verifyProof(
-  document: { proof: DataIntegrityProof },
+  document: { proof?: unknown },
+  proof: DataIntegrityProof,
   proofOptions: {
     cryptosuites: Array<CryptoSuite<any>>
     expectedProofPurpose?: string
@@ -196,7 +198,8 @@ export async function verifyProof(
     challenge?: string
   }
 ): Promise<boolean> {
-  const { proof, ...unsecuredDocument } = document
+  const { ...unsecuredDocument } = document
+  delete unsecuredDocument.proof
   if (!proof.type || !proof.verificationMethod || !proof.proofPurpose) {
     throw new MALFORMED_PROOF_ERROR(
       'proof properties type, verificationMethod, and proofPurpose are required'

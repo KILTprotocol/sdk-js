@@ -136,7 +136,7 @@ describe('verification', () => {
       purpose: 'assertionMethod',
     })
     await expect(
-      verifyProof(signed, {
+      verifyProof(signed, signed.proof, {
         cryptosuites: [cryptosuite],
         expectedProofPurpose: 'assertionMethod',
       })
@@ -166,8 +166,6 @@ describe('verification', () => {
       verifier: 'did:web:example.com',
       challenge,
     })
-
-    // console.log(result)
 
     expect(result).toMatchObject({
       verified: true,

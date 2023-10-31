@@ -333,10 +333,8 @@ async function verifyPresentation(
       } = await verifyProofSet(presentation as { proof: Proof | Proof[] }, {
         [DataIntegrity.PROOF_TYPE]: async (document, proof) => ({
           verified: await DataIntegrity.verifyProof(
-            {
-              ...document,
-              proof: proof as DataIntegrity.DataIntegrityProof,
-            },
+            document,
+            proof as DataIntegrity.DataIntegrityProof,
             {
               cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
               domain,
