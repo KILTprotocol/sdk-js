@@ -325,39 +325,32 @@ async function verifyPresentation(
 
     assertHolderCanPresentCredentials(presentation)
 
-    // if (errors.length !== 0) {
-    //   return {
-    //     verified: false,
-    //     results: [],
-    //     error: errors,
-    //   }
-    // }
+    if (errors.length === 0) {
+      const {
+        results,
+        error: proofErrors,
+        verified: proofsVerified,
+      } = await verifyProofSet(presentation as { proof: Proof | Proof[] }, {
+        [DataIntegrity.PROOF_TYPE]: async (document, proof) => ({
+          verified: await DataIntegrity.verifyProof(
+            {
+              ...document,
+              proof: proof as DataIntegrity.DataIntegrityProof,
+            },
+            {
+              cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
+              domain,
+              challenge,
+              expectedController: presentation.holder,
+            }
+          ),
+        }),
+      })
+      result.results = results
 
-    const {
-      results,
-      error: proofErrors,
-      verified: proofsVerified,
-    } = await verifyProofSet(presentation as { proof: Proof | Proof[] }, {
-      [DataIntegrity.PROOF_TYPE]: async (document, proof) => ({
-        verified: await DataIntegrity.verifyProof(
-          {
-            ...document,
-            proof: proof as DataIntegrity.DataIntegrityProof,
-          },
-          {
-            cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
-            domain,
-            challenge,
-            expectedController: presentation.holder,
-          }
-        ),
-      }),
-    })
-    result.results = results
-
-    errors.push(...(proofErrors ?? []))
-    result.verified = proofsVerified === true
-
+      errors.push(...(proofErrors ?? []))
+      result.verified = proofsVerified === true
+    }
     if (errors.length === 0) {
       result.error = undefined
     } else {
