@@ -88,10 +88,10 @@ describe('When there are haves and have-nots', () => {
   let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = makeSigningKeyTool().keypair
+    bobbyBroke = (await makeSigningKeyTool()).keypair
     richieRich = devAlice
     faucet = devFaucet
-    stormyD = makeSigningKeyTool().keypair
+    stormyD = (await makeSigningKeyTool()).keypair
   })
 
   it('can transfer tokens from the rich to the poor', async () => {

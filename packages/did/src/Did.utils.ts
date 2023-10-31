@@ -339,7 +339,7 @@ export function getFullDid(
  * Builds the  of a full DID if it is created with the authentication verification method derived from the provided public key.
  *
  * @param verificationMethod The DID verification method.
- * @returns The expected full DID .
+ * @returns The expected full DID.
  */
 export function getFullDidFromVerificationMethod(
   verificationMethod: Pick<VerificationMethod, 'publicKeyMultibase'>

@@ -43,11 +43,12 @@ import type {
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
 import type {
+  DidDocument,
   Did,
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignExtrinsicCallback,
+  SignerInterface,
 } from '@kiltprotocol/types'
 import * as CType from '../ctype/index.js'
 
@@ -659,11 +660,6 @@ export type AttestationHandler = (
   timestamp?: number
 }>
 
-export interface DidSigner {
-  did: Did
-  signer: SignExtrinsicCallback
-}
-
 export type TxHandler = {
   account: KiltAddress
   signAndSubmit?: AttestationHandler
@@ -671,7 +667,7 @@ export type TxHandler = {
 }
 
 export type IssueOpts = {
-  didSigner: DidSigner
+  signers: readonly SignerInterface[]
   transactionHandler: TxHandler
 } & Parameters<typeof authorizeTx>[4]
 
@@ -695,8 +691,9 @@ function makeDefaultTxSubmit(
  * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
  *
  * @param credential A [[KiltCredentialV1]] for which a proof shall be created.
+ * @param issuer The DID or DID Document of the DID acting as the issuer.
  * @param opts Additional parameters.
- * @param opts.didSigner Object containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+ * @param opts.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).
  * @param opts.transactionHandler Object containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
  * The signAndSubmit callback receives an unsigned extrinsic and is expected to return the `blockHash` and (optionally) `timestamp` when the extrinsic was included in a block.
  * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
@@ -705,18 +702,23 @@ function makeDefaultTxSubmit(
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
-  { didSigner, transactionHandler, ...otherParams }: IssueOpts
+  issuer: Did | DidDocument,
+  { signers, transactionHandler, ...otherParams }: IssueOpts
 ): Promise<KiltCredentialV1> {
-  const updatedCredential = { ...credential, issuer: didSigner.did }
+  const updatedCredential = {
+    ...credential,
+    issuer: typeof issuer === 'string' ? issuer : issuer.id,
+  }
   const [proof, callArgs] = initializeProof(updatedCredential)
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
   const txSubmissionHandler =
     transactionHandler.signAndSubmit ?? makeDefaultTxSubmit(transactionHandler)
+
   const didSigned = await authorizeTx(
-    didSigner.did,
+    issuer,
     call,
-    didSigner.signer,
+    signers,
     transactionHandler.account,
     otherParams
   )

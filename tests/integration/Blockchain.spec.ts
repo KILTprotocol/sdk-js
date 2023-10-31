@@ -26,7 +26,7 @@ describe('Chain returns specific errors, that we check for', () => {
   let charlie: KeyringPair
   beforeAll(async () => {
     faucet = devFaucet
-    testIdentity = makeSigningKeyTool().keypair
+    testIdentity = (await makeSigningKeyTool()).keypair
     charlie = devCharlie
 
     const transferTx = api.tx.balances.transfer(

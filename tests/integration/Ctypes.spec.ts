@@ -46,18 +46,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   beforeAll(async () => {
     paymentAccount = await createEndowedTestAccount()
-    key = makeSigningKeyTool()
+    key = await makeSigningKeyTool()
     ctypeCreator = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const cType = makeCType()
-    const { keypair, getSignCallback } = makeSigningKeyTool()
+    const { keypair, getSigners } = await makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.id,
       storeTx,
-      getSignCallback(ctypeCreator),
+      await getSigners(ctypeCreator),
       keypair.address
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
@@ -73,7 +73,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.id,
       storeTx,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await submitTx(authorizedStoreTx, paymentAccount)
@@ -94,7 +94,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.id,
       storeTx,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await submitTx(authorizedStoreTx, paymentAccount)
@@ -103,7 +103,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const authorizedStoreTx2 = await Did.authorizeTx(
       ctypeCreator.id,
       storeTx2,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await expect(

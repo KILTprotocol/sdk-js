@@ -43,8 +43,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
-    w3nCreatorKey = makeSigningKeyTool()
-    otherW3NCreatorKey = makeSigningKeyTool()
+    w3nCreatorKey = await makeSigningKeyTool()
+    otherW3NCreatorKey = await makeSigningKeyTool()
     paymentAccount = await createEndowedTestAccount()
     otherPaymentAccount = await createEndowedTestAccount()
     w3nCreator = await createFullDidFromSeed(
@@ -66,11 +66,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = api.tx.web3Names.claim(nick)
-    const bobbyBroke = makeSigningKeyTool().keypair
+    const bobbyBroke = (await makeSigningKeyTool()).keypair
     const authorizedTx = await Did.authorizeTx(
       w3nCreator.id,
       tx,
-      w3nCreatorKey.getSignCallback(w3nCreator),
+      await w3nCreatorKey.getSigners(w3nCreator),
       bobbyBroke.address
     )
 
@@ -84,7 +84,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeTx(
       w3nCreator.id,
       tx,
-      w3nCreatorKey.getSignCallback(w3nCreator),
+      await w3nCreatorKey.getSigners(w3nCreator),
       paymentAccount.address
     )
 
@@ -109,7 +109,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeTx(
       otherWeb3NameCreator.id,
       tx,
-      otherW3NCreatorKey.getSignCallback(otherWeb3NameCreator),
+      await otherW3NCreatorKey.getSigners(otherWeb3NameCreator),
       paymentAccount.address
     )
 
@@ -126,7 +126,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeTx(
       w3nCreator.id,
       tx,
-      w3nCreatorKey.getSignCallback(w3nCreator),
+      await w3nCreatorKey.getSigners(w3nCreator),
       paymentAccount.address
     )
 
@@ -158,7 +158,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const prepareAuthorizedTx = await Did.authorizeTx(
       w3nCreator.id,
       prepareTx,
-      w3nCreatorKey.getSignCallback(w3nCreator),
+      await w3nCreatorKey.getSigners(w3nCreator),
       paymentAccount.address
     )
     await submitTx(prepareAuthorizedTx, paymentAccount)
@@ -167,7 +167,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeTx(
       w3nCreator.id,
       tx,
-      w3nCreatorKey.getSignCallback(w3nCreator),
+      await w3nCreatorKey.getSigners(w3nCreator),
       paymentAccount.address
     )
     await submitTx(authorizedTx, paymentAccount)

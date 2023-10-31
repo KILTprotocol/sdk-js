@@ -12,7 +12,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDocument,
   KiltKeyringPair,
-  SignCallback,
+  SignerInterface,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
@@ -31,6 +31,14 @@ const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })
 
+jest.mock('../DidResolver/DidResolver', () => {
+  return {
+    ...jest.requireActual('../DidResolver/DidResolver'),
+    resolve: jest.fn(),
+    dereference: jest.fn(),
+    resolveRepresentation: jest.fn(),
+  }
+})
 jest.mock('../Did.chain')
 jest
   .mocked(generateDidAuthenticatedTx)
@@ -45,14 +53,14 @@ jest
 describe('When creating an instance from the chain', () => {
   describe('authorizeBatch', () => {
     let keypair: KiltKeyringPair
-    let sign: SignCallback
+    let signers: SignerInterface[]
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      const keyTool = makeSigningKeyTool()
+      const keyTool = await makeSigningKeyTool()
       keypair = keyTool.keypair
       fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
-      sign = keyTool.getSignCallback(fullDid)
+      signers = await keyTool.getSigners(fullDid)
     })
 
     describe('.addSingleTx()', () => {
@@ -60,10 +68,10 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
           authorizeBatch({
-            did: fullDid.id,
+            did: fullDid,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
-            sign,
+            signers,
             submitter: keypair.address,
           })
         ).rejects.toMatchInlineSnapshot(
@@ -78,10 +86,10 @@ describe('When creating an instance from the chain', () => {
         const batchFunction =
           jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
         await authorizeBatch({
-          did: fullDid.id,
+          did: fullDid,
           batchFunction,
           extrinsics: [extrinsic, extrinsic],
-          sign,
+          signers,
           submitter: keypair.address,
         })
 
@@ -115,11 +123,11 @@ describe('When creating an instance from the chain', () => {
           ctype4Extrinsic,
         ]
         await authorizeBatch({
-          did: fullDid.id,
+          did: fullDid,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
-          sign,
+          signers,
           submitter: keypair.address,
         })
 
@@ -143,10 +151,10 @@ describe('When creating an instance from the chain', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
           authorizeBatch({
-            did: fullDid.id,
+            did: fullDid,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
-            sign,
+            signers,
             submitter: keypair.address,
           })
         ).rejects.toMatchInlineSnapshot(

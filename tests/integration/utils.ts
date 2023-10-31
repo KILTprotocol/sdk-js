@@ -10,6 +10,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+import { randomAsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
@@ -109,7 +110,7 @@ export const devBob = Crypto.makeKeypairFromUri('//Bob')
 export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
-  return makeSigningKeyTool('ed25519').keypair.address
+  return encodeAddress(randomAsU8a())
 }
 
 export async function isCtypeOnChain(cType: ICType): Promise<boolean> {
@@ -187,7 +188,7 @@ export async function fundAccount(
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
 ): Promise<KiltKeyringPair> {
-  const { keypair } = makeSigningKeyTool()
+  const { keypair } = await makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
 }

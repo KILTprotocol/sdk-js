@@ -51,7 +51,7 @@ async function issueCredential(
   const authorizedStoreTx = await Did.authorizeTx(
     attester.id,
     api.tx.publicCredentials.add(PublicCredentials.toChain(credential)),
-    attesterKey.getSignCallback(attester),
+    await attesterKey.getSigners(attester),
     tokenHolder.address
   )
   await submitTx(authorizedStoreTx, tokenHolder)
@@ -60,7 +60,7 @@ async function issueCredential(
 beforeAll(async () => {
   api = await initializeApi()
   tokenHolder = await createEndowedTestAccount()
-  attesterKey = makeSigningKeyTool()
+  attesterKey = await makeSigningKeyTool()
   attester = await createFullDidFromSeed(tokenHolder, attesterKey.keypair)
 
   const ctypeExists = await isCtypeOnChain(nftNameCType)
@@ -68,7 +68,7 @@ beforeAll(async () => {
   const tx = await Did.authorizeTx(
     attester.id,
     api.tx.ctype.add(CType.toChain(nftNameCType)),
-    attesterKey.getSignCallback(attester),
+    await attesterKey.getSigners(attester),
     tokenHolder.address
   )
   await submitTx(tx, tokenHolder)
@@ -149,7 +149,7 @@ describe('When there is an attester and ctype NFT name', () => {
       batchFunction: api.tx.utility.batchAll,
       did: attester.id,
       extrinsics: credentialCreationTxs,
-      sign: attesterKey.getSignCallback(attester),
+      signers: await attesterKey.getSigners(attester),
       submitter: tokenHolder.address,
     })
     await submitTx(authorizedBatch, tokenHolder)
@@ -178,7 +178,7 @@ describe('When there is an attester and ctype NFT name', () => {
     const authorizedTx = await Did.authorizeTx(
       attester.id,
       revocationTx,
-      attesterKey.getSignCallback(attester),
+      await attesterKey.getSigners(attester),
       tokenHolder.address
     )
     await submitTx(authorizedTx, tokenHolder)
@@ -213,7 +213,7 @@ describe('When there is an attester and ctype NFT name', () => {
     const authorizedTx = await Did.authorizeTx(
       attester.id,
       unrevocationTx,
-      attesterKey.getSignCallback(attester),
+      await attesterKey.getSigners(attester),
       tokenHolder.address
     )
     await submitTx(authorizedTx, tokenHolder)
@@ -248,7 +248,7 @@ describe('When there is an attester and ctype NFT name', () => {
     const authorizedTx = await Did.authorizeTx(
       attester.id,
       removalTx,
-      attesterKey.getSignCallback(attester),
+      await attesterKey.getSigners(attester),
       tokenHolder.address
     )
     await submitTx(authorizedTx, tokenHolder)
@@ -435,7 +435,7 @@ describe('When there is an issued public credential', () => {
     const authorizedTx = await Did.authorizeTx(
       attester.id,
       revocationTx,
-      attesterKey.getSignCallback(attester),
+      await attesterKey.getSigners(attester),
       tokenHolder.address
     )
     await submitTx(authorizedTx, tokenHolder)
@@ -491,7 +491,7 @@ describe('When there is a batch which contains a credential creation', () => {
       await Did.authorizeTx(
         attester.id,
         api.tx.publicCredentials.add(PublicCredentials.toChain(credential1)),
-        attesterKey.getSignCallback(attester),
+        await attesterKey.getSigners(attester),
         tokenHolder.address,
         { txCounter: currentAttesterNonce.addn(1) }
       ),
@@ -499,7 +499,7 @@ describe('When there is a batch which contains a credential creation', () => {
         await Did.authorizeTx(
           attester.id,
           api.tx.publicCredentials.add(PublicCredentials.toChain(credential2)),
-          attesterKey.getSignCallback(attester),
+          await attesterKey.getSigners(attester),
           tokenHolder.address,
           { txCounter: currentAttesterNonce.addn(2) }
         ),
@@ -509,7 +509,7 @@ describe('When there is a batch which contains a credential creation', () => {
             api.tx.publicCredentials.add(
               PublicCredentials.toChain(credential3)
             ),
-            attesterKey.getSignCallback(attester),
+            await attesterKey.getSigners(attester),
             tokenHolder.address,
             { txCounter: currentAttesterNonce.addn(3) }
           ),

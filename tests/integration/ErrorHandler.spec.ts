@@ -39,7 +39,7 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  key = makeSigningKeyTool()
+  key = await makeSigningKeyTool()
   someDid = await createFullDidFromSeed(paymentAccount, key.keypair)
 }, 60_000)
 
@@ -87,7 +87,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   const tx = await Did.authorizeTx(
     someDid.id,
     storeTx,
-    key.getSignCallback(someDid),
+    await key.getSigners(someDid),
     paymentAccount.address
   )
   await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({

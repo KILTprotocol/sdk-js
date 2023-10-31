@@ -19,7 +19,12 @@ import {
   Types,
   KiltCredentialV1,
 } from '@kiltprotocol/core'
-import type { ICType } from '@kiltprotocol/types'
+import type {
+  DidDocument,
+  Did,
+  ICType,
+  SignerInterface,
+} from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
@@ -198,14 +203,16 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
    * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
-   * @param didSigner Signer interface to be passed to [[issue]], containing the attester's `did` and a `signer` callback which authorizes the on-chain anchoring of the credential with the attester's signature.
+   * @param issuer The DID Document or, alternatively, the DID of the issuer.
+   * @param signers Signer interfaces to be passed to [[issue]], one of which will be selected to authorize the on-chain anchoring of the credential with the issuer's signature.
    * @param transactionHandler Transaction handler interface to be passed to [[issue]] containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
    *
    * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
     input: CredentialStub,
-    didSigner: KiltAttestationProofV1.DidSigner,
+    issuer: DidDocument | Did,
+    signers: readonly SignerInterface[],
     transactionHandler: KiltAttestationProofV1.TxHandler
   ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
     const { credentialSubject, type } = input
@@ -236,8 +243,9 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
     const { proof, ...credential } = await KiltAttestationProofV1.issue(
       credentialStub,
+      issuer,
       {
-        didSigner,
+        signers,
         transactionHandler,
       }
     )

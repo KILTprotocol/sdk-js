@@ -2037,6 +2037,38 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: c3127e4f98e37216752e52314aa3e173d32327819fc88ba69fdba7bfbb014ca61cf271eb01864274c1c25813edbf07975c8dc829708dc525f7425ea2a38ab7d9
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: 843437a6806c10728fedc6cfa45f408aa9278263d64fce7c5057515d06fed74bc9ea702d932cc24543daff66a1b9935389b0a1453ea45d59111b46b59b19ad56
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1"
+  dependencies:
+    canonicalize: ^2.0.0
+    multibase: ^4.0.6
+  checksum: fefc3c86bdb0a732f5851155cedf1743eedace4cf03fa5fbeb37f321c3cf87e9ac1704328e0d69d3cb80203e9afc07b6849907816c402bcd90b7c18b99177d40
+  languageName: node
+  linkType: hard
+
 "@kiltprotocol/legacy-credentials@workspace:packages/legacy-credentials":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/legacy-credentials@workspace:packages/legacy-credentials"
@@ -2071,6 +2103,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@polkadot/util-crypto": ^12.0.1
+    "@scure/base": ^1.1.1
+  checksum: 8253c03b8c9daef61bc2155ee64894a568f4b591c941dc0bb668839475ed8d8fcf1048339710805e3046cb3ea603ed58c5e857887c4c67b602af098c2a92fb52
+  languageName: node
+  linkType: hard
+
 "@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
@@ -2098,6 +2141,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
+    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
+    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
+    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
+    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
@@ -2140,7 +2187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:1.0.0":
+"@noble/curves@npm:1.0.0, @noble/curves@npm:^1.0.0":
   version: 1.0.0
   resolution: "@noble/curves@npm:1.0.0"
   dependencies:
@@ -2472,7 +2519,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.2.1":
+"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.0.1, @polkadot/util-crypto@npm:^12.2.1":
   version: 12.2.1
   resolution: "@polkadot/util-crypto@npm:12.2.1"
   dependencies:
@@ -2661,7 +2708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:1.1.1":
+"@scure/base@npm:1.1.1, @scure/base@npm:^1.1.1":
   version: 1.1.1
   resolution: "@scure/base@npm:1.1.1"
   checksum: b4fc810b492693e7e8d0107313ac74c3646970c198bbe26d7332820886fa4f09441991023ec9aa3a2a51246b74409ab5ebae2e8ef148bbc253da79ac49130309
@@ -4035,6 +4082,13 @@ __metadata:
   version: 1.0.8
   resolution: "canonicalize@npm:1.0.8"
   checksum: c31ea64160171bbcd7ac0dc081058fbcff055410a1d532d7b3959e7b02a3001c5d5f4f8bad934ed5246eafc9a928d333cc0c29846c16fb6d0be97b8fb444de3c
+  languageName: node
+  linkType: hard
+
+"canonicalize@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "canonicalize@npm:2.0.0"
+  checksum: 541dee6e53c06e81b11241eba76197b6837b3e2a5951a175f57d75eb4c59599ec68566ee88aa2fb3dac6e6ca57d674ca3c0d9c75a855176ce78f0555b26caf39
   languageName: node
   linkType: hard
 
