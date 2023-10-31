@@ -20,7 +20,7 @@ export const calls: DefinitionsCall = {
               type: 'DipProofRequest',
             },
           ],
-          type: 'Result<CompleteMerkleProof, ()>',
+          type: 'Result<CompleteMerkleProof, RuntimeApiDipProofError>',
         },
       },
       version: 1,
