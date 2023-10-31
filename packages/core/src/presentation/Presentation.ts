@@ -26,14 +26,17 @@ import {
 } from '../credentialsV1/index.js'
 import type {
   KiltCredentialV1,
+  Proof,
   VerifiableCredential,
   VerifiablePresentation,
 } from '../credentialsV1/types.js'
+import * as DataIntegrity from './DataIntegrity.js'
 import {
-  DataIntegrityProof,
-  createProof,
-  verifyProof,
-} from './DataIntegrity.js'
+  ProofSetResult,
+  VerificationResult,
+  VerifyPresentationResult,
+  verifyProofSet,
+} from '../proofs/utils.js'
 
 export const presentationSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -272,20 +275,128 @@ export async function create({
   const suite = cryptosuites.find(
     ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
   )! // We've matched the suite to the algorithms earlier, so this will return the right suite
-  return createProof(presentation, suite, signer, {
+  return DataIntegrity.createProof(presentation, suite, signer, {
     purpose,
     challenge,
     // domain: verifier,
   })
 }
 
-type VerificationResult = {
-  verified: boolean
-  errors?: string[]
+async function verifyPresentation(
+  presentation: VerifiablePresentation,
+  {
+    now,
+    tolerance,
+    domain,
+    challenge,
+    verifier,
+  }: {
+    now: number
+    domain?: string
+    challenge?: string
+    verifier?: string
+    tolerance: number
+  }
+): Promise<VerifyPresentationResult['presentationResult']> {
+  const result: VerifyPresentationResult['presentationResult'] = {
+    verified: false,
+    results: [],
+  }
+  const errors: string[] = []
+  try {
+    validateStructure(presentation)
+    if (presentation.verifier && verifier !== presentation.verifier) {
+      errors.push(
+        'presentation.verifier is set but does not match the verifier option'
+      )
+    }
+    if (
+      presentation.issuanceDate &&
+      Date.parse(presentation.issuanceDate) > now + tolerance
+    ) {
+      errors.push('presentation.issuanceDate > now')
+    }
+    if (
+      presentation.expirationDate &&
+      Date.parse(presentation.expirationDate) < now - tolerance
+    ) {
+      errors.push('presentation.expirationDate < now')
+    }
+
+    assertHolderCanPresentCredentials(presentation)
+
+    // if (errors.length !== 0) {
+    //   return {
+    //     verified: false,
+    //     results: [],
+    //     error: errors,
+    //   }
+    // }
+
+    const {
+      results,
+      error: proofErrors,
+      verified: proofsVerified,
+    } = await verifyProofSet(presentation as { proof: Proof | Proof[] }, {
+      [DataIntegrity.PROOF_TYPE]: async (document, proof) => ({
+        verified: await DataIntegrity.verifyProof(
+          {
+            ...document,
+            proof: proof as DataIntegrity.DataIntegrityProof,
+          },
+          {
+            cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
+            domain,
+            challenge,
+            expectedController: presentation.holder,
+          }
+        ),
+      }),
+    })
+    result.results = results
+
+    errors.push(...(proofErrors ?? []))
+    result.verified = proofsVerified === true
+
+    if (errors.length === 0) {
+      result.error = undefined
+    } else {
+      result.error = errors
+      result.verified = false
+    }
+  } catch (e) {
+    errors.push(String(e))
+    result.verified = false
+    result.error = errors
+  }
+  return result
 }
-type PresentationResult = VerificationResult & {
-  presentation: VerificationResult
-  credentials: Array<VerificationResult & { status?: VerificationResult }>
+
+async function verifyCredential(
+  credential: VerifiableCredential
+): Promise<ProofSetResult> {
+  return verifyProofSet(credential, {
+    [KiltAttestationProofV1.PROOF_TYPE]: async (document, proof) => {
+      await KiltAttestationProofV1.verify(
+        document as unknown as KiltCredentialV1,
+        proof as Types.KiltAttestationProofV1
+      )
+      return {
+        verified: true,
+      }
+    },
+  })
+}
+
+async function checkStatus(
+  credential: VerifiableCredential
+): Promise<VerificationResult> {
+  try {
+    await KiltRevocationStatusV1.check(credential as KiltCredentialV1)
+    return { verified: true }
+  } catch (e) {
+    return { verified: false, error: [String(e)] }
+  }
 }
 
 /**
@@ -312,125 +423,74 @@ export async function verify(
     verifier?: string
     tolerance?: number
   } = {}
-): Promise<PresentationResult> {
-  const presentationResult: Required<VerificationResult> = {
-    verified: true,
-    errors: [],
+): Promise<VerifyPresentationResult> {
+  let presentationResult: VerifyPresentationResult['presentationResult'] = {
+    verified: false,
+    error: [],
+    results: [],
   }
+  let credentialResults: VerifyPresentationResult['credentialResults'] = []
   try {
-    validateStructure(presentation)
-    if (presentation.verifier && verifier !== presentation.verifier) {
-      presentationResult.errors.push(
-        'presentation.verifier is set but does not match the verifier option'
-      )
+    presentationResult = await verifyPresentation(presentation, {
+      now,
+      domain,
+      challenge,
+      verifier,
+      tolerance,
+    })
+
+    // if (presentationResult.error) {
+    //   result.error?.push(...presentationResult.error)
+    // }
+    if (presentationResult.verified !== true) {
+      return {
+        verified: false,
+        error: presentationResult.error,
+        presentationResult,
+        credentialResults: [],
+      }
     }
-    if (
-      presentation.issuanceDate &&
-      Date.parse(presentation.issuanceDate) > now + tolerance
-    ) {
-      presentationResult.errors.push('presentation.issuanceDate > now')
-    }
-    if (
-      presentation.expirationDate &&
-      Date.parse(presentation.expirationDate) < now - tolerance
-    ) {
-      presentationResult.errors.push('presentation.expirationDate < now')
-    }
-    const proofs = (
-      Array.isArray(presentation.proof)
-        ? presentation.proof
-        : [presentation.proof]
-    ) as DataIntegrityProof[]
-    const results = await Promise.allSettled(
-      proofs.map((proof) =>
-        verifyProof(
-          { ...presentation, proof },
-          {
-            cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
-            domain,
-            challenge,
-            expectedController: presentation.holder,
-          }
-        )
-      )
+    const credentials = Array.isArray(presentation.verifiableCredential)
+      ? presentation.verifiableCredential
+      : [presentation.verifiableCredential]
+
+    credentialResults = await Promise.all(
+      credentials.map((credential) => verifyCredential(credential))
     )
-    if (!results.some((r) => r.status === 'fulfilled' && r.value === true)) {
-      presentationResult.verified = false
-      results.forEach((r, idx) => {
-        if (r.status === 'rejected' && Boolean(r.reason)) {
-          presentationResult.errors.push(`proof[${idx}]: ${String(r.reason)}`)
+
+    await Promise.all(
+      credentials.map(async (credential, i) => {
+        if (credentialResults[i].verified) {
+          const statusResult = await checkStatus(credential)
+          credentialResults[i].statusResult = statusResult
+          if (statusResult.verified !== true) {
+            credentialResults[i].verified = false
+          }
         }
       })
-    }
-    assertHolderCanPresentCredentials(presentation)
+    )
   } catch (e) {
-    presentationResult.errors.push(String(e))
-  }
-  if (presentationResult.errors.length > 0) {
+    if (presentationResult.error) {
+      presentationResult.error.push(String(e))
+    } else {
+      presentationResult.error = [String(e)]
+    }
     presentationResult.verified = false
   }
-  if (presentationResult.verified !== true) {
-    return {
-      verified: false,
-      errors: presentationResult.errors,
-      presentation: presentationResult,
-      credentials: [],
-    }
-  }
-  const credentials = Array.isArray(presentation.verifiableCredential)
-    ? presentation.verifiableCredential
-    : [presentation.verifiableCredential]
-
-  const credentialResults = await Promise.all(
-    credentials.map(async ({ proof, ...credential }) => {
-      const proofs = Array.isArray(proof) ? proof : [proof]
-      const proofResult = await Promise.allSettled(
-        proofs.map((p) =>
-          KiltAttestationProofV1.verify(
-            credential as KiltCredentialV1,
-            p as Types.KiltAttestationProofV1
-          )
-        )
-      )
-      if (proofResult.some((r) => r.status === 'fulfilled') !== true) {
-        return {
-          verified: false,
-          errors: proofResult.reduce<string[]>((errors, r, idx) => {
-            if (r.status === 'rejected' && Boolean(r.reason)) {
-              errors.push(`proof[${idx}]: ${String(r.reason)}`)
-            }
-            return errors
-          }, []),
-        }
-      }
-      const status: VerificationResult = {
-        verified: true,
-      }
-      try {
-        await KiltRevocationStatusV1.check(credential as KiltCredentialV1)
-      } catch (e) {
-        status.verified = false
-        status.errors = status.errors
-          ? [...status.errors, String(e)]
-          : [String(e)]
-      }
-      return { verified: true, status }
-    })
-  )
   const verified =
     presentationResult.verified === true &&
     credentialResults.every((result) => result.verified === true)
-  const errors = [
-    ...presentationResult.errors,
+  const error = [
+    ...(presentationResult.error ?? []),
     ...credentialResults.flatMap((result) => [
-      ...(result.errors ?? []),
-      ...(result.status?.errors ?? []),
+      ...(result.error ?? []),
+      ...(result.statusResult?.error ?? []),
     ]),
   ]
   return {
     verified,
-    errors: errors.length > 0 ? errors : undefined,
-    presentation: presentationResult,
-    credentials: credentialResults,
+    presentationResult,
+    credentialResults,
+    ...(error.length === 0 ? undefined : { error }),
   }
 }

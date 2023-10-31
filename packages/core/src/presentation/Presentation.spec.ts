@@ -171,7 +171,7 @@ describe('verification', () => {
 
     expect(result).toMatchObject({
       verified: true,
-      presentation: { verified: true },
+      presentationResult: { verified: true },
     })
 
     await expect(
@@ -181,7 +181,7 @@ describe('verification', () => {
       })
     ).resolves.toMatchObject({
       verified: false,
-      presentation: { verified: false },
+      presentationResult: { verified: false },
     })
 
     await expect(
@@ -191,7 +191,7 @@ describe('verification', () => {
       })
     ).resolves.toMatchObject({
       verified: false,
-      presentation: { verified: false },
+      presentationResult: { verified: false },
     })
 
     presentation.verifiableCredential = [credential]
@@ -202,7 +202,7 @@ describe('verification', () => {
       })
     ).resolves.toMatchObject({
       verified: false,
-      presentation: { verified: false },
+      presentationResult: { verified: false },
     })
   })
 })
