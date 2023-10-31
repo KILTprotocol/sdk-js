@@ -11,7 +11,7 @@ import { types10900 } from './types_10900.js'
 
 export const types11000: RegistryTypes = {
   ...types10900,
-  IdentityCommitmentVersion: 'u32',
+  IdentityCommitmentVersion: 'u16',
   // DipProvider state_call
   DipProofRequest: {
     identifier: 'AccountId32',
@@ -79,6 +79,7 @@ export const types11000: RegistryTypes = {
   },
   DidMerkleProofError: {
     _enum: [
+      'UnsupportedVersion',
       'DidNotFound',
       'KeyNotFound',
       'LinkedAccountNotFound',
