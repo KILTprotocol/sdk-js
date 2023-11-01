@@ -14,7 +14,7 @@ export interface VerificationResult {
 
 /**
  * Aligning with jsonld-signatures:
- * @return {Promise<{verified: boolean, results: Array, error: *}>} resolves
+ * return {Promise<{verified: boolean, results: Array, error: *}>} resolves
  *   with an object with a `verified`boolean property that is `true` if at
  *   least one proof matching the given purpose and suite verifies and `false`
  *   otherwise; a `results` property with an array of detailed results;
@@ -26,11 +26,11 @@ export interface ProofSetResult extends VerificationResult {
 
 /**
  * Aligning with @digitalbazaar/vc:
- * @typedef {object} VerifyCredentialResult
- * @property {boolean} verified - True if verified, false if not.
- * @property {object} statusResult
- * @property {Array} results
- * @property {object} error
+ * typedef {object} VerifyCredentialResult
+ * property {boolean} verified - True if verified, false if not.
+ * property {object} statusResult
+ * property {Array} results
+ * property {object} error.
  */
 export interface VerifyCredentialResult extends ProofSetResult {
   statusResult?: VerificationResult
@@ -38,16 +38,18 @@ export interface VerifyCredentialResult extends ProofSetResult {
 
 /**
  * Aligning with @digitalbazaar/vc:
- * @typedef {object} VerifyPresentationResult
- * @property {boolean} verified - True if verified, false if not.
- * @property {object} presentationResult
- * @property {Array} credentialResults
- * @property {object} error
+ * typedef {object} VerifyPresentationResult
+ * property {boolean} verified - True if verified, false if not.
+ * property {object} presentationResult
+ * property {Array} credentialResults
+ * property {object} error.
  */
 export interface VerifyPresentationResult extends VerificationResult {
   presentationResult: ProofSetResult
   credentialResults: VerifyCredentialResult[]
 }
+
+export type SecuredDocument = { proof: Proof[] | Proof }
 
 function arrayify<T>(input: T | T[]): T[] {
   if (Array.isArray(input)) {
@@ -67,13 +69,22 @@ type VerifyFunction<T extends string> = (
 ) => Promise<VerificationResult>
 
 /**
- * @param document
- * @param document.proof
- * @param verifiers
- * @param policy
+ * Verifies a set of proofs attached to a given document against a set of verifier functions.
+ * This function:
+ * - Asserts the existence of proofs in the document.
+ * - Maps each proof to its respective verifier function.
+ * - Executes verifications in parallel.
+ * - Resolves based on the provided policy: either 'any' (successful if any one proof is verified) or 'all' (successful only if all proofs are verified).
+ *
+ * @param document - The document containing the proofs to be verified.
+ * @param document.proof - A proof or array of proofs attached to the document.
+ * @param verifiers - An object mapping proof types to their corresponding verifier functions.
+ * @param policy - The verification policy. 'any' means at least one proof should be valid, and 'all' means all proofs must be valid. Defaults to 'any'.
+ *
+ * @returns An object representing the result of the verification for each proof in the set.
  */
 export async function verifyProofSet<T extends string>(
-  document: { proof: Proof[] | Proof },
+  document: SecuredDocument,
   verifiers: Record<T, VerifyFunction<T>>,
   policy: 'any' | 'all' = 'any'
 ): Promise<ProofSetResult> {

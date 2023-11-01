@@ -191,7 +191,7 @@ const {
  * @param args.verifier Identifier (e.g., DID) of the verifier to prevent unauthorized re-use of the presentation.
  * @param args.challenge A challenge supplied by the verifier in a challenge-response protocol, which allows verifiers to assure presentation freshness, preventing unauthorized re-use.
  * @returns A Verifiable Presentation containing the original VCs with its proofs.
- * If no `signers` are given, the presentation is unsigned.
+ * If no `signers` are given, the presentation is left unsigned.
  */
 export async function create({
   credentials,
@@ -272,9 +272,10 @@ export async function create({
       availableSigners: signers,
     })
   }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- We've matched the suite to the algorithms earlier, so this will return the right suite
   const suite = cryptosuites.find(
     ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
-  )! // We've matched the suite to the algorithms earlier, so this will return the right suite
+  )!
   return DataIntegrity.createProof(presentation, suite, signer, {
     purpose,
     challenge,
@@ -290,12 +291,14 @@ async function verifyPresentation(
     domain,
     challenge,
     verifier,
+    cryptosuites,
   }: {
     now: number
+    tolerance: number
+    cryptosuites: Array<CryptoSuite<any>>
     domain?: string
     challenge?: string
     verifier?: string
-    tolerance: number
   }
 ): Promise<VerifyPresentationResult['presentationResult']> {
   const result: VerifyPresentationResult['presentationResult'] = {
@@ -336,7 +339,7 @@ async function verifyPresentation(
             document,
             proof as DataIntegrity.DataIntegrityProof,
             {
-              cryptosuites: [sr25519Suite, eddsaSuite, ecdsaSuite],
+              cryptosuites,
               domain,
               challenge,
               expectedController: presentation.holder,
@@ -391,19 +394,31 @@ async function checkStatus(
 }
 
 /**
- * @param presentation
- * @param root0
- * @param root0.now
- * @param root0.domain
- * @param root0.challenge
- * @param root0.verifier
- * @param root0.tolerance
+ * Verifies a given Verifiable Presentation and its associated Verifiable Credentials.
+ *
+ * This function:
+ * - Verifies the integrity of the presentation by verifying the embedded data integrity proofs.
+ * - If the presentation is valid, verifies each associated credential.
+ * - Checks the status of each verified credential.
+ * - Returns a composite verification result for the presentation and each credential.
+ *
+ * @param presentation - The Verifiable Presentation to be verified.
+ * @param options - Verification options.
+ * @param options.now - The reference time for verification in milliseconds since the Unix Epoch (default is current time).
+ * @param options.domain - The expected domain value for the presentation, if any.
+ * @param options.challenge - The expected challenge value for the presentation, if any.
+ * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
+ * @param options.verifier - The expected verifier for the presentation, if any.
+ * @param options.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ *
+ * @returns An object representing the verification results of the presentation and each associated credential.
  */
 export async function verify(
   presentation: VerifiablePresentation,
   {
     now = Date.now(),
     tolerance = 0,
+    cryptosuites = [sr25519Suite, eddsaSuite, ecdsaSuite],
     domain,
     challenge,
     verifier,
@@ -411,6 +426,7 @@ export async function verify(
     now?: number
     domain?: string
     challenge?: string
+    cryptosuites?: Array<CryptoSuite<any>>
     verifier?: string
     tolerance?: number
   } = {}
@@ -428,11 +444,9 @@ export async function verify(
       challenge,
       verifier,
       tolerance,
+      cryptosuites,
     })
 
-    // if (presentationResult.error) {
-    //   result.error?.push(...presentationResult.error)
-    // }
     if (presentationResult.verified !== true) {
       return {
         verified: false,

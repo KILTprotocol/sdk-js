@@ -18,6 +18,7 @@ import type {
 import { parse, resolve } from '@kiltprotocol/did'
 import type { DidUrl, VerificationMethod } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import type { SecuredDocument } from './utils.js'
 
 export const PROOF_TYPE = 'DataIntegrityProof'
 
@@ -55,13 +56,24 @@ export type DataIntegrityProof = {
 }
 
 /**
- * @param inputDocument
- * @param suite
- * @param signer
- * @param opts
- * @param opts.purpose
- * @param opts.challenge
- * @param opts.domain
+ * Creates a data integrity proof for the provided document.
+ * This function:
+ * - Validates that the signer's algorithm matches the suite's required algorithm.
+ * - Adds the data integrity json-ld context definitions to the document if necessary.
+ * - Constructs a proof with default and provided properties.
+ * - Transforms and hashes the proof and document.
+ * - Generates a signature using the signer.
+ * - Appends the signature to the proof.
+ *
+ * @param inputDocument - The unsecured document for which the proof needs to be created.
+ * @param suite - The cryptographic suite to use for creating the proof.
+ * @param signer - The signer interface to sign the document.
+ * @param opts - Optional parameters for the proof creation.
+ * @param opts.purpose - The purpose of the proof (default is 'authentication').
+ * @param opts.challenge - A challenge string to be included in the proof, if any.
+ * @param opts.domain - A domain string to be included in the proof, if any.
+ *
+ * @returns The original document augmented with the generated proof.
  */
 export async function createProof<T>(
   inputDocument: T,
@@ -177,18 +189,29 @@ async function retrieveVerificationMethod(
 }
 
 /**
- * @param document
- * @param document.proof
- * @param proof
- * @param proofOptions
- * @param proofOptions.cryptosuites
- * @param proofOptions.expectedProofPurpose
- * @param proofOptions.domain
- * @param proofOptions.challenge
- * @param proofOptions.expectedController
+ * Verifies integrity of a document secured by a data integrity proof (proof type: DataIntegrityProof).
+ * This function performs multiple checks to ensure the authenticity and correctness of the proof:
+ * - Ensures essential properties like type, verificationMethod, and proofPurpose exist in the proof and have allowable values.
+ * - Matches the cryptosuite of the proof with cryptosuites supplied to this function via proof options.
+ * - Decodes the signature from base58btc multibase encoding.
+ * - Retrieves the verification method and ensures it matches expected controllers.
+ * - Transforms the document and proof.
+ * - Verifies the signature against transformed data.
+ * - Optionally checks for challenge & domain, if provided in the proof options.
+ *
+ * @param document - The document secured by `proof` (may contain additional proofs).
+ * @param proof - The data integrity proof to verify.
+ * @param proofOptions - Options for the verification process.
+ * @param proofOptions.cryptosuites - Array of cryptographic suites to be used for verification; determines which proofs can be verified.
+ * @param proofOptions.expectedProofPurpose - Expected purpose of the proof. Throws if mismatched.
+ * @param proofOptions.expectedController - Expected controller of the verification method. Throws if mismatched.
+ * @param proofOptions.domain - Expected domain for the proof. Throws if mismatched.
+ * @param proofOptions.challenge - Expected challenge for the proof. Throws if mismatched.
+ *
+ * @returns Returns true if the verification is successful; otherwise, it returns false or throws an error.
  */
 export async function verifyProof(
-  document: { proof?: unknown },
+  document: Partial<SecuredDocument>,
   proof: DataIntegrityProof,
   proofOptions: {
     cryptosuites: Array<CryptoSuite<any>>
