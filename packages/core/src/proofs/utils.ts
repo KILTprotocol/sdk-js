@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Proof } from '../credentialsV1/types.js'
+import type { Proof, VerifiableCredential } from '../credentialsV1/types.js'
 
 export interface VerificationResult {
   verified: boolean
@@ -21,7 +21,7 @@ export interface VerificationResult {
  *   if `false` an `error` property will be present.
  */
 export interface ProofSetResult extends VerificationResult {
-  results: VerificationResult[]
+  results: Array<VerificationResult & { proof: Proof }>
 }
 
 /**
@@ -33,6 +33,7 @@ export interface ProofSetResult extends VerificationResult {
  * property {object} error.
  */
 export interface VerifyCredentialResult extends ProofSetResult {
+  credential: VerifiableCredential
   statusResult?: VerificationResult
 }
 
@@ -108,27 +109,29 @@ export async function verifyProofSet<T extends string>(
         return verify(document, proof as { type: T })
       })
     )
-    const results = outcomes.map((result) => {
+    const results = outcomes.map((result, i) => {
+      const proof = proofs[i]
       if (result.status === 'fulfilled') {
-        return result.value
+        return { ...result.value, proof }
       }
       return {
         verified: false,
         error: formatError(result.reason),
+        proof,
       }
     })
     const error = results.flatMap((r) => (r.error ? arrayify(r.error) : []))
     if (policy === 'all') {
       return {
         verified: results.every(({ verified }) => verified === true),
-        error,
         results,
+        error,
       }
     }
     return {
       verified: results.some(({ verified }) => verified === true),
-      error,
       results,
+      error,
     }
   } catch (e) {
     return {

@@ -32,8 +32,8 @@ import type {
 } from '../credentialsV1/types.js'
 import * as DataIntegrity from '../proofs/DataIntegrity.js'
 import {
-  ProofSetResult,
   VerificationResult,
+  VerifyCredentialResult,
   VerifyPresentationResult,
   verifyProofSet,
 } from '../proofs/utils.js'
@@ -368,18 +368,21 @@ async function verifyPresentation(
 
 async function verifyCredential(
   credential: VerifiableCredential
-): Promise<ProofSetResult> {
-  return verifyProofSet(credential, {
-    [KiltAttestationProofV1.PROOF_TYPE]: async (document, proof) => {
-      await KiltAttestationProofV1.verify(
-        document as unknown as KiltCredentialV1,
-        proof as Types.KiltAttestationProofV1
-      )
-      return {
-        verified: true,
-      }
-    },
-  })
+): Promise<VerifyCredentialResult> {
+  return {
+    ...(await verifyProofSet(credential, {
+      [KiltAttestationProofV1.PROOF_TYPE]: async (document, proof) => {
+        await KiltAttestationProofV1.verify(
+          document as unknown as KiltCredentialV1,
+          proof as Types.KiltAttestationProofV1
+        )
+        return {
+          verified: true,
+        }
+      },
+    })),
+    credential,
+  }
 }
 
 async function checkStatus(
