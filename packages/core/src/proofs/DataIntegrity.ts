@@ -92,6 +92,8 @@ export async function createProof<T>(
       "signer algorithm does not match the suite's required algorithm"
     )
   }
+
+  // TODO: adding the suite context to the document interferes with existing proofs, but is currently required (see https://github.com/digitalbazaar/data-integrity/issues/19).
   const document = ensureContext(inputDocument)
 
   const proof = {
@@ -109,6 +111,10 @@ export async function createProof<T>(
   }
 
   const canonizedProof = await suite.canonize({
+    // TODO: It's unclear if this behaviour is desirable (see https://github.com/digitalbazaar/data-integrity/issues/19).
+    // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
+    // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
+    // Not sure how to proceed; implement to spec or allow interoperability.
     '@context': document['@context'],
     ...proof,
   })
