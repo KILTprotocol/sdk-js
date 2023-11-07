@@ -278,7 +278,10 @@ export async function create({
   return DataIntegrity.createProof(presentation, suite, signer, {
     purpose,
     challenge,
-    // domain: verifier,
+    domain: verifier,
+    // TODO: it's unclear what the canonical way of identifying the intended audience for the presentation should be;
+    // The `verifier` claim on the presentation or the `domain` option on the proof.
+    // Duplicating this mechanism may help support different tooling?
   })
 }
 
@@ -287,7 +290,6 @@ async function verifyPresentation(
   {
     now,
     tolerance,
-    domain,
     challenge,
     verifier,
     cryptosuites,
@@ -295,7 +297,6 @@ async function verifyPresentation(
     now: number
     tolerance: number
     cryptosuites: Array<CryptoSuite<any>>
-    domain?: string
     challenge?: string
     verifier?: string
   }
@@ -335,7 +336,7 @@ async function verifyPresentation(
           proof as DataIntegrity.DataIntegrityProof,
           {
             cryptosuites,
-            domain,
+            domain: verifier,
             challenge,
             expectedController: presentation.holder,
           }
@@ -413,10 +414,9 @@ async function checkStatus(
  * @param presentation - The Verifiable Presentation to be verified.
  * @param options - Verification options.
  * @param options.now - The reference time for verification in milliseconds since the Unix Epoch (default is current time).
- * @param options.domain - The expected domain value for the presentation, if any.
  * @param options.challenge - The expected challenge value for the presentation, if any.
  * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
- * @param options.verifier - The expected verifier for the presentation, if any.
+ * @param options.verifier - The expected verifier for the presentation, if any. This is set as the proof `domain` as well.
  * @param options.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
  *
  * @returns An object representing the verification results of the presentation and each associated credential.
@@ -427,12 +427,10 @@ export async function verify(
     now = Date.now(),
     tolerance = 0,
     cryptosuites = [sr25519Suite, eddsaSuite, ecdsaSuite],
-    domain,
     challenge,
     verifier,
   }: {
     now?: number
-    domain?: string
     challenge?: string
     cryptosuites?: Array<CryptoSuite<any>>
     verifier?: string
@@ -448,7 +446,6 @@ export async function verify(
   try {
     presentationResult = await verifyPresentation(presentation, {
       now,
-      domain,
       challenge,
       verifier,
       tolerance,
