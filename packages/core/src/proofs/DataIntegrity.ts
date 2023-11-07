@@ -46,13 +46,15 @@ function ensureContext<T>(document: T): T & { '@context': unknown[] } {
 
 export type DataIntegrityProof = {
   type: typeof PROOF_TYPE
-  created: string
   verificationMethod: string
   cryptosuite: string
   proofPurpose: string
   proofValue: string
+  created?: string
+  expires?: string
   domain?: string
   challenge?: string
+  previousProof?: string
 }
 
 /**
@@ -72,6 +74,11 @@ export type DataIntegrityProof = {
  * @param opts.purpose - The purpose of the proof (default is 'authentication').
  * @param opts.challenge - A challenge string to be included in the proof, if any.
  * @param opts.domain - A domain string to be included in the proof, if any.
+ * @param opts.created - A Date object indicating the date and time at which this proof becomes valid.
+ * Defaults to the current time. Can be unset with `null`.
+ * @param opts.expires - A Date object indicating the date and time at which this proof expires.
+ * @param opts.id - Assigns an id to the proof. Can be used to implement proof chains.
+ * @param opts.previousProof - Allows referencing an existing proof by id for the purpose of implementing proof chains.
  *
  * @returns The original document augmented with the generated proof.
  */
@@ -83,7 +90,19 @@ export async function createProof<T>(
     purpose = 'authentication',
     challenge,
     domain,
-  }: { purpose?: string; challenge?: string; domain?: string } = {}
+    created = new Date(),
+    expires,
+    id,
+    previousProof,
+  }: {
+    id?: string
+    purpose?: string
+    challenge?: string
+    domain?: string
+    created?: Date | null
+    expires?: Date
+    previousProof?: string
+  } = {}
 ): Promise<T & { proof: DataIntegrityProof }> {
   if (
     suite.requiredAlgorithm.toLowerCase() !== signer.algorithm.toLowerCase()
@@ -97,17 +116,26 @@ export async function createProof<T>(
   const document = ensureContext(inputDocument)
 
   const proof = {
+    ...(id ? { id } : undefined),
     type: PROOF_TYPE,
-    created: new Date().toISOString(),
     verificationMethod: signer.id,
     cryptosuite: suite.name,
     proofPurpose: purpose,
   } as DataIntegrityProof
+  if (created) {
+    proof.created = created.toISOString()
+  }
+  if (expires) {
+    proof.expires = expires.toISOString()
+  }
   if (challenge) {
     proof.challenge = challenge
   }
   if (domain) {
     proof.domain = domain
+  }
+  if (previousProof) {
+    proof.previousProof = previousProof
   }
 
   const canonizedProof = await suite.canonize({
@@ -213,6 +241,8 @@ async function retrieveVerificationMethod(
  * @param proofOptions.expectedController - Expected controller of the verification method. Throws if mismatched.
  * @param proofOptions.domain - Expected domain for the proof. Throws if mismatched.
  * @param proofOptions.challenge - Expected challenge for the proof. Throws if mismatched.
+ * @param proofOptions.now - The reference time for verification as Date (default is current time).
+ * @param proofOptions.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
  *
  * @returns Returns true if the verification is successful; otherwise, it returns false or throws an error.
  */
@@ -225,6 +255,8 @@ export async function verifyProof(
     expectedController?: string
     domain?: string
     challenge?: string
+    now?: Date
+    tolerance?: number
   }
   // TODO: make VerificationResult?
 ): Promise<boolean> {
@@ -235,7 +267,6 @@ export async function verifyProof(
       'proof properties type, verificationMethod, and proofPurpose are required'
     )
   }
-  // TODO: check created timestamp?
   if (
     proofOptions.expectedProofPurpose &&
     proofOptions.expectedProofPurpose !== proof.proofPurpose
@@ -297,6 +328,14 @@ export async function verifyProof(
   }
   if (proofOptions.challenge && proofOptions.challenge !== proof.challenge) {
     throw new INVALID_CHALLENGE_ERROR()
+  }
+  const now = proofOptions.now ?? new Date()
+  const tolerance = proofOptions.tolerance ?? 0
+  if (proof.created && Date.parse(proof.created) > now.getTime() + tolerance) {
+    throw new Error('proof created after verification time')
+  }
+  if (proof.expires && Date.parse(proof.expires) < now.getTime() - tolerance) {
+    throw new Error('proof expired before verification time')
   }
   // return result
   return verified

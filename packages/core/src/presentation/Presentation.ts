@@ -294,7 +294,7 @@ async function verifyPresentation(
     verifier,
     cryptosuites,
   }: {
-    now: number
+    now: Date
     tolerance: number
     cryptosuites: Array<CryptoSuite<any>>
     challenge?: string
@@ -315,13 +315,13 @@ async function verifyPresentation(
     }
     if (
       presentation.issuanceDate &&
-      Date.parse(presentation.issuanceDate) > now + tolerance
+      Date.parse(presentation.issuanceDate) > now.getTime() + tolerance
     ) {
       errors.push('presentation.issuanceDate > now')
     }
     if (
       presentation.expirationDate &&
-      Date.parse(presentation.expirationDate) < now - tolerance
+      Date.parse(presentation.expirationDate) < now.getTime() - tolerance
     ) {
       errors.push('presentation.expirationDate < now')
     }
@@ -339,6 +339,8 @@ async function verifyPresentation(
             domain: verifier,
             challenge,
             expectedController: presentation.holder,
+            tolerance,
+            now,
           }
         )
         result.results = [{ verified, proof }]
@@ -413,7 +415,7 @@ async function checkStatus(
  *
  * @param presentation - The Verifiable Presentation to be verified.
  * @param options - Verification options.
- * @param options.now - The reference time for verification in milliseconds since the Unix Epoch (default is current time).
+ * @param options.now - The reference time for verification as Date (default is current time).
  * @param options.challenge - The expected challenge value for the presentation, if any.
  * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
  * @param options.verifier - The expected verifier for the presentation, if any. This is set as the proof `domain` as well.
@@ -424,13 +426,13 @@ async function checkStatus(
 export async function verify(
   presentation: VerifiablePresentation,
   {
-    now = Date.now(),
+    now = new Date(),
     tolerance = 0,
     cryptosuites = [sr25519Suite, eddsaSuite, ecdsaSuite],
     challenge,
     verifier,
   }: {
-    now?: number
+    now?: Date
     challenge?: string
     cryptosuites?: Array<CryptoSuite<any>>
     verifier?: string
