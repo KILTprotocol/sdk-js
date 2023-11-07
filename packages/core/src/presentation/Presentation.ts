@@ -26,7 +26,6 @@ import {
 } from '../credentialsV1/index.js'
 import type {
   KiltCredentialV1,
-  Proof,
   VerifiableCredential,
   VerifiablePresentation,
 } from '../credentialsV1/types.js'
@@ -35,7 +34,7 @@ import {
   VerificationResult,
   VerifyCredentialResult,
   VerifyPresentationResult,
-  verifyProofSet,
+  getProof,
 } from '../proofs/utils.js'
 
 export const presentationSchema: JsonSchema.Schema = {
@@ -329,28 +328,26 @@ async function verifyPresentation(
     assertHolderCanPresentCredentials(presentation)
 
     if (errors.length === 0) {
-      const {
-        results,
-        error: proofErrors,
-        verified: proofsVerified,
-      } = await verifyProofSet(presentation as { proof: Proof | Proof[] }, {
-        [DataIntegrity.PROOF_TYPE]: async (document, proof) => ({
-          verified: await DataIntegrity.verifyProof(
-            document,
-            proof as DataIntegrity.DataIntegrityProof,
-            {
-              cryptosuites,
-              domain,
-              challenge,
-              expectedController: presentation.holder,
-            }
-          ),
-        }),
-      })
-      result.results = results
+      const proof = getProof(presentation)
+      try {
+        const verified = await DataIntegrity.verifyProof(
+          presentation,
+          proof as DataIntegrity.DataIntegrityProof,
+          {
+            cryptosuites,
+            domain,
+            challenge,
+            expectedController: presentation.holder,
+          }
+        )
+        result.results = [{ verified, proof }]
+      } catch (proofError) {
+        const errorStr = String(proofError)
+        result.results = [{ verified: false, error: [errorStr], proof }]
+        errors.push(errorStr)
+      }
 
-      errors.push(...(proofErrors ?? []))
-      result.verified = proofsVerified === true
+      result.verified = result.results.every(({ verified }) => verified)
     }
     if (errors.length === 0) {
       result.error = undefined
@@ -369,19 +366,27 @@ async function verifyPresentation(
 async function verifyCredential(
   credential: VerifiableCredential
 ): Promise<VerifyCredentialResult> {
-  return {
-    ...(await verifyProofSet(credential, {
-      [KiltAttestationProofV1.PROOF_TYPE]: async (document, proof) => {
-        await KiltAttestationProofV1.verify(
-          document as unknown as KiltCredentialV1,
-          proof as Types.KiltAttestationProofV1
-        )
-        return {
-          verified: true,
-        }
-      },
-    })),
-    credential,
+  let proof
+  try {
+    proof = getProof(credential)
+    await KiltAttestationProofV1.verify(
+      credential as KiltCredentialV1,
+      proof as Types.KiltAttestationProofV1
+    )
+    return {
+      verified: true,
+      credential,
+      results: [{ verified: true, proof }],
+    }
+  } catch (error) {
+    return {
+      verified: false,
+      credential,
+      error: [String(error)],
+      results: proof
+        ? [{ verified: false, error: [String(error)], proof }]
+        : [],
+    }
   }
 }
 

@@ -52,6 +52,28 @@ export interface VerifyPresentationResult extends VerificationResult {
 
 export type SecuredDocument = { proof: Proof[] | Proof }
 
+/**
+ * Retrieves the proof from the proof property of a document. Throws if no proof or multiple proofs (i.e., a proof set/chain) is found on the document.
+ *
+ * @param document The document containing a proof.
+ * @param document.proof The proof property, which must either be a proof object, or be an array containing exactly one proof object.
+ * @returns The proof.
+ */
+export function getProof<T extends Proof>({ proof }: { proof?: T | T[] }): T {
+  if (!proof) {
+    throw new Error('document does not contain any proofs')
+  }
+  if (Array.isArray(proof)) {
+    if (proof.length !== 1) {
+      throw new Error(
+        'proof sets and proof chains are not supported; the document must contain exactly one proof'
+      )
+    }
+    return proof[0]
+  }
+  return proof
+}
+
 function arrayify<T>(input: T | T[]): T[] {
   if (Array.isArray(input)) {
     return input

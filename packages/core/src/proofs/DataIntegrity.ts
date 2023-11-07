@@ -226,6 +226,7 @@ export async function verifyProof(
     domain?: string
     challenge?: string
   }
+  // TODO: make VerificationResult?
 ): Promise<boolean> {
   const { ...unsecuredDocument } = document
   delete unsecuredDocument.proof
