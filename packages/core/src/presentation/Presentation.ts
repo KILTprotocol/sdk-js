@@ -180,8 +180,9 @@ const {
  * The DID Document will be resolved by this function if not passed in.
  * @param args.signers One or more signers associated with the `holder` to be used for signing the presentation.
  * If omitted, the signing step is skipped.
- * @param args.cryptosuites One or more cryptosuites that take care of processing and normalizing the presentation document. The actual suite used will be based on a match between `algorithm`s supported by the `signers` and the suite's `requiredAlgorithm`.
- * @param args.purpose Controls the `proofPurpose` property and which verificationMethods can be used for signing.
+ * @param args.cryptosuites One or more cryptosuites that take care of processing and normalizing the presentation document.
+ * The actual suite used will be based on a match between `algorithm`s supported by the `signers` and the suite's `requiredAlgorithm`.
+ * @param args.proofPurpose Controls the `proofPurpose` property and which verificationMethods can be used for signing.
  * Defaults to 'authentication'.
  * @param args.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
  * Represented as `issuanceDate` on the presentation.
@@ -189,6 +190,7 @@ const {
  * Represented as `expirationDate` on the presentation.
  * @param args.verifier Identifier (e.g., DID) of the verifier to prevent unauthorized re-use of the presentation.
  * @param args.challenge A challenge supplied by the verifier in a challenge-response protocol, which allows verifiers to assure presentation freshness, preventing unauthorized re-use.
+ * @param args.domain - A domain string to be included in the proof, if any.
  * @returns A Verifiable Presentation containing the original VCs with its proofs.
  * If no `signers` are given, the presentation is left unsigned.
  */
@@ -200,8 +202,9 @@ export async function create({
   verifier,
   signers,
   cryptosuites = [eddsaSuite, ecdsaSuite, sr25519Suite],
-  purpose = 'authentication',
+  proofPurpose = 'authentication',
   challenge,
+  domain,
 }: {
   credentials: VerifiableCredential[]
   holder: Did | DidDocument
@@ -210,8 +213,9 @@ export async function create({
   validFrom?: Date | string
   validUntil?: Date | string
   cryptosuites?: ReadonlyArray<CryptoSuite<any>>
-  purpose?: string
+  proofPurpose?: string
   challenge?: string
+  domain?: string
 }): Promise<VerifiablePresentation> {
   const holderDid = typeof holder === 'string' ? holder : holder.id
 
@@ -257,7 +261,7 @@ export async function create({
     signers,
     byAlgorithm(requiredAlgorithms),
     byDid(holderDocument, {
-      verificationRelationship: purpose,
+      verificationRelationship: proofPurpose,
       controller: holderDid,
     })
   )
@@ -266,7 +270,7 @@ export async function create({
       signerRequirements: {
         algorithm: requiredAlgorithms,
         did: holderDid,
-        verificationRelationship: purpose,
+        verificationRelationship: proofPurpose,
       },
       availableSigners: signers,
     })
@@ -276,12 +280,11 @@ export async function create({
     ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
   )!
   return DataIntegrity.createProof(presentation, suite, signer, {
-    purpose,
+    proofPurpose,
     challenge,
-    domain: verifier,
+    domain,
     // TODO: it's unclear what the canonical way of identifying the intended audience for the presentation should be;
     // The `verifier` claim on the presentation or the `domain` option on the proof.
-    // Duplicating this mechanism may help support different tooling?
   })
 }
 
@@ -292,12 +295,14 @@ async function verifyPresentation(
     tolerance,
     challenge,
     verifier,
+    domain,
     cryptosuites,
   }: {
     now: Date
     tolerance: number
     cryptosuites: Array<CryptoSuite<any>>
     challenge?: string
+    domain?: string
     verifier?: string
   }
 ): Promise<VerifyPresentationResult['presentationResult']> {
@@ -336,7 +341,7 @@ async function verifyPresentation(
           proof as DataIntegrity.DataIntegrityProof,
           {
             cryptosuites,
-            domain: verifier,
+            domain,
             challenge,
             expectedController: presentation.holder,
             tolerance,
@@ -417,6 +422,7 @@ async function checkStatus(
  * @param options - Verification options.
  * @param options.now - The reference time for verification as Date (default is current time).
  * @param options.challenge - The expected challenge value for the presentation, if any.
+ * @param options.domain - Expected domain for the proof. Verification fails if mismatched.
  * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
  * @param options.verifier - The expected verifier for the presentation, if any. This is set as the proof `domain` as well.
  * @param options.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
@@ -430,10 +436,12 @@ export async function verify(
     tolerance = 0,
     cryptosuites = [sr25519Suite, eddsaSuite, ecdsaSuite],
     challenge,
+    domain,
     verifier,
   }: {
     now?: Date
     challenge?: string
+    domain?: string
     cryptosuites?: Array<CryptoSuite<any>>
     verifier?: string
     tolerance?: number
@@ -452,6 +460,7 @@ export async function verify(
       verifier,
       tolerance,
       cryptosuites,
+      domain,
     })
 
     if (presentationResult.verified !== true) {

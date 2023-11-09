@@ -71,7 +71,7 @@ export type DataIntegrityProof = {
  * @param suite - The cryptographic suite to use for creating the proof.
  * @param signer - The signer interface to sign the document.
  * @param opts - Optional parameters for the proof creation.
- * @param opts.purpose - The purpose of the proof (default is 'authentication').
+ * @param opts.proofPurpose - The purpose of the proof (default is 'authentication').
  * @param opts.challenge - A challenge string to be included in the proof, if any.
  * @param opts.domain - A domain string to be included in the proof, if any.
  * @param opts.created - A Date object indicating the date and time at which this proof becomes valid.
@@ -87,7 +87,7 @@ export async function createProof<T>(
   suite: CryptoSuite<any>,
   signer: SignerInterface,
   {
-    purpose = 'authentication',
+    proofPurpose = 'authentication',
     challenge,
     domain,
     created = new Date(),
@@ -96,7 +96,7 @@ export async function createProof<T>(
     previousProof,
   }: {
     id?: string
-    purpose?: string
+    proofPurpose?: string
     challenge?: string
     domain?: string
     created?: Date | null
@@ -120,7 +120,7 @@ export async function createProof<T>(
     type: PROOF_TYPE,
     verificationMethod: signer.id,
     cryptosuite: suite.name,
-    proofPurpose: purpose,
+    proofPurpose,
   } as DataIntegrityProof
   if (created) {
     proof.created = created.toISOString()

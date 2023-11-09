@@ -133,7 +133,7 @@ describe('verification', () => {
       id: signerDid + keyId,
     })
     const signed = await createProof(presentation, cryptosuite, signer, {
-      purpose: 'assertionMethod',
+      proofPurpose: 'assertionMethod',
     })
     await expect(
       verifyProof(signed, signed.proof, {
