@@ -2297,6 +2297,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/dip@workspace:packages/dip":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/dip@workspace:packages/dip"
+  dependencies:
+    "@kiltprotocol/types": "workspace:*"
+    "@polkadot/api": ^10.4.0
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1":
   version: 0.1.0-rc.1
   resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1"
