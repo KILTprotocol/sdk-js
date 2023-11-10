@@ -2307,6 +2307,7 @@ __metadata:
     "@polkadot/api": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    typescript-object-builder: ^0.3.0
   languageName: unknown
   linkType: soft
 
@@ -9589,6 +9590,13 @@ fsevents@^2.3.2:
   dependencies:
     stacktrace-js: 1.3.1
   checksum: ded1936be380f20bbe0c82a34cf09b080513105eebd23d13d570e9fb3480d8995d731efec565cd47551e0d08cafa0a722e134bfb7e3a17491768e7468632ab3a
+  languageName: node
+  linkType: hard
+
+"typescript-object-builder@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "typescript-object-builder@npm:0.3.0"
+  checksum: 913fd400b2d959c473a446e933448699b46b42a92dec06efaf36b3e1167930dee47ef5eacbf337768fd10d4ac3ee06a6cdf50eede5331e6e976dfbeabf9bb0b0
   languageName: node
   linkType: hard
 

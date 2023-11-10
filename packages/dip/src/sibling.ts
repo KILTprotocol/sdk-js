@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { ObjectBuilder } from 'typescript-object-builder'
+
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { u8aToHex } from '@polkadot/util'
 import type { KeyringPair } from '@polkadot/keyring/types'
@@ -22,25 +24,24 @@ import type {
 } from '@kiltprotocol/types'
 import type { PalletDidLookupLinkableAccountLinkableAccountId } from '@kiltprotocol/augment-api'
 
-import { cryptoWaitReady } from '@polkadot/util-crypto'
-
 import { toChain } from '@kiltprotocol/did'
 import { Signers } from '@kiltprotocol/utils'
 
 type ProviderStateRootProofOpts = {
-  relayApi: ApiPromise
   providerApi: ApiPromise
+  relayApi: ApiPromise
+  // Optional
   providerBlockHeight?: number
 }
 type ProviderStateRootProofRes = {
   proof: ReadProof
-  providerBlockHash: Hash
-  providerBlockNumber: number
-  relayBlockNumber: number
+  providerBlockHeight: number
+  relayBlockHeight: number
 }
 async function generateProviderStateRootProof({
-  relayApi,
   providerApi,
+  relayApi,
+  // Optional
   providerBlockHeight,
 }: ProviderStateRootProofOpts): Promise<ProviderStateRootProofRes> {
   const providerChainId = await providerApi.query.parachainInfo.parachainId()
@@ -72,25 +73,24 @@ async function generateProviderStateRootProof({
 
   return {
     proof,
-    providerBlockHash,
-    providerBlockNumber,
-    relayBlockNumber: relayParentBlockNumber.toNumber(),
+    providerBlockHeight: providerBlockNumber,
+    relayBlockHeight: relayParentBlockNumber.toNumber(),
   }
 }
 
 type DipCommitmentProofOpts = {
+  did: Did
   providerApi: ApiPromise
   providerBlockHash: Hash
-  did: Did
   version: number
 }
 type DipCommitmentProofRes = {
   proof: ReadProof
 }
 async function generateDipCommitmentProof({
+  did,
   providerApi,
   providerBlockHash,
-  did,
   version,
 }: DipCommitmentProofOpts): Promise<DipCommitmentProofRes> {
   const proof = await providerApi.rpc.state.getReadProof(
@@ -107,12 +107,12 @@ async function generateDipCommitmentProof({
 }
 
 type DipIdentityProofOpts = {
-  providerApi: ApiPromise
-  version: number
   did: Did
   keyIds: Array<VerificationMethod['id']>
-  linkedAccounts: PalletDidLookupLinkableAccountLinkableAccountId[]
-  includeWeb3Name?: boolean
+  includeWeb3Name: boolean
+  linkedAccounts: readonly PalletDidLookupLinkableAccountLinkableAccountId[]
+  providerApi: ApiPromise
+  version: number
 }
 type DipIdentityProofRes = {
   proof: {
@@ -122,12 +122,12 @@ type DipIdentityProofRes = {
   root: Hash
 }
 async function generateDipIdentityProof({
-  providerApi,
-  version,
   did,
   keyIds,
+  includeWeb3Name,
   linkedAccounts,
-  includeWeb3Name = false,
+  providerApi,
+  version,
 }: DipIdentityProofOpts): Promise<DipIdentityProofRes> {
   const proof = (await providerApi.call.dipProvider.generateProof({
     identifier: toChain(did),
@@ -144,39 +144,41 @@ async function generateDipIdentityProof({
 
 type DipDidSignatureProviderOpts = {
   didDocument: DidDocument
-  verificationRelationship: SignatureVerificationRelationship
   signers: readonly SignerInterface[]
+  verificationRelationship: SignatureVerificationRelationship
 }
 type DipDidSignatureConsumerOpts = {
+  accountIdRuntimeType: string
   api: ApiPromise
+  blockNumberRuntimeType: string
+  call: Call
+  identityDetailsRuntimeType: string
+  submitterAddress: KeyringPair['address']
+  // Optional
   blockHeight?: number
   genesisHash?: Hash
-  submitter: KeyringPair['address']
-  identityDetailsRuntimeType?: string
-  accountIdRuntimeType?: string
-  blockNumberRuntimeType?: string
-  call: Call
 }
 type DipDidSignatureOpts = {
-  provider: DipDidSignatureProviderOpts
   consumer: DipDidSignatureConsumerOpts
+  provider: DipDidSignatureProviderOpts
 }
 type DipDidSignatureRes = {
-  type: SignerInterface['algorithm']
-  signature: Uint8Array
   blockNumber: number
+  signature: Uint8Array
+  type: SignerInterface['algorithm']
 }
 async function generateDipDidSignature({
   provider: { didDocument, signers, verificationRelationship },
   consumer: {
-    call,
-    submitter,
+    accountIdRuntimeType,
     api,
+    blockNumberRuntimeType,
+    call,
+    identityDetailsRuntimeType,
+    submitterAddress,
+    // Optional
     blockHeight,
     genesisHash,
-    identityDetailsRuntimeType = 'u128',
-    accountIdRuntimeType = 'AccountId',
-    blockNumberRuntimeType = 'u64',
   },
 }: DipDidSignatureOpts): Promise<DipDidSignatureRes> {
   const blockNumber = await (async () => {
@@ -206,7 +208,7 @@ async function generateDipDidSignature({
   const signaturePayload = api
     .createType(
       `(Call, ${identityDetailsRuntimeType}, ${accountIdRuntimeType}, ${blockNumberRuntimeType}, Hash)`,
-      [call, identityDetails, submitter, blockNumber, genesis]
+      [call, identityDetails, submitterAddress, blockNumber, genesis]
     )
     .toU8a()
   const signer = await Signers.selectSigner(
@@ -229,46 +231,77 @@ async function generateDipDidSignature({
 type WsAddress = `ws${string}`
 type FullnodeAddress = WsAddress
 
-type DipProofParams = {
-  keyIds: Array<VerificationMethod['id']>
-  linkedAccounts: PalletDidLookupLinkableAccountLinkableAccountId[]
-  includeWeb3Name?: boolean
-  providerBlockHeight?: number
-  proofVersion: number
-  verificationRelationship: SignatureVerificationRelationship
-  signers: readonly SignerInterface[]
-}
-// TODO: Divide params into `relay`, `provider` and `consumer`
-type DipSiblingTxOpts = {
-  relayWsOrApi: FullnodeAddress | ApiPromise
-  providerWsOrApi: FullnodeAddress | ApiPromise
-  consumerWsOrApi: FullnodeAddress | ApiPromise
-  submitter: KeyringPair['address']
+export type Input = {
   call: Call
+  consumerWsOrApi: FullnodeAddress | ApiPromise
   didDocument: DidDocument
-  dipProofParams: DipProofParams
+  keyIds: Array<VerificationMethod['id']>
+  proofVersion: number
+  providerWsOrApi: FullnodeAddress | ApiPromise
+  relayWsOrApi: FullnodeAddress | ApiPromise
+  signers: readonly SignerInterface[]
+  submitterAddress: KeyringPair['address']
+  verificationRelationship: SignatureVerificationRelationship
+  // Optional, retrieved from chain otherwise
+  blockHeight?: number
+  genesisHash?: Hash
+  providerBlockHeight?: number
+  // With defaults
   accountIdRuntimeType?: string
   blockNumberRuntimeType?: string
   identityDetailsRuntimeType?: string
-  blockHeight?: number
-  genesisHash?: Hash
+  includeWeb3Name?: boolean
+  linkedAccounts?: readonly PalletDidLookupLinkableAccountLinkableAccountId[]
 }
-// TODO: Think about a builder to build these requests
-export async function authorizeDipSiblingTx({
+
+export const ProofBuilder = ObjectBuilder.new<Input>()
+
+/**
+ * Generate a complete DIP proof for the parameters provided.
+ *
+ * @param params The DIP proof params.
+ * @param params.call The [[Call]] on the target chain that requires a DIP origin.
+ * @param params.consumerWsOrApi The Websocket address or an [[ApiPromise]] instance for the consumer chain.
+ * @param params.didDocument The DID Document of the DIP subject that is performing the cross-chain operation.
+ * @param params.keyIds The verification method IDs of the DID to be revealed in the cross-chain operation.
+ * @param params.proofVersion The version of the DIP proof to generate.
+ * @param params.providerWsOrApi The Websocket address or an [[ApiPromise]] instance for the provider chain.
+ * @param params.relayWsOrApi The Websocket address or an [[ApiPromise]] instance for the parent relay chain.
+ * @param params.signers The list of signers to sign the cross-chain transaction.
+ * @param params.submitterAddress The address of the tx submitter on the consumer chain.
+ * @param params.verificationRelationship The [[SignatureVerificationRelationship]] required for the DIP operation to be authorized on the consumer chain.
+ * @param params.blockHeight [OPTIONAL] The block number on the consumer chain to use for the DID signature. If not provided, the latest best block number is used.
+ * @param params.genesisHash [OPTIONAL] The genesis hash of the consumer chain to use for the DID signature. If not provided, it is retrieved at runtime from the consumer chain.
+ * @param params.providerBlockHeight [OPTIONAL] The block number of the provider to use for the generation of the DIP proof. If not provided, the latest finalized block number is used.
+ * @param params.accountIdRuntimeType [OPTIONAL] The runtime type definition for an `AccountId` on the consumer chain. If not provided, the `AccountId` type is used.
+ * @param params.blockNumberRuntimeType [OPTIONAL] The runtime type definition for a `BlockNumber` on the consumer chain. If not provided, the `u64` type is used.
+ * @param params.identityDetailsRuntimeType [OPTIONAL] The runtime type definition for the `IdentityDetails` on the consumer chain. If not provided, the `Option<u128>` type, representing a simple nonce, is used.
+ * @param params.includeWeb3Name [OPTIONAL] Flag indicating whether the generated DIP proof should include the web3name of the DID subject. If not provided, the web3name is not revealed.
+ * @param params.linkedAccounts [OPTIONAL] The list of linked accounts to reveal in the generated DIP proof. If not provided, no account is revealed.
+ */
+export async function generateDipSiblingProof({
+  call,
   consumerWsOrApi,
+  didDocument,
+  keyIds,
+  proofVersion,
   providerWsOrApi,
   relayWsOrApi,
-  submitter,
-  didDocument,
-  call,
-  dipProofParams,
-  accountIdRuntimeType,
-  blockNumberRuntimeType,
-  identityDetailsRuntimeType,
+  signers,
+  submitterAddress,
+  verificationRelationship,
+  // Optional
   blockHeight,
   genesisHash,
-}: DipSiblingTxOpts): Promise<SubmittableExtrinsic> {
-  await cryptoWaitReady()
+  providerBlockHeight,
+  // With defaults
+  accountIdRuntimeType = 'AccountId',
+  blockNumberRuntimeType = 'u64',
+  identityDetailsRuntimeType = 'Option<u128>',
+  includeWeb3Name = false,
+  linkedAccounts = [],
+}: Input): Promise<SubmittableExtrinsic> {
+  // TODO: Move into util function
   const relayApi = await (async () => {
     if (typeof relayWsOrApi === 'string') {
       return ApiPromise.create({ provider: new WsProvider(relayWsOrApi) })
@@ -284,33 +317,33 @@ export async function authorizeDipSiblingTx({
 
   const {
     proof: providerStateRootProof,
-    providerBlockNumber,
-    relayBlockNumber,
+    providerBlockHeight: providerStateRootProofProviderBlockHeight,
+    relayBlockHeight: providerStateRootProofRelayBlockHeight,
   } = await generateProviderStateRootProof({
     relayApi,
     providerApi,
-    providerBlockHeight: dipProofParams.providerBlockHeight,
+    providerBlockHeight,
   })
 
   // Proof of commitment must be generated with the state root at the block before the last one finalized.
   const dipRootProofBlockHash = await providerApi.rpc.chain.getBlockHash(
-    providerBlockNumber - 1
+    providerStateRootProofProviderBlockHeight - 1
   )
 
   const { proof: dipCommitmentProof } = await generateDipCommitmentProof({
     did: didDocument.id,
     providerApi,
     providerBlockHash: dipRootProofBlockHash,
-    version: dipProofParams.proofVersion,
+    version: proofVersion,
   })
 
   const { proof: dipIdentityProof } = await generateDipIdentityProof({
     did: didDocument.id,
     providerApi,
-    keyIds: dipProofParams.keyIds,
-    linkedAccounts: dipProofParams.linkedAccounts,
-    version: dipProofParams.proofVersion,
-    includeWeb3Name: dipProofParams.includeWeb3Name,
+    keyIds,
+    linkedAccounts,
+    version: proofVersion,
+    includeWeb3Name,
   })
 
   const consumerApi = await (async () => {
@@ -321,19 +354,19 @@ export async function authorizeDipSiblingTx({
   })()
 
   const {
-    blockNumber: signatureBlockNumber,
-    signature,
-    type: signatureType,
+    blockNumber: didSignatureBlockNumber,
+    signature: didSignature,
+    type: didSignatureType,
   } = await generateDipDidSignature({
     provider: {
       didDocument,
-      signers: dipProofParams.signers,
-      verificationRelationship: dipProofParams.verificationRelationship,
+      signers,
+      verificationRelationship,
     },
     consumer: {
       api: consumerApi,
       call,
-      submitter,
+      submitterAddress,
       accountIdRuntimeType,
       blockHeight,
       blockNumberRuntimeType,
@@ -343,9 +376,9 @@ export async function authorizeDipSiblingTx({
   })
 
   return consumerApi.tx.dipConsumer.dispatchAs(toChain(didDocument.id), {
-    [`V${dipProofParams.proofVersion}`]: {
+    [`V${proofVersion}`]: {
       paraStateRoot: {
-        relayBlockHeight: relayBlockNumber,
+        relayBlockHeight: providerStateRootProofRelayBlockHeight,
         proof: providerStateRootProof,
       },
       dipIdentityCommitment: dipCommitmentProof,
@@ -356,9 +389,9 @@ export async function authorizeDipSiblingTx({
         },
         signature: {
           signature: {
-            [signatureType]: u8aToHex(signature),
+            [didSignatureType]: u8aToHex(didSignature),
           },
-          blockNumber: signatureBlockNumber,
+          blockNumber: didSignatureBlockNumber,
         },
       },
     },
