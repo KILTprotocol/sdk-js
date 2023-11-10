@@ -2301,8 +2301,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/dip@workspace:packages/dip"
   dependencies:
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.4.0
+    "@polkadot/util": ^12.0.0
+    "@polkadot/util-crypto": ^12.0.0
   languageName: unknown
   linkType: soft
 
