@@ -199,9 +199,13 @@ async function retrieveVerificationMethod(
   proof: DataIntegrityProof
 ): Promise<VerificationMethod> {
   const { did } = parse(proof.verificationMethod as DidUrl)
-  const { didDocument, didDocumentMetadata } = await resolve(did)
+  const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+    await resolve(did)
   if (didDocumentMetadata.deactivated) {
     throw new SDKErrors.DidDeactivatedError()
+  }
+  if (didResolutionMetadata.error) {
+    throw new SDKErrors.DidError(didResolutionMetadata.error)
   }
   const verificationMethod = didDocument?.verificationMethod?.find(
     ({ id }) =>
