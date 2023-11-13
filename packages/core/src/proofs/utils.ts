@@ -13,24 +13,14 @@ export interface VerificationResult {
 }
 
 /**
- * Aligning with jsonld-signatures:
- * return {Promise<{verified: boolean, results: Array, error: *}>} resolves
- *   with an object with a `verified`boolean property that is `true` if at
- *   least one proof matching the given purpose and suite verifies and `false`
- *   otherwise; a `results` property with an array of detailed results;
- *   if `false` an `error` property will be present.
+ * Aligning with jsonld-signatures (https://github.com/digitalbazaar/jsonld-signatures/blob/0dbe528e2cd2881b276932b503b9598a850ab8d6/lib/ProofSet.js#L153)
  */
 export interface ProofSetResult extends VerificationResult {
   results: Array<VerificationResult & { proof: Proof }>
 }
 
 /**
- * Aligning with @digitalbazaar/vc:
- * typedef {object} VerifyCredentialResult
- * property {boolean} verified - True if verified, false if not.
- * property {object} statusResult
- * property {Array} results
- * property {object} error.
+ * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L87-L91)
  */
 export interface VerifyCredentialResult extends ProofSetResult {
   credential: VerifiableCredential
@@ -38,12 +28,7 @@ export interface VerifyCredentialResult extends ProofSetResult {
 }
 
 /**
- * Aligning with @digitalbazaar/vc:
- * typedef {object} VerifyPresentationResult
- * property {boolean} verified - True if verified, false if not.
- * property {object} presentationResult
- * property {Array} credentialResults
- * property {object} error.
+ * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L79-L83)
  */
 export interface VerifyPresentationResult extends VerificationResult {
   presentationResult: ProofSetResult
