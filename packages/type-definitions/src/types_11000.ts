@@ -62,17 +62,12 @@ export const types11000: RegistryTypes = {
   LinkedAccountMerkleValue: 'Null',
   RuntimeApiDipProofError: {
     _enum: {
-      IdentityNotFound: null,
-      IdentityProviderError: 'CombineError',
+      IdentityProviderError: 'LinkedDidIdentityProviderError',
       MerkleProofError: 'DidMerkleProofError',
     },
   },
-  CombineError: {
-    _enum: {
-      A: 'DidIdentityProviderError',
-      B: 'DidIdentityProviderError',
-      C: 'DidIdentityProviderError',
-    },
+  LinkedDidIdentityProviderError: {
+    _enum: ['DidNotFound', 'DidDeleted', 'Internal'],
   },
   DidIdentityProviderError: {
     _enum: ['DidNotFound', 'Internal'],
@@ -80,7 +75,6 @@ export const types11000: RegistryTypes = {
   DidMerkleProofError: {
     _enum: [
       'UnsupportedVersion',
-      'DidNotFound',
       'KeyNotFound',
       'LinkedAccountNotFound',
       'Web3NameNotFound',
