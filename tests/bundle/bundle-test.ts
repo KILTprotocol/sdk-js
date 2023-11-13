@@ -140,7 +140,9 @@ async function runAll() {
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const { keypair: bobKeypair } = await makeSigningKeypair('//Bob')
+  const { keypair: bobKeypair, getSigners: bobSign } = await makeSigningKeypair(
+    '//Bob'
+  )
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
   const bob = await createFullDidFromKeypair(
     payer,
@@ -292,11 +294,29 @@ async function runAll() {
   await KiltRevocationStatusV1.check(issued)
   console.info('Credential status verified')
 
-  const presentation = Presentation.create([issued], bob.id)
+  const challenge = kilt.Utils.Crypto.hashStr(
+    kilt.Utils.Crypto.mnemonicGenerate()
+  )
+  const presentation = await Presentation.create({
+    credentials: [issued],
+    holder: bob.id,
+    signers: await bobSign(bob),
+    challenge,
+  })
   console.info('Presentation created')
 
   Presentation.validateStructure(presentation)
   console.info('Presentation structure validated')
+
+  const result = await Presentation.verify(presentation, { challenge })
+  if (result.verified) {
+    console.info('Presentation verified')
+  } else {
+    throw new Error(
+      ['Presentation failed to verify', ...(result.error ?? [])].join('\n  '),
+      { cause: result }
+    )
+  }
 }
 
 window.runAll = runAll
