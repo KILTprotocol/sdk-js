@@ -54,7 +54,14 @@ export type DipParentProofInput = {
   linkedAccounts?: readonly PalletDidLookupLinkableAccountLinkableAccountId[]
 }
 
-export const DipParentProofBuilder = ObjectBuilder.new<DipParentProofInput>()
+/**
+ * Return a new instance of the builder to generate DIP proofs for the parent relaychain.
+ *
+ * @returns A fresh instance of an [[ObjectBuilder]].
+ */
+export function dipParentProofBuilder(): ObjectBuilder {
+  return ObjectBuilder.new<DipParentProofInput>()
+}
 
 /**
  * Generate a complete DIP proof according to the parameters provided, to be used on the relay chain of which the provider chain is a parachain.

@@ -55,7 +55,14 @@ export type DipSiblingProofInput = {
   linkedAccounts?: readonly PalletDidLookupLinkableAccountLinkableAccountId[]
 }
 
-export const DipSiblingProofBuilder = ObjectBuilder.new<DipSiblingProofInput>()
+/**
+ * Return a new instance of the builder to generate DIP proofs for a sibling parachain.
+ *
+ * @returns A fresh instance of an [[ObjectBuilder]].
+ */
+export function dipSiblingProofBuilder(): ObjectBuilder {
+  return ObjectBuilder.new<DipSiblingProofInput>()
+}
 
 /**
  * Generate a complete DIP proof according to the parameters provided, to be used on a consumer chain of which the provider chain is a sibling.
