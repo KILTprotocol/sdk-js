@@ -66,6 +66,14 @@ export function dipParentProofBuilder(): ObjectBuilder {
 /**
  * Generate a complete DIP proof according to the parameters provided, to be used on the relay chain of which the provider chain is a parachain.
  *
+ * Parameters can be provided directly or can be combined on the builder.
+ *
+ * @example
+ * const builder = dipParentProofBuilder()
+ * builder.with(...).with(...).with(...)
+ * const params = builder.build()
+ * const proof = generateDipProofForParent(params)
+ *
  * @param params The DIP proof params.
  * @param params.call The [[Call]] on the relay chain that requires a DIP origin.
  * @param params.didDocument The DID Document of the DIP subject that is performing the cross-chain operation.
