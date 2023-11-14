@@ -62,8 +62,8 @@ export const types11000: RegistryTypes = {
   LinkedAccountMerkleValue: 'Null',
   RuntimeApiDipProofError: {
     _enum: {
-      IdentityProviderError: 'LinkedDidIdentityProviderError',
-      MerkleProofError: 'DidMerkleProofError',
+      IdentityProvider: 'LinkedDidIdentityProviderError',
+      MerkleProof: 'DidMerkleProofError',
     },
   },
   LinkedDidIdentityProviderError: {
