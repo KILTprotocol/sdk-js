@@ -9,7 +9,7 @@ import type { RegistryTypes } from '@polkadot/types/types'
 
 import { types10900 } from './types_10900.js'
 
-export const types12000: RegistryTypes = {
+export const types11200: RegistryTypes = {
   ...types10900,
   IdentityCommitmentVersion: 'u16',
   // DipProvider state_call
