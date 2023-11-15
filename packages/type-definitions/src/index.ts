@@ -26,7 +26,7 @@ import { types10410 } from './types_10410.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
 import { types10900 } from './types_10900.js'
-import { types11000 } from './types_11000.js'
+import { types12000 } from './types_12000.js'
 
 // Custom runtime calls
 
@@ -52,7 +52,7 @@ export {
   types10720,
   types10800,
   types10900,
-  types11000 as types,
+  types12000 as types,
 }
 
 export { calls as didCalls } from './runtime/did.js'
@@ -122,12 +122,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types10800,
   },
   {
-    minmax: [10900, 10999],
+    minmax: [10900, 11999],
     types: types10900,
   },
   {
-    minmax: [11000, undefined],
-    types: types11000,
+    minmax: [12000, undefined],
+    types: types12000,
   },
 ]
 
@@ -183,11 +183,9 @@ export const typesBundle: OverrideBundleType = {
     },
     'DIP provider dev': {
       runtime: {
+        ...didCalls,
         ...dipProviderCalls,
       },
-      types: defaultTypesBundle,
-    },
-    'DIP consumer dev': {
       types: defaultTypesBundle,
     },
     Development: {
