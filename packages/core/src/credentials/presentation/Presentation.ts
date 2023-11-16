@@ -18,17 +18,17 @@ import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
-} from '../credentialsV1/constants.js'
+} from '../V1/constants.js'
 import {
   KiltAttestationProofV1,
   KiltRevocationStatusV1,
   Types,
-} from '../credentialsV1/index.js'
+} from '../V1/index.js'
 import type {
   KiltCredentialV1,
   VerifiableCredential,
   VerifiablePresentation,
-} from '../credentialsV1/types.js'
+} from '../V1/types.js'
 import * as DataIntegrity from '../proofs/DataIntegrity.js'
 import {
   VerificationResult,

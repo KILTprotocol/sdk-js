@@ -9,11 +9,11 @@
  * @module @kiltprotocol/core
  */
 
-export * as Attestation from './attestation/index.js'
-export * from './credentialsV1/index.js'
-export * as Presentation from './presentation/index.js'
+export * as Attestation from './credentials/attestation/index.js'
+export * from './credentials/V1/index.js'
+export * as Presentation from './credentials/presentation/index.js'
 export { BalanceUtils } from './balance/index.js'
-export * as CType from './ctype/index.js'
+export * as CType from './credentials/ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 
 export { connect, disconnect, init } from './kilt/index.js'

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Proof, VerifiableCredential } from '../credentialsV1/types.js'
+import type { Proof, VerifiableCredential } from '../V1/types.js'
 
 export interface VerificationResult {
   verified: boolean
