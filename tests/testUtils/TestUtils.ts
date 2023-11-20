@@ -470,7 +470,7 @@ export async function getStoreTxFromDidDocument(
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
-  payer: KiltKeyringPair,
+  payer: KiltKeyringPair | Blockchain.TransactionSigner,
   lightDidForId: DidDocument,
   signer: StoreDidCallback
 ): Promise<DidDocument> {
@@ -486,7 +486,7 @@ export async function createFullDidFromLightDid(
   ]
   const tx = await getStoreTxFromDidDocument(
     fullDidDocumentToBeCreated,
-    payer.address,
+    'address' in payer ? payer.address : payer.id,
     signer
   )
   await Blockchain.signAndSubmitTx(tx, payer)

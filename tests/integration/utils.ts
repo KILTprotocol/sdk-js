@@ -155,7 +155,7 @@ export const nftNameCType = CType.fromProperties('NFT collection name', {
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(
   extrinsic: SubmittableExtrinsic,
-  submitter: KeyringPair,
+  submitter: KeyringPair | Blockchain.TransactionSigner,
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
@@ -164,7 +164,7 @@ export async function submitTx(
 }
 
 export async function endowAccounts(
-  faucet: KeyringPair,
+  faucet: KeyringPair | Blockchain.TransactionSigner,
   addresses: string[],
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {

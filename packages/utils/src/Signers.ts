@@ -5,7 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Signer } from '@polkadot/api/types/index.js'
 import { decodePair } from '@polkadot/keyring/pair/decode'
+import { hexToU8a, u8aToHex } from '@polkadot/util'
 import {
   encodeAddress,
   randomAsHex,
@@ -34,7 +36,7 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 
-import { DidError } from './SDKErrors.js'
+import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b' as const, // could also be called ES256K-R-Blake2b
@@ -370,4 +372,43 @@ export const select = {
   byAlgorithm,
   byDid,
   verifiableOnChain,
+}
+
+/**
+ * Simplifies signing transactions using SignerInterface signers.
+ *
+ * @example
+ * const signedTx = await tx.signAsync(<address>, {signer: getExtrinsicSigner(<signers>)})
+ *
+ * @param signers An array of SignerInterface signers.
+ * @returns An object implementing polkadot's `signRaw` interface.
+ */
+export function getExtrinsicSigner(
+  signers: readonly SignerInterface[]
+): Signer {
+  return {
+    signRaw: async ({ data, address }) => {
+      const signer = await selectSigner(
+        signers,
+        bySignerId([address]),
+        verifiableOnChain()
+      )
+      if (!signer) {
+        throw new NoSuitableSignerError(
+          `no suitable signer available for blockchain account ${address}`,
+          {
+            signerRequirements: {
+              id: address,
+              algorithms: DID_PALLET_SUPPORTED_ALGORITHMS,
+            },
+            availableSigners: signers,
+          }
+        )
+      }
+      return {
+        id: 0,
+        signature: u8aToHex(await signer.sign({ data: hexToU8a(data) })),
+      }
+    },
+  }
 }

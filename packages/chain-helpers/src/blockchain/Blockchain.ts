@@ -15,6 +15,8 @@ import type { BN } from '@polkadot/util'
 import type {
   ISubmittableResult,
   KeyringPair,
+  KiltAddress,
+  SignerInterface,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
@@ -22,7 +24,7 @@ import type {
 import { SubmittableResult } from '@polkadot/api'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
@@ -167,6 +169,11 @@ export async function submitSignedTx(
 
 export const dispatchTx = submitSignedTx
 
+export type TransactionSigner = SignerInterface<
+  'Ecrecover-Secp256k1-Blake2b' | 'Sr25519' | 'Ed25519',
+  KiltAddress
+>
+
 /**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
@@ -178,13 +185,19 @@ export const dispatchTx = submitSignedTx
  */
 export async function signAndSubmitTx(
   tx: SubmittableExtrinsic,
-  signer: KeyringPair,
+  signer: KeyringPair | TransactionSigner,
   {
     tip,
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
 ): Promise<ISubmittableResult> {
-  const signedTx = await tx.signAsync(signer, { tip })
+  const signedTx =
+    'address' in signer
+      ? await tx.signAsync(signer, { tip })
+      : await tx.signAsync(signer.id, {
+          tip,
+          signer: Signers.getExtrinsicSigner([signer]),
+        })
   return submitSignedTx(signedTx, opts)
 }
 
