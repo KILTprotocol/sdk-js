@@ -19,12 +19,7 @@ import {
   Types,
   KiltCredentialV1,
 } from '@kiltprotocol/core'
-import type {
-  DidDocument,
-  Did,
-  ICType,
-  SignerInterface,
-} from '@kiltprotocol/types'
+import type { DidDocument, Did, ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
@@ -204,16 +199,14 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    *
    * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
    * @param issuer The DID Document or, alternatively, the DID of the issuer.
-   * @param signers Signer interfaces to be passed to [[issue]], one of which will be selected to authorize the on-chain anchoring of the credential with the issuer's signature.
-   * @param transactionHandler Transaction handler interface to be passed to [[issue]] containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
+   * @param submissionOptions Authorization and submission handlers, or alternatively signers, to be passed to [[issue]] for authorizing the on-chain anchoring of the credential with the issuer's signature.
    *
    * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
     input: CredentialStub,
     issuer: DidDocument | Did,
-    signers: readonly SignerInterface[],
-    transactionHandler: KiltAttestationProofV1.TxHandler
+    submissionOptions: Parameters<typeof KiltAttestationProofV1.issue>['2']
   ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
     const { credentialSubject, type } = input
 
@@ -244,10 +237,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     const { proof, ...credential } = await KiltAttestationProofV1.issue(
       credentialStub,
       issuer,
-      {
-        signers,
-        transactionHandler,
-      }
+      submissionOptions
     )
 
     this.attestationInfo.set(credential.id, proof)

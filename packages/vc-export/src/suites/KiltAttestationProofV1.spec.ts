@@ -454,14 +454,19 @@ describe('issuance', () => {
     algorithm: 'Sr25519',
     id: `${issuer}#1`,
   }
-  const transactionHandler: KiltAttestationProofV1.TxHandler = {
-    account: attester,
-    signAndSubmit: async () => {
+  const transactionHandler: KiltAttestationProofV1.IssueOpts = {
+    signers: [signer],
+    submitterAccount: attester,
+    submitTx: async () => {
       return {
-        blockHash,
-        timestamp,
+        status: 'finalized',
+        includedAt: {
+          blockHash,
+          blockTime: timestamp,
+        },
       }
     },
+    authorizeTx: async (tx) => tx,
   }
   beforeEach(() => {
     toBeSigned = {
@@ -481,7 +486,6 @@ describe('issuance', () => {
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
         issuer,
-        [signer],
         transactionHandler
       )
     newCred = await vcjs.issue({
@@ -540,7 +544,6 @@ describe('issuance', () => {
         ...toBeSigned,
       },
       issuer,
-      [signer],
       transactionHandler
     )
     newCred = (await vcjs.issue({
