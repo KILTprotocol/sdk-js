@@ -19,6 +19,7 @@ import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
+import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -274,7 +275,7 @@ export function validateDid(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parse(input as DidUrl)
+  const { address, fragment, type } = parse(input as DidUrl)
 
   if (
     fragment &&
@@ -294,6 +295,17 @@ export function validateDid(
   }
 
   DataUtils.verifyKiltAddress(address)
+
+  // Check if the encoded details represent something that can be decoded, or just random jargon, in which case the DID is not really a valid one.
+  if (type === 'light') {
+    try {
+      parseDocumentFromLightDid(input as Did, false)
+    } catch {
+      throw new SDKErrors.DidError(
+        `The provided light DID "${input}" contains incorrect base58-encoded details.`
+      )
+    }
+  }
 }
 
 /**
