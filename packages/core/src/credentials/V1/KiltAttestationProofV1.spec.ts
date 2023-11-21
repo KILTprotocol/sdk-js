@@ -136,7 +136,7 @@ describe('issuance', () => {
     subject,
     cType: cType.$id,
     issuer: attestation.owner,
-    timestamp: 0,
+    timestamp: new Date(0),
   })
 
   it('create a proof via initialize and finalize', async () => {

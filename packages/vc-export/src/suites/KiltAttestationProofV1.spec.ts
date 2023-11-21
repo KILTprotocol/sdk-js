@@ -69,7 +69,7 @@ jest.mock('@kiltprotocol/did', () => ({
 jest.mock('@digitalbazaar/http-client', () => ({}))
 
 const attester = ingosCredential.issuer.split(':')[2] as KiltAddress
-const timestamp = new Date(ingosCredential.issuanceDate).getTime()
+const timestamp = new Date(ingosCredential.issuanceDate)
 const blockHash = base58Decode(ingosCredential.proof.block)
 const { genesisHash } = mockedApi
 const ctypeHash = ingosCredential.type[2].split(':')[2] as HexString

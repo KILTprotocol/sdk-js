@@ -100,7 +100,7 @@ export const attestation: IAttestation = {
   revoked: false,
 }
 
-export const timestamp = 1234567
+export const timestamp = new Date(1234567)
 export const blockHash = randomAsU8a(32)
 export const genesisHash = randomAsU8a(32)
 jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))

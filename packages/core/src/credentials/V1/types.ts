@@ -63,7 +63,7 @@ export interface UnsignedVc {
   /**
    * When the credential was issued.
    */
-  issuanceDate: string
+  issuanceDate?: string
   /**
    * If true, this credential can only be presented and used by its subject.
    */
@@ -85,6 +85,7 @@ export interface UnsignedVc {
 }
 
 export interface VerifiableCredential extends UnsignedVc {
+  issuanceDate: string
   /**
    *  Cryptographic proof that makes the credential tamper-evident.
    */
