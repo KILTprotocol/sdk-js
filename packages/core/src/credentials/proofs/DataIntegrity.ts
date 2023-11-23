@@ -14,10 +14,18 @@ import type {
   CryptoSuite,
   SignerInterface,
 } from '@kiltprotocol/jcs-data-integrity-proofs-common'
+import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
+import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
+import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 
 import { parse, resolve } from '@kiltprotocol/did'
-import type { DidUrl, VerificationMethod } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import type {
+  Did,
+  DidDocument,
+  DidUrl,
+  VerificationMethod,
+} from '@kiltprotocol/types'
+import { SDKErrors, Signers } from '@kiltprotocol/utils'
 import type { SecuredDocument } from './utils.js'
 
 export const PROOF_TYPE = 'DataIntegrityProof'
@@ -156,6 +164,103 @@ export async function createProof<T>(
   proof.proofValue = MULTIBASE_BASE58BTC_HEADER + base58Encode(signatureBytes)
 
   return { ...document, proof }
+}
+
+const { byDid, byAlgorithm } = Signers.select
+
+/**
+ * Signs a document with a DID-related signer.
+ *
+ * @param args - Object holding all function arguments.
+ * @param args.document - An unsigned document. Any existing proofs will be overwritten.
+ * @param args.signerDid - The DID or DID Document identifying the signing party.
+ * The DID Document will be resolved by this function if not passed in.
+ * @param args.signers - One or more signers associated with the `signerDid` to be used for signing the document.
+ * If omitted, the signing step is skipped.
+ * @param args.cryptosuites - One or more cryptosuites that take care of processing and normalizing the document.
+ * The actual suite used will be based on a match between `algorithm`s supported by the `signers` and the suite's `requiredAlgorithm`.
+ * @param args.proofPurpose - Controls the `proofPurpose` property and which verificationMethods can be used for signing.
+ * Defaults to 'authentication'.
+ * @param args.challenge - A challenge supplied by a verifier in a challenge-response protocol, which allows verifiers to assure signature freshness, preventing unauthorized re-use.
+ * @param args.domain - A domain string to be included in the proof, if any.
+ * @param args.created - A Date object indicating the date and time at which this proof becomes valid.
+ * Defaults to the current time. Can be unset with `null`.
+ * @param args.expires - A Date object indicating the date and time at which this proof expires.
+ * @param args.id - Assigns an id to the proof. Can be used to implement proof chains.
+ * @param args.previousProof - Allows referencing an existing proof by id for the purpose of implementing proof chains.
+ * @returns The original document with a DataIntegrity signature proof attached.
+ */
+export async function signWithDid<T>({
+  document,
+  signerDid,
+  signers,
+  cryptosuites = [eddsaSuite, ecdsaSuite, sr25519Suite],
+  proofPurpose = 'authentication',
+  challenge,
+  domain,
+  created,
+  expires,
+  id,
+  previousProof,
+}: {
+  document: T
+  signerDid: Did | DidDocument
+  signers: readonly SignerInterface[]
+  cryptosuites?: ReadonlyArray<CryptoSuite<any>>
+  proofPurpose?: string
+  challenge?: string
+  domain?: string
+  created?: Date | null
+  expires?: Date
+  id?: string
+  previousProof?: string
+}): Promise<T & { proof: DataIntegrityProof }> {
+  const signerDocument =
+    typeof signerDid === 'string'
+      ? (await resolve(signerDid)).didDocument
+      : signerDid
+
+  if (!signerDocument?.id) {
+    throw new SDKErrors.DidNotFoundError(
+      `Failed to resolve signer DID ${signerDid}`
+    )
+  }
+
+  const requiredAlgorithms = cryptosuites.map(
+    ({ requiredAlgorithm }) => requiredAlgorithm
+  )
+
+  const signer = await Signers.selectSigner(
+    signers,
+    byAlgorithm(requiredAlgorithms),
+    byDid(signerDocument, {
+      verificationRelationship: proofPurpose,
+      controller: signerDocument.id,
+    })
+  )
+  if (!signer) {
+    throw new SDKErrors.NoSuitableSignerError(undefined, {
+      signerRequirements: {
+        algorithm: requiredAlgorithms,
+        did: signerDocument.id,
+        verificationRelationship: proofPurpose,
+      },
+      availableSigners: signers,
+    })
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- We've matched the suite to the algorithms earlier, so this will return the right suite
+  const suite = cryptosuites.find(
+    ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
+  )!
+  return createProof(document, suite, signer, {
+    id,
+    proofPurpose,
+    challenge,
+    domain,
+    created,
+    expires,
+    previousProof,
+  })
 }
 
 export class UNSUPPORTED_CRYPTOSUITE_ERROR extends Error {

@@ -15,6 +15,7 @@ export * as Presentation from './credentials/presentation/index.js'
 export { BalanceUtils } from './balance/index.js'
 export * as CType from './credentials/ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
+export * as DataIntegrity from './credentials/proofs/DataIntegrity.js'
 
 export { connect, disconnect, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'

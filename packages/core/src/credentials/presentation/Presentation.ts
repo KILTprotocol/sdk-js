@@ -10,9 +10,8 @@ import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
 import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 
-import { resolve } from '@kiltprotocol/did'
-import type { Did, DidDocument, SignerInterface } from '@kiltprotocol/types'
-import { JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
+import type { Did } from '@kiltprotocol/types'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
@@ -167,65 +166,39 @@ export function assertHolderCanPresentCredentials({
   })
 }
 
-const {
-  select: { byAlgorithm, byDid },
-} = Signers
-
 /**
- * Creates a Verifiable Presentation from one or more Verifiable Credentials, then signs it.
+ * Creates a Verifiable Presentation from one or more Verifiable Credentials.
  *
  * @param args Object holding all function arguments.
  * @param args.credentials Array of one or more Verifiable Credentials.
  * @param args.holder The DID or DID Document of the holder of the credentials in the presentation, which also signs the presentation.
- * The DID Document will be resolved by this function if not passed in.
- * @param args.signers One or more signers associated with the `holder` to be used for signing the presentation.
- * If omitted, the signing step is skipped.
- * @param args.cryptosuites One or more cryptosuites that take care of processing and normalizing the presentation document.
- * The actual suite used will be based on a match between `algorithm`s supported by the `signers` and the suite's `requiredAlgorithm`.
- * @param args.proofPurpose Controls the `proofPurpose` property and which verificationMethods can be used for signing.
- * Defaults to 'authentication'.
  * @param args.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
  * Represented as `issuanceDate` on the presentation.
  * @param args.validUntil A Date or date-time string indicating when the presentation is no longer valid.
  * Represented as `expirationDate` on the presentation.
  * @param args.verifier Identifier (e.g., DID) of the verifier to prevent unauthorized re-use of the presentation.
- * @param args.challenge A challenge supplied by the verifier in a challenge-response protocol, which allows verifiers to assure presentation freshness, preventing unauthorized re-use.
- * @param args.domain - A domain string to be included in the proof, if any.
- * @returns A Verifiable Presentation containing the original VCs with its proofs.
- * If no `signers` are given, the presentation is left unsigned.
+ * @returns An unsigned Verifiable Presentation containing the original VCs.
  */
 export async function create({
   credentials,
   holder,
+  verifier,
   validFrom,
   validUntil,
-  verifier,
-  signers,
-  cryptosuites = [eddsaSuite, ecdsaSuite, sr25519Suite],
-  proofPurpose = 'authentication',
-  challenge,
-  domain,
 }: {
   credentials: VerifiableCredential[]
-  holder: Did | DidDocument
-  signers?: readonly SignerInterface[]
+  holder: Did
   verifier?: string
   validFrom?: Date | string
   validUntil?: Date | string
-  cryptosuites?: ReadonlyArray<CryptoSuite<any>>
-  proofPurpose?: string
-  challenge?: string
-  domain?: string
 }): Promise<VerifiablePresentation> {
-  const holderDid = typeof holder === 'string' ? holder : holder.id
-
   const verifiableCredential =
     credentials.length === 1 ? credentials[0] : credentials
   const presentation: VerifiablePresentation = {
     '@context': [W3C_CREDENTIAL_CONTEXT_URL],
     type: [W3C_PRESENTATION_TYPE],
     verifiableCredential,
-    holder: holderDid,
+    holder,
   }
   if (typeof validFrom !== 'undefined') {
     presentation.issuanceDate = new Date(validFrom).toISOString()
@@ -240,52 +213,7 @@ export async function create({
   validateStructure(presentation)
   assertHolderCanPresentCredentials(presentation)
 
-  if (!signers) {
-    return presentation
-  }
-
-  const holderDocument =
-    typeof holder === 'string' ? (await resolve(holder)).didDocument : holder
-
-  if (!holderDocument?.id) {
-    throw new SDKErrors.DidNotFoundError(
-      `Failed to resolve holder DID ${holderDid}`
-    )
-  }
-
-  const requiredAlgorithms = cryptosuites.map(
-    ({ requiredAlgorithm }) => requiredAlgorithm
-  )
-
-  const signer = await Signers.selectSigner(
-    signers,
-    byAlgorithm(requiredAlgorithms),
-    byDid(holderDocument, {
-      verificationRelationship: proofPurpose,
-      controller: holderDid,
-    })
-  )
-  if (!signer) {
-    throw new SDKErrors.NoSuitableSignerError(undefined, {
-      signerRequirements: {
-        algorithm: requiredAlgorithms,
-        did: holderDid,
-        verificationRelationship: proofPurpose,
-      },
-      availableSigners: signers,
-    })
-  }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- We've matched the suite to the algorithms earlier, so this will return the right suite
-  const suite = cryptosuites.find(
-    ({ requiredAlgorithm }) => requiredAlgorithm === signer.algorithm
-  )!
-  return DataIntegrity.createProof(presentation, suite, signer, {
-    proofPurpose,
-    challenge,
-    domain,
-    // TODO: it's unclear what the canonical way of identifying the intended audience for the presentation should be;
-    // The `verifier` claim on the presentation or the `domain` option on the proof.
-  })
+  return presentation
 }
 
 async function verifyPresentation(

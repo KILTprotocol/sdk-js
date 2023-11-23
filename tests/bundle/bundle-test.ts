@@ -29,6 +29,7 @@ const {
   KiltAttestationProofV1,
   KiltRevocationStatusV1,
   Presentation,
+  DataIntegrity,
 } = kilt
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
@@ -269,17 +270,7 @@ async function runAll() {
 
   const issued = await KiltAttestationProofV1.issue(credential, alice.id, {
     signers: await aliceSign(alice),
-    transactionHandler: {
-      account: payer.address,
-      signAndSubmit: async (tx) => {
-        const signed = await api.tx(tx).signAsync(payer)
-        const result = await Blockchain.submitSignedTx(signed, {
-          resolveOn: Blockchain.IS_IN_BLOCK,
-        })
-        const blockHash = result.status.asInBlock
-        return { blockHash }
-      },
-    },
+    submitterAccount: payer.address,
   })
   console.info('Credential issued')
 
@@ -297,9 +288,14 @@ async function runAll() {
   const challenge = kilt.Utils.Crypto.hashStr(
     kilt.Utils.Crypto.mnemonicGenerate()
   )
-  const presentation = await Presentation.create({
+  let presentation = await Presentation.create({
     credentials: [issued],
     holder: bob.id,
+  })
+
+  presentation = await DataIntegrity.signWithDid({
+    document: presentation,
+    signerDid: bob.id,
     signers: await bobSign(bob),
     challenge,
   })

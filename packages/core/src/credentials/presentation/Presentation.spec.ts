@@ -11,7 +11,7 @@ import { randomAsHex, sr25519PairFromSeed } from '@polkadot/util-crypto'
 import { didKeyToVerificationMethod, resolve } from '@kiltprotocol/did'
 import type { Did } from '@kiltprotocol/types'
 
-import { createProof, verifyProof } from '../proofs/DataIntegrity'
+import { createProof, verifyProof, signWithDid } from '../proofs/DataIntegrity'
 import {
   create as createPresentation,
   verify as verifyPresentation,
@@ -149,17 +149,21 @@ describe('verification', () => {
       id: signerDid + keyId,
     })
     const challenge = randomAsHex()
-    const presentation = await createPresentation({
+    let presentation = await createPresentation({
       credentials: [
         // credential
       ],
       holder: signerDid,
-      signers: [signer],
-      // purpose: 'authentication',
       verifier: 'did:web:example.com',
-      challenge,
       validFrom: new Date(),
       validUntil: new Date(Date.now() + 10_000),
+    })
+
+    presentation = await signWithDid({
+      signerDid,
+      document: presentation,
+      signers: [signer],
+      challenge,
     })
 
     const result = await verifyPresentation(presentation, {
