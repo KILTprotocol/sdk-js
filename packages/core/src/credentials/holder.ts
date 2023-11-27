@@ -6,7 +6,7 @@
  */
 
 // @ts-expect-error not a ts dependency
-import jsonpath from 'jsonpath'
+import jsonpointer from 'json-pointer'
 
 import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
 import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
@@ -20,34 +20,34 @@ import { VerifiableCredential, VerifiablePresentation } from './V1/types.js'
 import { HolderOptions } from './interfaces.js'
 import { KiltAttestationProofV1, KiltCredentialV1, Types } from './V1/index.js'
 
-function pathToAttributeNames(
+function pointerToAttributeName(
   credential: VerifiableCredential,
-  path: string,
-  throwIfNotSubject = false
-): string[] {
-  const paths: Array<Array<string | number>> = jsonpath.paths(credential, path)
-  if (paths.length === 0) {
-    throw new SDKErrors.SDKError(`no value at path ${path}`)
+  pointer: string,
+  throwIfMandatory = false
+): string {
+  if (jsonpointer.has(credential, pointer) !== true) {
+    throw new SDKErrors.SDKError(`No value at pointer ${pointer}`)
   }
-  return paths.flatMap(([, topLevel, property, ...rest]) => {
-    if (topLevel !== 'credentialSubject') {
-      if (throwIfNotSubject) {
-        throw new SDKErrors.SDKError(
-          'only top-level properties of `credentialSubject` (matching $.credentialSubject[*]) can be hidden'
-        )
-      }
-      return []
-    }
-    if (rest.length !== 0) {
+  const [topLevel, property, ...rest]: Array<string | number> =
+    jsonpointer.parse(credential, pointer)
+  if (
+    topLevel !== 'credentialSubject' ||
+    typeof property === 'undefined' ||
+    rest.length !== 0
+  ) {
+    throw new SDKErrors.SDKError(
+      `Selective disclosure not enabled for attribute ${pointer}. Pointers should follow the pattern '/credentialSubject/{attribute}' as for this proof type, selective disclosure is enabled only for top-level properties of 'credentialSubject'.`
+    )
+  }
+  if (property === 'id' || property === '@context') {
+    if (throwIfMandatory) {
       throw new SDKErrors.SDKError(
-        'only top-level properties of `credentialSubject` (matching $.credentialSubject[*]) can be hidden'
+        `Mandatory attribute cannot be hidden (${pointer})`
       )
     }
-    if (typeof property === 'undefined') {
-      return Object.keys(credential.credentialSubject)
-    }
-    return [String(property)]
-  })
+    return property
+  }
+  return String(property)
 }
 
 /**
@@ -57,10 +57,11 @@ function pathToAttributeNames(
  * @param proofOptions Options for creating the derived proof.
  * @param proofOptions.disclose Allows selecting which claims/attributes in the credential should be disclosed, hiding others.
  * @param proofOptions.disclose.only An array of credentialPath expressions selecting attributes to be disclosed.
- * All other attributes that can be hidden will be hidden.
+ * All other (non-mandatory) attributes that can be hidden will be hidden.
  * Takes precedence over `allBut`.
  * @param proofOptions.disclose.allBut An array of credentialPath expressions selecting attributes to be hidden.
  * This means that all other properties are being revealed.
+ * Selecting mandatory properties will result in an error.
  * It is ignored if `only` is set.
  * @returns A copy of the original credential and proof, altered according to the derivation rules and `proofOptions`.
  */
@@ -86,9 +87,7 @@ export async function deriveProof(
       if (only) {
         const attributes = new Set<string>()
         only.forEach((path) => {
-          pathToAttributeNames(credential, path, false).forEach((p) =>
-            attributes.add(p)
-          )
+          attributes.add(pointerToAttributeName(credential, path, false))
         })
         discloseProps = Array.from(attributes)
       } else if (allBut) {
@@ -96,9 +95,7 @@ export async function deriveProof(
           Object.keys(credential.credentialSubject)
         )
         allBut.forEach((path) => {
-          pathToAttributeNames(credential, path, true).forEach((p) =>
-            attributes.delete(p)
-          )
+          attributes.delete(pointerToAttributeName(credential, path, true))
         })
         discloseProps = Array.from(attributes)
       } else {
