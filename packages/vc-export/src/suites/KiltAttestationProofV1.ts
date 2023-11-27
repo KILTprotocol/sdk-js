@@ -37,14 +37,17 @@ interface CallArgs {
   [key: string]: unknown
 }
 
-export type CredentialStub = Pick<Types.KiltCredentialV1, 'credentialSubject'> &
-  Partial<Types.KiltCredentialV1>
+export type CredentialStub = Pick<
+  KiltCredentialV1.Interface,
+  'credentialSubject'
+> &
+  Partial<KiltCredentialV1.Interface>
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private ctypes: ICType[]
   private attestationInfo = new Map<
-    Types.KiltCredentialV1['id'],
-    Types.KiltAttestationProofV1
+    KiltCredentialV1.Interface['id'],
+    KiltAttestationProofV1.Interface
   >()
 
   public readonly contextUrl = KiltCredentialV1.CONTEXT_URL
@@ -70,7 +73,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the [[KiltRevocationStatusV1]] method.
    */
   public get checkStatus(): (args: {
-    credential: Types.KiltCredentialV1
+    credential: KiltCredentialV1.Interface
   }) => Promise<{ verified: boolean; error?: unknown }> {
     return async ({ credential }) => {
       return KiltRevocationStatusV1.check(credential)
@@ -100,8 +103,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         throw new TypeError('document is required for verification')
       }
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
-      const proof = options.proof as Types.KiltAttestationProofV1
-      const document = options.document as unknown as Types.KiltCredentialV1
+      const proof = options.proof as KiltAttestationProofV1.Interface
+      const document = options.document as unknown as KiltCredentialV1.Interface
       const loadCTypes: CType.CTypeLoader = async (id) => {
         const { document: ctype } = (await options.documentLoader?.(id)) ?? {}
         if (!CType.isICType(ctype)) {
@@ -179,8 +182,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     document,
   }: {
     document: object
-  }): Promise<Types.KiltAttestationProofV1> {
-    const credential = document as Types.KiltCredentialV1
+  }): Promise<KiltAttestationProofV1.Interface> {
+    const credential = document as KiltCredentialV1.Interface
     KiltCredentialV1.validateStructure(credential)
     const { id } = credential
     const proof = this.attestationInfo.get(id)
@@ -207,7 +210,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     input: CredentialStub,
     issuer: DidDocument | Did,
     submissionOptions: Parameters<typeof KiltAttestationProofV1.issue>['2']
-  ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
+  ): Promise<Omit<KiltCredentialV1.Interface, 'proof'>> {
     const { credentialSubject, type } = input
 
     let cType = type?.find((str): str is ICType['$id'] =>

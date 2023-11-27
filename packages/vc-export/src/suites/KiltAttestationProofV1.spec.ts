@@ -75,8 +75,8 @@ const { genesisHash } = mockedApi
 const ctypeHash = ingosCredential.type[2].split(':')[2] as HexString
 
 const attestedVc = KiltAttestationProofV1.finalizeProof(
-  { ...ingosCredential } as unknown as Types.KiltCredentialV1,
-  ingosCredential.proof as Types.KiltAttestationProofV1,
+  { ...ingosCredential } as unknown as KiltCredentialV1.Interface,
+  ingosCredential.proof as KiltAttestationProofV1.Interface,
   { blockHash, timestamp, genesisHash }
 )
 
@@ -154,7 +154,7 @@ const documentLoader = combineDocumentLoaders([
 
 let suite: KiltAttestationV1Suite
 let purpose: KiltAttestationProofV1Purpose
-let proof: Types.KiltAttestationProofV1
+let proof: KiltAttestationProofV1.Interface
 let keypair: KiltKeyringPair
 let didDocument: DidDocument
 
@@ -163,7 +163,7 @@ beforeAll(async () => {
     ctypes: [cType, emailCType],
   })
   purpose = new KiltAttestationProofV1Purpose()
-  proof = attestedVc.proof as Types.KiltAttestationProofV1
+  proof = attestedVc.proof as KiltAttestationProofV1.Interface
   ;({ keypair, didDocument } = await makeFakeDid())
 })
 
@@ -258,7 +258,7 @@ describe('jsigs', () => {
 
   it('detects tampering on claims', async () => {
     // make a copy
-    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+    const tamperCred: KiltCredentialV1.Interface = JSON.parse(
       JSON.stringify(attestedVc)
     )
     tamperCred.credentialSubject.Email = 'macgyver@google.com'
@@ -268,7 +268,7 @@ describe('jsigs', () => {
   })
 
   it('detects tampering on credential', async () => {
-    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+    const tamperCred: KiltCredentialV1.Interface = JSON.parse(
       JSON.stringify(attestedVc)
     )
     tamperCred.id = tamperCred.id.replace('1', '2') as any
@@ -278,7 +278,7 @@ describe('jsigs', () => {
   })
 
   it('detects signer mismatch', async () => {
-    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+    const tamperCred: KiltCredentialV1.Interface = JSON.parse(
       JSON.stringify(attestedVc)
     )
     tamperCred.issuer =
@@ -289,7 +289,7 @@ describe('jsigs', () => {
   })
 
   it('detects proof mismatch', async () => {
-    const tamperCred: Types.KiltCredentialV1 = JSON.parse(
+    const tamperCred: KiltCredentialV1.Interface = JSON.parse(
       JSON.stringify(attestedVc)
     )
     tamperCred.proof!.type = 'Sr25519Signature2020' as any
@@ -482,7 +482,7 @@ describe('issuance', () => {
   })
 
   it('issues a credential via vc-js', async () => {
-    let newCred: Partial<Types.KiltCredentialV1> =
+    let newCred: Partial<KiltCredentialV1.Interface> =
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
         issuer,
@@ -554,7 +554,7 @@ describe('issuance', () => {
       suite: issuanceSuite,
       documentLoader,
       purpose,
-    })) as Types.KiltCredentialV1
+    })) as KiltCredentialV1.Interface
     expect(newCred['@context']).toContain(KiltCredentialV1.CONTEXT_URL)
 
     await expect(

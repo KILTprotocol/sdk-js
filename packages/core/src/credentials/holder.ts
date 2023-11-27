@@ -18,7 +18,8 @@ import * as Presentation from './presentation/index.js'
 import * as DataIntegrity from './proofs/DataIntegrity.js'
 import { VerifiableCredential, VerifiablePresentation } from './V1/types.js'
 import { HolderOptions } from './interfaces.js'
-import { KiltAttestationProofV1, KiltCredentialV1, Types } from './V1/index.js'
+import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
+import { getProof } from './proofs/utils.js'
 
 function pointerToAttributeName(
   credential: VerifiableCredential,
@@ -75,12 +76,12 @@ export async function deriveProof(
     }
   }
 ): Promise<VerifiableCredential> {
-  const proof = Array.isArray(credential.proof)
-    ? credential.proof[0]
-    : credential.proof
+  const proof = getProof(credential)
   switch (proof.type) {
     case KiltAttestationProofV1.PROOF_TYPE: {
-      KiltCredentialV1.validateStructure(credential as Types.KiltCredentialV1)
+      KiltCredentialV1.validateStructure(
+        credential as KiltCredentialV1.Interface
+      )
 
       const { allBut, only } = proofOptions?.disclose ?? {}
       let discloseProps: string[] = []
@@ -102,8 +103,8 @@ export async function deriveProof(
         return { ...credential }
       }
       const derived = KiltAttestationProofV1.applySelectiveDisclosure(
-        credential as Types.KiltCredentialV1,
-        proof as Types.KiltAttestationProofV1,
+        credential as KiltCredentialV1.Interface,
+        proof as KiltAttestationProofV1.Interface,
         discloseProps
       )
       return { ...derived.credential, proof: derived.proof }

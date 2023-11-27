@@ -18,11 +18,7 @@ import {
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from '../V1/constants.js'
-import {
-  KiltAttestationProofV1,
-  KiltRevocationStatusV1,
-  Types,
-} from '../V1/index.js'
+import { KiltAttestationProofV1, KiltRevocationStatusV1 } from '../V1/index.js'
 import type {
   KiltCredentialV1,
   VerifiableCredential,
@@ -307,7 +303,7 @@ async function verifyCredential(
     proof = getProof(credential)
     await KiltAttestationProofV1.verify(
       credential as KiltCredentialV1,
-      proof as Types.KiltAttestationProofV1
+      proof as KiltAttestationProofV1.Interface
     )
     return {
       verified: true,

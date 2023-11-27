@@ -36,7 +36,7 @@ import { makeStatementsJsonLD } from './utils.js'
 function proofFromICredential(
   credential: ICredential,
   { blockHash }: { blockHash: Uint8Array }
-): Types.KiltAttestationProofV1 {
+): KiltAttestationProofV1.Interface {
   // `block` field is base58 encoding of block hash
   const block = base58Encode(blockHash)
   // `commitments` (claimHashes) are base58 encoded in new format
@@ -76,7 +76,7 @@ function vcFromICredential(
     Parameters<typeof KiltCredentialV1.fromInput>[0],
     'chainGenesisHash' | 'timestamp' | 'issuer'
   >
-): Omit<Types.KiltCredentialV1, 'proof'> {
+): Omit<KiltCredentialV1.Interface, 'proof'> {
   const {
     legitimations: legitimationsInput,
     delegationId,
@@ -122,7 +122,7 @@ type Params = Parameters<typeof vcFromICredential>[1] &
 export function toVc(
   input: ICredential,
   { blockHash, issuer, chainGenesisHash, timestamp }: Params
-): Types.KiltCredentialV1 {
+): KiltCredentialV1.Interface {
   const proof = proofFromICredential(input, { blockHash })
   return {
     ...vcFromICredential(input, { issuer, chainGenesisHash, timestamp }),
@@ -136,7 +136,7 @@ export function toVc(
  * @param input A [[KiltCredentialV1]] object with embedded [[KiltAttestationProofV1]] proof.
  * @returns An ICredential. Depending on the input, legitimations may be merely consist of the credential id instead of full ICredentials.
  */
-export function fromVC(input: Types.KiltCredentialV1): ICredential {
+export function fromVC(input: KiltCredentialV1.Interface): ICredential {
   const {
     id: owner,
     '@context': { '@vocab': vocab },

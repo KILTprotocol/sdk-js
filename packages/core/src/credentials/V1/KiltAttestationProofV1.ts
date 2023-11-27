@@ -81,6 +81,8 @@ import type {
 import { CTypeLoader } from '../ctype/CTypeLoader.js'
 import { KiltRevocationStatusV1 } from './index.js'
 
+export type Interface = KiltAttestationProofV1
+
 /**
  * Type for backwards-compatible Kilt proof suite.
  */
@@ -339,7 +341,11 @@ async function verifyLegitimation(
 export async function verify(
   credentialInput: Omit<KiltCredentialV1, 'proof'>,
   proof: KiltAttestationProofV1,
-  opts: { api?: ApiPromise; cTypes?: ICType[]; loadCTypes?: CTypeLoader } = {}
+  opts: {
+    api?: ApiPromise
+    cTypes?: ICType[]
+    loadCTypes?: CTypeLoader | false
+  } = {}
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { proof: _, ...credential } = credentialInput as KiltCredentialV1
@@ -509,7 +515,7 @@ export function applySelectiveDisclosure(
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
   if (statementsOriginal.length !== proofInput.salt.length)
     throw new SDKErrors.ProofMalformedError(
-      'Violated expectation: number of normalized statements === number of salts'
+      'Violated expectation: number of normalized statements !== number of salts'
     )
   // 2. Filter credentialSubject for claims to be revealed
   const reducedSubject = Object.entries(credentialSubject).reduce(

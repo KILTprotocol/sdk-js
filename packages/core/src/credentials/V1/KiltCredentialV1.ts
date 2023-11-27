@@ -39,6 +39,8 @@ export {
   getDelegationNodeIdForCredential as getDelegationId,
 } from './common.js'
 
+export type Interface = KiltCredentialV1
+
 /**
  * Credential context URL required for Kilt credentials.
  */

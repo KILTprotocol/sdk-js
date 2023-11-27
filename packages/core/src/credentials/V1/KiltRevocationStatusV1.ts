@@ -22,6 +22,8 @@ import {
 } from './common.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 
+export type Interface = KiltRevocationStatusV1
+
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**

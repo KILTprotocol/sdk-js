@@ -8,7 +8,7 @@
 import type { Did, ICType, IClaimContents } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { KiltAttestationProofV1, KiltCredentialV1, Types } from './V1/index.js'
+import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
 import type { UnsignedVc, VerifiableCredential } from './V1/types.js'
 import type { CTypeLoader } from './ctype/index.js'
 import type { IssuerOptions } from './interfaces.js'
@@ -57,14 +57,14 @@ export async function createCredential({
     case undefined:
     case KiltCredentialV1.CREDENTIAL_TYPE: {
       legitimations.forEach((i) => {
-        KiltCredentialV1.validateStructure(i as Types.KiltCredentialV1)
+        KiltCredentialV1.validateStructure(i as KiltCredentialV1.Interface)
       })
       const credential = KiltCredentialV1.fromInput({
         issuer,
         subject,
         cType: cType.$id,
         claims: claims as IClaimContents,
-        legitimations: legitimations as Types.KiltCredentialV1[],
+        legitimations: legitimations as KiltCredentialV1.Interface[],
       })
 
       let loadCTypes: CTypeLoader | false = false
@@ -135,7 +135,7 @@ export async function issue(
       const { didDocument, did } = issuer
 
       const cred = await KiltAttestationProofV1.issue(
-        credential as Types.KiltCredentialV1,
+        credential as KiltCredentialV1.Interface,
         didDocument ?? did,
         issuer
       )

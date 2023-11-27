@@ -18,7 +18,6 @@ import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 import {
   KiltCredentialV1,
-  Types,
   KiltAttestationProofV1,
 } from '@kiltprotocol/core'
 
@@ -159,7 +158,7 @@ const _credential = JSON.stringify({
 })
 
 // eslint-disable-next-line import/no-mutable-exports
-export let credential: Types.KiltCredentialV1 = JSON.parse(_credential)
+export let credential: KiltCredentialV1.Interface = JSON.parse(_credential)
 beforeEach(() => {
   credential = JSON.parse(_credential)
 })
