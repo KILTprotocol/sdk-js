@@ -5,37 +5,47 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Proof, VerifiableCredential } from '../V1/types.js'
+import { SDKErrors } from '@kiltprotocol/utils'
 
-export interface VerificationResult {
-  verified: boolean
-  error?: string[]
+import type { Proof } from '../V1/types.js'
+
+/**
+ * Converts the input value to an instance of Error.
+ *
+ * @param input Some value.
+ * @param constructor The Error (sub-)class to be instantiated, if input is not yet an error.
+ * @returns An instance of Error.
+ */
+export function toError(
+  input: unknown,
+  constructor = SDKErrors.SDKError
+): Error {
+  if (input instanceof Error) {
+    return input
+  }
+  return new constructor(String(input))
 }
 
 /**
- * Aligning with jsonld-signatures (https://github.com/digitalbazaar/jsonld-signatures/blob/0dbe528e2cd2881b276932b503b9598a850ab8d6/lib/ProofSet.js#L153).
+ * Appends errors to an array on the `error` property of `input`.
+ * Creates the property if it does not yet exist.
+ * All operations happen in-place and modify the input object.
+ *
+ * @param input The object to be modified.
+ * @param input.error If present, this should be an array of `Error` instances.
+ * @param newErrors One or more instances of `Error` to be appended to `input.error`.
  */
-export interface ProofSetResult extends VerificationResult {
-  results: Array<VerificationResult & { proof: Proof }>
+export function appendErrors(
+  input: { error?: Error[] | undefined },
+  ...newErrors: Error[]
+): void {
+  if (Array.isArray(input.error)) {
+    input.error.push(...newErrors)
+    return
+  }
+  // eslint-disable-next-line no-param-reassign
+  input.error = newErrors
 }
-
-/**
- * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L87-L91).
- */
-export interface VerifyCredentialResult extends ProofSetResult {
-  credential: VerifiableCredential
-  statusResult?: VerificationResult
-}
-
-/**
- * Aligning with @digitalbazaar/vc (https://github.com/digitalbazaar/vc/blob/304dac0be9c7f7b5a80a6d7e4b9079ac713c3b0b/lib/index.js#L79-L83).
- */
-export interface VerifyPresentationResult extends VerificationResult {
-  presentationResult: ProofSetResult
-  credentialResults: VerifyCredentialResult[]
-}
-
-export type SecuredDocument = { proof: Proof[] | Proof }
 
 /**
  * Retrieves the proof from the proof property of a document. Throws if no proof or multiple proofs (i.e., a proof set/chain) is found on the document.

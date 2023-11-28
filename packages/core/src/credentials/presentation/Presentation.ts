@@ -7,30 +7,26 @@
 
 import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
 import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
-import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+
+import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import type { Did } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
+import { resolve } from '@kiltprotocol/did'
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
   W3C_PRESENTATION_TYPE,
 } from '../V1/constants.js'
-import { KiltAttestationProofV1, KiltRevocationStatusV1 } from '../V1/index.js'
 import type {
-  KiltCredentialV1,
   VerifiableCredential,
   VerifiablePresentation,
 } from '../V1/types.js'
+import { VerifyPresentationResult } from '../interfaces.js'
 import * as DataIntegrity from '../proofs/DataIntegrity.js'
-import {
-  VerificationResult,
-  VerifyCredentialResult,
-  VerifyPresentationResult,
-  getProof,
-} from '../proofs/utils.js'
+import { appendErrors, getProof, toError } from '../proofs/utils.js'
 
 export const presentationSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -212,52 +208,73 @@ export async function create({
   return presentation
 }
 
-async function verifyPresentation(
+/**
+ * Verifies the proofs on a Verifiable Presentation. Does not verify the credentials contained within.
+ *
+ * @param presentation - The Verifiable Presentation to be verified.
+ * @param options - Verification options.
+ * @param options.now - The reference time for verification as Date (default is current time).
+ * @param options.challenge - The expected challenge value for the presentation, if any.
+ * @param options.domain - Expected domain for the proof. Verification fails if mismatched.
+ * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
+ * @param options.verifier - The expected verifier for the presentation, if any.
+ * @param options.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ * @param options.didResolver - An alterative DID resolver to resolve the holder DID (defaults to {@link resolve}).
+ * @param options.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
+ * If specified, verification fails if the proof is issued for a different purpose.
+ * @returns An object representing the verification results of the presentation proofs.
+ */
+export async function verifyPresentationProof(
   presentation: VerifiablePresentation,
   {
-    now,
-    tolerance,
+    now = new Date(),
+    tolerance = 0,
     challenge,
     verifier,
     domain,
-    cryptosuites,
+    cryptosuites = [eddsaSuite, ecdsaSuite, sr25519Suite],
+    didResolver,
+    proofPurpose,
   }: {
-    now: Date
-    tolerance: number
-    cryptosuites: Array<CryptoSuite<any>>
+    now?: Date
+    tolerance?: number
+    cryptosuites?: Array<CryptoSuite<any>>
     challenge?: string
     domain?: string
-    verifier?: string
+    verifier?: string | undefined
+    didResolver?: typeof resolve
+    proofPurpose?: string
   }
-): Promise<VerifyPresentationResult['presentationResult']> {
-  const result: VerifyPresentationResult['presentationResult'] = {
+): Promise<Omit<VerifyPresentationResult, 'credentialResults'>> {
+  const result: VerifyPresentationResult = {
     verified: false,
-    results: [],
   }
-  const errors: string[] = []
   try {
     validateStructure(presentation)
     if (presentation.verifier && verifier !== presentation.verifier) {
-      errors.push(
-        'presentation.verifier is set but does not match the verifier option'
+      appendErrors(
+        result,
+        toError(
+          'presentation.verifier is set but does not match the verifier option'
+        )
       )
     }
     if (
       presentation.issuanceDate &&
       Date.parse(presentation.issuanceDate) > now.getTime() + tolerance
     ) {
-      errors.push('presentation.issuanceDate > now')
+      appendErrors(result, toError('presentation.issuanceDate > now'))
     }
     if (
       presentation.expirationDate &&
       Date.parse(presentation.expirationDate) < now.getTime() - tolerance
     ) {
-      errors.push('presentation.expirationDate < now')
+      appendErrors(result, toError('presentation.expirationDate < now'))
     }
 
     assertHolderCanPresentCredentials(presentation)
 
-    if (errors.length === 0) {
+    if (typeof result.error === 'undefined' || result.error.length === 0) {
       const proof = getProof(presentation)
       try {
         const verified = await DataIntegrity.verifyProof(
@@ -270,172 +287,28 @@ async function verifyPresentation(
             expectedController: presentation.holder,
             tolerance,
             now,
+            didResolver,
+            expectedProofPurpose: proofPurpose,
           }
         )
-        result.results = [{ verified, proof }]
+        result.proofResults = [{ verified, proof }]
       } catch (proofError) {
-        const errorStr = String(proofError)
-        result.results = [{ verified: false, error: [errorStr], proof }]
-        errors.push(errorStr)
+        const error = toError(proofError)
+        result.proofResults = [{ verified: false, error: [error], proof }]
+        appendErrors(result, error)
       }
 
-      result.verified = result.results.every(({ verified }) => verified)
+      result.verified = result.proofResults.every(({ verified }) => verified)
     }
-    if (errors.length === 0) {
-      result.error = undefined
-    } else {
-      result.error = errors
+    if (result.error?.length === 0) {
+      delete result.error
+    }
+    if (result.error) {
       result.verified = false
     }
   } catch (e) {
-    errors.push(String(e))
     result.verified = false
-    result.error = errors
+    appendErrors(result, toError(e))
   }
   return result
-}
-
-async function verifyCredential(
-  credential: VerifiableCredential
-): Promise<VerifyCredentialResult> {
-  let proof
-  try {
-    proof = getProof(credential)
-    await KiltAttestationProofV1.verify(
-      credential as KiltCredentialV1,
-      proof as KiltAttestationProofV1.Interface
-    )
-    return {
-      verified: true,
-      credential,
-      results: [{ verified: true, proof }],
-    }
-  } catch (error) {
-    return {
-      verified: false,
-      credential,
-      error: [String(error)],
-      results: proof
-        ? [{ verified: false, error: [String(error)], proof }]
-        : [],
-    }
-  }
-}
-
-async function checkStatus(
-  credential: VerifiableCredential
-): Promise<VerificationResult> {
-  try {
-    await KiltRevocationStatusV1.check(credential as KiltCredentialV1)
-    return { verified: true }
-  } catch (e) {
-    return { verified: false, error: [String(e)] }
-  }
-}
-
-/**
- * Verifies a given Verifiable Presentation and its associated Verifiable Credentials.
- *
- * This function:
- * - Verifies the integrity of the presentation by verifying the embedded data integrity proofs.
- * - If the presentation is valid, verifies each associated credential.
- * - Checks the status of each verified credential.
- * - Returns a composite verification result for the presentation and each credential.
- *
- * @param presentation - The Verifiable Presentation to be verified.
- * @param options - Verification options.
- * @param options.now - The reference time for verification as Date (default is current time).
- * @param options.challenge - The expected challenge value for the presentation, if any.
- * @param options.domain - Expected domain for the proof. Verification fails if mismatched.
- * @param options.cryptosuites - Array of cryptographic suites to use during verification (default includes suites for `sr25519-jcs-2023`, `eddsa-jcs-2022`, and `es256k-jcs-2023`).
- * @param options.verifier - The expected verifier for the presentation, if any. This is set as the proof `domain` as well.
- * @param options.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- *
- * @returns An object representing the verification results of the presentation and each associated credential.
- */
-export async function verify(
-  presentation: VerifiablePresentation,
-  {
-    now = new Date(),
-    tolerance = 0,
-    cryptosuites = [sr25519Suite, eddsaSuite, ecdsaSuite],
-    challenge,
-    domain,
-    verifier,
-  }: {
-    now?: Date
-    challenge?: string
-    domain?: string
-    cryptosuites?: Array<CryptoSuite<any>>
-    verifier?: string
-    tolerance?: number
-  } = {}
-): Promise<VerifyPresentationResult> {
-  let presentationResult: VerifyPresentationResult['presentationResult'] = {
-    verified: false,
-    error: [],
-    results: [],
-  }
-  let credentialResults: VerifyPresentationResult['credentialResults'] = []
-  try {
-    presentationResult = await verifyPresentation(presentation, {
-      now,
-      challenge,
-      verifier,
-      tolerance,
-      cryptosuites,
-      domain,
-    })
-
-    if (presentationResult.verified !== true) {
-      return {
-        verified: false,
-        error: presentationResult.error,
-        presentationResult,
-        credentialResults: [],
-      }
-    }
-    const credentials = Array.isArray(presentation.verifiableCredential)
-      ? presentation.verifiableCredential
-      : [presentation.verifiableCredential]
-
-    credentialResults = await Promise.all(
-      credentials.map((credential) => verifyCredential(credential))
-    )
-
-    await Promise.all(
-      credentials.map(async (credential, i) => {
-        if (credentialResults[i].verified) {
-          const statusResult = await checkStatus(credential)
-          credentialResults[i].statusResult = statusResult
-          if (statusResult.verified !== true) {
-            credentialResults[i].verified = false
-          }
-        }
-      })
-    )
-  } catch (e) {
-    if (presentationResult.error) {
-      presentationResult.error.push(String(e))
-    } else {
-      presentationResult.error = [String(e)]
-    }
-    presentationResult.verified = false
-  }
-  const verified =
-    presentationResult.verified === true &&
-    credentialResults.every((result) => result.verified === true)
-  const error = [
-    ...(presentationResult.error ?? []),
-    ...credentialResults.flatMap((result) => [
-      ...(result.error ?? []),
-      ...(result.statusResult?.error ?? []),
-    ]),
-  ]
-  return {
-    verified,
-    presentationResult,
-    credentialResults,
-    ...(error.length === 0 ? undefined : { error }),
-  }
 }

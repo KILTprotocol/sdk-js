@@ -26,7 +26,7 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
-import type { SecuredDocument } from './utils.js'
+import type { SecuredDocument } from '../interfaces.js'
 
 export const PROOF_TYPE = 'DataIntegrityProof'
 
@@ -301,11 +301,12 @@ export class INVALID_PROOF_PURPOSE_FOR_VERIFICATION_METHOD extends Error {
 }
 
 async function retrieveVerificationMethod(
-  proof: DataIntegrityProof
+  proof: DataIntegrityProof,
+  resolver: typeof resolve
 ): Promise<VerificationMethod> {
   const { did } = parse(proof.verificationMethod as DidUrl)
   const { didDocument, didDocumentMetadata, didResolutionMetadata } =
-    await resolve(did)
+    await resolver(did)
   if (didDocumentMetadata.deactivated) {
     throw new SDKErrors.DidDeactivatedError()
   }
@@ -352,7 +353,7 @@ async function retrieveVerificationMethod(
  * @param proofOptions.challenge - Expected challenge for the proof. Throws if mismatched.
  * @param proofOptions.now - The reference time for verification as Date (default is current time).
  * @param proofOptions.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- *
+ * @param proofOptions.didResolver - An alterative DID resolver to resolve the holder DID (defaults to {@link resolve}).
  * @returns Returns true if the verification is successful; otherwise, it returns false or throws an error.
  */
 export async function verifyProof(
@@ -366,6 +367,7 @@ export async function verifyProof(
     challenge?: string
     now?: Date
     tolerance?: number
+    didResolver?: typeof resolve
   }
   // TODO: make VerificationResult?
 ): Promise<boolean> {
@@ -406,7 +408,10 @@ export async function verifyProof(
   }
   const signature = base58Decode(proof.proofValue.slice(1))
   // retrieve verification method and create verifier
-  const verificationMethod = await retrieveVerificationMethod(proof)
+  const verificationMethod = await retrieveVerificationMethod(
+    proof,
+    proofOptions.didResolver ?? resolve
+  )
   if (
     proofOptions.expectedController &&
     verificationMethod.controller !== proofOptions.expectedController
@@ -448,4 +453,22 @@ export async function verifyProof(
   }
   // return result
   return verified
+}
+
+/**
+ * Matches a string identifying an algorithm or suite to the respective cryptosuite implementation, if known.
+ *
+ * @param nameOrAlgorithm The name of a suite or the signature algorithm it uses.
+ * @returns The cryptosuite implementation, or undefined.
+ */
+export function getCryptosuiteByNameOrAlgorithm(
+  nameOrAlgorithm: string
+): CryptoSuite<any> | undefined {
+  const cryptosuites = [sr25519Suite, ecdsaSuite, eddsaSuite]
+
+  // we're being generous here, so 'ed25519' works just as well as 'eddsa-jcs-2022'
+  return cryptosuites.find(
+    ({ requiredAlgorithm, name }) =>
+      nameOrAlgorithm === name || nameOrAlgorithm === requiredAlgorithm
+  )
 }

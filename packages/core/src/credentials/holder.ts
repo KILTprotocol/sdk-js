@@ -7,18 +7,16 @@
 
 // @ts-expect-error not a ts dependency
 import jsonpointer from 'json-pointer'
-
-import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
-import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
-import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import { Did } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import * as Presentation from './presentation/index.js'
-import * as DataIntegrity from './proofs/DataIntegrity.js'
+
+import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
 import { VerifiableCredential, VerifiablePresentation } from './V1/types.js'
 import { HolderOptions } from './interfaces.js'
-import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
+import * as Presentation from './presentation/index.js'
+import * as DataIntegrity from './proofs/DataIntegrity.js'
 import { getProof } from './proofs/utils.js'
 
 function pointerToAttributeName(
@@ -174,13 +172,9 @@ export async function createPresentation(
     verifier,
   })
 
-  let cryptosuites = [sr25519Suite, ecdsaSuite, eddsaSuite]
-  if (proofType && proofType !== DataIntegrity.PROOF_TYPE) {
-    // we're being generous here, so 'ed25519' works just as well as 'eddsa-jcs-2022'
-    const suite = cryptosuites.find(
-      ({ requiredAlgorithm, name }) =>
-        proofType === name || proofType === requiredAlgorithm
-    )
+  let cryptosuites: Array<CryptoSuite<any>> | undefined
+  if (proofType) {
+    const suite = DataIntegrity.getCryptosuiteByNameOrAlgorithm(proofType)
     if (!suite) {
       throw new Error(
         `could not match proofType ${proofType} to a known proof type or cryptosuite`

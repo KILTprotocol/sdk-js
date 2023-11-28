@@ -10,6 +10,8 @@ import type { Did, DidDocument } from '@kiltprotocol/types'
 import type { Proof, VerifiableCredential } from './V1/types'
 import type { IssueOpts } from './V1/KiltAttestationProofV1'
 
+export type SecuredDocument = { proof: Proof[] | Proof }
+
 export interface HolderOptions {
   did: Did
   didDocument?: DidDocument
@@ -18,20 +20,27 @@ export interface HolderOptions {
 
 export type IssuerOptions = HolderOptions & IssueOpts
 
-export interface CredentialStatusResult {
+export interface VerificationResult {
   verified: boolean
-  error?: string[]
-  status: string
+  error?: Error[]
 }
 
-export interface VerifyCredentialResult {
-  verified: boolean
-  error?: string[]
-  proofResults: Array<{
-    verified: boolean
-    error?: string[]
-    proof: Proof
-  }>
-  credential: VerifiableCredential
+export interface CredentialStatusResult extends VerificationResult {
+  status?: string
+}
+
+interface ProofSetResult extends VerificationResult {
+  proofResults?: Array<VerificationResult & { proof: Proof }>
+}
+
+export interface VerifyCredentialResult extends ProofSetResult {
   statusResult?: CredentialStatusResult
+}
+
+export interface VerifyPresentationResult extends ProofSetResult {
+  credentialResults?: Array<
+    VerifyCredentialResult & {
+      credential: VerifiableCredential
+    }
+  >
 }
