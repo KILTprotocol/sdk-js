@@ -29,7 +29,6 @@ import type {
   KiltAddress,
   KiltKeyringPair,
   SignerInterface,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import {
@@ -466,19 +465,16 @@ describe('issuance', () => {
         },
       }
     },
-    authorizeTx: async (tx) => tx,
+    authorizeTx: async (tx) => {
+      txArgs = tx.args
+      return tx
+    },
   }
   beforeEach(() => {
     toBeSigned = {
       credentialSubject: attestedVc.credentialSubject,
     }
     issuanceSuite = new KiltAttestationV1Suite()
-    jest
-      .mocked(Did.authorizeTx)
-      .mockImplementation(async (...[, extrinsic]) => {
-        txArgs = extrinsic.args
-        return extrinsic as SubmittableExtrinsic
-      })
   })
 
   it('issues a credential via vc-js', async () => {
@@ -512,6 +508,7 @@ describe('issuance', () => {
     )
     expect(newCred.id).not.toMatch(attestedVc.id)
 
+    expect(txArgs).toBeDefined()
     jest
       .mocked(mockedApi.query.system.events)
       .mockResolvedValueOnce(
