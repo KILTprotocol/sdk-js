@@ -24,11 +24,11 @@ function pointerToAttributeName(
   pointer: string,
   throwIfMandatory = false
 ): string {
-  if (jsonpointer.has(credential, pointer) !== true) {
+  const parsed: Array<string | number> = jsonpointer.parse(pointer)
+  if (jsonpointer.has(credential, parsed) !== true) {
     throw new SDKErrors.SDKError(`No value at pointer ${pointer}`)
   }
-  const [topLevel, property, ...rest]: Array<string | number> =
-    jsonpointer.parse(credential, pointer)
+  const [topLevel, property, ...rest] = parsed
   if (
     topLevel !== 'credentialSubject' ||
     typeof property === 'undefined' ||
