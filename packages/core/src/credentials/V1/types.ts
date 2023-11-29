@@ -55,7 +55,10 @@ export interface UnsignedVc {
   /**
    * Claims about the subjects of the credential.
    */
-  credentialSubject: { id?: string }
+  credentialSubject: {
+    id?: string
+    [key: string]: unknown
+  }
   /**
    * The entity that issued the credential.
    */

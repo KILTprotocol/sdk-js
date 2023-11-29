@@ -291,6 +291,9 @@ export async function verifyPresentationProof(
             expectedProofPurpose: proofPurpose,
           }
         )
+        if (verified !== true) {
+          throw new SDKErrors.SignatureUnverifiableError()
+        }
         result.proofResults = [{ verified, proof }]
       } catch (proofError) {
         const error = toError(proofError)

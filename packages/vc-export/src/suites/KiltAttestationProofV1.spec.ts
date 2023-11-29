@@ -132,7 +132,7 @@ jest.mocked(mockedApi.query.system.events).mockResolvedValue(
 )
 jest
   .mocked(mockedApi.query.timestamp.now)
-  .mockResolvedValue(mockedApi.createType('u64', timestamp) as any)
+  .mockResolvedValue(mockedApi.createType('u64', timestamp.getTime()) as any)
 
 const emailCType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',

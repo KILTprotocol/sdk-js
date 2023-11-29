@@ -125,7 +125,9 @@ mockedApi.query.attestation = {
   ),
 } as any
 mockedApi.query.timestamp = {
-  now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
+  now: jest
+    .fn()
+    .mockResolvedValue(mockedApi.createType('u64', timestamp.getTime())),
 } as any
 
 mockedApi.query.system = {

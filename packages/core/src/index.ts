@@ -17,5 +17,9 @@ export * as CType from './credentials/ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export * as DataIntegrity from './credentials/proofs/DataIntegrity.js'
 
+export * as issuer from './credentials/issuer.js'
+export * as holder from './credentials/holder.js'
+export * as verifier from './credentials/verifier.js'
+
 export { connect, disconnect, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'

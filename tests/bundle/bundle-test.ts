@@ -7,6 +7,7 @@
 
 /// <reference lib="dom" />
 
+import type { KiltCredentialV1 as KiltCredential } from '@kiltprotocol/core'
 import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -23,13 +24,13 @@ const {
   CType,
   Did,
   Blockchain,
-  Utils: { Crypto, ss58Format },
+  Utils: { Crypto, ss58Format, Signers },
   BalanceUtils,
   KiltCredentialV1,
-  KiltAttestationProofV1,
-  KiltRevocationStatusV1,
   Presentation,
-  DataIntegrity,
+  issuer,
+  verifier,
+  holder,
 } = kilt
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
@@ -128,6 +129,9 @@ async function runAll() {
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const payer = Crypto.makeKeypairFromUri(FaucetSeed)
+  const payerSigners = await Signers.getSignersForKeypair({
+    keypair: payer,
+  })
 
   const { keypair: aliceKeypair, getSigners: aliceSign } =
     await makeSigningKeypair('//Alice')
@@ -248,16 +252,13 @@ async function runAll() {
   console.log('Attestation workflow started')
   const content = { name: 'Bob', age: 21 }
 
-  const credential = KiltCredentialV1.fromInput({
-    cType: DriversLicense.$id,
+  const credential = await issuer.createCredential({
+    cType: DriversLicense,
     claims: content,
     subject: bob.id,
     issuer: alice.id,
   })
 
-  await KiltCredentialV1.validateSubject(credential, {
-    cTypes: [DriversLicense],
-  })
   console.info('Credential subject conforms to CType')
 
   if (
@@ -268,49 +269,68 @@ async function runAll() {
     throw new Error('Claim content inside Credential mismatching')
   }
 
-  const issued = await KiltAttestationProofV1.issue(credential, alice.id, {
-    signers: await aliceSign(alice),
+  const issued = await issuer.issue(credential, {
+    did: alice.id,
+    signers: [...(await aliceSign(alice)), ...payerSigners],
     submitterAccount: payer.address,
   })
   console.info('Credential issued')
 
-  KiltCredentialV1.validateStructure(issued)
+  KiltCredentialV1.validateStructure(issued as KiltCredential.Interface)
   console.info('Credential structure validated')
 
-  await KiltAttestationProofV1.verify(issued, issued.proof, {
-    cTypes: [DriversLicense],
-  })
-  console.info('Credential proof verified')
-
-  await KiltRevocationStatusV1.check(issued)
-  console.info('Credential status verified')
+  const credentialResult = await verifier.verifyCredential(
+    issued,
+    {},
+    {
+      ctypeLoader: [DriversLicense],
+    }
+  )
+  if (credentialResult.verified) {
+    console.info('Credential proof verified')
+    console.info('Credential status verified')
+  } else {
+    throw new Error(`Credential failed to verify: ${credentialResult.error}`, {
+      cause: credentialResult,
+    })
+  }
 
   const challenge = kilt.Utils.Crypto.hashStr(
     kilt.Utils.Crypto.mnemonicGenerate()
   )
-  let presentation = await Presentation.create({
-    credentials: [issued],
-    holder: bob.id,
+
+  const derived = await holder.deriveProof(issued, {
+    disclose: { allBut: ['/credentialSubject/name'] },
   })
 
-  presentation = await DataIntegrity.signWithDid({
-    document: presentation,
-    signerDid: bob.id,
-    signers: await bobSign(bob),
-    challenge,
-  })
+  const presentation = await holder.createPresentation(
+    [derived],
+    {
+      did: bob.id,
+      signers: await bobSign(bob),
+    },
+    {},
+    {
+      challenge,
+    }
+  )
   console.info('Presentation created')
 
   Presentation.validateStructure(presentation)
   console.info('Presentation structure validated')
 
-  const result = await Presentation.verify(presentation, { challenge })
-  if (result.verified) {
+  const presentationResult = await verifier.verifyPresentation(presentation, {
+    presentation: { challenge },
+  })
+  if (presentationResult.verified) {
     console.info('Presentation verified')
   } else {
     throw new Error(
-      ['Presentation failed to verify', ...(result.error ?? [])].join('\n  '),
-      { cause: result }
+      [
+        'Presentation failed to verify',
+        ...(presentationResult.error ?? []),
+      ].join('\n  '),
+      { cause: presentationResult }
     )
   }
 }

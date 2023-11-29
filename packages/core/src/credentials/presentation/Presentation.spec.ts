@@ -14,8 +14,9 @@ import type { Did } from '@kiltprotocol/types'
 import { createProof, verifyProof, signWithDid } from '../proofs/DataIntegrity'
 import {
   create as createPresentation,
-  verify as verifyPresentation,
+  verifyPresentationProof,
 } from './Presentation'
+import { VerifyPresentationResult } from '../interfaces'
 
 const credential = {
   '@context': [
@@ -143,16 +144,14 @@ describe('verification', () => {
     ).resolves.toBe(true)
   })
 
-  it('verifies a signed presentation', async () => {
+  it('verifies a presentation proof', async () => {
     const signer = await createSigner({
       seed,
       id: signerDid + keyId,
     })
     const challenge = randomAsHex()
     let presentation = await createPresentation({
-      credentials: [
-        // credential
-      ],
+      credentials: [credential],
       holder: signerDid,
       verifier: 'did:web:example.com',
       validFrom: new Date(),
@@ -166,45 +165,48 @@ describe('verification', () => {
       challenge,
     })
 
-    const result = await verifyPresentation(presentation, {
+    const result = await verifyPresentationProof(presentation, {
       verifier: 'did:web:example.com',
       challenge,
     })
 
-    expect(result).toMatchObject({
+    expect(result).not.toHaveProperty('error')
+    expect(result).toMatchObject<typeof result>({
       verified: true,
-      presentationResult: { verified: true },
+      proofResults: [expect.objectContaining({ verified: true })],
     })
 
     await expect(
-      verifyPresentation(presentation, {
+      verifyPresentationProof(presentation, {
         verifier: 'did:web:example.de',
         challenge,
       })
     ).resolves.toMatchObject({
       verified: false,
-      presentationResult: { verified: false },
+      error: expect.arrayContaining([expect.any(Error)]),
     })
 
     await expect(
-      verifyPresentation(presentation, {
+      verifyPresentationProof(presentation, {
         verifier: 'did:web:example.com',
         challenge: `${challenge}00`,
       })
     ).resolves.toMatchObject({
       verified: false,
-      presentationResult: { verified: false },
+      proofResults: [expect.objectContaining({ verified: false })],
+      error: expect.arrayContaining([expect.any(Error)]),
     })
 
-    presentation.verifiableCredential = [credential]
+    presentation.expirationDate = new Date(2999, 1, 1).toISOString()
     await expect(
-      verifyPresentation(presentation, {
+      verifyPresentationProof(presentation, {
         verifier: 'did:web:example.com',
         challenge,
       })
-    ).resolves.toMatchObject({
+    ).resolves.toMatchObject<VerifyPresentationResult>({
       verified: false,
-      presentationResult: { verified: false },
+      proofResults: [expect.objectContaining({ verified: false })],
+      error: expect.arrayContaining([expect.any(Error)]),
     })
   })
 })
