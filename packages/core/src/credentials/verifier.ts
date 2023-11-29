@@ -27,10 +27,7 @@ import type {
   VerifyPresentationResult,
 } from './interfaces.js'
 import { verifyPresentationProof } from './presentation/Presentation.js'
-import {
-  PROOF_TYPE,
-  getCryptosuiteByNameOrAlgorithm,
-} from './proofs/DataIntegrity.js'
+import * as DataIntegrity from './proofs/DataIntegrity.js'
 import { appendErrors, getProof, toError } from './proofs/utils.js'
 
 /**
@@ -129,7 +126,7 @@ export async function verifyCredential(
       switch (proof.type) {
         case KiltAttestationProofV1.PROOF_TYPE:
           {
-            if (proofPurpose !== 'assertionMethod') {
+            if (proofPurpose && proofPurpose !== 'assertionMethod') {
               throw new SDKErrors.CredentialUnverifiableError(
                 `proofPurpose does not match default purpose for ${KiltAttestationProofV1.PROOF_TYPE} (assertionMethod)`
               )
@@ -208,7 +205,7 @@ export async function verifyCredential(
  * @param verificationCriteria.credentials.proofPurpose See {@link verifyCredential}.
  * @param verificationCriteria.presentation - Verification criteria for presentation verification.
  * @param verificationCriteria.presentation.proofTypes - The types of acceptable proofs on the presentation.
- * Defaults to {@link PROOF_TYPE DataIntegrityProof } which, as of now, is the only type suppported.
+ * Defaults to {@link DataIntegrity.PROOF_TYPE DataIntegrityProof } which, as of now, is the only type suppported.
  * Any other values will be mapped to a known algorithm or cryptosuite for use with this proof type, thus allowing to control the signature algorithm to be used.
  * @param verificationCriteria.presentation.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
  * If specified, verification fails if the proof is issued for a different purpose.
@@ -283,7 +280,7 @@ export async function verifyPresentation(
     let cryptosuites: Array<CryptoSuite<any>> | undefined
     if (presentationProofTypes) {
       cryptosuites = presentationProofTypes.map((proofType) => {
-        const suite = getCryptosuiteByNameOrAlgorithm(proofType)
+        const suite = DataIntegrity.getCryptosuiteByNameOrAlgorithm(proofType)
         if (!suite) {
           throw new Error(
             `could not match proofTypes value ${presentationProofTypes} to a known proof type or cryptosuite`
