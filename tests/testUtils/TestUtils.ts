@@ -140,7 +140,10 @@ export async function makeStoreDidSigner(
     signers,
     Signers.select.verifiableOnChain()
   )
-  return signer!
+  if (!signer) {
+    throw new Error('Failed to derive DID creation signer from keypair')
+  }
+  return signer
 }
 
 export interface KeyTool {

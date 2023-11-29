@@ -28,10 +28,10 @@ const attestationPalletIndex = 62
 mockedApi.once('ready', () => {
   const idx = mockedApi.runtimeMetadata.asLatest.pallets.find((x) =>
     x.name.match(/attestation/i)
-  )!.index
-  if (!idx.eqn(attestationPalletIndex)) {
+  )?.index
+  if (!idx?.eqn(attestationPalletIndex)) {
     console.warn(
-      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx.toNumber()}. This may lead to tests not behaving as expected!`
+      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx?.toNumber()}. This may lead to tests not behaving as expected!`
     )
   }
 })

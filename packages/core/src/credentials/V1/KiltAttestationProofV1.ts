@@ -735,6 +735,7 @@ export async function issue(
     )
   }
 
+  /* eslint-disable @typescript-eslint/no-non-null-assertion -- we've checked the appropriate combination of parameters above, but typescript does not follow */
   const didSigned = authorizeTx
     ? await authorizeTx(call)
     : await didAuthorizeTx(
@@ -748,6 +749,7 @@ export async function issue(
   const transactionPromise = submitTx
     ? submitTx(didSigned)
     : defaultTxSubmit(didSigned, submitterAccount!, signers!, api)
+  /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
   const {
     includedAt: { blockHash, blockTime },
