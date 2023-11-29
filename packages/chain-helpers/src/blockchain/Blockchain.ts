@@ -196,7 +196,7 @@ export async function signAndSubmitTx(
       ? await tx.signAsync(signer, { tip })
       : await tx.signAsync(signer.id, {
           tip,
-          signer: Signers.getExtrinsicSigner([signer]),
+          signer: Signers.getPolkadotSigner([signer]),
         })
   return submitSignedTx(signedTx, opts)
 }

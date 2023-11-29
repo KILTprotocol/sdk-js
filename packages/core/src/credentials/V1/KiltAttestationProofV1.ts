@@ -687,7 +687,7 @@ async function defaultTxSubmit(
   const signed = extrinsic.isSigned
     ? extrinsic
     : await extrinsic.signAsync(submitterAccount, {
-        signer: Signers.getExtrinsicSigner(signers),
+        signer: Signers.getPolkadotSigner(signers),
       })
   const result = await Blockchain.submitSignedTx(signed, {
     resolveOn: Blockchain.IS_FINALIZED,
