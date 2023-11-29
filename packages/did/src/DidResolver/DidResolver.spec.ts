@@ -207,6 +207,17 @@ describe('When dereferencing a verification method', () => {
       dereferencingMetadata: { error: 'invalidDidUrl' },
     })
   })
+
+  it('throws for valid light URLs but with details that cannot be decoded', async () => {
+    const invalidLightDidUrl =
+      `did:kilt:light:00${addressWithAuthenticationKey}:z22222#auth` as DidUrl
+    expect(
+      await Did.dereference(invalidLightDidUrl)
+    ).toStrictEqual<DereferenceResult>({
+      contentMetadata: {},
+      dereferencingMetadata: { error: 'invalidDidUrl' },
+    })
+  })
 })
 
 describe('When resolving a service', () => {
@@ -646,6 +657,14 @@ describe('When resolving a light DID', () => {
       didDocument: {
         id: migratedDid,
       },
+    })
+  })
+
+  it('throws for valid a light DID but with details that cannot be decoded', async () => {
+    const invalidLightDid: KiltDid = `did:kilt:light:00${addressWithAuthenticationKey}:z22222`
+    expect(await Did.resolve(invalidLightDid)).toStrictEqual<ResolutionResult>({
+      didDocumentMetadata: {},
+      didResolutionMetadata: { error: 'invalidDid' },
     })
   })
 })
