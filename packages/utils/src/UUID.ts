@@ -8,7 +8,7 @@
 /**
  * Universally unique identifiers (UUIDs) are needed in KILT to uniquely identify specific information.
  *
- * UUIDs are used for example in [[Credential]] to generate hashes.
+ * UUIDs are used for example in {@link Credential} to generate hashes.
  *
  * @packageDocumentation
  */
