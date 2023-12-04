@@ -15,7 +15,6 @@ import type {
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
-  SignCallback,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'

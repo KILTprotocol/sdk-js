@@ -21,7 +21,7 @@ const multikeyContextsMap: Map<
 
 /**
  * IPFS URL identifying a JSON-LD context file describing terms used in DID documents of the KILT method that are not defined in the W3C DID core context.
- * Should be the third entry in the ordered set of contexts after [[W3C_DID_CONTEXT_URL]] and [[W3C_MULTIKEY_CONTEXT_URL]] in the JSON-LD representation of a KILT DID document.
+ * Should be the third entry in the ordered set of contexts after {@link W3C_DID_CONTEXT_URL} and {@link W3C_MULTIKEY_CONTEXT_URL} in the JSON-LD representation of a KILT DID document.
  */
 export const KILT_DID_CONTEXT_URL =
   'ipfs://QmPtQ7wbdxbTuGugx4nFAyrhspcqXKrnriuGr7x4NYaZYN'
@@ -34,12 +34,12 @@ export const W3C_DID_CONTEXT_URL = 'https://www.w3.org/ns/did/v1'
 /**
  * URL identifying a JSON-LD context file proposed by the W3C Credentials Community Group defining a number of terms which are used in verification methods on KILT DID documents.
  * See https://w3c-ccg.github.io/security-vocab/.
- * This document is extended by the context file available under the [[KILT_DID_CONTEXT_URL]].
+ * This document is extended by the context file available under the {@link KILT_DID_CONTEXT_URL}.
  */
 export const W3C_SECURITY_CONTEXT_URL = securityContexts.SECURITY_CONTEXT_V2_URL
 /**
  * URL identifying a JSON-LD context file proposed by the W3C Credentials Community Group defining the `Multikey` verification method type, used in verification methods on KILT DID documents.
- * This document is extended by the context file available under the [[KILT_DID_CONTEXT_URL]].
+ * This document is extended by the context file available under the {@link KILT_DID_CONTEXT_URL}.
  */
 export const W3C_MULTIKEY_CONTEXT_URL = multikeyContexts.CONTEXT_URL
 /**
