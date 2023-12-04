@@ -134,9 +134,9 @@ export interface DecryptResponseData {
 /**
  * Uses stored key material to decrypt a message encoded as u8a.
  *
- * @param requestData [[DecryptRequestData]] containing both our and their public keys, the nonce used for encryption, the data to be decrypted.
+ * @param requestData {@link DecryptRequestData} containing both our and their public keys, the nonce used for encryption, the data to be decrypted.
  * @param requestData.nonce The random nonce generated during encryption as u8a.
- * @returns A Promise resolving to [[DecryptResponseData]] containing the decrypted message or rejecting if a key is unknown or does not match.
+ * @returns A Promise resolving to {@link DecryptResponseData} containing the decrypted message or rejecting if a key is unknown or does not match.
  */
 export interface DecryptCallback {
   (requestData: DecryptRequestData): Promise<DecryptResponseData>

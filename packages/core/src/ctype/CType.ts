@@ -216,7 +216,7 @@ export function verifyClaimAgainstNestedSchemas(
 /**
  * Checks a CTypeMetadata object.
  *
- * @param metadata [[ICTypeMetadata]] that is to be instantiated.
+ * @param metadata {@link ICTypeMetadata} that is to be instantiated.
  */
 export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   verifyObjectAgainstSchema(metadata, MetadataModel)

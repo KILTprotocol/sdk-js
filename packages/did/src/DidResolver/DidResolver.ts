@@ -235,10 +235,10 @@ type InternalDereferenceResult =
     }
 
 /**
- * Type guard checking whether the provided input is a [[FailedDereferenceMetadata]].
+ * Type guard checking whether the provided input is a {@link FailedDereferenceMetadata}.
  *
  * @param input The input to check.
- * @returns Whether the input is a [[FailedDereferenceMetadata]].
+ * @returns Whether the input is a {@link FailedDereferenceMetadata}.
  */
 export function isFailedDereferenceMetadata(
   input: unknown

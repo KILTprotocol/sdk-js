@@ -309,9 +309,9 @@ export function verifyWellFormed(
 
 /**
  * Verifies whether the data of the given credential matches that of the corresponding attestation. It is valid if:
- * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
+ * * the {@link Credential} object has valid data (see {@link Credential.verifyDataIntegrity});
  * and
- * * the data (root hash, CType, and delegation) of the [[ICredential]] object and of the [[Attestation]] are equivalent.
+ * * the data (root hash, CType, and delegation) of the {@link ICredential} object and of the {@link Attestation} are equivalent.
  *
  * @param attestation - The attestation to verify against.
  * @param credential - The credential to verify.
