@@ -331,13 +331,13 @@ async function dereferenceInternal(
 }
 
 /**
- * Implementation of `dereference` compliant with {@link W3C DID specifications| https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * Implementation of `dereference` compliant with {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
  * If a DID URL is invalid or has not been registered, this is indicated by the `error` property on the `dereferencingMetadata`.
  *
  * @param didUrl The DID URL to dereference.
- * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the {@link W3C DID specifications| https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
  * @param resolutionOptions.accept The content type accepted by the requesting client.
- * @returns The resolution result for the `dereference` function as specified in the {@link W3C DID specifications| https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * @returns The resolution result for the `dereference` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
  */
 export async function dereference(
   didUrl: Did | DidUrl,

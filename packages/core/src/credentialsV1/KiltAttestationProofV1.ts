@@ -179,7 +179,7 @@ function makeCommitments(
  * (Re-)computes the root hash / credential hash from a credential and proof.
  *
  * @param credential A {@link KiltCredentialV1} type credential.
- * @param proof A {@link KiltAttestationProofV1}type proof for this credential.
+ * @param proof A {@link KiltAttestationProofV1} type proof for this credential.
  * @returns The root hash.
  */
 export function calculateRootHash(
@@ -616,7 +616,7 @@ export function initializeProof(
 }
 
 /**
- * Finalizes a {@link KiltAttestationProofV1}after anchoring the prelimiary proof's root hash on the KILT blockchain.
+ * Finalizes a {@link KiltAttestationProofV1} after anchoring the prelimiary proof's root hash on the KILT blockchain.
  *
  * @example
  * // start with initializing proof
