@@ -6,11 +6,11 @@
  */
 
 /**
- * CTypes are the way the KILT protocol enables a Claimer or Attester or Verifier to create a [[Claim]] schema for creating specific credentials.
+ * CTypes are the way the KILT protocol enables a Claimer or Attester or Verifier to create a {@link Claim} schema for creating specific credentials.
  *
- * * A CTYPE is a description of the [[Claim]] data structure, based on [JSON Schema](http://json-schema.org/).
+ * * A CTYPE is a description of the {@link Claim} data structure, based on {@link JSON Schema | http://json-schema.org/}.
  * * CTYPEs are published and stored by the creator and/or in an open storage registry.
- * * Anyone can use a CTYPE to create a new [[Claim]].
+ * * Anyone can use a CTYPE to create a new {@link Claim}.
  *
  * @packageDocumentation
  */
@@ -145,10 +145,10 @@ export function verifyObjectAgainstSchema(
 }
 
 /**
- * Verifies the structure of the provided IClaim['contents'] with [[ICType]].
+ * Verifies the structure of the provided IClaim['contents'] with {@link ICType}.
  *
  * @param claimContents IClaim['contents'] to be verified against the schema.
- * @param schema ICType to be verified against the [[CTypeModel]].
+ * @param schema ICType to be verified against the {@link CTypeModel}.
  * @param messages An array, which will be filled by schema errors.
  */
 export function verifyClaimAgainstSchema(
@@ -196,11 +196,11 @@ export function verifyDataStructure(input: ICType): void {
 }
 
 /**
- * Validates an array of [[CType]]s against a [[Claim]].
+ * Validates an array of {@link CType}s against a {@link Claim}.
  *
- * @param cType - A [[CType]] that has nested [[CType]]s inside.
- * @param nestedCTypes - An array of [[CType]] schemas.
- * @param claimContents - The contents of a [[Claim]] to be validated.
+ * @param cType - A {@link CType} that has nested {@link CType}s inside.
+ * @param nestedCTypes - An array of {@link CType} schemas.
+ * @param claimContents - The contents of a {@link Claim} to be validated.
  * @param messages - Optional empty array. If passed, this receives all verification errors.
  */
 export function verifyClaimAgainstNestedSchemas(
@@ -228,7 +228,7 @@ const cTypeVersionToSchemaId = {
 }
 
 /**
- * Creates a new [[ICType]] object from a set of atomic claims and a title.
+ * Creates a new {@link ICType} object from a set of atomic claims and a title.
  * The CType id will be automatically generated.
  *
  * @param title The new CType's title as a string.

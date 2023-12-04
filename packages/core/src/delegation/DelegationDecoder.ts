@@ -6,7 +6,7 @@
  */
 
 /**
- * When a [[DelegationNode]] or a [[DelegationHierarchy]] is written on the blockchain, it is encoded.
+ * When a {@link DelegationNode} or a {@link DelegationHierarchy} is written on the blockchain, it is encoded.
  * DelegationDecoder helps to decode them when they're queried from the chain.
  *
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.

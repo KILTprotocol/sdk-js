@@ -30,7 +30,7 @@ export const STATUS_TYPE = 'KiltRevocationStatusV1'
  * @param credential The KiltCredentialV1 to which the status method is linked to.
  * @param opts Additional parameters.
  * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
- * If not given this function will try to retrieve a cached connection from the [[ConfigService]].
+ * If not given this function will try to retrieve a cached connection from the {@link ConfigService}.
  */
 export async function check(
   credential: Omit<KiltCredentialV1, 'proof'>,
@@ -82,11 +82,11 @@ export async function check(
 }
 
 /**
- * Creates a [[KiltRevocationStatusV1]] object from a credential hash and blochain identifier, which allow locating the credential's attestation record.
+ * Creates a {@link KiltRevocationStatusV1} object from a credential hash and blochain identifier, which allow locating the credential's attestation record.
  *
  * @param chainIdOrGenesisHash The genesis hash (or CAIP-2 identifier) of the substrate chain on which the attestation record lives.
  * @param rootHash The credential hash identifying the relevant attestation record on that chain.
- * @returns A new [[KiltRevocationStatusV1]] object.
+ * @returns A new {@link KiltRevocationStatusV1} object.
  */
 export function fromGenesisAndRootHash(
   chainIdOrGenesisHash: Caip2ChainId | U8aLike,

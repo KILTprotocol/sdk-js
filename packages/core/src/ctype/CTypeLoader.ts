@@ -17,7 +17,7 @@ const loadCType: CTypeLoader = async (id) => {
 
 /**
  * A factory for a CType loader that caches a CType definition once it has been loaded.
- * Used in validating the credentialSubject of a [[KiltCredentialV1]] against the Claim Type referenced in its `type` field.
+ * Used in validating the credentialSubject of a {@link KiltCredentialV1} against the Claim Type referenced in its `type` field.
  *
  * @param initialCTypes An array of CTypes with which the cache is to be initialized.
  * @returns A function that takes a CType id and looks up a CType definition in an internal cache, and if not found, tries to fetch it from the KILT blochchain.

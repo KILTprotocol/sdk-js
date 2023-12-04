@@ -55,9 +55,9 @@ const delegationIdPattern =
   /^kilt:delegation\/(?<delegationId>[-a-zA-Z0-9]{1,78})$/
 
 /**
- * Extract the local (i.e., unique within a KILT blockchain network) delegation node identifier from a [[KiltAttesterDelegationV1]] object.
+ * Extract the local (i.e., unique within a KILT blockchain network) delegation node identifier from a {@link KiltAttesterDelegationV1} object.
  *
- * @param delegation A [[KiltAttesterDelegationV1]] object.
+ * @param delegation A {@link KiltAttesterDelegationV1} object.
  * @returns A delegation id.
  * @private
  */
@@ -80,8 +80,8 @@ export function delegationIdFromAttesterDelegation(
 /**
  * Extract the local (i.e., unique within a KILT blockchain network) delegation node identifier from a credential's federatedTrustModel entries.
  *
- * @param credential A [[KiltCredentialV1]] type VerifiableCredential.
- * @returns A delegation id or `null` if there is no [[KiltAttesterDelegationV1]] type entry in the federatedTrustModel.
+ * @param credential A {@link KiltCredentialV1} type VerifiableCredential.
+ * @returns A delegation id or `null` if there is no {@link KiltAttesterDelegationV1} type entry in the federatedTrustModel.
  * @private
  */
 export function getDelegationNodeIdForCredential(
@@ -146,7 +146,7 @@ export function credentialIdToRootHash(
  * Transforms the credential root hash to an IRI that functions as the VC's id.
  *
  * @param rootHash Credential root hash as a Uint8Array or HexString.
- * @returns An IRI composed by prefixing the root hash with the [[KILT_CREDENTIAL_IRI_PREFIX]].
+ * @returns An IRI composed by prefixing the root hash with the {@link KILT_CREDENTIAL_IRI_PREFIX}.
  */
 export function credentialIdFromRootHash(
   rootHash: Uint8Array | HexString
