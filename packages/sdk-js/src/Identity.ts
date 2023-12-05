@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { GenericExtrinsic } from '@polkadot/types'
 import { u8aEq } from '@polkadot/util'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
@@ -14,10 +15,12 @@ import type {
   DidDocument,
   DidUrl,
   KeyringPair,
+  KiltAddress,
   SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
+import type { TransactionResult } from '@kiltprotocol/credentials/src/V1/KiltAttestationProofV1'
 
 /**
  * An Identity represents a DID and signing keys associated with it.
@@ -73,6 +76,25 @@ export interface Identity {
     skipResolution?: boolean
     purgeSigners?: boolean
   }) => Promise<Identity>
+  /**
+   * The account that acts as the submitter account.
+   */
+  submitterAccount?: KiltAddress
+  /**
+   * Uses a verification method related signer to DID-authorize a call to be executed on-chain with the identity's DID as the origin.
+   *
+   * @param tx The call to be authorized.
+   * @returns The authorized (signed) call.
+   */
+  authorizeTx?: (tx: GenericExtrinsic) => Promise<GenericExtrinsic>
+  /**
+   * Takes care of submitting the transaction to node in the network and listening for execution results.
+   * This can consist of signing the tx using the signer associated with submitterAccount and interacting directly with a node, or can use an external service for this.
+   *
+   * @param tx The extrinsic ready to be (signed and) submitted.
+   * @returns A promise resolving to an object indicating the block of inclusion, or rejecting if the transaction failed to be included or execute correctly.
+   */
+  submitTx?: (tx: GenericExtrinsic) => Promise<TransactionResult>
 }
 
 async function loadDidDocument(
