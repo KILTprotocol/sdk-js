@@ -99,7 +99,7 @@ export interface EncryptResponseData {
  * Uses stored key material to encrypt a message encoded as u8a.
  *
  * @param requestData The data to be encrypted, the peers public key and the sender's DID.
- * @returns The {@link EncryptResponseData} Which additionally to the data contains a `nonce` randomly generated in the encryption process (required for decryption).
+ * @returns The {@link EncryptResponseData} which additionally to the data contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
 export interface EncryptCallback {
   (requestData: EncryptRequestData): Promise<EncryptResponseData>
