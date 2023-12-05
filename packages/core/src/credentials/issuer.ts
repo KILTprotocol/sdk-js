@@ -31,7 +31,6 @@ import type { IssuerOptions } from './interfaces.js'
  * Each Kilt credential is based on exactly one of these subtypes. This argument is therefore mandatory and expects the schema definition of a CType.
  * @param arguments.cTypeDefinitions Some CTypes are themselves composed of definitions taken from other CTypes; in that case, these definitions need to be supplied here.
  * Alternatively, you can set a {@link CTypeLoader} function that takes care of fetching all required definitions.
- * @param arguments.legitimations Any credentials that the issuer uses to provide legitimations for their authority for certifying the claims made.
  * @returns A (potentially only partial) credential that is yet to be finalized and made verifiable with a proof.
  */
 export async function createCredential({
@@ -41,7 +40,6 @@ export async function createCredential({
   claims = {},
   cType,
   cTypeDefinitions,
-  legitimations = [],
 }: {
   type?: string
   issuer: Did
@@ -49,22 +47,15 @@ export async function createCredential({
   claims?: Record<string, unknown>
   cType: ICType
   cTypeDefinitions?: ICType[] | CTypeLoader
-  // TODO: shall we support legitimations and delegations here or are these advanced features you'd have to dig for?
-  // They may not exist in future versions, so not having this here may actually be a good idea.
-  legitimations?: VerifiableCredential[]
 }): Promise<UnsignedVc> {
   switch (type) {
     case undefined:
     case KiltCredentialV1.CREDENTIAL_TYPE: {
-      legitimations.forEach((i) => {
-        KiltCredentialV1.validateStructure(i as KiltCredentialV1.Interface)
-      })
       const credential = KiltCredentialV1.fromInput({
         issuer,
         subject,
         cType: cType.$id,
         claims: claims as IClaimContents,
-        legitimations: legitimations as KiltCredentialV1.Interface[],
       })
 
       let loadCTypes: CTypeLoader | false = false
