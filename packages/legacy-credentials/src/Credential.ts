@@ -7,9 +7,9 @@
 
 /**
  * Credentials are a core building block of the KILT SDK.
- * A Credential represents a [[Claim]] which needs to be validated. In practice, the Credential is sent from a claimer to an attester for attesting and to a verifier for verification.
+ * A {@link ICredential | Credential} represents a {@link IClaim | Claim} which needs to be validated. In practice, the Credential is sent from a claimer to an attester for attesting and to a verifier for verification.
  *
- * A Credential object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * A Credential object contains the Claim and its hash, and legitimations/delegationId of the attester.
  * The credential is made tamper-proof by hashing the claim properties and generating a digest from that, which is used to reference the Credential.
  * It can be signed by the claimer, to authenticate the holder and to prevent replay attacks.
  * A Credential also supports hiding of claim data during a credential presentation.
@@ -84,10 +84,10 @@ export function calculateRootHash(credential: Partial<ICredential>): Hash {
 }
 
 /**
- * Removes [[Claim]] properties from the [[Credential]] object, provides anonymity and security when building the [[createPresentation]] method.
+ * Removes {@link IClaim | Claim} properties from the {@link ICredential | Credential}, provides anonymity and security when building the {@link createPresentation} method.
  *
  * @param credential - The Credential object to remove properties from.
- * @param properties - Properties to remove from the [[Claim]] object.
+ * @param properties - Properties to remove from the {@link IClaim} object.
  * @returns A cloned Credential with removed properties.
  */
 export function removeClaimProperties(
@@ -138,10 +138,10 @@ export function verifyRootHash(input: ICredential): void {
 }
 
 /**
- * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with,
+ * Verifies the data of the {@link ICredential} object; used to check that the data was not tampered with,
  * by checking the data against hashes. Throws if invalid.
  *
- * @param input - The [[Credential]] for which to verify data.
+ * @param input - The {@link ICredential} for which to verify data.
  */
 export function verifyDataIntegrity(input: ICredential): void {
   // check claim hash
@@ -158,10 +158,10 @@ export function verifyDataIntegrity(input: ICredential): void {
 }
 
 /**
- * Checks whether the input meets all the required criteria of an [[ICredential]] object.
+ * Checks whether the input meets all the required criteria of an {@link ICredential} object.
  * Throws on invalid input.
  *
- * @param input - A potentially only partial [[Credential]].
+ * @param input - A potentially only partial {@link ICredential}.
  *
  */
 export function verifyDataStructure(input: ICredential): void {
@@ -200,14 +200,14 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- * Verifies the signature of the [[ICredentialPresentation]].
- * It supports migrated DIDs, meaning that if the original claim within the [[ICredential]] included a light DID that was afterwards upgraded,
+ * Verifies the signature of the {@link ICredentialPresentation}.
+ * It supports migrated DIDs, meaning that if the original claim within the {@link ICredential} included a light DID that was afterwards upgraded,
  * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
  * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
  *
- * @param input - The [[ICredentialPresentation]].
+ * @param input - The {@link ICredentialPresentation}.
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.dereferenceDidUrl - The function used to dereference the claimer's DID Document and verification method. Defaults to [[dereferenceDidUrl]].
+ * @param verificationOpts.dereferenceDidUrl - The function used to dereference the claimer's DID Document and verification method. Defaults to {@link dereferenceDidUrl}.
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
@@ -246,13 +246,13 @@ export type Options = {
 }
 
 /**
- * Builds a new [[ICredential]] object, from a complete set of required parameters.
+ * Builds a new {@link ICredential} object, from a complete set of required parameters.
  *
- * @param claim An [[IClaim]] object to build the credential for.
+ * @param claim An {@link IClaim} object to build the credential for.
  * @param option Container for different options that can be passed to this method.
- * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+ * @param option.legitimations Array of {@link ICredential} objects of the Attester which the Claimer requests to include into the attestation as legitimations.
  * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
- * @returns A new [[ICredential]] object.
+ * @returns A new {@link ICredential} object.
  */
 export function fromClaim(
   claim: IClaim,
@@ -289,7 +289,7 @@ type VerifyOptions = {
  * Verifies data structure & data integrity of a credential object.
  * This combines all offline sanity checks that can be performed on an ICredential object.
  * A credential is valid only if it is well formed AND there is an on-chain attestation record referencing its root hash.
- * To check the latter condition as well, you need to call [[verifyCredential]] or [[verifyPresentation]].
+ * To check the latter condition as well, you need to call {@link verifyCredential} or {@link verifyPresentation}.
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
@@ -309,9 +309,9 @@ export function verifyWellFormed(
 
 /**
  * Verifies whether the data of the given credential matches that of the corresponding attestation. It is valid if:
- * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
+ * * the {@link Credential} object has valid data (see {@link Credential.verifyDataIntegrity});
  * and
- * * the data (root hash, CType, and delegation) of the [[ICredential]] object and of the [[Attestation]] are equivalent.
+ * * the data (root hash, CType, and delegation) of the {@link ICredential} object and of the {@link Attestation} are equivalent.
  *
  * @param attestation - The attestation to verify against.
  * @param credential - The credential to verify.
@@ -344,7 +344,7 @@ export function verifyAgainstAttestation(
 /**
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
- * @param credential The [[ICredential]] whose attestation status should be checked.
+ * @param credential The {@link ICredential} whose attestation status should be checked.
  * @returns An object containing the `attester` DID and `revoked` status of the on-chain attestation.
  */
 export async function verifyAttested(credential: ICredential): Promise<{
@@ -374,7 +374,7 @@ export interface VerifiedCredential extends ICredential {
 /**
  * Updates the revocation status of a previously verified credential to allow checking if it is still valid.
  *
- * @param verifiedCredential The output of [[verifyCredential]] or [[verifyPresentation]], which adds a `revoked` and `attester` property.
+ * @param verifiedCredential The output of {@link verifyCredential} or {@link verifyPresentation}, which adds a `revoked` and `attester` property.
  * @returns A promise of resolving to the same object but with the `revoked` property updated.
  * The promise rejects if the attestation has been deleted or its data changed since verification.
  */
@@ -406,7 +406,7 @@ export async function refreshRevocationStatus(
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
- * @returns A [[VerifiedCredential]] object, which is the orignal credential with two additional properties: a boolean `revoked` status flag and the `attester` DID.
+ * @returns A {@link VerifiedCredential} object, which is the orignal credential with two additional properties: a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyCredential(
   credential: ICredential,
@@ -435,8 +435,8 @@ export async function verifyCredential(
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.dereferenceDidUrl - The function used to dereference the claimer's DID and verification method. Defaults to [[dereference]].
- * @returns A [[VerifiedCredential]] object, which is the orignal credential presentation with two additional properties:
+ * @param options.dereferenceDidUrl - The function used to dereference the claimer's DID and verification method. Defaults to {@link dereference}.
+ * @returns A {@link VerifiedCredential} object, which is the orignal credential presentation with two additional properties:
  * a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyPresentation(
@@ -455,9 +455,9 @@ export async function verifyPresentation(
 }
 
 /**
- * Type Guard to determine input being of type [[ICredential]].
+ * Type Guard to determine input being of type {@link ICredential}.
  *
- * @param input - A potentially only partial [[ICredential]].
+ * @param input - A potentially only partial ICredential.
  *
  * @returns  Boolean whether input is of type ICredential.
  */
@@ -471,9 +471,9 @@ export function isICredential(input: unknown): input is ICredential {
 }
 
 /**
- * Type Guard to determine input being of type [[ICredentialPresentation]].
+ * Type Guard to determine input being of type {@link ICredentialPresentation}.
  *
- * @param input - An [[ICredential]], [[ICredentialPresentation]], or other object.
+ * @param input - An {@link ICredential}, {@link ICredentialPresentation}, or other object.
  *
  * @returns  Boolean whether input is of type ICredentialPresentation.
  */

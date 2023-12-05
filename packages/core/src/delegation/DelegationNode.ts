@@ -64,7 +64,7 @@ export class DelegationNode implements IDelegationNode {
 
   // eslint-disable-next-line jsdoc/require-param
   /**
-   * Creates a new [DelegationNode] from an [IDelegationNode].
+   * Creates a new {@link DelegationNode} from an {@link IDelegationNode}.
    *
    */
   public constructor({
@@ -91,14 +91,14 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Builds a new [DelegationNode] representing a regular delegation node ready to be submitted to the chain for creation.
+   * Builds a new {@link DelegationNode} representing a regular delegation node ready to be submitted to the chain for creation.
    *
-   * @param input - An partial [IDelegationNode] input object.
+   * @param input - An partial {@link IDelegationNode} input object.
    * @param input.hierarchyId - The delegation hierarchy under which to store the node.
    * @param input.parentId - The parent node under which to store the node.
    * @param input.account - The owner (i.e., delegate) of this delegation.
    * @param input.permissions - The set of permissions associated with this delegation node.
-   * @returns A new [DelegationNode] with a randomly generated id.
+   * @returns A new {@link DelegationNode} with a randomly generated id.
    */
   public static newNode({
     hierarchyId,
@@ -118,13 +118,13 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Builds a new [DelegationNode] representing a root delegation node ready to be submitted to the chain for creation.
+   * Builds a new {@link DelegationNode} representing a root delegation node ready to be submitted to the chain for creation.
    *
    * @param input - An input object.
    * @param input.account - The address of this delegation (and of the whole hierarchy under it).
    * @param input.permissions - The set of permissions associated with this delegation node.
    * @param input.cTypeHash - The cTypeHash associated with the entire hierarchy.
-   * @returns A new [DelegationNode] with a randomly generated id.
+   * @returns A new {@link DelegationNode} with a randomly generated id.
    */
   public static newRoot({
     account,
@@ -162,7 +162,7 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the details of the hierarchy this delegation node belongs to.
    *
-   * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
+   * @returns Promise containing the {@link IDelegationHierarchyDetails} of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
@@ -174,7 +174,7 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the parent node of this delegation node.
    *
-   * @returns Promise containing the parent as [[DelegationNode]] or [null].
+   * @returns Promise containing the parent as {@link DelegationNode} or [null].
    */
   public async getParent(): Promise<DelegationNode | null> {
     try {
@@ -188,7 +188,7 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the children nodes of this delegation node.
    *
-   * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
+   * @returns Promise containing the children as an array of {@link DelegationNode}, which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
     try {
@@ -295,7 +295,7 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Synchronise the delegation node state with the latest state as stored on the blockchain.
    *
-   * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
+   * @returns An updated instance of the same {@link DelegationNode} containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
     return fetch(this.id)
@@ -446,10 +446,10 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Queries the delegation node with its [delegationId].
+   * Queries the delegation node with its {@link delegationId}.
    *
    * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]].
+   * @returns Promise containing the {@link DelegationNode}.
    */
   public static async fetch(
     delegationId: IDelegationNode['id']

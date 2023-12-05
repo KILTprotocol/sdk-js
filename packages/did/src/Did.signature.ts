@@ -15,6 +15,8 @@ import type {
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  SignCallback,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -67,7 +69,7 @@ function verifyDidSignatureDataStructure(
  * @param input.expectedSigner If given, verification fails if the controller of the signing verification method is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationRelationship Which relationship to the signer DID the verification method must have.
- * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in [[dereference]].
+ * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in {@link dereference}.
  */
 export async function verifyDidSignature({
   message,
@@ -164,12 +166,12 @@ export function isDidSignature(
 }
 
 /**
- * Transforms the output of a [[SignCallback]] into the [[DidSignature]] format suitable for json-based data exchange.
+ * Transforms the output of a {@link SignCallback} into the {@link DidSignature} format suitable for json-based data exchange.
  *
- * @param input Signature data returned from the [[SignCallback]].
+ * @param input Signature data returned from the {@link SignCallback}.
  * @param input.signature Signature bytes.
  * @param input.verificationMethod The verification method used to generate the signature.
- * @returns A [[DidSignature]] object where signature is hex-encoded.
+ * @returns A {@link DidSignature} object where signature is hex-encoded.
  */
 export function signatureToJson({
   signature,
@@ -182,10 +184,10 @@ export function signatureToJson({
 }
 
 /**
- * Deserializes a [[DidSignature]] for signature verification.
+ * Deserializes a {@link DidSignature} for signature verification.
  * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
  *
- * @param input A [[DidSignature]] object.
+ * @param input A {@link DidSignature} object.
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
  */
 export function signatureFromJson(

@@ -49,7 +49,7 @@ export function addDelegationToChainArgs(
  * Fetch a delegation node from the blockchain given its identifier.
  *
  * @param delegationId The delegation node ID to fetch.
- * @returns The retrieved [[DelegationNode]].
+ * @returns The retrieved {@link DelegationNode}.
  */
 export async function fetch(
   delegationId: IDelegationNode['id']
@@ -69,7 +69,7 @@ export async function fetch(
  * Query the blockchain to retrieve the number of **direct** children of a given delegation node.
  *
  * @param delegationNode The delegation node to perform the lookup for.
- * @returns A list of [[DelegationNode]] containing all the direct children of the provided node.
+ * @returns A list of {@link DelegationNode} containing all the direct children of the provided node.
  */
 export async function getChildren(
   delegationNode: DelegationNode

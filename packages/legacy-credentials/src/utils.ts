@@ -6,16 +6,16 @@
  */
 
 import { CType } from '@kiltprotocol/core'
-import { PartialClaim } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import type { PartialClaim, IClaimContents, IClaim } from '@kiltprotocol/types'
 
 /**
- * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
- * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed into predicates by prepending the [[CType]][schema][$id].
+ * Produces JSON-LD readable representations of a Claim's {@link IClaimContents | contents}. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
+ * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a {@link ICType} are transformed into predicates by prepending the {@link ICType.$id}.
  *
- * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
- * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
- * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]]'s ['contents'].
+ * @param claim A (partial) {@link IClaim} from to build a JSON-LD representation from. The `cTypeHash` property is required.
+ * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving {@link IClaim.contents} property keys untouched.
+ * @returns An object which can be serialized into valid JSON-LD representing the {@link IClaimContents | claim contents}.
  */
 export function jsonLDcontents(
   claim: PartialClaim,
@@ -51,7 +51,7 @@ export function jsonLDcontents(
 /**
  * Produces canonical statements for selective disclosure based on a JSON-LD expanded representation of the claims.
  *
- * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
+ * @param claim A (partial) {@link IClaim} from to build a JSON-LD representation from. The `cTypeHash` property is required.
  * @returns An array of stringified statements.
  */
 export function makeStatementsJsonLD(claim: PartialClaim): string[] {

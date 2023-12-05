@@ -65,10 +65,10 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    *
    * @param options - Options hashmap.
    * @param options.publicKeyBase58 - Base58btc encoded Public Key.
-   * @param [options.controller] - Controller DID or document url.
-   * @param [options.id] - The key ID.
-   * @param [options.privateKeyBase58] - Base58btc Private Key.
-   * @param [options.revoked] - Timestamp of when the key has been
+   * @param options.controller - Controller DID or document url.
+   * @param options.id - The key ID.
+   * @param options.privateKeyBase58 - Base58btc Private Key.
+   * @param options.revoked - Timestamp of when the key has been
    *   revoked, in RFC3339 format. If not present, the key itself is considered
    *   not revoked. Note that this mechanism is slightly different than DID
    *   Document key revocation, where a DID controller can revoke a key from
@@ -93,8 +93,8 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   /**
    * Generates a KeyPair with an optional deterministic seed.
    *
-   * @param [options={}] - See LDKeyPair docstring for full list.
-   * @param [options.seed] -
+   * @param options={} - See LDKeyPair docstring for full list.
+   * @param options.seed -
    * a 32-byte array seed for a deterministic key.
    *
    * @returns Generates a key pair.
@@ -158,10 +158,10 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    * Exports the serialized representation of the KeyPair
    * and other information that json-ld Signatures can use to form a proof.
    *
-   * @param [options={}] - Options hashmap.
-   * @param [options.publicKey] - Export public key material?
-   * @param [options.privateKey] - Export private key material?
-   * @param [options.includeContext] - Include JSON-LD context?
+   * @param options={} - Options hashmap.
+   * @param options.publicKey - Export public key material?
+   * @param options.privateKey - Export private key material?
+   * @param options.includeContext - Include JSON-LD context?
    *
    * @returns A public key object
    *   information used in verification methods by signatures.

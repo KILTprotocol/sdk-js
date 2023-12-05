@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-// Matches AssetDIDs as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
+// Matches AssetDIDs as per the {@link https://github.com/KILTprotocol/spec-asset-did | AssetDID specification}.
 const ASSET_DID_REGEX =
   /^did:asset:(?<chainId>(?<chainNamespace>[-a-z0-9]{3,8}):(?<chainReference>[-a-zA-Z0-9]{1,32}))\.(?<assetId>(?<assetNamespace>[-a-z0-9]{3,8}):(?<assetReference>[-a-zA-Z0-9]{1,64})(:(?<assetInstance>[-a-zA-Z0-9]{1,78}))?)$/
 

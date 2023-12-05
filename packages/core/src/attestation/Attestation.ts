@@ -16,20 +16,20 @@ import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
+ * An {@link IAttestation | Attestation} certifies a {@link IClaim | Claim}, sent by a claimer in the form of a {@link ICredential | Credential}. Attestations are **written on the blockchain** and are **revocable**.
  *
- * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
+ * An Attestation can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
- * * the value is a tuple ([[CType]] hash, account, id of the Delegation, and revoked flag).
+ * * the value is a tuple ({@link ICType | CType} hash, account, id of the Delegation, and revoked flag).
  *
  * @packageDocumentation
  */
 
 /**
- * Checks whether the input meets all the required criteria of an [[IAttestation]] object.
+ * Checks whether the input meets all the required criteria of an {@link IAttestation} object.
  * Throws on invalid input.
  *
- * @param input The potentially only partial [[IAttestation]].
+ * @param input The potentially only partial {@link IAttestation}.
  */
 export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
@@ -57,11 +57,11 @@ export function verifyDataStructure(input: IAttestation): void {
 }
 
 /**
- * Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
+ * Builds a new instance of an {@link IAttestation}, from a complete set of input required for an attestation.
  *
  * @param credential - The base credential for attestation.
  * @param attesterDid - The attester's DID, used to attest to the underlying claim.
- * @returns A new [[Attestation]] object.
+ * @returns A new {@link Attestation} object.
  */
 export function fromCredentialAndDid(
   credential: ICredential,
@@ -81,8 +81,8 @@ export function fromCredentialAndDid(
 /**
  * Tries to fetch the delegationId and if successful fetch the rootId.
  *
- * @param input - The ID of the Delegation stored in [[Attestation]] , or the whole Attestation object.
- * @returns A promise of the affiliated [[DelegationNode]].
+ * @param input - The ID of the Delegation stored in {@link IAttestation} , or the whole Attestation object.
+ * @returns A promise of the affiliated {@link IDelegationHierarchyDetails}.
  */
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation

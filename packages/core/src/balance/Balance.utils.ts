@@ -70,11 +70,11 @@ export function convertToTxUnit(balance: BN, power: number): BN {
 export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
 
 /**
- * Safely converts the given [[BalanceNumber]] to a string, using the supplied methods,
+ * Safely converts the given {@link BalanceNumber} to a string, using the supplied methods,
  * or if given a string checks for valid number representation.
  *
- * @param input [[BalanceNumber]] to convert.
- * @returns String representation of the given [[BalanceNumber]].
+ * @param input The {@link BalanceNumber} to convert.
+ * @returns String representation of the given {@link BalanceNumber}.
  */
 export function balanceNumberToString(input: BalanceNumber): string {
   if (typeof input === 'string') {
@@ -94,10 +94,10 @@ export function balanceNumberToString(input: BalanceNumber): string {
 }
 
 /**
- * Converts the given [[BalanceNumber]] to the femto KILT equivalent.
+ * Converts the given {@link BalanceNumber} to the femto KILT equivalent.
  *
- * @param input [[BalanceNumber]] to convert.
- * @param unit Metric prefix of the given [[BalanceNumber]].
+ * @param input The {@link BalanceNumber} to convert.
+ * @param unit Metric prefix of the given {@link BalanceNumber}.
  * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
  */
 export function toFemtoKilt(
@@ -132,14 +132,14 @@ export function toFemtoKilt(
 }
 
 /**
- * Converts the given [[BalanceNumber]] to a human-readable number with metric prefix and Unit.
+ * Converts the given {@link BalanceNumber} to a human-readable number with metric prefix and Unit.
  * This function uses the polkadot formatBalance function,
  * it's output can therefore be formatted via the polkadot formatting options.
  *
- * @param input [[BalanceNumber]] to convert from Femto Kilt.
+ * @param input The {@link BalanceNumber} to convert.
  * @param decimals Set the minimum decimal places in the formatted localized output, default is 4.
- * @param options [[BalanceOptions]] for internationalization and formatting.
- * @returns String representation of the given [[BalanceNumber]] with unit und metric prefix.
+ * @param options Additional {@link BalanceOptions} for internationalization and formatting.
+ * @returns String representation of the given {@link BalanceNumber} with unit und metric prefix.
  */
 export function fromFemtoKilt(
   input: BalanceNumber,

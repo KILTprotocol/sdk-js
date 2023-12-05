@@ -13,7 +13,7 @@ import type { Did } from './Did'
 import type { AssetDid } from './AssetDid'
 
 /*
- * The minimal information required to issue a public credential to a given [[AssetDid]].
+ * The minimal information required to issue a public credential to a given {@link AssetDid}.
  */
 export interface IPublicCredentialInput {
   /*
@@ -41,7 +41,7 @@ export interface IPublicCredential extends IPublicCredentialInput {
   /*
    * The unique ID of the credential. It is cryptographically derived from the credential content.
    *
-   * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[Did]] and then Blake2b hashing the result.
+   * The ID is formed by first concatenating the SCALE-encoded {@link IPublicCredentialInput} with the SCALE-encoded {@link Did} and then Blake2b hashing the result.
    */
   id: HexString
   /*
@@ -55,7 +55,7 @@ export interface IPublicCredential extends IPublicCredentialInput {
   /*
    * The revocation status of the credential.
    *
-   * This is not to be trusted if shared by another party. It is only to trust if the [[IPublicCredential]] object is retrieved via one of the querying methods that this SDK exposes.
+   * This is not to be trusted if shared by another party. It is only to trust if the {@link IPublicCredential} object is retrieved via one of the querying methods that this SDK exposes.
    */
   revoked: boolean
 }
@@ -63,7 +63,7 @@ export interface IPublicCredential extends IPublicCredentialInput {
 /*
  * A claim for a public credential.
  *
- * Like an [[IClaim]], but with a [[AssetDid]] `subject` instead of an [[IClaim]] `owner`.
+ * Like an {@link IClaim}, but with a {@link AssetDid} `subject` instead of an {@link IClaim} `owner`.
  */
 export interface IAssetClaim {
   cTypeHash: CTypeHash

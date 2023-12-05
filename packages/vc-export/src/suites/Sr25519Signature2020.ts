@@ -54,32 +54,32 @@ export class Sr25519Signature2020 extends LinkedDataSignature {
 
   /**
    * Cryptographic suite to produce and verify Sr25519Signature2020 linked data signatures.
-   * This is modelled after the Ed25519Signature2020 suite (https://w3id.org/security/suites/ed25519-2020/v1) but uses the sr25519 signature scheme common in the polkadot ecosystem.
+   * This is modelled after the {@link https://w3id.org/security/suites/ed25519-2020/v1 | Ed25519Signature2020 suite } but uses the sr25519 signature scheme common in the polkadot ecosystem.
    *
    * @param options - Options hashmap.
    *
    * Either a `key` OR at least one of `signer`/`verifier` is required.
    *
-   * @param [options.key] - An optional key object (containing an
+   * @param options.key - An optional key object (containing an
    *   `id` property, and either `signer` or `verifier`, depending on the
    *   intended operation. Useful for when the application is managing keys
    *   itself (when using a KMS, you never have access to the private key,
    *   and so should use the `signer` param instead).
-   * @param [options.signer] - Signer function that returns an
+   * @param options.signer - Signer function that returns an
    *   object with an async sign() method. This is useful when interfacing
    *   with a KMS (since you don't get access to the private key and its
    *   `signer()`, the KMS client gives you only the signer function to use).
-   * @param [options.verifier] - Verifier function that returns
+   * @param options.verifier - Verifier function that returns
    *   an object with an async `verify()` method. Useful when working with a
    *   KMS-provided verifier function.
    *
    * Advanced optional parameters and overrides.
    *
-   * @param [options.proof] - A JSON-LD document with options to use
+   * @param options.proof - A JSON-LD document with options to use
    *   for the `proof` node (e.g. any other custom fields can be provided here
    *   using a context different from security-v2).
-   * @param [options.date] - Signing date to use if not passed.
-   * @param [options.useNativeCanonize] - Whether to use a native
+   * @param options.date - Signing date to use if not passed.
+   * @param options.useNativeCanonize - Whether to use a native
    *   canonize algorithm.
    */
   constructor({

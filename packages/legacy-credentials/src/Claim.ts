@@ -6,11 +6,11 @@
  */
 
 /**
- * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[Credential]].
+ * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a {@link Credential}.
  *
  * A claim object has:
  * * contents - among others, the pure content of a claim, for example `"isOver18": true`;
- * * a [[CType]] that represents its data structure.
+ * * a {@link ICType | CType} that represents its data structure.
  *
  * A claim object's owner is (should be) the same entity as the claimer.
  *
@@ -32,13 +32,13 @@ import { hexToBn } from '@polkadot/util'
 import { makeStatementsJsonLD } from './utils.js'
 
 /**
- * Produces salted hashes of individual statements comprising a (partial) [[IClaim]] to enable selective disclosure of contents. Can also be used to reproduce hashes for the purpose of validation.
+ * Produces salted hashes of individual statements comprising a (partial) {@link IClaim} to enable selective disclosure of contents. Can also be used to reproduce hashes for the purpose of validation.
  *
- * @param claim Full or partial [[IClaim]] to produce statement hashes from.
+ * @param claim Full or partial {@link IClaim} to produce statement hashes from.
  * @param options Object containing optional parameters.
  * @param options.canonicalisation Canonicalisation routine that produces an array of statement strings from the [IClaim]. Default produces individual `{"key":"value"}` JSON representations where keys are transformed to expanded JSON-LD.
  * @param options.nonces Optional map of nonces as produced by this function.
- * @param options.nonceGenerator Nonce generator as defined by [[hashStatements]] to be used if no `nonces` are given. Default produces random UUIDs (v4).
+ * @param options.nonceGenerator Nonce generator as defined by {@link Crypto.hashStatements} to be used if no `nonces` are given. Default produces random UUIDs (v4).
  * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
  * @returns An array of salted `hashes` and a `nonceMap` where keys correspond to unsalted statement hashes.
  */
@@ -73,14 +73,14 @@ export function hashClaimContents(
 }
 
 /**
- * Used to verify the hash list based proof over the set of disclosed attributes in a [[Claim]].
+ * Used to verify the hash list based proof over the set of disclosed attributes in a {@link IClaim | Claim}.
  *
- * @param claim Full or partial [[IClaim]] to verify proof against.
+ * @param claim Full or partial {@link IClaim} to verify proof against.
  * @param proof Proof consisting of a map that matches nonces to statement digests and the resulting hashes.
  * @param proof.nonces A map where a statement digest as produces by options.hasher is mapped to a nonce.
  * @param proof.hashes Array containing hashes which are signed into the credential. Should result from feeding statement digests and nonces in proof.nonce to options.hasher.
  * @param options Object containing optional parameters.
- * @param options.canonicalisation Canonicalisation routine that produces an array of statement strings from the [IClaim]. Default produces individual `{"key":"value"}` JSON representations where keys are transformed to expanded JSON-LD.
+ * @param options.canonicalisation Canonicalisation routine that produces an array of statement strings from the {@link IClaim}. Default produces individual `{"key":"value"}` JSON representations where keys are transformed to expanded JSON-LD.
  * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
  */
 export function verifyDisclosedAttributes(
@@ -133,7 +133,7 @@ export function verifyDisclosedAttributes(
 }
 
 /**
- * Checks whether the input meets all the required criteria of an [[IClaim]] object.
+ * Checks whether the input meets all the required criteria of an {@link IClaim} object.
  * Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
@@ -171,14 +171,14 @@ export function verify(claimInput: IClaim, cType: ICType): void {
 }
 
 /**
- * Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
+ * Builds a {@link IClaim | Claim} from a {@link ICType | CType} which is composed of other (nested) CTypes.
  *
- * @param cTypeInput A [[CType]] object that has nested [[CType]]s.
- * @param nestedCType The array of [[CType]]s, which are used inside the main [[CType]].
- * @param claimContents The data inside the [[Claim]].
- * @param claimOwner The DID of the owner of the [[Claim]].
+ * @param cTypeInput A CType object that contains nested CTypes.
+ * @param nestedCType The array of CTypes which are used inside the main CType above.
+ * @param claimContents The {@link IClaim.contents | Claim contents} from which to build the new Claim.
+ * @param claimOwner The DID of the owner of the new Claim.
  *
- * @returns A [[Claim]] the owner can use.
+ * @returns A {@link IClaim | Claim} the owner can use.
  */
 export function fromNestedCTypeClaim(
   cTypeInput: ICType,
@@ -198,10 +198,10 @@ export function fromNestedCTypeClaim(
 }
 
 /**
- * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[Did]].
+ * Constructs a new Claim from the given {@link ICType}, {@link IClaim.contents} and {@link KiltDid | Kilt DID}.
  *
- * @param cType [[ICType]] for which the Claim will be built.
- * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
+ * @param cType The {@link ICType} for which the Claim will be built.
+ * @param claimContents {@link IClaim.contents} To be used as the pure contents of the instantiated Claim.
  * @param claimOwner The DID to be used as the Claim owner.
  * @returns A Claim object.
  */
@@ -222,7 +222,7 @@ export function fromCTypeAndClaimContents(
 }
 
 /**
- * Custom Type Guard to determine input being of type IClaim.
+ * Custom Type Guard to determine input being of type {@link IClaim}.
  *
  * @param input The potentially only partial IClaim.
  *

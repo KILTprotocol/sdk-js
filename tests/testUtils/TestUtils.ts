@@ -265,14 +265,14 @@ function makeDidKeyFromKeypair({
 }
 
 /**
- * Creates [[DidDocument]] for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
+ * Creates {@link DidDocument} for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
  * @param generationOptions.verificationRelationships The set of verification relationships to indicate which keys must be added to the DID.
  * @param generationOptions.endpoints The set of services that must be added to the DID.
  *
- * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
+ * @returns A promise resolving to a {@link DidDocument} object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
   keypair: KiltKeyringPair,

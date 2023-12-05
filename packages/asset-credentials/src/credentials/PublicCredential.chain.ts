@@ -37,9 +37,8 @@ export interface EncodedPublicCredential {
   claims: HexString
   authorization: IDelegationNode['id'] | null
 }
-
 /**
- * Format a [[IPublicCredentialInput]] to be used as a parameter for the blockchain API function.
+ * Format a {@link IPublicCredentialInput} to be used as a parameter for the blockchain API function.
 
  * @param publicCredential The public credential to format.
  * @returns The blockchain-formatted public credential.
@@ -59,7 +58,7 @@ export function toChain(
   }
 }
 
-// Transform a blockchain-formatted public credential [[PublicCredentialsCredentialsCredential]] into the original [[IPublicCredentialInput]].
+// Transform a blockchain-formatted public credential {@link PublicCredentialsCredentialsCredential} into the original {@link IPublicCredentialInput}.
 // It throws if what was written on the chain was garbage.
 function credentialInputFromChain({
   claims,
@@ -150,12 +149,12 @@ function extractDidCallsFromBatchCall(
 }
 
 /**
- * Retrieves from the blockchain the [[IPublicCredential]] that is identified by the provided identifier.
+ * Retrieves from the blockchain the {@link IPublicCredential} that is identified by the provided identifier.
  *
  * This is the **only** secure way for users to retrieve and verify a credential.
  *
  * @param credentialId Credential ID to use for the query.
- * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
+ * @returns The {@link IPublicCredential} as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fetchCredentialFromChain(
   credentialId: IPublicCredential['id']
@@ -242,12 +241,12 @@ export async function fetchCredentialFromChain(
 }
 
 /**
- * Retrieves from the blockchain the [[IPublicCredential]]s that have been issued to the provided AssetDID.
+ * Retrieves from the blockchain the {@link IPublicCredential}s that have been issued to the provided {@link AssetDid}.
  *
- * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDid]].
+ * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given {@link AssetDid}.
  *
  * @param subject The AssetDID of the subject.
- * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
+ * @returns An array of {@link IPublicCredential} as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fetchCredentialsFromChain(
   subject: AssetDid
