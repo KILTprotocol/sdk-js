@@ -333,7 +333,7 @@ const cachingCTypeLoader = newCachingCTypeLoader()
  * @param credential.type The credential's types.
  * @param options Options map.
  * @param options.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
- * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the {@link CachingCTypeLoader}. If set to `false` or `undefined`, no additional CTypes will be loaded.
+ * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the {@link newCachingCTypeLoader | CachingCTypeLoader}. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function validateSubject(
   {

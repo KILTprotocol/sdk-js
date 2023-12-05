@@ -196,11 +196,11 @@ export function verifyDataStructure(input: ICType): void {
 }
 
 /**
- * Validates an array of {@link CType}s against a {@link Claim}.
+ * Validates an array of {@link ICType}s against a {@link IClaim}.
  *
- * @param cType - A {@link CType} that has nested {@link CType}s inside.
- * @param nestedCTypes - An array of {@link CType} schemas.
- * @param claimContents - The contents of a {@link Claim} to be validated.
+ * @param cType - A {@link ICType} that has nested {@link ICType}s inside.
+ * @param nestedCTypes - An array of {@link ICType} schemas.
+ * @param claimContents - The contents of a {@link IClaim} to be validated.
  * @param messages - Optional empty array. If passed, this receives all verification errors.
  */
 export function verifyClaimAgainstNestedSchemas(

@@ -241,7 +241,7 @@ export async function fetchCredentialFromChain(
 }
 
 /**
- * Retrieves from the blockchain the {@link IPublicCredential}s that have been issued to the provided {@link AssetDID}.
+ * Retrieves from the blockchain the {@link IPublicCredential}s that have been issued to the provided {@link AssetDid}.
  *
  * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given {@link AssetDid}.
  *

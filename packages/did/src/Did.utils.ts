@@ -153,7 +153,7 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
  * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
  *
  * @param publicKeyMultibase The verification method's public key in Multikey format (i.e., multicodec-prefixed, then multibase encoded).
- * @returns The decoded public key and {@link DidKeyType}.
+ * @returns The decoded public key and {@link DidVerificationMethodType}.
  */
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
@@ -184,7 +184,7 @@ export function multibaseKeyToDidKey(
  * Calculate the Multikey representation of a keypair given its type and public key.
  *
  * @param keypair The input keypair to encode as Multikey.
- * @param keypair.type The keypair {@link DidKeyType}.
+ * @param keypair.type The keypair {@link DidVerificationMethodType}.
  * @param keypair.publicKey The keypair public key.
  * @returns The Multikey representation (i.e., multicodec-prefixed, then multibase encoded) of the provided keypair.
  */

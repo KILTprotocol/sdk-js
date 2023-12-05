@@ -333,7 +333,7 @@ async function verifyLegitimation(
  * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @param opts.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
- * @param opts.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the {@link CachingCTypeLoader}. If set to `false` or `undefined`, no additional CTypes will be loaded.
+ * @param opts.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the CachingCTypeLoader. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function verify(
   credentialInput: Omit<KiltCredentialV1, 'proof'>,

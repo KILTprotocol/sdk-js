@@ -115,13 +115,13 @@ async function resolveInternal(
 }
 
 /**
- * Implementation of `resolve` compliant with {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
+ * Implementation of `resolve` compliant with {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
  * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
  *
  * @param did The DID to resolve.
- * @param resolutionOptions The resolution options accepted by the `resolve` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
- * @returns The resolution result for the `resolve` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
+ * @param resolutionOptions The resolution options accepted by the `resolve` function as specified in the {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
+ * @returns The resolution result for the `resolve` function as specified in the {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  */
 export async function resolve(
   did: Did,
@@ -160,14 +160,14 @@ export async function resolve(
 }
 
 /**
- * Implementation of `resolveRepresentation` compliant with {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
+ * Implementation of `resolveRepresentation` compliant with {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
  * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
  *
  * @param did The DID to resolve.
- * @param resolutionOptions The resolution options accepted by the `resolveRepresentation` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
+ * @param resolutionOptions The resolution options accepted by the `resolveRepresentation` function as specified in the {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  * @param resolutionOptions.accept The content type accepted by the requesting client.
- * @returns The resolution result for the `resolveRepresentation` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-resolution}.
+ * @returns The resolution result for the `resolveRepresentation` function as specified in the {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  */
 export async function resolveRepresentation(
   did: Did,
@@ -331,13 +331,13 @@ async function dereferenceInternal(
 }
 
 /**
- * Implementation of `dereference` compliant with {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * Implementation of `dereference` compliant with {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  * If a DID URL is invalid or has not been registered, this is indicated by the `error` property on the `dereferencingMetadata`.
  *
  * @param didUrl The DID URL to dereference.
- * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  * @param resolutionOptions.accept The content type accepted by the requesting client.
- * @returns The resolution result for the `dereference` function as specified in the {@link W3C DID specifications | https://www.w3.org/TR/did-core/#did-url-dereferencing}.
+ * @returns The resolution result for the `dereference` function as specified in the {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  */
 export async function dereference(
   didUrl: Did | DidUrl,

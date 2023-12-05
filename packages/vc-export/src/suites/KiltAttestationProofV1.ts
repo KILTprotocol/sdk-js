@@ -204,8 +204,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    *
    * @param input A partial {@link KiltCredentialV1} `credentialSubject` is required.
    * @param issuer The DID Document or, alternatively, the DID of the issuer.
-   * @param signers Signer interfaces to be passed to {@link issue}, one of which will be selected to authorize the on-chain anchoring of the credential with the issuer's signature.
-   * @param transactionHandler Transaction handler interface to be passed to {@link issue} containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
+   * @param signers Signer interfaces to be passed to {@link KiltAttestationProofV1.issue | issue}, one of which will be selected to authorize the on-chain anchoring of the credential with the issuer's signature.
+   * @param transactionHandler Transaction handler interface to be passed to {@link KiltAttestationProofV1.issue | issue} containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
    *
    * @returns A copy of the input updated to fit the {@link KiltCredentialV1} and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */

@@ -15,6 +15,8 @@ import type {
   DidUrl,
   SignatureVerificationRelationship,
   SignResponseData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  SignCallback,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
