@@ -141,7 +141,17 @@ export async function makeStoreDidSigner(
     Signers.select.verifiableOnChain()
   )
   if (!signer) {
-    throw new Error('Failed to derive DID creation signer from keypair')
+    throw new SDKErrors.NoSuitableSignerError(
+      `Failed to derive DID creation signer from keypair ${JSON.stringify(
+        keypair
+      )}`,
+      {
+        availableSigners: signers,
+        signerRequirements: {
+          algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+        },
+      }
+    )
   }
   return signer
 }

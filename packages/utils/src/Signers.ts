@@ -199,6 +199,7 @@ function algsForKeyType(keyType: string): KnownAlgorithms[] {
     case 'sr25519':
       return [ALGORITHMS.SR25519]
     case 'ecdsa':
+    case 'ethereum':
     case 'secpk256k1':
       return [
         ALGORITHMS.ES256K,
