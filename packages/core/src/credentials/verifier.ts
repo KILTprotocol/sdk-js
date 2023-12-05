@@ -257,6 +257,7 @@ export async function verifyPresentation(
       presentation: { proofTypes: presentationProofTypes } = {},
     } = verificationCriteria
     const { ctypeLoader, credentialStatusLoader } = config
+    // prepare did resolver to be used for loading issuer & holder did documents
     let { didResolver = resolve } = config
     if (Array.isArray(didResolver)) {
       const knownDocuments = new Map(
@@ -276,8 +277,10 @@ export async function verifyPresentation(
         }
       }
     }
-
+    // verify presentation proof
     let cryptosuites: Array<CryptoSuite<any>> | undefined
+    // If presentation.proofTypes is set, we choose a set of cryptosuites based on that value.
+    // We leave `cryptosuites` unset otherwise, resulting in the default set of suites being used in verification.
     if (presentationProofTypes) {
       cryptosuites = presentationProofTypes.map((proofType) => {
         const suite = DataIntegrity.getCryptosuiteByNameOrAlgorithm(proofType)
@@ -299,29 +302,32 @@ export async function verifyPresentation(
         didResolver,
       }
     )
+
     result.proofResults = proofResults
     result.verified = verified
     if (error) {
       result.error = error
     }
+    // return early if the presentation proof can't be verified
     if (verified !== true) {
       return result
     }
+    // retrieve credential(s) from presentation body
     const credentials = Array.isArray(presentation.verifiableCredential)
       ? presentation.verifiableCredential
       : [presentation.verifiableCredential]
-
+    // verify each credential (including proof & status)
     result.credentialResults = await Promise.all(
-      credentials.map(async (credential) => ({
-        ...(await verifyCredential(
+      credentials.map(async (credential) => {
+        const credentialResult = await verifyCredential(
           credential,
           { ...verificationCriteria.credentials, now, tolerance },
           { credentialStatusLoader, ctypeLoader, didResolver }
-        )),
-        credential,
-      }))
+        )
+        return { ...credentialResult, credential }
+      })
     )
-
+    // carry credential results to result summary
     result.credentialResults.forEach((r) => {
       if (result.verified && r.verified !== true) {
         result.verified = false
@@ -334,7 +340,7 @@ export async function verifyPresentation(
     appendErrors(result, toError(e))
     result.verified = false
   }
-
+  // make sure we don't have an empty error array
   if (result.error?.length === 0) {
     delete result.error
   }
