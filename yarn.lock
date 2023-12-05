@@ -2012,6 +2012,7 @@ __metadata:
     "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    "@types/json-pointer": ^1.0.34
     "@types/uuid": ^8.0.0
     json-pointer: ^0.6.2
     rimraf: ^3.0.2
@@ -2962,6 +2963,13 @@ __metadata:
     expect: ^29.0.0
     pretty-format: ^29.0.0
   checksum: e36bb92e0b9e5ea7d6f8832baa42f087fc1697f6cd30ec309a07ea4c268e06ec460f1f0cfd2581daf5eff5763475190ec1ad8ac6520c49ccfe4f5c0a48bfa676
+  languageName: node
+  linkType: hard
+
+"@types/json-pointer@npm:^1.0.34":
+  version: 1.0.34
+  resolution: "@types/json-pointer@npm:1.0.34"
+  checksum: 7ecfa30d0b92819819c8dfefa27118dd4798cf415c60fe9d17c3ba667af420bfe36b8a38f46b8bd90f59bccf438819878f7371dcb9f814b60ed043c35a9daa0a
   languageName: node
   linkType: hard
 

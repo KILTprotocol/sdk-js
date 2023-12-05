@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-// @ts-expect-error not a ts dependency
 import jsonpointer from 'json-pointer'
 import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
@@ -24,7 +23,7 @@ function pointerToAttributeName(
   pointer: string,
   throwIfMandatory = false
 ): string {
-  const parsed: Array<string | number> = jsonpointer.parse(pointer)
+  const parsed = jsonpointer.parse(pointer)
   if (jsonpointer.has(credential, parsed) !== true) {
     throw new SDKErrors.SDKError(`No value at pointer ${pointer}`)
   }
