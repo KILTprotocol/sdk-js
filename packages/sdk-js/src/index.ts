@@ -9,7 +9,7 @@
  * @module @kiltprotocol/sdk-js
  */
 
-export * from '@kiltprotocol/credentials'
+export { CType, holder, issuer, verifier } from '@kiltprotocol/credentials'
 export { ConfigService } from '@kiltprotocol/config'
 export {
   Blockchain,
@@ -18,7 +18,6 @@ export {
   disconnect,
   init,
 } from '@kiltprotocol/chain-helpers'
-export * as ChainHelpers from '@kiltprotocol/chain-helpers'
 export * as Did from '@kiltprotocol/did'
 export * as Utils from '@kiltprotocol/utils'
 export * from '@kiltprotocol/types'

@@ -8,11 +8,7 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import {
-  Blockchain,
-  BalanceUtils,
-  disconnect,
-} from '@kiltprotocol/chain-helpers'
+import { Blockchain, BalanceUtils, disconnect } from '@kiltprotocol/sdk-js'
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'

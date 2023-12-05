@@ -8,10 +8,12 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { Attestation, CType } from '@kiltprotocol/credentials'
-import { disconnect } from '@kiltprotocol/chain-helpers'
-import { Claim, Credential } from '@kiltprotocol/legacy-credentials'
-import * as Did from '@kiltprotocol/did'
+import { Did, CType, disconnect } from '@kiltprotocol/sdk-js'
+import {
+  Claim,
+  Credential,
+  Attestation,
+} from '@kiltprotocol/legacy-credentials'
 import type {
   DidDocument,
   IAttestation,
@@ -21,6 +23,7 @@ import type {
   SignerInterface,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+
 import {
   createFullDidFromLightDid,
   createFullDidFromSeed,

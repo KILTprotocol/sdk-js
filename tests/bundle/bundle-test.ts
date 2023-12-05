@@ -7,7 +7,6 @@
 
 /// <reference lib="dom" />
 
-import type { KiltCredentialV1 as KiltCredential } from '@kiltprotocol/credentials'
 import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -26,8 +25,6 @@ const {
   Blockchain,
   Utils: { Crypto, ss58Format, Signers },
   BalanceUtils,
-  KiltCredentialV1,
-  Presentation,
   issuer,
   verifier,
   holder,
@@ -276,9 +273,6 @@ async function runAll() {
   })
   console.info('Credential issued')
 
-  KiltCredentialV1.validateStructure(issued as KiltCredential.Interface)
-  console.info('Credential structure validated')
-
   const credentialResult = await verifier.verifyCredential(
     issued,
     {},
@@ -315,9 +309,6 @@ async function runAll() {
     }
   )
   console.info('Presentation created')
-
-  Presentation.validateStructure(presentation)
-  console.info('Presentation structure validated')
 
   const presentationResult = await verifier.verifyPresentation(presentation, {
     presentation: { challenge },

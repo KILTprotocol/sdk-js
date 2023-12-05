@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   DidDocument,
   KiltKeyringPair,
@@ -14,6 +13,7 @@ import type {
   SignerInterface,
   VerificationMethod,
 } from '@kiltprotocol/types'
+import type { ApiPromise } from '@polkadot/api'
 
 import { BN } from '@polkadot/util'
 
@@ -27,9 +27,9 @@ import type { KeyTool } from '../testUtils/index.js'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
+  getStoreTxFromDidDocument,
   makeEncryptionKeyTool,
   makeSigningKeyTool,
-  getStoreTxFromDidDocument,
 } from '../testUtils/index.js'
 import {
   createEndowedTestAccount,

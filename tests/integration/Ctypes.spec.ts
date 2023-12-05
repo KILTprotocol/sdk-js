@@ -7,18 +7,17 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { CType } from '@kiltprotocol/credentials'
-import { disconnect } from '@kiltprotocol/chain-helpers'
-import * as Did from '@kiltprotocol/did'
+import { Did, CType, disconnect, Utils } from '@kiltprotocol/sdk-js'
 import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
-import { Crypto, UUID } from '@kiltprotocol/utils'
-
 import {
   KeyTool,
   createFullDidFromSeed,
   makeSigningKeyTool,
 } from '../testUtils/index.js'
+
 import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
+
+const { Crypto, UUID } = Utils
 
 let api: ApiPromise
 // we skip fetching CTypes from chain for the old pallet version, where the necessary information was not yet on chain.

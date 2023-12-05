@@ -7,17 +7,18 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { Attestation, CType } from '@kiltprotocol/credentials'
-import { disconnect } from '@kiltprotocol/chain-helpers'
-import { Claim, Credential } from '@kiltprotocol/legacy-credentials'
-import * as Did from '@kiltprotocol/did'
+import { Did, CType, disconnect, Utils } from '@kiltprotocol/sdk-js'
+import {
+  Claim,
+  Credential,
+  Attestation,
+} from '@kiltprotocol/legacy-credentials'
 import type {
   DidDocument,
   IAttestation,
   ICredential,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
 
 import {
   createFullDidFromSeed,
@@ -31,6 +32,8 @@ import {
   isCtypeOnChain,
   submitTx,
 } from './utils.js'
+
+const { Crypto } = Utils
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument

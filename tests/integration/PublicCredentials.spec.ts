@@ -17,10 +17,8 @@ import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
+import { Did, CType, disconnect } from '@kiltprotocol/sdk-js'
 import { PublicCredentials } from '@kiltprotocol/asset-credentials'
-import { CType } from '@kiltprotocol/credentials'
-import { disconnect } from '@kiltprotocol/chain-helpers'
-import * as Did from '@kiltprotocol/did'
 import { UUID } from '@kiltprotocol/utils'
 
 import {

@@ -33,10 +33,9 @@ import type {
   NewService,
 } from '@kiltprotocol/did'
 
-import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { ConfigService } from '@kiltprotocol/config'
-import * as Did from '@kiltprotocol/did'
+import { Did, ConfigService, Blockchain, Utils } from '@kiltprotocol/sdk-js'
+
+const { Crypto, Signers, SDKErrors } = Utils
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
