@@ -93,7 +93,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
   /**
    * Generates a KeyPair with an optional deterministic seed.
    *
-   * @param options={} - See LDKeyPair docstring for full list.
+   * @param options - See LDKeyPair docstring for full list.
    * @param options.seed -
    * a 32-byte array seed for a deterministic key.
    *
@@ -158,7 +158,7 @@ export class Sr25519VerificationKey2020 extends LDKeyPair {
    * Exports the serialized representation of the KeyPair
    * and other information that json-ld Signatures can use to form a proof.
    *
-   * @param options={} - Options hashmap.
+   * @param options - Options hashmap.
    * @param options.publicKey - Export public key material?
    * @param options.privateKey - Export private key material?
    * @param options.includeContext - Include JSON-LD context?

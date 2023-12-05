@@ -39,6 +39,8 @@ export {
   getDelegationNodeIdForCredential as getDelegationId,
 } from './common.js'
 
+export type Interface = KiltCredentialV1
+
 /**
  * Credential context URL required for Kilt credentials.
  */
@@ -219,7 +221,7 @@ interface CredentialInput {
   claims: ICredential['claim']['contents']
   cType: ICType['$id']
   issuer: Did
-  timestamp?: number
+  timestamp?: Date
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
   legitimations?: Array<KiltCredentialV1 | KiltCredentialV1['id']>
@@ -243,7 +245,7 @@ export function fromInput(
  * @param input.claims A record of claims about the subject.
  * @param input.cType The CType (or alternatively its id) to which the claims conform.
  * @param input.issuer The issuer of the credential.
- * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param input.timestamp Timestamp of a block at which the credential can be verified.
  * @param input.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
  * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
  * @param input.legitimations Optional: array of credentials (or credential ids) which function as legitimations to this credential.
@@ -255,7 +257,7 @@ export function fromInput({
   claims,
   cType,
   issuer,
-  timestamp = Date.now(),
+  timestamp = new Date(),
   chainGenesisHash = spiritnetGenesisHash,
   claimHash,
   legitimations,

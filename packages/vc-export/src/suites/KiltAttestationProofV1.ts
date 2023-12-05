@@ -19,12 +19,7 @@ import {
   Types,
   KiltCredentialV1,
 } from '@kiltprotocol/core'
-import type {
-  DidDocument,
-  Did,
-  ICType,
-  SignerInterface,
-} from '@kiltprotocol/types'
+import type { DidDocument, Did, ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
@@ -42,14 +37,17 @@ interface CallArgs {
   [key: string]: unknown
 }
 
-export type CredentialStub = Pick<Types.KiltCredentialV1, 'credentialSubject'> &
-  Partial<Types.KiltCredentialV1>
+export type CredentialStub = Pick<
+  KiltCredentialV1.Interface,
+  'credentialSubject'
+> &
+  Partial<KiltCredentialV1.Interface>
 
 export class KiltAttestationV1Suite extends LinkedDataProof {
   private ctypes: ICType[]
   private attestationInfo = new Map<
-    Types.KiltCredentialV1['id'],
-    Types.KiltAttestationProofV1
+    KiltCredentialV1.Interface['id'],
+    KiltAttestationProofV1.Interface
   >()
 
   public readonly contextUrl = KiltCredentialV1.CONTEXT_URL
@@ -75,7 +73,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the {@link KiltRevocationStatusV1} method.
    */
   public get checkStatus(): (args: {
-    credential: Types.KiltCredentialV1
+    credential: KiltCredentialV1.Interface
   }) => Promise<{ verified: boolean; error?: unknown }> {
     return async ({ credential }) => {
       return KiltRevocationStatusV1.check(credential)
@@ -105,8 +103,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
         throw new TypeError('document is required for verification')
       }
       // TODO: do we have to compact first in order to allow credentials in non-canonical (non-compacted) form?
-      const proof = options.proof as Types.KiltAttestationProofV1
-      const document = options.document as unknown as Types.KiltCredentialV1
+      const proof = options.proof as KiltAttestationProofV1.Interface
+      const document = options.document as unknown as KiltCredentialV1.Interface
       const loadCTypes: CType.CTypeLoader = async (id) => {
         const { document: ctype } = (await options.documentLoader?.(id)) ?? {}
         if (!CType.isICType(ctype)) {
@@ -184,8 +182,8 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     document,
   }: {
     document: object
-  }): Promise<Types.KiltAttestationProofV1> {
-    const credential = document as Types.KiltCredentialV1
+  }): Promise<KiltAttestationProofV1.Interface> {
+    const credential = document as KiltCredentialV1.Interface
     KiltCredentialV1.validateStructure(credential)
     const { id } = credential
     const proof = this.attestationInfo.get(id)
@@ -204,17 +202,15 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    *
    * @param input A partial {@link KiltCredentialV1} `credentialSubject` is required.
    * @param issuer The DID Document or, alternatively, the DID of the issuer.
-   * @param signers Signer interfaces to be passed to {@link KiltAttestationProofV1.issue | issue}, one of which will be selected to authorize the on-chain anchoring of the credential with the issuer's signature.
-   * @param transactionHandler Transaction handler interface to be passed to {@link KiltAttestationProofV1.issue | issue} containing the submitter `address` that's going to cover the transaction fees as well as either a `signer` or `signAndSubmit` callback handling extrinsic signing and submission.
+   * @param submissionOptions Authorization and submission handlers, or alternatively signers, to be passed to {@link KiltAttestationProofV1.issue | issue} for authorizing the on-chain anchoring of the credential with the issuer's signature.
    *
    * @returns A copy of the input updated to fit the {@link KiltCredentialV1} and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
     input: CredentialStub,
     issuer: DidDocument | Did,
-    signers: readonly SignerInterface[],
-    transactionHandler: KiltAttestationProofV1.TxHandler
-  ): Promise<Omit<Types.KiltCredentialV1, 'proof'>> {
+    submissionOptions: Parameters<typeof KiltAttestationProofV1.issue>['2']
+  ): Promise<Omit<KiltCredentialV1.Interface, 'proof'>> {
     const { credentialSubject, type } = input
 
     let cType = type?.find((str): str is ICType['$id'] =>
@@ -244,10 +240,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
     const { proof, ...credential } = await KiltAttestationProofV1.issue(
       credentialStub,
       issuer,
-      {
-        signers,
-        transactionHandler,
-      }
+      submissionOptions
     )
 
     this.attestationInfo.set(credential.id, proof)

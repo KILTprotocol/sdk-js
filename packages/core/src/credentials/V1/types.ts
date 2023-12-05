@@ -55,7 +55,10 @@ export interface UnsignedVc {
   /**
    * Claims about the subjects of the credential.
    */
-  credentialSubject: { id?: string }
+  credentialSubject: {
+    id?: string
+    [key: string]: unknown
+  }
   /**
    * The entity that issued the credential.
    */
@@ -63,7 +66,7 @@ export interface UnsignedVc {
   /**
    * When the credential was issued.
    */
-  issuanceDate: string
+  issuanceDate?: string
   /**
    * If true, this credential can only be presented and used by its subject.
    */
@@ -85,6 +88,7 @@ export interface UnsignedVc {
 }
 
 export interface VerifiableCredential extends UnsignedVc {
+  issuanceDate: string
   /**
    *  Cryptographic proof that makes the credential tamper-evident.
    */

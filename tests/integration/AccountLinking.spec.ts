@@ -38,7 +38,7 @@ beforeAll(async () => {
   api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = api.consts.didLookup.deposit.toBn()
-}, 40_000)
+}, 60_000)
 
 describe('When there is an on-chain DID', () => {
   let did: DidDocument
@@ -52,7 +52,7 @@ describe('When there is an on-chain DID', () => {
       newDidKey = await makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-    }, 40_000)
+    }, 60_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
       expect(
@@ -208,6 +208,7 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
         expect(queryByAccount.document.id).toStrictEqual(did.id)
       })
+
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         if (skip) {
           return
@@ -243,6 +244,7 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
         expect(queryByAccount.document.id).toStrictEqual(newDid.id)
       })
+
       it('should be possible for the DID to remove the link', async () => {
         if (skip) {
           return

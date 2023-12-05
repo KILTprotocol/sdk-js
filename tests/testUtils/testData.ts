@@ -16,11 +16,7 @@ import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import {
-  KiltCredentialV1,
-  Types,
-  KiltAttestationProofV1,
-} from '@kiltprotocol/core'
+import { KiltCredentialV1, KiltAttestationProofV1 } from '@kiltprotocol/core'
 
 import { createAugmentedApi } from './mocks/index.js'
 
@@ -32,10 +28,10 @@ const attestationPalletIndex = 62
 mockedApi.once('ready', () => {
   const idx = mockedApi.runtimeMetadata.asLatest.pallets.find((x) =>
     x.name.match(/attestation/i)
-  )!.index
-  if (!idx.eqn(attestationPalletIndex)) {
+  )?.index
+  if (!idx?.eqn(attestationPalletIndex)) {
     console.warn(
-      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx.toNumber()}. This may lead to tests not behaving as expected!`
+      `The attestation pallet index is expected to be ${attestationPalletIndex}, but the metadata used lists it as ${idx?.toNumber()}. This may lead to tests not behaving as expected!`
     )
   }
 })
@@ -127,7 +123,7 @@ export const attestation: IAttestation = {
   revoked: false,
 }
 
-export const timestamp = 1234567
+export const timestamp = new Date(1234567)
 export const blockHash = randomAsU8a(32)
 export const genesisHash = randomAsU8a(32)
 
@@ -159,7 +155,7 @@ const _credential = JSON.stringify({
 })
 
 // eslint-disable-next-line import/no-mutable-exports
-export let credential: Types.KiltCredentialV1 = JSON.parse(_credential)
+export let credential: KiltCredentialV1.Interface = JSON.parse(_credential)
 beforeEach(() => {
   credential = JSON.parse(_credential)
 })
@@ -186,7 +182,9 @@ mockedApi.query.attestation = {
   ),
 } as any
 mockedApi.query.timestamp = {
-  now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
+  now: jest
+    .fn()
+    .mockResolvedValue(mockedApi.createType('u64', timestamp.getTime())),
 } as any
 
 mockedApi.query.system = {

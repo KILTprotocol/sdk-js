@@ -7,7 +7,7 @@
 
 import { CType } from '@kiltprotocol/core'
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { PartialClaim, IClaimContents, IClaim } from '@kiltprotocol/types'
+import type { PartialClaim, IClaimContents, IClaim } from '@kiltprotocol/types' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 /**
  * Produces JSON-LD readable representations of a Claim's {@link IClaimContents | contents}. This is done by implicitly or explicitly transforming property keys to globally unique predicates.

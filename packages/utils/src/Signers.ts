@@ -5,8 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Signer } from '@polkadot/api/types/index.js'
 import { decodePair } from '@polkadot/keyring/pair/decode'
 import {
+  hexToU8a,
+  u8aConcat,
+  u8aIsWrapped,
+  u8aToHex,
+  u8aWrapBytes,
+} from '@polkadot/util'
+import {
+  blake2AsU8a,
   encodeAddress,
   randomAsHex,
   secp256k1Sign,
@@ -34,7 +43,7 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 
-import { DidError } from './SDKErrors.js'
+import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b' as const, // could also be called ES256K-R-Blake2b
@@ -190,6 +199,7 @@ function algsForKeyType(keyType: string): KnownAlgorithms[] {
     case 'sr25519':
       return [ALGORITHMS.SR25519]
     case 'ecdsa':
+    case 'ethereum':
     case 'secpk256k1':
       return [
         ALGORITHMS.ES256K,
@@ -370,4 +380,71 @@ export const select = {
   byAlgorithm,
   byDid,
   verifiableOnChain,
+}
+
+const TYPE_PREFIX = {
+  [ALGORITHMS.ED25519]: new Uint8Array([0]),
+  [ALGORITHMS.SR25519]: new Uint8Array([1]),
+  [ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B]: new Uint8Array([2]),
+  [ALGORITHMS.ECRECOVER_SECP256K1_KECCAK]: new Uint8Array([2]),
+}
+
+/**
+ * Simplifies signing transactions using SignerInterface signers by wrapping it in a Polkadot signer interface.
+ *
+ * @example const signedTx = await tx.signAsync(<address>, {signer: getExtrinsicSigner(<signers>)})
+ *
+ * @param signers An array of SignerInterface signers.
+ * @param hasher The hasher used in signing extrinsics.
+ * Must match the hasher used by the chain in order to produce verifiable extrinsic signatures.
+ * Defaults to blake2b.
+ * @param updatesCallback Receives updates from the caller of the signer on the status of the extrinsic submission.
+ * @returns An object implementing polkadot's `signRaw` interface.
+ */
+export function getPolkadotSigner(
+  signers: readonly SignerInterface[],
+  hasher: (data: Uint8Array) => Uint8Array = blake2AsU8a,
+  updatesCallback?: Signer['update']
+): Signer {
+  let id = -1
+  return {
+    update: updatesCallback,
+    signRaw: async ({ data, address, type }) => {
+      const signer = await selectSigner(
+        signers,
+        bySignerId([address]),
+        verifiableOnChain()
+      )
+      if (!signer) {
+        throw new NoSuitableSignerError(
+          `no suitable signer available for blockchain account ${address}`,
+          {
+            signerRequirements: {
+              id: address,
+              algorithms: DID_PALLET_SUPPORTED_ALGORITHMS,
+            },
+            availableSigners: signers,
+          }
+        )
+      }
+      let signData = hexToU8a(data)
+      if (type === 'payload') {
+        // for signing blockchain transactions, the data is hashed according to the following logic
+        if (signData.length > 256) {
+          signData = hasher(signData)
+        }
+      } else if (!u8aIsWrapped(signData, false)) {
+        // signing raw bytes requires them to be wrapped
+        signData = u8aWrapBytes(signData)
+      }
+      const signature = await signer.sign({ data: signData })
+      // The signature is expected to be a SCALE enum, we must add a type prefix representing the signature algorithm
+      const prefixed = u8aConcat(TYPE_PREFIX[signer.algorithm], signature)
+      id += 1
+      return {
+        id,
+        signature: u8aToHex(prefixed),
+      }
+    },
+  }
 }
