@@ -176,7 +176,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * ! __This will fail unless the document has been created with `anchorCredential` by the same class instance prior to calling `createProof`__ !
    *
    * @param input Object containing the function arguments.
-   * @param input.document {@link KiltCredentialV1} object to be signed.
+   * @param input.document A {@link KiltCredentialV1} object to be signed.
    *
    * @returns Resolves with the created proof object.
    */
