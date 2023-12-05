@@ -7,6 +7,7 @@
 
 /// <reference lib="dom" />
 
+import type { Identity } from '@kiltprotocol/sdk-js'
 import type { ApiPromise } from '@polkadot/api'
 import type {
   Did,
@@ -27,6 +28,7 @@ const {
   DidResolver,
   signAndSubmitTx,
   signerFromKeypair,
+  makeIdentity,
 } = kilt
 
 async function authorizeTx(
@@ -57,7 +59,7 @@ async function authorizeTx(
   return authorized
 }
 
-async function createFullDid(
+async function createFullDidIdentity(
   payer: SignerInterface<'Ed25519' | 'Sr25519', KiltAddress>,
   keypair: { publicKey: Uint8Array; secretKey: Uint8Array }
 ) {
@@ -105,10 +107,17 @@ async function createFullDid(
     throw new Error(`failed to create did for account ${address}`)
   }
 
+  const identity = (await makeIdentity({
+    did: didDocument.id,
+    didDocument,
+    keypairs: [keypair],
+  })) as Identity
+
   return {
     didDocument,
     getSigners,
     address,
+    identity,
   }
 }
 
@@ -136,36 +145,29 @@ async function runAll() {
 
   console.log('faucet signer created')
 
-  const { didDocument: alice, getSigners: aliceSign } = await createFullDid(
-    payerSigner,
-    {
-      publicKey: new Uint8Array([
-        136, 220, 52, 23, 213, 5, 142, 196, 180, 80, 62, 12, 18, 234, 26, 10,
-        137, 190, 32, 15, 233, 137, 34, 66, 61, 67, 52, 1, 79, 166, 176, 238,
-      ]),
-      secretKey: new Uint8Array([
-        171, 248, 229, 189, 190, 48, 198, 86, 86, 192, 163, 203, 209, 129, 255,
-        138, 86, 41, 74, 105, 223, 237, 210, 121, 130, 170, 206, 74, 118, 144,
-        145, 21,
-      ]),
-    }
-  )
+  const { identity: alice } = await createFullDidIdentity(payerSigner, {
+    publicKey: new Uint8Array([
+      136, 220, 52, 23, 213, 5, 142, 196, 180, 80, 62, 12, 18, 234, 26, 10, 137,
+      190, 32, 15, 233, 137, 34, 66, 61, 67, 52, 1, 79, 166, 176, 238,
+    ]),
+    secretKey: new Uint8Array([
+      171, 248, 229, 189, 190, 48, 198, 86, 86, 192, 163, 203, 209, 129, 255,
+      138, 86, 41, 74, 105, 223, 237, 210, 121, 130, 170, 206, 74, 118, 144,
+      145, 21,
+    ]),
+  })
   console.log('alice setup done')
 
-  const { didDocument: bob, getSigners: bobSign } = await createFullDid(
-    payerSigner,
-    {
-      publicKey: new Uint8Array([
-        209, 124, 45, 120, 35, 235, 242, 96, 253, 19, 143, 45, 126, 39, 209, 20,
-        192, 20, 93, 150, 139, 95, 245, 0, 97, 37, 242, 65, 79, 173, 174, 105,
-      ]),
-      secretKey: new Uint8Array([
-        59, 123, 96, 175, 42, 188, 213, 123, 164, 1, 171, 57, 143, 132, 244,
-        202, 84, 189, 107, 33, 64, 210, 80, 63, 188, 243, 40, 101, 53, 254, 63,
-        241,
-      ]),
-    }
-  )
+  const { identity: bob } = await createFullDidIdentity(payerSigner, {
+    publicKey: new Uint8Array([
+      209, 124, 45, 120, 35, 235, 242, 96, 253, 19, 143, 45, 126, 39, 209, 20,
+      192, 20, 93, 150, 139, 95, 245, 0, 97, 37, 242, 65, 79, 173, 174, 105,
+    ]),
+    secretKey: new Uint8Array([
+      59, 123, 96, 175, 42, 188, 213, 123, 164, 1, 171, 57, 143, 132, 244, 202,
+      84, 189, 107, 33, 64, 210, 80, 63, 188, 243, 40, 101, 53, 254, 63, 241,
+    ]),
+  })
 
   console.log('bob setup done')
 
@@ -190,11 +192,7 @@ async function runAll() {
 
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const {
-    didDocument: fullDid,
-    getSigners,
-    address: didAddress,
-  } = await createFullDid(payerSigner, {
+  const keypair = {
     publicKey: new Uint8Array([
       157, 198, 166, 93, 125, 173, 238, 122, 17, 146, 49, 238, 62, 111, 140, 45,
       26, 6, 94, 42, 60, 167, 79, 19, 142, 20, 212, 5, 130, 44, 214, 190,
@@ -203,12 +201,20 @@ async function runAll() {
       252, 195, 96, 143, 203, 194, 37, 74, 205, 243, 137, 71, 234, 82, 57, 46,
       212, 14, 113, 177, 1, 241, 62, 118, 184, 230, 121, 219, 17, 45, 36, 143,
     ]),
+  }
+
+  const { didDocument: fullDid, address: didAddress } =
+    await createFullDidIdentity(payerSigner, keypair)
+
+  const identity = await makeIdentity({
+    did: `did:kilt:${didAddress}` as Did,
+    keypairs: [keypair],
   })
 
   if (
     fullDid.authentication?.length === 1 &&
     fullDid.assertionMethod?.length === 1 &&
-    fullDid.id.endsWith(didAddress)
+    fullDid.id === identity.did
   ) {
     console.info('DID matches')
   } else {
@@ -218,8 +224,11 @@ async function runAll() {
   const deleteTx = await authorizeTx(
     api,
     api.tx.did.delete(0),
-    fullDid.id,
-    getSigners(fullDid)[0],
+    identity.did,
+    await identity.getSigner({
+      verificationRelationship: 'authentication',
+      algorithm: 'Ed25519',
+    }),
     payerSigner.id
   )
 
@@ -240,8 +249,11 @@ async function runAll() {
   const cTypeStoreTx = await authorizeTx(
     api,
     api.tx.ctype.add(DriversLicenseDef),
-    alice.id,
-    aliceSign(alice)[0],
+    alice.did,
+    await alice.getSigner({
+      verificationRelationship: 'assertionMethod',
+      algorithm: 'Ed25519',
+    }),
     payerSigner.id
   )
 
@@ -267,8 +279,8 @@ async function runAll() {
   const credential = await Issuer.createCredential({
     cType: DriversLicense,
     claims: content,
-    subject: bob.id,
-    issuer: alice.id,
+    subject: bob.did,
+    issuer: alice.did,
   })
 
   console.info('Credential subject conforms to CType')
@@ -276,16 +288,16 @@ async function runAll() {
   if (
     credential.credentialSubject.name !== content.name ||
     credential.credentialSubject.age !== content.age ||
-    credential.credentialSubject.id !== bob.id
+    credential.credentialSubject.id !== bob.did
   ) {
     throw new Error('Claim content inside Credential mismatching')
   }
 
-  const issued = await Issuer.issue(credential, {
-    did: alice.id,
-    signers: [...(await aliceSign(alice)), payerSigner],
-    submitterAccount: payerSigner.id,
-  })
+  // turn alice into a transaction submission enabled identity
+  alice.submitterAccount = payerSigner.id
+  await alice.addSigner(payerSigner)
+
+  const issued = await Issuer.issue(credential, alice as any)
   console.info('Credential issued')
 
   const credentialResult = await Verifier.verifyCredential(
@@ -312,10 +324,7 @@ async function runAll() {
 
   const presentation = await Holder.createPresentation(
     [derived],
-    {
-      did: bob.id,
-      signers: await bobSign(bob),
-    },
+    bob,
     {},
     {
       challenge,
