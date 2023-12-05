@@ -185,7 +185,7 @@ export const kiltCTypeLoader: DocumentLoader = async (id) => {
 
 /**
  * Document loader that provides access to the JSON-LD contexts required for verifying Kilt VCs.
- * Essentially wraps the vc-js defaultDocumentLoader, but additionally loads KILTs [[validationContexts]] & [[DID_CONTEXTS]].
+ * Essentially wraps the vc-js defaultDocumentLoader, but additionally loads KILTs {@link validationContexts} & {@link DID_CONTEXTS}.
  *
  * @param url Document/context URL to resolve.
  * @returns An object containing the resolution result.

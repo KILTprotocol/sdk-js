@@ -265,7 +265,7 @@ export function decryptAsymmetricAsStr(
 }
 
 /**
- * Signature of hashing function accepted by [[hashStatements]].
+ * Signature of hashing function accepted by {@link hashStatements}.
  *
  * @param value String to be hashed.
  * @param nonce Optional nonce (as string) used to obscure hashed contents.
@@ -276,7 +276,7 @@ export interface Hasher {
 }
 
 /**
- * Additional options for [[hashStatements]].
+ * Additional options for {@link hashStatements}.
  */
 export interface HashingOptions {
   nonces?: Record<string, string>
@@ -285,7 +285,7 @@ export interface HashingOptions {
 }
 
 /**
- * Default hasher for [[hashStatements]].
+ * Default hasher for {@link hashStatements}.
  *
  * @param value String to be hashed.
  * @param nonce Optional nonce (as string) used to obscure hashed contents.

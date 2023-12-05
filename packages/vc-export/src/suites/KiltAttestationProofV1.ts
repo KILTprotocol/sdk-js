@@ -70,7 +70,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
   // eslint-disable-next-line jsdoc/require-returns
   /**
-   * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the [[KiltRevocationStatusV1]] method.
+   * A function to check the revocation status of KiltAttestationV1 proofs, which is tied to the {@link KiltRevocationStatusV1} method.
    */
   public get checkStatus(): (args: {
     credential: KiltCredentialV1.Interface
@@ -169,12 +169,12 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * Adds a proof to a [[KiltCredentialV1]] type document.
+   * Adds a proof to a {@link KiltCredentialV1} type document.
    *
    * ! __This will fail unless the document has been created with `anchorCredential` by the same class instance prior to calling `createProof`__ !
    *
    * @param input Object containing the function arguments.
-   * @param input.document [[KiltCredentialV1]] object to be signed.
+   * @param input.document A {@link KiltCredentialV1} object to be signed.
    *
    * @returns Resolves with the created proof object.
    */
@@ -196,15 +196,15 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * Processes a [[KiltCredentialV1]] stub to produce a verifiable [[KiltCredentialV1]], which is anchored on the Kilt blockchain via an attestation.
+   * Processes a {@link KiltCredentialV1} stub to produce a verifiable {@link KiltCredentialV1} which is anchored on the Kilt blockchain via an attestation.
    * The class instance keeps track of attestation-related data.
    * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
-   * @param input A partial [[KiltCredentialV1]]; `credentialSubject` is required.
+   * @param input A partial {@link KiltCredentialV1} `credentialSubject` is required.
    * @param issuer The DID Document or, alternatively, the DID of the issuer.
-   * @param submissionOptions Authorization and submission handlers, or alternatively signers, to be passed to [[issue]] for authorizing the on-chain anchoring of the credential with the issuer's signature.
+   * @param submissionOptions Authorization and submission handlers, or alternatively signers, to be passed to {@link KiltAttestationProofV1.issue | issue} for authorizing the on-chain anchoring of the credential with the issuer's signature.
    *
-   * @returns A copy of the input updated to fit the [[KiltCredentialV1]] and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
+   * @returns A copy of the input updated to fit the {@link KiltCredentialV1} and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
     input: CredentialStub,

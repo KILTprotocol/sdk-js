@@ -28,9 +28,9 @@ import * as AssetDid from '../dids/index.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
 /**
- * Calculates the ID of a [[IPublicCredentialInput]], to be used to retrieve the full credential content from the blockchain.
+ * Calculates the ID of a {@link IPublicCredentialInput}, to be used to retrieve the full credential content from the blockchain.
  *
- * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[Did]] and then Blake2b hashing the result.
+ * The ID is formed by first concatenating the SCALE-encoded {@link IPublicCredentialInput} with the SCALE-encoded {@link KiltDid | DID} and then Blake2b hashing the result.
  *
  * @param credential The input credential object.
  * @param attester The DID of the credential attester.
@@ -78,7 +78,11 @@ function verifyClaimStructure(input: IAssetClaim | PartialAssetClaim): void {
   DataUtils.verifyIsHex(input.cTypeHash, 256)
 }
 
-// Used internally only when building the [[IPublicCredentialInput]].
+/**
+ * Used internally only when building the {@link IPublicCredentialInput}.
+ *
+ * @param input Data from which to build an asset credential.
+ */
 function verifyDataStructure(input: IPublicCredentialInput): void {
   if (typeof input.claims !== 'object' || input.claims === null) {
     throw new SDKErrors.ClaimMissingError()
@@ -99,12 +103,12 @@ function verifyDataStructure(input: IPublicCredentialInput): void {
 }
 
 /**
- * Checks the [[IPublicCredential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the {@link IPublicCredential} with a given {@link ICType | CType} to check if the included claim meets the structure described by that CType.
  *
- * This function is meant to be used by consumers of this [[IPublicCredential]], once they have retrieved the full credential content.
+ * This function is meant to be used by consumers of this {@link IPublicCredential}, once they have retrieved the full credential content.
  *
- * @param credential A [[IPublicCredential]] for the attester.
- * @param cType A [[CType]] to verify the [[Claim]] structure.
+ * @param credential A {@link IPublicCredential} for the attester.
+ * @param cType A {@link ICType} to verify the {@link IPublicCredential.claims} structure.
  */
 export function verifyAgainstCType(
   credential: IPublicCredential,
@@ -118,15 +122,15 @@ type VerifyOptions = {
 }
 
 /**
- * Verifies if a received [[IPublicCredential]] is valid, meaning if its content has not been tampered with and optionally if its structure matches a given [[ICType]].
+ * Verifies if a received {@link IPublicCredential} is valid, meaning if its content has not been tampered with and optionally if its structure matches a given {@link ICType}.
  *
  * **Successful verification of a public credential still requires the consumer to check the `revoked` property and take the appropriate action**.
  *
  * We recommend consumer of credentials to fetch them themselves using the functions exposed in this SDK.
  * Nevertheless, for some use cases having a function that verifies the content of a credential directly could be handy.
- * This function does that: it takes a [[IPublicCredential]], and re-computes its cryptographically-generated ID to verify the content authenticity.
+ * This function does that: it takes a {@link IPublicCredential}, and re-computes its cryptographically-generated ID to verify the content authenticity.
  *
- * @param credential The full [[IPublicCredential]] object.
+ * @param credential The full {@link IPublicCredential} object.
  * @param options - Additional parameter for more verification steps.
  * @param options.cType - CType which the included claim should be checked against.
  */
@@ -187,12 +191,12 @@ export type PublicCredentialCreationOptions = {
 }
 
 /**
- * Builds a new [[IPublicCredentialInput]] object, from a complete set of required parameters.
+ * Builds a new {@link IPublicCredentialInput} object, from a complete set of required parameters.
  *
- * @param claim An [[IClaim]] object to build the credential for.
+ * @param claim An {@link IAssetClaim} object to build the credential for.
  * @param option Container for different options that can be passed to this method.
  * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
- * @returns A new [[IPublicCredentialInput]] object ready to be submitted to the blockchain for issuance.
+ * @returns A new {@link IPublicCredentialInput} object ready to be submitted to the blockchain for issuance.
  */
 export function fromClaim(
   claim: IAssetClaim,

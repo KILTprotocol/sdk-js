@@ -191,7 +191,7 @@ schemaValidator.addSchema(CType.Schemas.CTypeModel, 'kilt.schemas/CTypeModel')
 
 /**
  * Validates an object against the KiltCredentialV1 data model.
- * Throws if object violates the [[credentialSchema]].
+ * Throws if object violates the {@link credentialSchema}.
  *
  * @param credential Credential or object to be validated.
  */
@@ -330,12 +330,12 @@ const cachingCTypeLoader = newCachingCTypeLoader()
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition.
  *
- * @param credential A [[KiltCredentialV1]] type verifiable credential.
+ * @param credential A {@link KiltCredentialV1} type verifiable credential.
  * @param credential.credentialSubject The credentialSubject to be validated.
  * @param credential.type The credential's types.
  * @param options Options map.
  * @param options.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
- * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the [[CachingCTypeLoader]]. If set to `false` or `undefined`, no additional CTypes will be loaded.
+ * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the {@link newCachingCTypeLoader | CachingCTypeLoader}. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function validateSubject(
   {

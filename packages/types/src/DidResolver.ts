@@ -16,7 +16,7 @@ import type {
 
 /**
  * The `accept` header must not be used for the regular `resolve` function, so we enforce that statically.
- * For more info, please refer to https://www.w3.org/TR/did-core/#did-resolution-options.
+ * For more info, please refer to {@link https://www.w3.org/TR/did-core/#did-resolution-options | did resolution options}.
  */
 export type ResolutionOptions = Record<string, never>
 

@@ -116,7 +116,7 @@ const schemaValidator = new JsonSchema.Validator(presentationSchema, '7')
 
 /**
  * Validates an object against the VerifiablePresentation data model.
- * Throws if object violates the [[presentationSchema]].
+ * Throws if object violates the {@link presentationSchema}.
  *
  * @param presentation VerifiablePresentation or object to be validated.
  */

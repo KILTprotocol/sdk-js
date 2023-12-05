@@ -122,7 +122,7 @@ const schemaValidator = new JsonSchema.Validator(proofSchema, '7')
 
 /**
  * Validates a proof object against the KiltAttestationProofV1 data model.
- * Throws if object violates the [[proofSchema]].
+ * Throws if object violates the {@link proofSchema}.
  *
  * @param proof Proof object to be validated.
  */
@@ -181,8 +181,8 @@ function makeCommitments(
 /**
  * (Re-)computes the root hash / credential hash from a credential and proof.
  *
- * @param credential A [[KiltCredentialV1]] type credential.
- * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
+ * @param credential A {@link KiltCredentialV1} type credential.
+ * @param proof A {@link KiltAttestationProofV1} type proof for this credential.
  * @returns The root hash.
  */
 export function calculateRootHash(
@@ -336,7 +336,7 @@ async function verifyLegitimation(
  * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @param opts.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
- * @param opts.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the [[CachingCTypeLoader]]. If set to `false` or `undefined`, no additional CTypes will be loaded.
+ * @param opts.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the CachingCTypeLoader. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function verify(
   credentialInput: Omit<KiltCredentialV1, 'proof'>,
@@ -553,7 +553,7 @@ export type UnissuedCredential = Omit<
 >
 
 /**
- * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
+ * Initialize a new, prelimiary {@link KiltAttestationProofV1}, which is the first step in issuing a new credential.
  *
  * @example
  * // start with initializing proof
@@ -623,7 +623,7 @@ export function initializeProof(
 }
 
 /**
- * Finalizes a [[KiltAttestationProofV1]] after anchoring the prelimiary proof's root hash on the KILT blockchain.
+ * Finalizes a {@link KiltAttestationProofV1} after anchoring the prelimiary proof's root hash on the KILT blockchain.
  *
  * @example
  * // start with initializing proof
@@ -699,9 +699,9 @@ async function defaultTxSubmit(
 
 /**
  *
- * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
+ * Creates a complete {@link KiltAttestationProofV1} for issuing a new credential.
  *
- * @param credential A [[KiltCredentialV1]] for which a proof shall be created.
+ * @param credential A {@link KiltCredentialV1} for which a proof shall be created.
  * @param issuer The DID or DID Document of the DID acting as the issuer.
  * @param options Additional parameters.
  * @param options.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).

@@ -27,7 +27,7 @@ export type DidSigningMethodType = typeof signingMethodTypesC[number]
  * Type guard checking whether the provided input string represents one of the supported signing verification types.
  *
  * @param input The input string.
- * @returns Whether the input string is an instance of [[DidSigningMethodType]].
+ * @returns Whether the input string is an instance of {@link DidSigningMethodType}.
  */
 export function isValidVerificationMethodType(
   input: string
@@ -47,7 +47,7 @@ export type DidEncryptionMethodType = typeof encryptionMethodTypesC[number]
  * Type guard checking whether the provided input string represents one of the supported encryption verification types.
  *
  * @param input The input string.
- * @returns Whether the input string is an instance of [[DidEncryptionMethodType]].
+ * @returns Whether the input string is an instance of {@link DidEncryptionMethodType}.
  */
 export function isValidEncryptionMethodType(
   input: string
@@ -63,7 +63,7 @@ export type DidVerificationMethodType =
  * Type guard checking whether the provided input string represents one of the supported signing or encryption verification types.
  *
  * @param input The input string.
- * @returns Whether the input string is an instance of [[DidSigningMethodType]].
+ * @returns Whether the input string is an instance of {@link DidSigningMethodType}.
  */
 export function isValidDidVerificationType(
   input: string
@@ -80,7 +80,7 @@ export type NewService = Service
  * Type guard checking whether the provided input represents one of the supported verification relationships.
  *
  * @param input The input.
- * @returns Whether the input is an instance of [[VerificationRelationship]].
+ * @returns Whether the input is an instance of {@link VerificationRelationship}.
  */
 export function isValidVerificationRelationship(
   input: unknown

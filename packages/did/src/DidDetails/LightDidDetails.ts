@@ -203,7 +203,7 @@ function deserializeAdditionalLightDidDetails(
 }
 
 /**
- * Create a light [[DidDocument]] using the provided verification methods and services.
+ * Create a light {@link DidDocument} using the provided verification methods and services.
  * Sets proper verification method IDs, builds light DID Document.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
  *
@@ -212,7 +212,7 @@ function deserializeAdditionalLightDidDetails(
  * @param input.keyAgreement The optional array containing the public keys to be used as the light DID key agreement verification methods.
  * @param input.service The optional light DID services.
  *
- * @returns The resulting [[DidDocument]].
+ * @returns The resulting {@link DidDocument}.
  */
 export function createLightDidDocument({
   authentication,
@@ -264,9 +264,9 @@ export function createLightDidDocument({
 }
 
 /**
- * Create a light [[DidDocument]] by parsing the provided input DID.
+ * Create a light {@link DidDocument} by parsing the provided input DID.
  * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
- * For the DIDs you have received from external sources use [[resolve]] etc.
+ * For the DIDs you have received from external sources use {@link resolve} etc.
  *
  * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys as verification methods.
@@ -274,7 +274,7 @@ export function createLightDidDocument({
  * @param did The DID to parse.
  * @param failIfFragmentPresent Whether to fail when parsing the DID in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
  *
- * @returns The resulting [[DidDocument]].
+ * @returns The resulting {@link DidDocument}.
  */
 export function parseDocumentFromLightDid(
   did: Did,

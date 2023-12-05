@@ -18,7 +18,7 @@ import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
  * Fetch a delegation hierarchy node from the blockchain given its identifier.
  *
  * @param rootId The root delegation node ID to fetch.
- * @returns The retrieved [[IDelegationHierarchyDetails]].
+ * @returns The retrieved {@link IDelegationHierarchyDetails}.
  */
 export async function fetch(
   rootId: IDelegationNode['id']

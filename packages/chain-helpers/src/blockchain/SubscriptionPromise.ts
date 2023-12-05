@@ -54,7 +54,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
 }
 
 /**
- * A wrapper around [[makeSubscriptionPromise]] that helps to build multiple promises which listen to the same subscription.
+ * A wrapper around {@link makeSubscriptionPromise} that helps to build multiple promises which listen to the same subscription.
  *
  * @param args An array of objects each of which provides the arguments for creation of one promise.
  * @returns An object containing both a subscription callback
