@@ -662,7 +662,7 @@ export function finalizeProof(
 export interface TransactionResult {
   status: 'InBlock' | 'Finalized'
   includedAt: { blockHash: Uint8Array; blockHeight?: BigInt; blockTime?: Date }
-  events?: EventRecord[] // do we need that?
+  events?: EventRecord[]
 }
 
 type CustomHandlers = {
