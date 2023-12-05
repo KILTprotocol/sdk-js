@@ -31,10 +31,10 @@ import type {
 import type { IEventData } from '@polkadot/types/types'
 
 import {
-  authorizeTx as didAuthorizeTx,
+  authorizeTx,
   getFullDid,
   validateDid,
-  fromChain as didFromChain,
+  fromChain,
 } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors, Caip19, Signers } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -288,7 +288,7 @@ async function verifyAuthoritiesInHierarchy(
   if (node === null) {
     throw new SDKErrors.DelegationIdMissingError()
   }
-  delegators.delete(didFromChain(node.details.owner))
+  delegators.delete(fromChain(node.details.owner))
   if (delegators.size === 0) {
     return
   }
@@ -660,7 +660,7 @@ export function finalizeProof(
 }
 
 export interface TransactionResult {
-  status: 'inBlock' | 'finalized'
+  status: 'InBlock' | 'Finalized'
   includedAt: { blockHash: Uint8Array; blockHeight?: BigInt; blockTime?: Date }
   events?: EventRecord[] // do we need that?
 }
@@ -694,7 +694,7 @@ async function defaultTxSubmit(
   })
   const blockHash = result.status.asFinalized
   const { events } = result
-  return { status: 'finalized', includedAt: { blockHash }, events }
+  return { status: 'Finalized', includedAt: { blockHash }, events }
 }
 
 /**
@@ -726,34 +726,43 @@ export async function issue(
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
 
-  const { signers, submitterAccount, authorizeTx, submitTx, ...otherParams } =
-    options
+  const {
+    signers,
+    submitterAccount,
+    authorizeTx: customAuthorizeTx,
+    submitTx: customSubmitTx,
+    ...otherParams
+  } = options
 
-  if (!(authorizeTx && submitTx) && !(signers && submitterAccount)) {
+  if (
+    !(customAuthorizeTx && customSubmitTx) &&
+    !(signers && submitterAccount)
+  ) {
     throw new Error(
       '`signers` and `submitterAccount` are required options if authorizeTx or submitTx are not given'
     )
   }
 
   /* eslint-disable @typescript-eslint/no-non-null-assertion -- we've checked the appropriate combination of parameters above, but typescript does not follow */
-  const didSigned = authorizeTx
-    ? await authorizeTx(call)
-    : await didAuthorizeTx(
-        issuer,
-        call,
-        signers!,
-        submitterAccount!,
-        otherParams
-      )
+  const didSigned = customAuthorizeTx
+    ? await customAuthorizeTx(call)
+    : await authorizeTx(issuer, call, signers!, submitterAccount!, otherParams)
 
-  const transactionPromise = submitTx
-    ? submitTx(didSigned)
+  const transactionPromise = customSubmitTx
+    ? customSubmitTx(didSigned)
     : defaultTxSubmit(didSigned, submitterAccount!, signers!, api)
   /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
   const {
+    status,
     includedAt: { blockHash, blockTime },
   } = await transactionPromise
+
+  if (status !== 'Finalized' && status !== 'InBlock') {
+    throw new SDKErrors.SDKError(
+      `Unexpected transaction status ${status}; the transaction should be "InBlock" or "Finalized" for issuance to continue`
+    )
+  }
 
   const timestamp =
     blockTime ??

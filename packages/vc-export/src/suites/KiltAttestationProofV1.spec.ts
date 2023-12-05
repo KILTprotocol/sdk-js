@@ -458,7 +458,7 @@ describe('issuance', () => {
     submitterAccount: attester,
     submitTx: async () => {
       return {
-        status: 'finalized',
+        status: 'Finalized',
         includedAt: {
           blockHash,
           blockTime: timestamp,
