@@ -35,7 +35,7 @@ export interface Identity {
    * @param signers Signer Interface(s).
    * @returns The (in-place) modified Identity object for chaining.
    */
-  addSigner: (...signers: SignerInterface[]) => Promise<Identity>
+  addSigner: (...signers: SignerInterface[]) => Identity
   /**
    * Convenience function similar to {@link addSigner}, but creates signers for all matching known algorithms from a keypair.
    *
@@ -54,18 +54,18 @@ export interface Identity {
     verificationMethod?: DidUrl | UriFragment
     verificationRelationship?: string
     algorithm?: string
-  }) => Promise<SignerInterface[]>
+  }) => SignerInterface[]
   /**
    * Same as {@link getSigners} but pre-selects a signer matching the criteria and throws if none are found.
    *
    * @param filterBy See {@link getSigners}.
-   * @returns A Promise of a signer, which rejects if none match the selection criteria.
+   * @returns A Promise of a signer, which throws if none match the selection criteria.
    */
   getSigner: (filterBy: {
     verificationMethod?: DidUrl | UriFragment
     verificationRelationship?: string
     algorithm?: string
-  }) => Promise<SignerInterface>
+  }) => SignerInterface
   /**
    * Refreshes the didDocument and/or purges signers that are not linked to a VM currently referenced in the document.
    *
@@ -146,14 +146,12 @@ class IdentityClass implements Identity {
       this.didDocument = await loadDidDocument(this.did, this.resolver)
     }
     if (skipPurgeSigners !== true) {
-      this.didSigners = await this.getSigners()
+      this.didSigners = this.getSigners()
     }
     return this
   }
 
-  public async addSigner(
-    ...signers: SignerInterface[]
-  ): Promise<IdentityClass> {
+  public addSigner(...signers: SignerInterface[]): IdentityClass {
     this.didSigners.push(...signers)
     return this
   }
@@ -181,7 +179,7 @@ class IdentityClass implements Identity {
             const id = matchingKey.id.startsWith('#')
               ? this.did + matchingKey.id
               : matchingKey.id
-            await this.addSigner(
+            this.addSigner(
               ...(await Signers.getSignersForKeypair({
                 keypair,
                 id,
@@ -195,7 +193,7 @@ class IdentityClass implements Identity {
     return this
   }
 
-  public async getSigners({
+  public getSigners({
     verificationMethod,
     verificationRelationship,
     algorithm,
@@ -203,7 +201,7 @@ class IdentityClass implements Identity {
     verificationMethod?: DidUrl | UriFragment
     verificationRelationship?: string
     algorithm?: string
-  } = {}): Promise<SignerInterface[]> {
+  } = {}): SignerInterface[] {
     const selectors = [
       Signers.select.byDid(this.didDocument, { verificationRelationship }),
     ]
@@ -216,14 +214,14 @@ class IdentityClass implements Identity {
     return Signers.selectSigners(this.didSigners)
   }
 
-  public async getSigner(
+  public getSigner(
     criteria: {
       verificationMethod?: DidUrl | UriFragment
       verificationRelationship?: string
       algorithm?: string
     } = {}
-  ): Promise<SignerInterface> {
-    const [signer] = await this.getSigners(criteria)
+  ): SignerInterface {
+    const [signer] = this.getSigners(criteria)
     if (typeof signer === 'undefined') {
       throw new SDKErrors.NoSuitableSignerError(undefined, {
         signerRequirements: criteria,
