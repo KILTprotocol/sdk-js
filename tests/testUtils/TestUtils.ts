@@ -136,7 +136,7 @@ export async function makeStoreDidSigner(
     keypair,
     id: keypair.address,
   })
-  const signer = await Signers.selectSigner(
+  const signer = Signers.selectSigner(
     signers,
     Signers.select.verifiableOnChain()
   )
