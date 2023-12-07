@@ -16,7 +16,8 @@ import type {
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
-import { CType, DelegationNode, disconnect } from '@kiltprotocol/core'
+import { CType, DelegationNode } from '@kiltprotocol/core'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'

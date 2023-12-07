@@ -12,3 +12,4 @@
 export { ErrorHandler } from './errorhandling/index.js'
 export { Blockchain, SubscriptionPromise } from './blockchain/index.js'
 export * as BalanceUtils from './balance/Balance.utils.js'
+export * from './connect/index.js'

@@ -14,9 +14,9 @@ import { randomAsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Blockchain, connect, init } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { CType, connect, init } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/core'
 import type {
   ICType,
   KeyringPair,

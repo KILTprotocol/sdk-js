@@ -10,8 +10,7 @@ import { Keyring } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 
-import { disconnect } from '@kiltprotocol/core'
-import { BalanceUtils } from '@kiltprotocol/chain-helpers'
+import { BalanceUtils, disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,

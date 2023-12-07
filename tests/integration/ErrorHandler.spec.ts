@@ -7,7 +7,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import { disconnect } from '@kiltprotocol/core'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,

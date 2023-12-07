@@ -11,8 +11,15 @@
 
 export * from '@kiltprotocol/core'
 export { ConfigService } from '@kiltprotocol/config'
-export { Blockchain, BalanceUtils } from '@kiltprotocol/chain-helpers'
+export {
+  Blockchain,
+  BalanceUtils,
+  connect,
+  disconnect,
+  init,
+} from '@kiltprotocol/chain-helpers'
 export * as ChainHelpers from '@kiltprotocol/chain-helpers'
 export * as Did from '@kiltprotocol/did'
 export * as Utils from '@kiltprotocol/utils'
 export * from '@kiltprotocol/types'
+export { SDKErrors } from '@kiltprotocol/utils'

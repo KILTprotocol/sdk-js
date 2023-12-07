@@ -9,7 +9,7 @@
 import * as vcjs from '@digitalbazaar/vc'
 
 import { base58Encode } from '@polkadot/util-crypto'
-import { Types, init, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
+import { Types, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {
@@ -42,7 +42,6 @@ const documentLoader = combineDocumentLoaders([
 ])
 
 export async function makeFakeDid() {
-  await init()
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
   const didDocument: DidDocument = {
     id: ingosCredential.credentialSubject.id as KiltDid,
