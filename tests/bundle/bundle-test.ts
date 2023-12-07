@@ -25,9 +25,9 @@ const {
   Blockchain,
   Utils: { Crypto, ss58Format, Signers },
   BalanceUtils,
-  issuer,
-  verifier,
-  holder,
+  Issuer,
+  Verifier,
+  Holder,
 } = kilt
 
 ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
@@ -249,7 +249,7 @@ async function runAll() {
   console.log('Attestation workflow started')
   const content = { name: 'Bob', age: 21 }
 
-  const credential = await issuer.createCredential({
+  const credential = await Issuer.createCredential({
     cType: DriversLicense,
     claims: content,
     subject: bob.id,
@@ -266,14 +266,14 @@ async function runAll() {
     throw new Error('Claim content inside Credential mismatching')
   }
 
-  const issued = await issuer.issue(credential, {
+  const issued = await Issuer.issue(credential, {
     did: alice.id,
     signers: [...(await aliceSign(alice)), ...payerSigners],
     submitterAccount: payer.address,
   })
   console.info('Credential issued')
 
-  const credentialResult = await verifier.verifyCredential(
+  const credentialResult = await Verifier.verifyCredential(
     issued,
     {},
     {
@@ -293,11 +293,11 @@ async function runAll() {
     kilt.Utils.Crypto.mnemonicGenerate()
   )
 
-  const derived = await holder.deriveProof(issued, {
+  const derived = await Holder.deriveProof(issued, {
     disclose: { allBut: ['/credentialSubject/name'] },
   })
 
-  const presentation = await holder.createPresentation(
+  const presentation = await Holder.createPresentation(
     [derived],
     {
       did: bob.id,
@@ -310,7 +310,7 @@ async function runAll() {
   )
   console.info('Presentation created')
 
-  const presentationResult = await verifier.verifyPresentation(presentation, {
+  const presentationResult = await Verifier.verifyPresentation(presentation, {
     presentation: { challenge },
   })
   if (presentationResult.verified) {

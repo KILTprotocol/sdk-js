@@ -9,7 +9,7 @@
  * @module @kiltprotocol/sdk-js
  */
 
-export { CType, holder, issuer, verifier } from '@kiltprotocol/credentials'
+export { CType, Holder, Issuer, Verifier } from '@kiltprotocol/credentials'
 export { ConfigService } from '@kiltprotocol/config'
 export {
   Blockchain,
