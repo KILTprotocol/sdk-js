@@ -1975,6 +1975,7 @@ __metadata:
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
+    "@polkadot/util": ^12.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
