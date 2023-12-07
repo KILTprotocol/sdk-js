@@ -36,7 +36,7 @@ import {
   KiltCredentialV1,
   Types,
   W3C_CREDENTIAL_CONTEXT_URL,
-} from '@kiltprotocol/core'
+} from '@kiltprotocol/credentials'
 
 import {
   cType,

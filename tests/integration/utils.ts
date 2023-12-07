@@ -16,7 +16,7 @@ import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
 import { Blockchain, connect, init } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import type {
   ICType,
   KeyringPair,

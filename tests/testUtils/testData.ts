@@ -16,7 +16,10 @@ import { base58Encode, randomAsU8a } from '@polkadot/util-crypto'
 
 import { Credential } from '@kiltprotocol/legacy-credentials'
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import { KiltCredentialV1, KiltAttestationProofV1 } from '@kiltprotocol/core'
+import {
+  KiltCredentialV1,
+  KiltAttestationProofV1,
+} from '@kiltprotocol/credentials'
 
 import { createAugmentedApi } from './mocks/index.js'
 

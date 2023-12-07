@@ -11,7 +11,7 @@ import * as CType from '../ctype/index.js'
 import {
   credential as VC,
   cType,
-} from '../../../../../tests/testUtils/testData.js'
+} from '../../../../tests/testUtils/testData.js'
 import {
   credentialSchema,
   validateStructure,

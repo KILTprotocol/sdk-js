@@ -7,7 +7,7 @@
 
 /// <reference lib="dom" />
 
-import type { KiltCredentialV1 as KiltCredential } from '@kiltprotocol/core'
+import type { KiltCredentialV1 as KiltCredential } from '@kiltprotocol/credentials'
 import type { NewDidEncryptionKey } from '@kiltprotocol/did'
 import type {
   DidDocument,

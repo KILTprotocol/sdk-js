@@ -9,7 +9,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { ApiMocks } from '../../../../../tests/testUtils'
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeModelDraft01 } from './CType.schemas'
 

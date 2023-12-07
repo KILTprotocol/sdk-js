@@ -13,7 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
-import { DelegationNode } from '../../delegation/DelegationNode.js'
+import { DelegationNode } from '../delegation/DelegationNode.js'
 
 /**
  * An {@link IAttestation | Attestation} certifies a {@link IClaim | Claim}, sent by a claimer in the form of a {@link ICredential | Credential}. Attestations are **written on the blockchain** and are **revocable**.

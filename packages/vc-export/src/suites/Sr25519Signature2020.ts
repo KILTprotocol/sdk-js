@@ -10,7 +10,7 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { KiltCredentialV1, Types } from '@kiltprotocol/core'
+import { KiltCredentialV1, Types } from '@kiltprotocol/credentials'
 import { context } from '../context/context.js'
 import { Sr25519VerificationKey2020 } from './Sr25519VerificationKey.js'
 import { includesContext } from './utils.js'

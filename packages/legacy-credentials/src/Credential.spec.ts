@@ -10,7 +10,7 @@
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType } from '@kiltprotocol/core'
+import { Attestation, CType } from '@kiltprotocol/credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
   DereferenceResult,

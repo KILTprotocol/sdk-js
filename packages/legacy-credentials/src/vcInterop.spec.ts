@@ -9,7 +9,10 @@ import { u8aConcat, u8aToU8a } from '@polkadot/util'
 import { randomAsU8a } from '@polkadot/util-crypto'
 
 import type { IAttestation, ICType, ICredential } from '@kiltprotocol/types'
-import { KiltAttestationProofV1, KiltCredentialV1 } from '@kiltprotocol/core'
+import {
+  KiltAttestationProofV1,
+  KiltCredentialV1,
+} from '@kiltprotocol/credentials'
 
 import { ApiMocks } from '../../../tests/testUtils'
 import { calculateRootHash, removeClaimProperties } from './Credential'

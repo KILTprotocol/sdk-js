@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { PartialClaim, IClaimContents, IClaim } from '@kiltprotocol/types' // eslint-disable-line @typescript-eslint/no-unused-vars
 

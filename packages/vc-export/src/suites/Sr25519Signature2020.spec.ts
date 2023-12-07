@@ -9,7 +9,7 @@
 import * as vcjs from '@digitalbazaar/vc'
 
 import { base58Encode } from '@polkadot/util-crypto'
-import { Types, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/core'
+import { Types, W3C_CREDENTIAL_CONTEXT_URL } from '@kiltprotocol/credentials'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import type {

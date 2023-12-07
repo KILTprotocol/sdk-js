@@ -16,11 +16,11 @@ import type {
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
-import { CType, DelegationNode } from '@kiltprotocol/core'
-import { disconnect } from '@kiltprotocol/chain-helpers'
+
+import { CType, Did, disconnect } from '@kiltprotocol/sdk-js'
+import { DelegationNode } from '@kiltprotocol/credentials'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
 
 import type { KeyTool } from '../testUtils/index.js'
 

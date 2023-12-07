@@ -20,7 +20,7 @@ import {
   timestamp,
   cType,
   legacyCredential,
-} from '../../../../../tests/testUtils/testData.js'
+} from '../../../../tests/testUtils/testData.js'
 import {
   finalizeProof,
   initializeProof,

@@ -23,7 +23,7 @@ import type {
   ICType,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'

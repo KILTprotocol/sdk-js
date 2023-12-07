@@ -15,7 +15,7 @@ import {
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
-import { KiltCredentialV1 } from '@kiltprotocol/core'
+import { KiltCredentialV1 } from '@kiltprotocol/credentials'
 
 // @ts-expect-error not a typescript module
 import cryptold from 'crypto-ld' // cjs module

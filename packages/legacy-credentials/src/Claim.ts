@@ -17,7 +17,7 @@
  * @packageDocumentation
  */
 
-import { CType } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
   Did as KiltDid,
