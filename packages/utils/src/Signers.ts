@@ -63,7 +63,7 @@ export type KnownAlgorithms = typeof ALGORITHMS[keyof typeof ALGORITHMS]
 export type DidPalletSupportedAlgorithms =
   typeof DID_PALLET_SUPPORTED_ALGORITHMS[number]
 
-export { ed25519Signer, es256kSigner }
+export { ed25519Signer, es256kSigner, sr25519Signer }
 
 /**
  * Signer that produces an ECDSA signature over a Blake2b-256 digest of the message using the secp256k1 curve.
