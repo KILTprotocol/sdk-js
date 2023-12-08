@@ -20,6 +20,7 @@ import {
   CType,
   connect,
   init,
+  Crypto,
 } from '@kiltprotocol/sdk-js'
 import type {
   ICType,
@@ -29,7 +30,6 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
 
 import { makeSigningKeyTool } from '../testUtils/TestUtils.js'
 

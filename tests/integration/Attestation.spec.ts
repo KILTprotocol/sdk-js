@@ -7,7 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { Did, CType, disconnect, Utils } from '@kiltprotocol/sdk-js'
+import { Did, CType, disconnect, Crypto } from '@kiltprotocol/sdk-js'
 import {
   Claim,
   Credential,
@@ -32,8 +32,6 @@ import {
   isCtypeOnChain,
   submitTx,
 } from './utils.js'
-
-const { Crypto } = Utils
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument

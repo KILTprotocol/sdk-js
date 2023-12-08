@@ -28,7 +28,7 @@ import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
   getStoreTxFromDidDocument,
-  makeEncryptionKeyTool,
+  makeEncryptionKey,
   makeSigningKeyTool,
 } from '../testUtils/index.js'
 import {
@@ -335,7 +335,7 @@ describe('DID migration', () => {
     const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const { keyAgreement } = makeEncryptionKey(
       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     )
     const lightDid = Did.createLightDidDocument({
@@ -449,7 +449,7 @@ describe('DID migration', () => {
     const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const { keyAgreement } = makeEncryptionKey(
       '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     )
     const service: Did.NewService[] = [

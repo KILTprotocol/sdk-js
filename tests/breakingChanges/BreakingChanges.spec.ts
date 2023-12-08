@@ -5,11 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Did, Utils } from '@kiltprotocol/sdk-js'
+import { Did, Crypto } from '@kiltprotocol/sdk-js'
 import nacl from 'tweetnacl'
 import { v4 } from 'uuid'
 
-import { makeEncryptionKeyTool } from '../testUtils/index.js'
+import { makeEncryptionKey } from '../testUtils/index.js'
 
 jest.mock('uuid')
 jest.mocked(v4).mockReturnValue('1ee1307c-9e65-475d-9061-0b5bfd86d2f7')
@@ -18,8 +18,8 @@ jest.mocked(v4).mockReturnValue('1ee1307c-9e65-475d-9061-0b5bfd86d2f7')
 jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
 
 function makeLightDidFromSeed(seed: string) {
-  const keypair = Utils.Crypto.makeKeypairFromUri(seed, 'sr25519')
-  const { keyAgreement, encrypt, decrypt } = makeEncryptionKeyTool(seed)
+  const keypair = Crypto.makeKeypairFromUri(seed, 'sr25519')
+  const { keyAgreement } = makeEncryptionKey(seed)
 
   const did = Did.createLightDidDocument({
     authentication: [keypair],
@@ -35,7 +35,7 @@ function makeLightDidFromSeed(seed: string) {
     ],
   })
 
-  return { did, encrypt, decrypt }
+  return { did }
 }
 
 describe('Breaking Changes', () => {

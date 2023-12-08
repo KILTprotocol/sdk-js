@@ -9,6 +9,14 @@
  * @module @kiltprotocol/sdk-js
  */
 
+import {
+  ss58Format,
+  Crypto as _Crypto,
+  DataUtils,
+  Signers,
+  SDKErrors,
+} from '@kiltprotocol/utils'
+
 export { CType, Holder, Issuer, Verifier } from '@kiltprotocol/credentials'
 export { ConfigService } from '@kiltprotocol/config'
 export {
@@ -19,6 +27,41 @@ export {
   init,
 } from '@kiltprotocol/chain-helpers'
 export * as Did from '@kiltprotocol/did'
-export * as Utils from '@kiltprotocol/utils'
 export * from '@kiltprotocol/types'
-export { SDKErrors } from '@kiltprotocol/utils'
+const {
+  encodeAddress,
+  decodeAddress,
+  makeKeypairFromSeed,
+  makeKeypairFromUri,
+  makeEncryptionKeypairFromSeed,
+  mnemonicGenerate,
+  mnemonicToMiniSecret,
+  u8aToHex,
+  coToUInt8,
+  hash,
+  hashStr,
+} = _Crypto
+const { isKiltAddress, isHex } = DataUtils
+
+export const Address = {
+  ss58Format,
+  isKiltAddress,
+  encodeAddress,
+  decodeAddress,
+}
+
+export { SDKErrors }
+
+export const Crypto = {
+  Signers,
+  makeKeypairFromSeed,
+  makeEncryptionKeypairFromSeed,
+  makeKeypairFromUri,
+  mnemonicGenerate,
+  mnemonicToMiniSecret,
+  hash,
+  hashStr,
+  u8aToHex,
+  toU8a: coToUInt8,
+  isHex,
+}

@@ -23,7 +23,8 @@ const {
   CType,
   Did,
   Blockchain,
-  Utils: { Crypto, ss58Format, Signers },
+  Crypto,
+  Address,
   BalanceUtils,
   Issuer,
   Verifier,
@@ -52,7 +53,7 @@ async function makeSigningKeypair(
     return (
       await Promise.all(
         didDocument.verificationMethod?.map(({ id }) =>
-          kilt.Utils.Signers.getSignersForKeypair({
+          Crypto.Signers.getSignersForKeypair({
             keypair,
             id: `${didDocument.id}${id}`,
           })
@@ -60,7 +61,7 @@ async function makeSigningKeypair(
       )
     ).flat()
   }
-  const storeDidSigners = await kilt.Utils.Signers.getSignersForKeypair({
+  const storeDidSigners = await Crypto.Signers.getSignersForKeypair({
     keypair,
     id: keypair.address,
   })
@@ -73,7 +74,7 @@ async function makeSigningKeypair(
 }
 
 function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
-  const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
+  const { secretKey, publicKey } = Crypto.makeEncryptionKeypairFromSeed(
     Crypto.hash(seed, 256)
   )
   return {
@@ -89,7 +90,7 @@ async function createFullDidFromKeypair(
   encryptionKey: NewDidEncryptionKey
 ) {
   const api = ConfigService.get('api')
-  const signers = await kilt.Utils.Signers.getSignersForKeypair({
+  const signers = await Crypto.Signers.getSignersForKeypair({
     keypair,
     id: keypair.address,
   })
@@ -126,7 +127,7 @@ async function runAll() {
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const payer = Crypto.makeKeypairFromUri(FaucetSeed)
-  const payerSigners = await Signers.getSignersForKeypair({
+  const payerSigners = await Crypto.Signers.getSignersForKeypair({
     keypair: payer,
   })
 
@@ -156,13 +157,13 @@ async function runAll() {
   console.log('bob setup done')
 
   // Light DID Account creation workflow
-  const authPublicKey = Crypto.coToUInt8(
+  const authPublicKey = Crypto.toU8a(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
-  const encPublicKey = Crypto.coToUInt8(
+  const encPublicKey = Crypto.toU8a(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = Crypto.encodeAddress(authPublicKey, ss58Format)
+  const address = Address.encodeAddress(authPublicKey, Address.ss58Format)
   const testDid = Did.createLightDidDocument({
     authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
     keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
@@ -289,9 +290,7 @@ async function runAll() {
     })
   }
 
-  const challenge = kilt.Utils.Crypto.hashStr(
-    kilt.Utils.Crypto.mnemonicGenerate()
-  )
+  const challenge = Crypto.hashStr(Crypto.mnemonicGenerate())
 
   const derived = await Holder.deriveProof(issued, {
     disclose: { allBut: ['/credentialSubject/name'] },

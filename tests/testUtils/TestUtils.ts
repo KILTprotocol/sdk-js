@@ -8,7 +8,6 @@
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
 import type {
-  DecryptCallback,
   DidDocument,
   DidUrl,
   EncryptCallback,
@@ -22,6 +21,13 @@ import type {
   VerificationMethod,
   VerificationRelationship,
 } from '@kiltprotocol/types'
+import {
+  Did,
+  ConfigService,
+  Blockchain,
+  SDKErrors,
+  Crypto,
+} from '@kiltprotocol/sdk-js'
 import type {
   BaseNewDidKey,
   ChainDidKey,
@@ -33,72 +39,14 @@ import type {
   NewService,
 } from '@kiltprotocol/did'
 
-import { Did, ConfigService, Blockchain, Utils } from '@kiltprotocol/sdk-js'
-
-const { Crypto, Signers, SDKErrors } = Utils
+const { Signers } = Crypto
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
 ) => EncryptCallback
 
-/**
- * Generates a callback that can be used for encryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for encryption.
- * @returns The callback.
- */
-export function makeEncryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
-  return (didDocument) => {
-    return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0]
-      if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.id}"`)
-      }
-      const verificationMethod = didDocument.verificationMethod?.find(
-        (v) => v.id === keyId
-      ) as VerificationMethod
-      const { box, nonce } = Crypto.encryptAsymmetric(
-        data,
-        peerPublicKey,
-        secretKey
-      )
-      return {
-        nonce,
-        data: box,
-        verificationMethod,
-      }
-    }
-  }
-}
-
-/**
- * Generates a callback that can be used for decryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for decryption.
- * @returns The callback.
- */
-export function makeDecryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey }) {
-    const decrypted = Crypto.decryptAsymmetric(
-      { box: data, nonce },
-      peerPublicKey,
-      secretKey
-    )
-    if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted }
-  }
-}
-
 export interface EncryptionKeyTool {
   keyAgreement: [KiltEncryptionKeypair]
-  encrypt: EncryptionKeyToolCallback
-  decrypt: DecryptCallback
 }
 
 /**
@@ -107,16 +55,11 @@ export interface EncryptionKeyTool {
  * @param seed {string} Input to generate the keypair from.
  * @returns Object with secret and public key and the key type.
  */
-export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
+export function makeEncryptionKey(seed: string): EncryptionKeyTool {
   const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
-
-  const encrypt = makeEncryptCallback(keypair)
-  const decrypt = makeDecryptCallback(keypair)
 
   return {
     keyAgreement: [keypair],
-    encrypt,
-    decrypt,
   }
 }
 
@@ -255,8 +198,7 @@ export async function createMinimalLightDidFromKeypair(
   const type = keypair.type as LightDidSupportedVerificationKeyType
   return Did.createLightDidDocument({
     authentication: [{ publicKey: keypair.publicKey, type }],
-    keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement,
+    keyAgreement: makeEncryptionKey(`${keypair.publicKey}//enc`).keyAgreement,
   })
 }
 
@@ -327,7 +269,7 @@ export async function createLocalDemoFullDidFromKeypair(
   }
 
   if (verificationRelationships.has('keyAgreement')) {
-    const { publicKey: encPublicKey, type } = makeEncryptionKeyTool(
+    const { publicKey: encPublicKey, type } = makeEncryptionKey(
       `${keypair.publicKey}//enc`
     ).keyAgreement[0]
     addKeypairAsVerificationMethod(
