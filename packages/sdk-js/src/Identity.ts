@@ -1,15 +1,17 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { GenericExtrinsic } from '@polkadot/types'
 import { u8aEq } from '@polkadot/util'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
-import { multibaseKeyToDidKey, resolve } from '@kiltprotocol/did'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import type { Issuer } from '@kiltprotocol/credentials'
+import { authorizeTx, multibaseKeyToDidKey, resolve } from '@kiltprotocol/did'
 import type {
   Did,
   DidDocument,
@@ -20,7 +22,6 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
-import type { TransactionResult } from '@kiltprotocol/credentials/src/V1/KiltAttestationProofV1'
 
 /**
  * An Identity represents a DID and signing keys associated with it.
@@ -77,16 +78,12 @@ export interface Identity {
     purgeSigners?: boolean
   }) => Promise<Identity>
   /**
-   * The account that acts as the submitter account.
-   */
-  submitterAccount?: KiltAddress
-  /**
    * Uses a verification method related signer to DID-authorize a call to be executed on-chain with the identity's DID as the origin.
    *
    * @param tx The call to be authorized.
    * @returns The authorized (signed) call.
    */
-  authorizeTx?: (tx: GenericExtrinsic) => Promise<GenericExtrinsic>
+  authorizeTx?: Issuer.IssuerOptions['authorizeTx']
   /**
    * Takes care of submitting the transaction to node in the network and listening for execution results.
    * This can consist of signing the tx using the signer associated with submitterAccount and interacting directly with a node, or can use an external service for this.
@@ -94,7 +91,7 @@ export interface Identity {
    * @param tx The extrinsic ready to be (signed and) submitted.
    * @returns A promise resolving to an object indicating the block of inclusion, or rejecting if the transaction failed to be included or execute correctly.
    */
-  submitTx?: (tx: GenericExtrinsic) => Promise<TransactionResult>
+  submitTx?: Issuer.IssuerOptions['submitTx']
 }
 
 async function loadDidDocument(
@@ -231,19 +228,49 @@ class IdentityClass implements Identity {
   }
 }
 
-export async function makeIdentity({
+export type TransactionStrategy<T extends IdentityClass> = (
+  identity: IdentityClass & Identity
+) => Promise<T>
+
+export async function makeIdentity(args: {
+  did?: Did
+  didDocument?: DidDocument
+  signers?: SignerInterface[]
+  keypairs?: Array<Keypair | KeyringPair>
+  resolver?: typeof resolve
+}): Promise<IdentityClass>
+export async function makeIdentity<T extends IdentityClass>(args: {
+  did?: Did
+  didDocument?: DidDocument
+  signers?: SignerInterface[]
+  keypairs?: Array<Keypair | KeyringPair>
+  resolver?: typeof resolve
+  transactionStrategy: TransactionStrategy<T>
+}): Promise<T>
+/**
+ * @param root0
+ * @param root0.did
+ * @param root0.didDocument
+ * @param root0.signers
+ * @param root0.keypairs
+ * @param root0.resolver
+ * @param root0.transactionStrategy
+ */
+export async function makeIdentity<T extends IdentityClass>({
   did,
   didDocument,
   keypairs,
   signers,
   resolver = resolve,
+  transactionStrategy,
 }: {
   did?: Did
   didDocument?: DidDocument
   signers?: SignerInterface[]
   keypairs?: Array<Keypair | KeyringPair>
   resolver?: typeof resolve
-}): Promise<IdentityClass> {
+  transactionStrategy?: TransactionStrategy<T>
+}): Promise<IdentityClass | T> {
   let didDoc = didDocument
   if (!didDoc) {
     if (!did) {
@@ -260,5 +287,45 @@ export async function makeIdentity({
   if (keypairs && keypairs.length !== 0) {
     await identity.addKeypair(...keypairs)
   }
-  return identity
+  if (!transactionStrategy) {
+    return identity
+  }
+  return transactionStrategy(identity)
+}
+
+export type IdentityWithSubmitter = IdentityClass &
+  Required<Pick<Identity, 'authorizeTx' | 'submitTx'>>
+
+/**
+ * @param root0
+ * @param root0.signer
+ */
+export function withSubmitterAccount({
+  signer,
+}: {
+  signer: Blockchain.TransactionSigner | KeyringPair
+}): TransactionStrategy<IdentityWithSubmitter> {
+  const submitterAddress = (
+    'address' in signer ? signer.address : signer.id
+  ) as KiltAddress
+  return async (identity) => {
+    /* eslint-disable-next-line no-param-reassign */
+    identity.authorizeTx = (tx) =>
+      authorizeTx(identity.didDocument, tx, identity.signers, submitterAddress)
+    /* eslint-disable-next-line no-param-reassign */
+    identity.submitTx = async (tx) => {
+      const submittable = ConfigService.get('api').tx(tx)
+      const result = await Blockchain.signAndSubmitTx(submittable, signer, {
+        resolveOn: Blockchain.IS_FINALIZED,
+      })
+      return {
+        status: 'Finalized',
+        includedAt: {
+          blockHash: result.status.asFinalized,
+        },
+        events: result.events,
+      }
+    }
+    return identity as IdentityWithSubmitter
+  }
 }
