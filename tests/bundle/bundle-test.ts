@@ -7,7 +7,6 @@
 
 /// <reference lib="dom" />
 
-import type { Identity } from '@kiltprotocol/sdk-js'
 import type { ApiPromise } from '@polkadot/api'
 import type {
   Did,
@@ -29,6 +28,7 @@ const {
   signAndSubmitTx,
   signerFromKeypair,
   makeIdentity,
+  withSubmitterAccount,
 } = kilt
 
 async function authorizeTx(
@@ -107,11 +107,12 @@ async function createFullDidIdentity(
     throw new Error(`failed to create did for account ${address}`)
   }
 
-  const identity = (await makeIdentity({
+  const identity = await makeIdentity({
     did: didDocument.id,
     didDocument,
     keypairs: [keypair],
-  })) as Identity
+    transactionStrategy: withSubmitterAccount({ signer: payer }),
+  })
 
   return {
     didDocument,
@@ -225,7 +226,7 @@ async function runAll() {
     api,
     api.tx.did.delete(0),
     identity.did,
-    await identity.getSigner({
+    identity.getSigner({
       verificationRelationship: 'authentication',
       algorithm: 'Ed25519',
     }),
@@ -250,7 +251,7 @@ async function runAll() {
     api,
     api.tx.ctype.add(DriversLicenseDef),
     alice.did,
-    await alice.getSigner({
+    alice.getSigner({
       verificationRelationship: 'assertionMethod',
       algorithm: 'Ed25519',
     }),
@@ -292,10 +293,6 @@ async function runAll() {
   ) {
     throw new Error('Claim content inside Credential mismatching')
   }
-
-  // turn alice into a transaction submission enabled identity
-  alice.submitterAccount = payerSigner.id
-  await alice.addSigner(payerSigner)
 
   const issued = await Issuer.issue(credential, alice as any)
   console.info('Credential issued')
