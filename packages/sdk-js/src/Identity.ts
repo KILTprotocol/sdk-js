@@ -109,30 +109,29 @@ async function loadDidDocument(
 }
 
 class IdentityClass implements Identity {
-  public did: Did
   public resolver: typeof resolve
   public didDocument: DidDocument
-  private didSigners: SignerInterface[]
+  protected didSigners: SignerInterface[]
+  get signers(): SignerInterface[] {
+    return [...this.didSigners]
+  }
+
+  public get did(): Did {
+    return this.didDocument.id
+  }
 
   constructor({
-    did,
     didDocument,
     signers,
     resolver = resolve,
   }: {
-    did: Did
     didDocument: DidDocument
     signers?: SignerInterface[]
     resolver?: typeof resolve
   }) {
-    this.did = did
     this.didDocument = didDocument
     this.didSigners = signers ? [...signers] : []
     this.resolver = resolver
-  }
-
-  get signers(): SignerInterface[] {
-    return [...this.didSigners]
   }
 
   public async update({
@@ -239,15 +238,21 @@ export async function makeIdentity({
   signers,
   resolver = resolve,
 }: {
-  did: Did
+  did?: Did
   didDocument?: DidDocument
   signers?: SignerInterface[]
   keypairs?: Array<Keypair | KeyringPair>
   resolver?: typeof resolve
 }): Promise<IdentityClass> {
+  let didDoc = didDocument
+  if (!didDoc) {
+    if (!did) {
+      throw new Error('either `did` or `didDocument` is required')
+    }
+    didDoc = await loadDidDocument(did, resolver)
+  }
   const identity = new IdentityClass({
-    did,
-    didDocument: didDocument ?? (await loadDidDocument(did, resolver)),
+    didDocument: didDoc,
     signers,
     resolver,
   })
