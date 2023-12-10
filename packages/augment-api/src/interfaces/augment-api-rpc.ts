@@ -82,7 +82,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Returns the block most recently finalized by BEEFY, alongside side its justification.
        **/
-      subscribeJustifications: AugmentedRpc<() => Observable<BeefySignedCommitment>>;
+      subscribeJustifications: AugmentedRpc<() => Observable<BeefyVersionedFinalityProof>>;
     };
     chain: {
       /**
