@@ -19,7 +19,7 @@ import {
   KiltCredentialV1,
   KiltAttestationProofV1,
   Types,
-} from '@kiltprotocol/core'
+} from '@kiltprotocol/credentials'
 
 import type { ICType, IClaim, ICredential } from '@kiltprotocol/types'
 

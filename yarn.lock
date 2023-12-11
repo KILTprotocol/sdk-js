@@ -1936,7 +1936,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -1970,11 +1970,14 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
+    "@polkadot/util": ^12.0.0
+    "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -1992,9 +1995,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/core@workspace:*, @kiltprotocol/core@workspace:packages/core":
+"@kiltprotocol/credentials@workspace:*, @kiltprotocol/credentials@workspace:packages/credentials":
   version: 0.0.0-use.local
-  resolution: "@kiltprotocol/core@workspace:packages/core"
+  resolution: "@kiltprotocol/credentials@workspace:packages/credentials"
   dependencies:
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
@@ -2080,7 +2083,7 @@ __metadata:
   resolution: "@kiltprotocol/legacy-credentials@workspace:packages/legacy-credentials"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -2097,7 +2100,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -2171,7 +2174,7 @@ __metadata:
     "@digitalbazaar/ed25519-signature-2020": ^5.2.0
     "@digitalbazaar/vc": ^6.0.1
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"

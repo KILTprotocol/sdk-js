@@ -11,7 +11,7 @@
 // @ts-expect-error not a typescript module
 import jsigs from 'jsonld-signatures' // cjs module
 
-import { KiltAttestationProofV1, Types } from '@kiltprotocol/core'
+import { KiltAttestationProofV1, Types } from '@kiltprotocol/credentials'
 import type { JsonLdObj } from '../documentLoader.js'
 
 export class KiltAttestationProofV1Purpose extends jsigs.purposes.ProofPurpose {

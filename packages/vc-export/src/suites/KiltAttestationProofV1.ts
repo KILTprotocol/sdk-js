@@ -18,7 +18,7 @@ import {
   KiltRevocationStatusV1,
   Types,
   KiltCredentialV1,
-} from '@kiltprotocol/core'
+} from '@kiltprotocol/credentials'
 import type { DidDocument, Did, ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'

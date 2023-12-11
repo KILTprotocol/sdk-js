@@ -15,11 +15,11 @@ For more information, please visit our [official SDK documentation](https://docs
 NPM:
 
 ```
-npm install @kiltprotocol/core
+npm install @kiltprotocol/credentials
 ```
 
 YARN:
 
 ```
-yarn add @kiltprotocol/core
+yarn add @kiltprotocol/credentials
 ```

@@ -18,7 +18,7 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType } from '@kiltprotocol/core'
+import { Attestation, CType } from '@kiltprotocol/credentials'
 import {
   isDidSignature,
   resolve,

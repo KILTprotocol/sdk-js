@@ -20,7 +20,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { fromChain as attestationFromChain } from '../credentials/attestation/Attestation.chain.js'
+import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
   addDelegationToChainArgs,
   getAttestationHashes,

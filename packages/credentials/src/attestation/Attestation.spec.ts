@@ -11,7 +11,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import type { CTypeHash, Did, IAttestation } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { ApiMocks } from '../../../../../tests/testUtils'
+import { ApiMocks } from '../../../../tests/testUtils'
 import * as Attestation from './Attestation'
 
 let mockedApi: any

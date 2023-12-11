@@ -7,7 +7,8 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { Attestation, CType, disconnect } from '@kiltprotocol/core'
+import { Attestation, CType } from '@kiltprotocol/credentials'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import { Claim, Credential } from '@kiltprotocol/legacy-credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
