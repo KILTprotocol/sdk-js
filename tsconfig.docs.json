@@ -8,7 +8,7 @@
       "packages/augment-api/src/index.ts",
       "packages/chain-helpers/src/index.ts",
       "packages/config/src/index.ts",
-      "packages/core/src/index.ts",
+      "packages/credentials/src/index.ts",
       "packages/did/src/index.ts",
       "packages/legacy-credentials/src/index.ts",
       "packages/sdk-js/src/index.ts",
