@@ -152,7 +152,11 @@ class IdentityClass implements Identity {
       this.didDocument = await loadDidDocument(this.did, this.resolver)
     }
     if (skipPurgeSigners !== true) {
-      this.didSigners = this.getSigners()
+      try {
+        this.didSigners = this.getSigners()
+      } catch {
+        this.didSigners = []
+      }
     }
     return this
   }
@@ -217,7 +221,7 @@ class IdentityClass implements Identity {
     if (verificationMethod) {
       selectors.push(Signers.select.bySignerId([verificationMethod]))
     }
-    return Signers.selectSigners(this.didSigners)
+    return Signers.selectSigners(this.didSigners, ...selectors)
   }
 
   public getSigner(

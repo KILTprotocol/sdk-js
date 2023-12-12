@@ -30,6 +30,6 @@ declare module '@polkadot/keyring' {
   ): string
   function encodeAddress(
     key: HexString | Uint8Array | string,
-    ss58Format?: 38
+    ss58Format: 38
   ): KiltAddress
 }
