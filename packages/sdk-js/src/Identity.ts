@@ -389,8 +389,9 @@ export async function newIdentity<
     authenticationPair.publicKey,
     38
   )
+
   const did = getFullDid(authenticationAddress)
-  const preliminaryDid = await makeIdentity({
+  const identity = await makeIdentity({
     didDocument: {
       id: did,
       verificationMethod: [
@@ -409,18 +410,23 @@ export async function newIdentity<
   const tx = await getStoreTx(
     // @ts-ignore
     typedKeyPairs,
-    preliminaryDid.submitterAddress ?? authenticationAddress,
-    preliminaryDid.signers.map((signer) => ({
+    identity.submitterAddress ?? authenticationAddress,
+    identity.signers.map((signer) => ({
       ...signer,
       id: authenticationAddress,
     }))
   )
 
-  const result = await preliminaryDid.submitTx(tx)
+  const result = await identity.submitTx(tx)
   if (result.status !== 'Finalized' && result.status !== 'InBlock') {
     return Promise.reject(result)
   }
-  return (await preliminaryDid.update()).addKeypair(...allKeypairs)
+  // update did document (preliminary signers will be purged)
+  await identity.update()
+  // re-add keys, now matched to actual VMs
+  await identity.addKeypair(...allKeypairs)
+  // return identity
+  return identity
 }
 
 export type IdentityWithSubmitter = IdentityClass &
