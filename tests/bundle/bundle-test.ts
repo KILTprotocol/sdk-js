@@ -25,7 +25,6 @@ const {
   Did,
   Blockchain,
   Utils: { Crypto, ss58Format, Signers },
-  BalanceUtils,
   KiltCredentialV1,
   Presentation,
   Issuer,
@@ -213,7 +212,7 @@ async function runAll() {
 
   const deleteTx = await Did.authorizeTx(
     fullDid.id,
-    api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
+    api.tx.did.delete(0),
     await getSigners(fullDid),
     payer.address
   )
