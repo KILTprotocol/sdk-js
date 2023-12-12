@@ -9,59 +9,26 @@
  * @module @kiltprotocol/sdk-js
  */
 
+import { Holder, Issuer, Verifier } from '@kiltprotocol/credentials'
+import { ConfigService } from '@kiltprotocol/config'
 import {
-  ss58Format,
-  Crypto as _Crypto,
-  DataUtils,
-  Signers,
-  SDKErrors,
-} from '@kiltprotocol/utils'
-
-export { CType, Holder, Issuer, Verifier } from '@kiltprotocol/credentials'
-export { ConfigService } from '@kiltprotocol/config'
-export {
-  Blockchain,
-  BalanceUtils,
   connect,
   disconnect,
   init,
+  Blockchain,
 } from '@kiltprotocol/chain-helpers'
-export * as Did from '@kiltprotocol/did'
-export * from '@kiltprotocol/types'
-const {
-  encodeAddress,
-  decodeAddress,
-  makeKeypairFromSeed,
-  makeKeypairFromUri,
-  makeEncryptionKeypairFromSeed,
-  mnemonicGenerate,
-  mnemonicToMiniSecret,
-  u8aToHex,
-  coToUInt8,
-  hash,
-  hashStr,
-} = _Crypto
-const { isKiltAddress, isHex } = DataUtils
+import { resolver as DidResolver } from '@kiltprotocol/did'
 
-export const Address = {
-  ss58Format,
-  isKiltAddress,
-  encodeAddress,
-  decodeAddress,
-}
+const { signAndSubmitTx } = Blockchain // TODO: maybe we don't even need that if we have the identity class
 
-export { SDKErrors }
-
-export const Crypto = {
-  Signers,
-  makeKeypairFromSeed,
-  makeEncryptionKeypairFromSeed,
-  makeKeypairFromUri,
-  mnemonicGenerate,
-  mnemonicToMiniSecret,
-  hash,
-  hashStr,
-  u8aToHex,
-  toU8a: coToUInt8,
-  isHex,
+export {
+  init,
+  connect,
+  disconnect,
+  DidResolver,
+  Holder,
+  Verifier,
+  Issuer,
+  signAndSubmitTx,
+  ConfigService,
 }
