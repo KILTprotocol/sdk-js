@@ -7,117 +7,39 @@
 
 /// <reference lib="dom" />
 
-import type { ApiPromise } from '@polkadot/api'
-import type {
-  Did,
-  DidDocument,
-  DidUrl,
-  KiltAddress,
-  SignerInterface,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { Did, KiltAddress, SignerInterface } from '@kiltprotocol/types'
 
 const { kilt } = window
 
 const {
-  ConfigService,
   Issuer,
   Verifier,
   Holder,
   DidResolver,
   signAndSubmitTx,
   signerFromKeypair,
-  makeIdentity,
+  newIdentity,
   withSubmitterAccount,
 } = kilt
 
-async function authorizeTx(
-  api: ApiPromise,
-  call: SubmittableExtrinsic,
-  did: string,
-  signer: SignerInterface,
-  submitter: string,
-  nonce = 1
-) {
-  let authorized = api.tx.did.submitDidCall(
-    {
-      did: did.slice(9),
-      call,
-      blockNumber: await api.query.system.number(),
-      submitter,
-      txCounter: nonce,
-    },
-    { ed25519: new Uint8Array(64) }
-  )
-
-  const signature = await signer.sign({ data: authorized.args[0].toU8a() })
-
-  authorized = api.tx.did.submitDidCall(authorized.args[0].toU8a(), {
-    ed25519: signature,
-  })
-
-  return authorized
-}
-
 async function createFullDidIdentity(
   payer: SignerInterface<'Ed25519' | 'Sr25519', KiltAddress>,
-  keypair: { publicKey: Uint8Array; secretKey: Uint8Array }
+  keypair: {
+    publicKey: Uint8Array
+    secretKey: Uint8Array
+    type: 'ed25519' | 'sr25519'
+  }
 ) {
-  const api = ConfigService.get('api')
-
-  const signer: SignerInterface = await signerFromKeypair({
-    keypair,
-    algorithm: 'Ed25519',
-  })
-  const address = signer.id
-  const getSigners: (
-    didDocument: DidDocument
-  ) => Array<SignerInterface<string, DidUrl>> = (didDocument) => {
-    return (
-      didDocument.verificationMethod?.map<
-        Array<SignerInterface<string, DidUrl>>
-      >(({ id }) => [
-        {
-          ...signer,
-          id: `${didDocument.id}${id}`,
-        },
-      ]) ?? []
-    ).flat()
-  }
-
-  let tx = api.tx.did.create(
-    {
-      did: address,
-      submitter: payer.id,
-      newAttestationKey: { ed25519: keypair.publicKey },
+  const identity = await newIdentity({
+    keys: {
+      authentication: [keypair],
+      assertionMethod: [keypair],
+      delegationMethod: [keypair],
     },
-    { ed25519: new Uint8Array(64) }
-  )
-
-  const signature = await signer.sign({ data: tx.args[0].toU8a() })
-  tx = api.tx.did.create(tx.args[0].toU8a(), { ed25519: signature })
-
-  await signAndSubmitTx(tx, payer)
-
-  const { didDocument } = await DidResolver.resolve(
-    `did:kilt:${address}` as Did,
-    {}
-  )
-  if (!didDocument) {
-    throw new Error(`failed to create did for account ${address}`)
-  }
-
-  const identity = await makeIdentity({
-    did: didDocument.id,
-    didDocument,
-    keypairs: [keypair],
     transactionStrategy: withSubmitterAccount({ signer: payer }),
   })
 
   return {
-    didDocument,
-    getSigners,
-    address,
     identity,
   }
 }
@@ -129,6 +51,7 @@ async function runAll() {
   // Accounts
   console.log('Account setup started')
   const faucet = {
+    type: 'ed25519',
     publicKey: new Uint8Array([
       238, 93, 102, 137, 215, 142, 38, 187, 91, 53, 176, 68, 23, 64, 160, 101,
       199, 189, 142, 253, 209, 193, 84, 34, 7, 92, 63, 43, 32, 33, 181, 210,
@@ -147,6 +70,7 @@ async function runAll() {
   console.log('faucet signer created')
 
   const { identity: alice } = await createFullDidIdentity(payerSigner, {
+    type: 'ed25519',
     publicKey: new Uint8Array([
       136, 220, 52, 23, 213, 5, 142, 196, 180, 80, 62, 12, 18, 234, 26, 10, 137,
       190, 32, 15, 233, 137, 34, 66, 61, 67, 52, 1, 79, 166, 176, 238,
@@ -160,6 +84,7 @@ async function runAll() {
   console.log('alice setup done')
 
   const { identity: bob } = await createFullDidIdentity(payerSigner, {
+    type: 'ed25519',
     publicKey: new Uint8Array([
       209, 124, 45, 120, 35, 235, 242, 96, 253, 19, 143, 45, 126, 39, 209, 20,
       192, 20, 93, 150, 139, 95, 245, 0, 97, 37, 242, 65, 79, 173, 174, 105,
@@ -194,6 +119,7 @@ async function runAll() {
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
   const keypair = {
+    type: 'ed25519',
     publicKey: new Uint8Array([
       157, 198, 166, 93, 125, 173, 238, 122, 17, 146, 49, 238, 62, 111, 140, 45,
       26, 6, 94, 42, 60, 167, 79, 19, 142, 20, 212, 5, 130, 44, 214, 190,
@@ -202,40 +128,17 @@ async function runAll() {
       252, 195, 96, 143, 203, 194, 37, 74, 205, 243, 137, 71, 234, 82, 57, 46,
       212, 14, 113, 177, 1, 241, 62, 118, 184, 230, 121, 219, 17, 45, 36, 143,
     ]),
-  }
+  } as const
 
-  const { didDocument: fullDid, address: didAddress } =
-    await createFullDidIdentity(payerSigner, keypair)
-
-  const identity = await makeIdentity({
-    did: `did:kilt:${didAddress}` as Did,
-    keypairs: [keypair],
+  const identity = await newIdentity({
+    keys: keypair,
+    transactionStrategy: withSubmitterAccount({ signer: payerSigner }),
   })
 
-  if (
-    fullDid.authentication?.length === 1 &&
-    fullDid.assertionMethod?.length === 1 &&
-    fullDid.id === identity.did
-  ) {
-    console.info('DID matches')
-  } else {
-    throw new Error('DIDs do not match')
-  }
+  const deleteTx = await identity.authorizeTx(api.tx.did.delete(0n))
+  await identity.submitTx(deleteTx)
 
-  const deleteTx = await authorizeTx(
-    api,
-    api.tx.did.delete(0),
-    identity.did,
-    identity.getSigner({
-      verificationRelationship: 'authentication',
-      algorithm: 'Ed25519',
-    }),
-    payerSigner.id
-  )
-
-  await signAndSubmitTx(deleteTx, payerSigner)
-
-  const resolvedAgain = await DidResolver.resolve(fullDid.id, {})
+  const resolvedAgain = await DidResolver.resolve(identity.did, {})
   if (resolvedAgain.didDocumentMetadata.deactivated) {
     console.info('DID successfully deleted')
   } else {
@@ -247,18 +150,10 @@ async function runAll() {
   const DriversLicenseDef =
     '{"$schema":"ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq/","additionalProperties":false,"properties":{"age":{"type":"integer"},"name":{"type":"string"}},"title":"Drivers License","type":"object"}'
 
-  const cTypeStoreTx = await authorizeTx(
-    api,
-    api.tx.ctype.add(DriversLicenseDef),
-    alice.did,
-    alice.getSigner({
-      verificationRelationship: 'assertionMethod',
-      algorithm: 'Ed25519',
-    }),
-    payerSigner.id
+  const cTypeStoreTx = await alice.authorizeTx(
+    api.tx.ctype.add(DriversLicenseDef)
   )
-
-  const result = await signAndSubmitTx(cTypeStoreTx, payerSigner)
+  const result = await signAndSubmitTx(api.tx(cTypeStoreTx), payerSigner)
 
   const ctypeHash = result.events
     ?.find((ev) => api.events.ctype.CTypeCreated.is(ev.event))

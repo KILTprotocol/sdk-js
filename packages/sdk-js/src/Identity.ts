@@ -11,7 +11,16 @@ import type { Keypair } from '@polkadot/util-crypto/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
 import type { Issuer } from '@kiltprotocol/credentials'
-import { authorizeTx, multibaseKeyToDidKey, resolve } from '@kiltprotocol/did'
+import {
+  NewDidVerificationKey,
+  authorizeTx,
+  createLightDidDocument,
+  didKeyToVerificationMethod,
+  getFullDid,
+  getStoreTx,
+  multibaseKeyToDidKey,
+  resolve,
+} from '@kiltprotocol/did'
 import type {
   Did,
   DidDocument,
@@ -21,7 +30,7 @@ import type {
   SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
-import { SDKErrors, Signers } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, Signers } from '@kiltprotocol/utils'
 
 /**
  * An Identity represents a DID and signing keys associated with it.
@@ -51,7 +60,7 @@ export interface Identity {
    * @param filterBy Additional selection criteria, including which VM the signer relates to, which algorithm it uses, or which relationship it has to the DID.
    * @returns A (potentially empty) array of signers, wrapped in a Promise because {@link Signers.selectSigners} is async.
    */
-  getSigners: (filterBy: {
+  getSigners: (filterBy?: {
     verificationMethod?: DidUrl | UriFragment
     verificationRelationship?: string
     algorithm?: string
@@ -62,7 +71,7 @@ export interface Identity {
    * @param filterBy See {@link getSigners}.
    * @returns A Promise of a signer, which throws if none match the selection criteria.
    */
-  getSigner: (filterBy: {
+  getSigner: (filterBy?: {
     verificationMethod?: DidUrl | UriFragment
     verificationRelationship?: string
     algorithm?: string
@@ -73,7 +82,7 @@ export interface Identity {
    * @param opts Controls whether you want to only reload the document, or only purge signers. Defaults to doing both.
    * @returns The (in-place) modified Identity object for chaining.
    */
-  update: (opts: {
+  update: (opts?: {
     skipResolution?: boolean
     purgeSigners?: boolean
   }) => Promise<Identity>
@@ -92,6 +101,7 @@ export interface Identity {
    * @returns A promise resolving to an object indicating the block of inclusion, or rejecting if the transaction failed to be included or execute correctly.
    */
   submitTx?: Issuer.IssuerOptions['submitTx']
+  submitterAddress?: KiltAddress
 }
 
 async function loadDidDocument(
@@ -293,8 +303,124 @@ export async function makeIdentity<T extends IdentityClass>({
   return transactionStrategy(identity)
 }
 
+type TypedKeyPair =
+  | (Keypair & { type: KeyringPair['type'] | 'x25519' })
+  | KeyringPair
+// | SignerInterface<Signers.DidPalletSupportedAlgorithms, Address>
+
+function isTypedKeyPair(
+  input: unknown
+): input is TypedKeyPair & NewDidVerificationKey {
+  return (
+    typeof input === 'object' &&
+    input !== null &&
+    'type' in input &&
+    'publicKey' in input &&
+    ['ed25519', 'sr25519', 'ecdsa'].includes(input.type as string) &&
+    ('secretKey' in input || 'sign' in input)
+  )
+}
+
+type TypedKeyPairs = {
+  authentication: [TypedKeyPair]
+  assertionMethod?: [TypedKeyPair]
+  delegationMethod?: [TypedKeyPair]
+  keyAgreement?: [TypedKeyPair]
+}
+
+export async function newIdentity(args: {
+  keys: TypedKeyPair | TypedKeyPairs
+  resolver?: typeof resolve
+}): Promise<IdentityClass>
+export async function newIdentity<
+  T extends IdentityClass &
+    Required<Pick<Identity, 'submitTx' | 'submitterAddress'>>
+>(args: {
+  keys: TypedKeyPair | TypedKeyPairs
+  resolver?: typeof resolve
+  transactionStrategy: TransactionStrategy<T>
+}): Promise<T>
+export async function newIdentity<
+  T extends IdentityClass &
+    Required<Pick<Identity, 'submitTx' | 'submitterAddress'>>
+>({
+  keys,
+  resolver = resolve,
+  transactionStrategy,
+}: {
+  keys: TypedKeyPair | TypedKeyPairs
+  resolver?: typeof resolve
+  transactionStrategy?: TransactionStrategy<T>
+}): Promise<IdentityClass | T> {
+  let typedKeyPairs: TypedKeyPairs
+  const allKeypairs: TypedKeyPair[] = []
+  if (isTypedKeyPair(keys)) {
+    allKeypairs.push(keys)
+    typedKeyPairs = {
+      authentication: [keys],
+      assertionMethod: [keys],
+      delegationMethod: [keys],
+    }
+  } else {
+    typedKeyPairs = keys as TypedKeyPairs
+    Object.entries(typedKeyPairs).forEach(([role, [key]]) => {
+      if (
+        ['authentication', 'assertionMethod', 'delegationMethod'].includes(
+          role
+        ) &&
+        isTypedKeyPair(key)
+      ) {
+        allKeypairs.push(key)
+      }
+    })
+  }
+
+  if (!transactionStrategy) {
+    const didDocument = createLightDidDocument(typedKeyPairs as any)
+    return makeIdentity({ didDocument, resolver, keypairs: allKeypairs })
+  }
+
+  const [authenticationPair] = typedKeyPairs.authentication
+  const authenticationAddress = Crypto.encodeAddress(
+    authenticationPair.publicKey,
+    38
+  )
+  const did = getFullDid(authenticationAddress)
+  const preliminaryDid = await makeIdentity({
+    didDocument: {
+      id: did,
+      verificationMethod: [
+        didKeyToVerificationMethod(did, `#${authenticationAddress}`, {
+          keyType: authenticationPair.type as any,
+          publicKey: authenticationPair.publicKey,
+        }),
+      ],
+      authentication: [`#${authenticationAddress}`],
+    },
+    resolver,
+    keypairs: [authenticationPair],
+    transactionStrategy,
+  })
+
+  const tx = await getStoreTx(
+    // @ts-ignore
+    typedKeyPairs,
+    preliminaryDid.submitterAddress ?? authenticationAddress,
+    preliminaryDid.signers.map((signer) => ({
+      ...signer,
+      id: authenticationAddress,
+    }))
+  )
+
+  const result = await preliminaryDid.submitTx(tx)
+  if (result.status !== 'Finalized' && result.status !== 'InBlock') {
+    return Promise.reject(result)
+  }
+  return (await preliminaryDid.update()).addKeypair(...allKeypairs)
+}
+
 export type IdentityWithSubmitter = IdentityClass &
-  Required<Pick<Identity, 'authorizeTx' | 'submitTx'>>
+  Required<Pick<Identity, 'authorizeTx' | 'submitTx' | 'submitterAddress'>>
 
 /**
  * @param root0
@@ -309,6 +435,8 @@ export function withSubmitterAccount({
     'address' in signer ? signer.address : signer.id
   ) as KiltAddress
   return async (identity) => {
+    /* eslint-disable-next-line no-param-reassign */
+    identity.submitterAddress = submitterAddress
     /* eslint-disable-next-line no-param-reassign */
     identity.authorizeTx = (tx) =>
       authorizeTx(identity.didDocument, tx, identity.signers, submitterAddress)
