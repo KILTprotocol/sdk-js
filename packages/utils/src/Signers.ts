@@ -17,6 +17,7 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
+  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'

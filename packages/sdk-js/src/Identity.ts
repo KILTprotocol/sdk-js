@@ -320,7 +320,7 @@ function isTypedKeyPair(
     input !== null &&
     'type' in input &&
     'publicKey' in input &&
-    ['ed25519', 'sr25519', 'ecdsa'].includes(input.type as string) &&
+    ['ed25519', 'sr25519', 'ecdsa'].includes((input as any).type) &&
     ('secretKey' in input || 'sign' in input)
   )
 }
