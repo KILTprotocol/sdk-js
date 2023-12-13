@@ -17,7 +17,6 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
-  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
@@ -121,10 +120,15 @@ export async function ethereumEcdsaSigner<Id extends string>({
   }
 }
 
+/**
+ * Extracts a keypair from a pjs KeyringPair via a roundtrip of pkcs8 en- and decoding.
+ *
+ * @param pair The pair, where the private key is inaccessible.
+ * @returns The private key as a byte sequence.
+ */
 function extractPk(pair: KeyringPair): Uint8Array {
-  const pw = randomAsHex()
-  const encoded = pair.encodePkcs8(pw)
-  const { secretKey } = decodePair(pw, encoded)
+  const encoded = pair.encodePkcs8()
+  const { secretKey } = decodePair(undefined, encoded, 'none')
   return secretKey
 }
 
