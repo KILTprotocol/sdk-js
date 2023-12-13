@@ -43,6 +43,7 @@ import type {
 } from '@kiltprotocol/types'
 
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
+import { makeKeypairFromUri } from './Crypto.js'
 
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b' as const, // could also be called ES256K-R-Blake2b
@@ -451,4 +452,35 @@ export function getPolkadotSigner(
       }
     },
   }
+}
+
+export function generateKeypair<T extends string = 'ed25519'>(args?: {
+  seed?: string
+  type?: T
+}): Keypair & { type: T }
+export function generateKeypair({
+  seed = randomAsHex(32),
+  type = 'ed25519',
+}: {
+  seed?: string
+  type?: string
+} = {}): Keypair & { type: string } {
+  let typeForKeyring = type as KeyringPair['type']
+  switch (type.toLowerCase()) {
+    case 'secpk256k1':
+      typeForKeyring = 'ecdsa'
+      break
+    case 'x25519':
+      typeForKeyring = 'ed25519'
+      break
+    default:
+  }
+
+  const keyRingPair = makeKeypairFromUri(
+    seed.toLowerCase(),
+    typeForKeyring as any
+  )
+  const secretKey = extractPk(keyRingPair)
+  const { publicKey } = keyRingPair
+  return { secretKey, publicKey, type }
 }
