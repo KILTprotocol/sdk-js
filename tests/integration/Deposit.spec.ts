@@ -8,12 +8,14 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { Did, CType, disconnect } from '@kiltprotocol/sdk-js'
+import { CType } from '@kiltprotocol/credentials'
+import * as Did from '@kiltprotocol/did'
 import {
+  Attestation,
   Claim,
   Credential,
-  Attestation,
 } from '@kiltprotocol/legacy-credentials'
+import { disconnect } from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   IAttestation,

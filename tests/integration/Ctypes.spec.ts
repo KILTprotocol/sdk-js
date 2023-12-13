@@ -7,9 +7,12 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { Did, CType, disconnect, Crypto } from '@kiltprotocol/sdk-js'
+import * as Did from '@kiltprotocol/did'
+import { disconnect } from '@kiltprotocol/sdk-js'
+import { CType } from '@kiltprotocol/credentials'
 import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
-import { UUID } from '@kiltprotocol/utils'
+import { Crypto, UUID } from '@kiltprotocol/utils'
+
 import {
   KeyTool,
   createFullDidFromSeed,

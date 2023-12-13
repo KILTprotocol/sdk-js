@@ -21,25 +21,29 @@ import type {
   VerificationMethod,
   VerificationRelationship,
 } from '@kiltprotocol/types'
+import { ConfigService } from '@kiltprotocol/sdk-js'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
 import {
-  Did,
-  ConfigService,
-  Blockchain,
-  SDKErrors,
-  Crypto,
-} from '@kiltprotocol/sdk-js'
-import type {
-  BaseNewDidKey,
-  ChainDidKey,
-  DidVerificationMethodType,
-  LightDidSupportedVerificationKeyType,
-  NewLightDidVerificationKey,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
-  NewService,
+  type BaseNewDidKey,
+  type ChainDidKey,
+  type DidVerificationMethodType,
+  type LightDidSupportedVerificationKeyType,
+  type NewLightDidVerificationKey,
+  type NewDidVerificationKey,
+  type NewDidEncryptionKey,
+  type NewService,
+  getStoreTx,
+  didKeyToVerificationMethod,
+  createLightDidDocument,
+  keypairToMultibaseKey,
+  getFullDidFromVerificationMethod,
+  multibaseKeyToDidKey,
+  isValidDidVerificationType,
+  isValidEncryptionMethodType,
+  toChain,
+  linkedInfoFromChain,
 } from '@kiltprotocol/did'
-
-const { Signers } = Crypto
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
@@ -63,7 +67,7 @@ export function makeEncryptionKey(seed: string): EncryptionKeyTool {
   }
 }
 
-type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -175,14 +179,10 @@ function addKeypairAsVerificationMethod(
   { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
   relationship: VerificationRelationship
 ): void {
-  const verificationMethod = Did.didKeyToVerificationMethod(
-    didDocument.id,
-    id,
-    {
-      keyType: keyType as DidVerificationMethodType,
-      publicKey,
-    }
-  )
+  const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
+    keyType: keyType as DidVerificationMethodType,
+    publicKey,
+  })
   addVerificationMethod(didDocument, verificationMethod, relationship)
 }
 
@@ -196,7 +196,7 @@ export async function createMinimalLightDidFromKeypair(
   keypair: KeyringPair
 ): Promise<DidDocument> {
   const type = keypair.type as LightDidSupportedVerificationKeyType
-  return Did.createLightDidDocument({
+  return createLightDidDocument({
     authentication: [{ publicKey: keypair.publicKey, type }],
     keyAgreement: makeEncryptionKey(`${keypair.publicKey}//enc`).keyAgreement,
   })
@@ -249,8 +249,8 @@ export async function createLocalDemoFullDidFromKeypair(
     publicKey,
     id: authKeyId,
   } = makeDidKeyFromKeypair(keypair)
-  const id = Did.getFullDidFromVerificationMethod({
-    publicKeyMultibase: Did.keypairToMultibaseKey({
+  const id = getFullDidFromVerificationMethod({
+    publicKeyMultibase: keypairToMultibaseKey({
       type: keyType,
       publicKey,
     }),
@@ -260,7 +260,7 @@ export async function createLocalDemoFullDidFromKeypair(
     id,
     authentication: [authKeyId],
     verificationMethod: [
-      Did.didKeyToVerificationMethod(id, authKeyId, {
+      didKeyToVerificationMethod(id, authKeyId, {
         keyType,
         publicKey,
       }),
@@ -384,12 +384,10 @@ export async function getStoreTxFromDidDocument(
         `A verification method with ID "${keyId}" was not found in the \`verificationMethod\` property of the provided DID Document.`
       )
     }
-    const { keyType, publicKey } = Did.multibaseKeyToDidKey(
-      key.publicKeyMultibase
-    )
+    const { keyType, publicKey } = multibaseKeyToDidKey(key.publicKeyMultibase)
     if (
-      !Did.isValidDidVerificationType(keyType) &&
-      !Did.isValidEncryptionMethodType(keyType)
+      !isValidDidVerificationType(keyType) &&
+      !isValidEncryptionMethodType(keyType)
     ) {
       throw new SDKErrors.DidError(
         `Verification method with ID "${keyId}" has an unsupported type "${keyType}".`
@@ -407,7 +405,7 @@ export async function getStoreTxFromDidDocument(
     )
   }
 
-  const storeTxInput: Parameters<typeof Did.getStoreTx>[0] = {
+  const storeTxInput: Parameters<typeof getStoreTx>[0] = {
     authentication: [authKey as NewDidVerificationKey],
     assertionMethod: assertKey
       ? [assertKey as NewDidVerificationKey]
@@ -419,7 +417,7 @@ export async function getStoreTxFromDidDocument(
     service,
   }
 
-  return Did.getStoreTx(storeTxInput, submitter, signers)
+  return getStoreTx(storeTxInput, submitter, signers)
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
@@ -446,9 +444,9 @@ export async function createFullDidFromLightDid(
   await Blockchain.signAndSubmitTx(tx, payer)
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
   const encodedDidDetails = await queryFunction(
-    Did.toChain(fullDidDocumentToBeCreated.id)
+    toChain(fullDidDocumentToBeCreated.id)
   )
-  const { document } = Did.linkedInfoFromChain(encodedDidDetails)
+  const { document } = linkedInfoFromChain(encodedDidDetails)
   return document
 }
 

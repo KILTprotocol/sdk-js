@@ -17,8 +17,9 @@ import type { ApiPromise } from '@polkadot/api'
 
 import { BN } from '@polkadot/util'
 
-import { CType, Did, disconnect } from '@kiltprotocol/sdk-js'
-import { DelegationNode } from '@kiltprotocol/credentials'
+import { CType, DelegationNode } from '@kiltprotocol/credentials'
+import * as Did from '@kiltprotocol/did'
+import { disconnect } from '@kiltprotocol/sdk-js'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 

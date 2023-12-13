@@ -5,9 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Did, Crypto } from '@kiltprotocol/sdk-js'
 import nacl from 'tweetnacl'
 import { v4 } from 'uuid'
+
+import {
+  createLightDidDocument,
+  parseDocumentFromLightDid,
+} from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
 
 import { makeEncryptionKey } from '../testUtils/index.js'
 
@@ -21,7 +26,7 @@ function makeLightDidFromSeed(seed: string) {
   const keypair = Crypto.makeKeypairFromUri(seed, 'sr25519')
   const { keyAgreement } = makeEncryptionKey(seed)
 
-  const did = Did.createLightDidDocument({
+  const did = createLightDidDocument({
     authentication: [keypair],
     keyAgreement,
     service: [
@@ -50,7 +55,7 @@ describe('Breaking Changes', () => {
       )
 
       expect(
-        Did.parseDocumentFromLightDid(
+        parseDocumentFromLightDid(
           'did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw'
         )
       ).toMatchSnapshot()

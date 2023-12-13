@@ -10,18 +10,13 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
-import { randomAsU8a, encodeAddress } from '@polkadot/util-crypto'
+import { encodeAddress, randomAsU8a } from '@polkadot/util-crypto'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import {
-  Blockchain,
-  ConfigService,
-  CType,
-  connect,
-  init,
-  Crypto,
-} from '@kiltprotocol/sdk-js'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { CType } from '@kiltprotocol/credentials'
+import { ConfigService, connect, init } from '@kiltprotocol/sdk-js'
 import type {
   ICType,
   KeyringPair,
@@ -30,6 +25,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 
 import { makeSigningKeyTool } from '../testUtils/TestUtils.js'
 
