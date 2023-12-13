@@ -10,7 +10,7 @@ import { jest } from '@jest/globals'
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { disconnect } from '@kiltprotocol/sdk-js'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'

@@ -7,9 +7,9 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import * as Did from '@kiltprotocol/did'
-import { disconnect } from '@kiltprotocol/sdk-js'
 import { CType } from '@kiltprotocol/credentials'
+import { disconnect } from '@kiltprotocol/chain-helpers'
+import * as Did from '@kiltprotocol/did'
 import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
 
@@ -18,7 +18,6 @@ import {
   createFullDidFromSeed,
   makeSigningKeyTool,
 } from '../testUtils/index.js'
-
 import { createEndowedTestAccount, initializeApi, submitTx } from './utils.js'
 
 let api: ApiPromise

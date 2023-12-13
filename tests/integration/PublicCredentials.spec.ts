@@ -18,11 +18,11 @@ import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import { PublicCredentials } from '@kiltprotocol/asset-credentials'
+import { CType } from '@kiltprotocol/credentials'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
-import { disconnect } from '@kiltprotocol/sdk-js'
 import { UUID } from '@kiltprotocol/utils'
 
-import { CType } from '@kiltprotocol/credentials'
 import {
   createFullDidFromSeed,
   KeyTool,
