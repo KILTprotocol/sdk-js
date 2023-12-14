@@ -173,6 +173,7 @@ export const typesBundle: OverrideBundleType = {
         ...didCalls,
         ...stakingCalls,
         ...publicCredentialsCalls,
+        ...dipProviderCalls,
       },
       types: defaultTypesBundle,
     },
