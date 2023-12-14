@@ -17,7 +17,6 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
-  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
@@ -63,7 +62,7 @@ export type KnownAlgorithms = typeof ALGORITHMS[keyof typeof ALGORITHMS]
 export type DidPalletSupportedAlgorithms =
   typeof DID_PALLET_SUPPORTED_ALGORITHMS[number]
 
-export { ed25519Signer, es256kSigner }
+export { ed25519Signer, es256kSigner, sr25519Signer }
 
 /**
  * Signer that produces an ECDSA signature over a Blake2b-256 digest of the message using the secp256k1 curve.
@@ -121,10 +120,15 @@ export async function ethereumEcdsaSigner<Id extends string>({
   }
 }
 
+/**
+ * Extracts a keypair from a pjs KeyringPair via a roundtrip of pkcs8 en- and decoding.
+ *
+ * @param pair The pair, where the private key is inaccessible.
+ * @returns The private key as a byte sequence.
+ */
 function extractPk(pair: KeyringPair): Uint8Array {
-  const pw = randomAsHex()
-  const encoded = pair.encodePkcs8(pw)
-  const { secretKey } = decodePair(pw, encoded)
+  const encoded = pair.encodePkcs8()
+  const { secretKey } = decodePair(undefined, encoded, 'none')
   return secretKey
 }
 
@@ -251,13 +255,13 @@ export interface SignerSelector {
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns An array of those signers for which all selectors returned `true`.
  */
-export async function selectSigners<
+export function selectSigners<
   SelectedSigners extends AllSigners, // eslint-disable-line no-use-before-define
   AllSigners extends SignerInterface = SignerInterface
 >(
   signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
-): Promise<SelectedSigners[]> {
+): SelectedSigners[] {
   return signers.filter((signer): signer is SelectedSigners =>
     selectors.every((selector) => selector(signer))
   )
@@ -270,13 +274,13 @@ export async function selectSigners<
  * @param selectors One or more selector callbacks, receiving a signer as input and returning `true` in case it meets selection criteria.
  * @returns The first signer for which all selectors returned `true`, or `undefined` if none meet selection criteria.
  */
-export async function selectSigner<
+export function selectSigner<
   SelectedSigner extends AllSigners, // eslint-disable-line no-use-before-define
   AllSigners extends SignerInterface = SignerInterface
 >(
   signers: readonly AllSigners[],
   ...selectors: readonly SignerSelector[]
-): Promise<SelectedSigner | undefined> {
+): SelectedSigner | undefined {
   return signers.find((signer): signer is SelectedSigner =>
     selectors.every((selector) => selector(signer))
   )
