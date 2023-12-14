@@ -46,6 +46,7 @@ const methodMapping: Record<
   'did.submitDidCall': undefined,
   didLookup: 'authentication',
   publicCredentials: 'assertionMethod',
+  dipProvider: 'authentication',
   web3Names: 'authentication',
 }
 
