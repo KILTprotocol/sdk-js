@@ -36,13 +36,13 @@ export type DidSignatureVerificationInput = {
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
 // It is reasonable to think that it will be removed at some point in the future.
-type OldDidSignatureV1 = {
+type LegacyDidSignature = {
   signature: string
   keyId: DidUrl
 }
 
 function verifyDidSignatureDataStructure(
-  input: DidSignature | OldDidSignatureV1
+  input: DidSignature | LegacyDidSignature
 ): void {
   const verificationMethodUrl = (() => {
     if ('keyId' in input) {
@@ -156,7 +156,7 @@ export async function verifyDidSignature({
  */
 export function isDidSignature(
   input: unknown
-): input is DidSignature | OldDidSignatureV1 {
+): input is DidSignature | LegacyDidSignature {
   try {
     verifyDidSignatureDataStructure(input as DidSignature)
     return true
@@ -191,7 +191,7 @@ export function signatureToJson({
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
  */
 export function signatureFromJson(
-  input: DidSignature | OldDidSignatureV1
+  input: DidSignature | LegacyDidSignature
 ): Pick<SignResponseData, 'signature'> & {
   keyUri: DidUrl
 } {
