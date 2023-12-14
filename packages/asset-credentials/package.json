@@ -34,6 +34,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@kiltprotocol/augment-api": "workspace:^",
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
