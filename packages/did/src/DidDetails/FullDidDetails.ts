@@ -40,6 +40,7 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   'did.submitDidCall': undefined,
   didLookup: 'authentication',
   publicCredentials: 'assertionMethod',
+  dipProvider: 'authentication',
   web3Names: 'authentication',
 }
 
