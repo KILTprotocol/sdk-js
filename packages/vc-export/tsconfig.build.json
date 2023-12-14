@@ -13,5 +13,6 @@
   "exclude": [
     "coverage",
     "**/*.spec.ts",
+    "**/__mocks__"
   ]
 }

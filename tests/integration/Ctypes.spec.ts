@@ -7,7 +7,8 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { CType, disconnect } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
 import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
@@ -46,18 +47,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   beforeAll(async () => {
     paymentAccount = await createEndowedTestAccount()
-    key = makeSigningKeyTool()
+    key = await makeSigningKeyTool()
     ctypeCreator = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const cType = makeCType()
-    const { keypair, getSignCallback } = makeSigningKeyTool()
+    const { keypair, getSigners } = await makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
-      getSignCallback(ctypeCreator),
+      await getSigners(ctypeCreator),
       keypair.address
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
@@ -71,9 +72,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const cType = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await submitTx(authorizedStoreTx, paymentAccount)
@@ -83,7 +84,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         cType.$id
       )
       expect(originalCtype).toStrictEqual(cType)
-      expect(creator).toBe(ctypeCreator.uri)
+      expect(creator).toBe(ctypeCreator.id)
       await expect(CType.verifyStored(originalCtype)).resolves.not.toThrow()
     }
   }, 40_000)
@@ -92,18 +93,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const cType = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = api.tx.ctype.add(CType.toChain(cType))
     const authorizedStoreTx2 = await Did.authorizeTx(
-      ctypeCreator.uri,
+      ctypeCreator.id,
       storeTx2,
-      key.getSignCallback(ctypeCreator),
+      await key.getSigners(ctypeCreator),
       paymentAccount.address
     )
     await expect(
@@ -115,7 +116,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     if (hasBlockNumbers) {
       const retrievedCType = await CType.fetchFromChain(cType.$id)
-      expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+      expect(retrievedCType.creator).toBe(ctypeCreator.id)
     }
   }, 45_000)
 

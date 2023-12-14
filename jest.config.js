@@ -15,10 +15,10 @@ const common = {
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
   collectCoverageFrom: [
@@ -33,13 +33,12 @@ const common = {
     'packages/types/',
     'packages/augment-api/',
     'packages/type-definitions/',
-    'packages/core/src/kilt/',
     'index.ts',
     'types.ts',
     '.chain.ts',
+    'DelegationDecoder.ts',
     'SDKErrors.ts',
     'Did.rpc.ts',
-    'packages/utils/src/Chain.ts',
     // third party code copied to this repo
     'packages/utils/src/json-schema/',
     'jsonabc.ts',

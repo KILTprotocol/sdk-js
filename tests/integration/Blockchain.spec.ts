@@ -8,8 +8,11 @@
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { BalanceUtils, disconnect } from '@kiltprotocol/core'
+import {
+  Blockchain,
+  BalanceUtils,
+  disconnect,
+} from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'
@@ -26,7 +29,7 @@ describe('Chain returns specific errors, that we check for', () => {
   let charlie: KeyringPair
   beforeAll(async () => {
     faucet = devFaucet
-    testIdentity = makeSigningKeyTool().keypair
+    testIdentity = (await makeSigningKeyTool()).keypair
     charlie = devCharlie
 
     const transferTx = api.tx.balances.transfer(

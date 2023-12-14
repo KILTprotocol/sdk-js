@@ -8,7 +8,7 @@
       "@kiltprotocol/asset-credentials": ["asset-credentials/src"],
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
       "@kiltprotocol/config": ["config/src"],
-      "@kiltprotocol/core": ["core/src"],
+      "@kiltprotocol/credentials": ["credentials/src"],
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
@@ -18,6 +18,7 @@
       "@kiltprotocol/augment-api": ["augment-api/src"],
       "@kiltprotocol/augment-api/extraDefs": ["augment-api/src/interfaces/extraDefs"],
       "@kiltprotocol/type-definitions": ["type-definitions/src"],
+      "@kiltprotocol/legacy-credentials": ["legacy-credentials/src"]
       }
   },
 }

@@ -1533,6 +1533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digitalbazaar/multikey-context@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@digitalbazaar/multikey-context@npm:1.0.0"
+  checksum: e651253ce101a0a5de0e46de5c6f7c936aa07fd14e5b14d38ba57c105eaa2490c256245482bc1f5173269a992cab2ebe5eec6c26523f0e61aae03d3a6788cc6b
+  languageName: node
+  linkType: hard
+
 "@digitalbazaar/security-context@npm:^1.0.0":
   version: 1.0.0
   resolution: "@digitalbazaar/security-context@npm:1.0.0"
@@ -1929,7 +1936,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -1963,11 +1970,14 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
+    "@polkadot/util": ^12.0.0
+    "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -1985,14 +1995,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/core@workspace:*, @kiltprotocol/core@workspace:packages/core":
+"@kiltprotocol/credentials@workspace:*, @kiltprotocol/credentials@workspace:packages/credentials":
   version: 0.0.0-use.local
-  resolution: "@kiltprotocol/core@workspace:packages/core"
+  resolution: "@kiltprotocol/credentials@workspace:packages/credentials"
   dependencies:
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
+    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
+    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
+    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -2001,7 +2015,9 @@ __metadata:
     "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    "@types/json-pointer": ^1.0.34
     "@types/uuid": ^8.0.0
+    json-pointer: ^0.6.2
     rimraf: ^3.0.2
     testcontainers: ^9.0.0
     typescript: ^4.8.3
@@ -2012,6 +2028,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
+    "@digitalbazaar/multikey-context": ^1.0.0
     "@digitalbazaar/security-context": ^1.0.0
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
@@ -2021,6 +2038,55 @@ __metadata:
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
     "@polkadot/types-codec": ^10.4.0
+    "@polkadot/util": ^12.0.0
+    "@polkadot/util-crypto": ^12.0.0
+    multibase: ^4.0.6
+    rimraf: ^3.0.2
+    typescript: ^4.8.3
+  languageName: unknown
+  linkType: soft
+
+"@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: c3127e4f98e37216752e52314aa3e173d32327819fc88ba69fdba7bfbb014ca61cf271eb01864274c1c25813edbf07975c8dc829708dc525f7425ea2a38ab7d9
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: 843437a6806c10728fedc6cfa45f408aa9278263d64fce7c5057515d06fed74bc9ea702d932cc24543daff66a1b9935389b0a1453ea45d59111b46b59b19ad56
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1"
+  dependencies:
+    canonicalize: ^2.0.0
+    multibase: ^4.0.6
+  checksum: fefc3c86bdb0a732f5851155cedf1743eedace4cf03fa5fbeb37f321c3cf87e9ac1704328e0d69d3cb80203e9afc07b6849907816c402bcd90b7c18b99177d40
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/legacy-credentials@workspace:packages/legacy-credentials":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/legacy-credentials@workspace:packages/legacy-credentials"
+  dependencies:
+    "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
@@ -2034,7 +2100,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -2045,6 +2111,17 @@ __metadata:
     webpack-cli: ^4.9.2
   languageName: unknown
   linkType: soft
+
+"@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1":
+  version: 0.1.0-rc.1
+  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.1"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.1
+    "@polkadot/util-crypto": ^12.0.1
+    "@scure/base": ^1.1.1
+  checksum: 8253c03b8c9daef61bc2155ee64894a568f4b591c941dc0bb668839475ed8d8fcf1048339710805e3046cb3ea603ed58c5e857887c4c67b602af098c2a92fb52
+  languageName: node
+  linkType: hard
 
 "@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
   version: 0.0.0-use.local
@@ -2073,6 +2150,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
+    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
+    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
+    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
+    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
@@ -2092,26 +2173,28 @@ __metadata:
   dependencies:
     "@digitalbazaar/ed25519-signature-2020": ^5.2.0
     "@digitalbazaar/vc": ^6.0.1
-    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^10.4.0
-    "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     crypto-ld: ^6.0.0
-    did-jwt: ^7.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   peerDependencies:
-    "@digitalbazaar/vc": ^2.1.0 || ^6.0.1
-    jsonld: ^5.2.0 || ^8.1.0
-    jsonld-signatures: ^9.3.0 || ^11.0.0
+    jsonld: ^8.1.0
+    jsonld-signatures: ^11.0.0
   languageName: unknown
   linkType: soft
+
+"@multiformats/base-x@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@multiformats/base-x@npm:4.0.1"
+  checksum: ecbf84bdd7613fd795e4a41f20f3e8cc7df8bbee84690b7feed383d45a638ed228a80ff6f5c930373cbf24539f64857b66023ee3c1e914f6bac9995c76414a87
+  languageName: node
+  linkType: hard
 
 "@noble/curves@npm:1.0.0, @noble/curves@npm:^1.0.0":
   version: 1.0.0
@@ -2129,7 +2212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.3.0, @noble/hashes@npm:^1.3.0":
+"@noble/hashes@npm:1.3.0":
   version: 1.3.0
   resolution: "@noble/hashes@npm:1.3.0"
   checksum: d7ddb6d7c60f1ce1f87facbbef5b724cdea536fc9e7f59ae96e0fc9de96c8f1a2ae2bdedbce10f7dcc621338dfef8533daa73c873f2b5c87fa1a4e05a95c2e2e
@@ -2445,7 +2528,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.2.1":
+"@polkadot/util-crypto@npm:12.2.1, @polkadot/util-crypto@npm:^12.0.0, @polkadot/util-crypto@npm:^12.0.1, @polkadot/util-crypto@npm:^12.2.1":
   version: 12.2.1
   resolution: "@polkadot/util-crypto@npm:12.2.1"
   dependencies:
@@ -2634,7 +2717,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:1.1.1":
+"@scure/base@npm:1.1.1, @scure/base@npm:^1.1.1":
   version: 1.1.1
   resolution: "@scure/base@npm:1.1.1"
   checksum: b4fc810b492693e7e8d0107313ac74c3646970c198bbe26d7332820886fa4f09441991023ec9aa3a2a51246b74409ab5ebae2e8ef148bbc253da79ac49130309
@@ -2663,101 +2746,6 @@ __metadata:
   dependencies:
     "@sinonjs/commons": ^3.0.0
   checksum: 614d30cb4d5201550c940945d44c9e0b6d64a888ff2cd5b357f95ad6721070d6b8839cd10e15b76bf5e14af0bcc1d8f9ec00d49a46318f1f669a4bec1d7f3148
-  languageName: node
-  linkType: hard
-
-"@stablelib/aead@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/aead@npm:1.0.1"
-  checksum: 1a6f68d138f105d17dd65349751515bd252ab0498c77255b8555478d28415600dde493f909eb718245047a993f838dfae546071e1687566ffb7b8c3e10c918d9
-  languageName: node
-  linkType: hard
-
-"@stablelib/binary@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/binary@npm:1.0.1"
-  dependencies:
-    "@stablelib/int": ^1.0.1
-  checksum: dca9b98eb1f56a4002b5b9e7351fbc49f3d8616af87007c01e833bd763ac89214eb5f3b7e18673c91ce59d4a0e4856a2eb661ace33d39f17fb1ad267271fccd8
-  languageName: node
-  linkType: hard
-
-"@stablelib/chacha20poly1305@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/chacha20poly1305@npm:1.0.1"
-  dependencies:
-    "@stablelib/aead": ^1.0.1
-    "@stablelib/binary": ^1.0.1
-    "@stablelib/chacha": ^1.0.1
-    "@stablelib/constant-time": ^1.0.1
-    "@stablelib/poly1305": ^1.0.1
-    "@stablelib/wipe": ^1.0.1
-  checksum: 81f1a32330838d31e4dc3144d76eba7244b56d9ea38c1f604f2c34d93ed8e67e9a6167d2cfd72254c13cc46dfc1f5ce5157b37939a575295d69d9144abb4e4fb
-  languageName: node
-  linkType: hard
-
-"@stablelib/chacha@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/chacha@npm:1.0.1"
-  dependencies:
-    "@stablelib/binary": ^1.0.1
-    "@stablelib/wipe": ^1.0.1
-  checksum: f061f36c4ca4bf177dd7cac11e7c65ced164f141b6065885141ae5a55f32e16ba0209aefcdcc966aef013f1da616ce901a3a80653b4b6f833cf7e3397ae2d6bd
-  languageName: node
-  linkType: hard
-
-"@stablelib/constant-time@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/constant-time@npm:1.0.1"
-  checksum: dba4f4bf508de2ff15f7f0cbd875e70391aa3ba3698290fe1ed2feb151c243ba08a90fc6fb390ec2230e30fcc622318c591a7c0e35dcb8150afb50c797eac3d7
-  languageName: node
-  linkType: hard
-
-"@stablelib/int@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/int@npm:1.0.1"
-  checksum: 65bfbf50a382eea70c68e05366bf379cfceff8fbc076f1c267ef2f2411d7aed64fd140c415cb6c29f19a3910d3b8b7805d4b32ad5721a5007a8e744a808c7ae3
-  languageName: node
-  linkType: hard
-
-"@stablelib/poly1305@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/poly1305@npm:1.0.1"
-  dependencies:
-    "@stablelib/constant-time": ^1.0.1
-    "@stablelib/wipe": ^1.0.1
-  checksum: 70b845bb0481c66b7ba3f3865d01e4c67a4dffc9616fc6de1d23efc5e828ec09de25f8e3be4e1f15a23b8e87e3036ee3d949c2fd4785047e6f7028bbec0ead18
-  languageName: node
-  linkType: hard
-
-"@stablelib/wipe@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/wipe@npm:1.0.1"
-  checksum: 287802eb146810a46ba72af70b82022caf83a8aeebde23605f5ee0decf64fe2b97a60c856e43b6617b5801287c30cfa863cfb0469e7fcde6f02d143cf0c6cbf4
-  languageName: node
-  linkType: hard
-
-"@stablelib/xchacha20@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/xchacha20@npm:1.0.1"
-  dependencies:
-    "@stablelib/binary": ^1.0.1
-    "@stablelib/chacha": ^1.0.1
-    "@stablelib/wipe": ^1.0.1
-  checksum: e1aa210d7a10090bf86034922b8bd4713656fc01fb0b9f3a2dffdbea254ed6d47803c9e31c1f35d4c3c0d96398ebac00df3f91a2ffc006070600429e70ce785e
-  languageName: node
-  linkType: hard
-
-"@stablelib/xchacha20poly1305@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/xchacha20poly1305@npm:1.0.1"
-  dependencies:
-    "@stablelib/aead": ^1.0.1
-    "@stablelib/chacha20poly1305": ^1.0.1
-    "@stablelib/constant-time": ^1.0.1
-    "@stablelib/wipe": ^1.0.1
-    "@stablelib/xchacha20": ^1.0.1
-  checksum: 74d1ad0c0772f1a528a7a677df29687a5e6bd5eeb33a7abf2f861537005630bb231fd29015d5d68eac04f4e21f2addae19513ec0a899609779050d4117675d11
   languageName: node
   linkType: hard
 
@@ -2978,6 +2966,13 @@ __metadata:
     expect: ^29.0.0
     pretty-format: ^29.0.0
   checksum: e36bb92e0b9e5ea7d6f8832baa42f087fc1697f6cd30ec309a07ea4c268e06ec460f1f0cfd2581daf5eff5763475190ec1ad8ac6520c49ccfe4f5c0a48bfa676
+  languageName: node
+  linkType: hard
+
+"@types/json-pointer@npm:^1.0.34":
+  version: 1.0.34
+  resolution: "@types/json-pointer@npm:1.0.34"
+  checksum: 7ecfa30d0b92819819c8dfefa27118dd4798cf415c60fe9d17c3ba667af420bfe36b8a38f46b8bd90f59bccf438819878f7371dcb9f814b60ed043c35a9daa0a
   languageName: node
   linkType: hard
 
@@ -3899,13 +3894,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bech32@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "bech32@npm:2.0.0"
-  checksum: fa15acb270b59aa496734a01f9155677b478987b773bf701f465858bf1606c6a970085babd43d71ce61895f1baa594cb41a2cd1394bd2c6698f03cc2d811300e
-  languageName: node
-  linkType: hard
-
 "bl@npm:^4.0.3":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
@@ -4684,29 +4672,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"did-jwt@npm:^7.0.0":
-  version: 7.1.0
-  resolution: "did-jwt@npm:7.1.0"
-  dependencies:
-    "@noble/curves": ^1.0.0
-    "@noble/hashes": ^1.3.0
-    "@stablelib/xchacha20poly1305": ^1.0.1
-    bech32: ^2.0.0
-    canonicalize: ^2.0.0
-    did-resolver: ^4.0.0
-    multiformats: ^9.6.5
-    uint8arrays: ^3.0.0
-  checksum: 1a23f201f9eb1abe68193067a28c37ead56fbce5e8147cbfdcc0d41dc374bf60c20d9e8529294ca35f8106d0ae26d9a7ace77f974125c3ac63ac990399b465fa
-  languageName: node
-  linkType: hard
-
-"did-resolver@npm:^4.0.0":
-  version: 4.0.1
-  resolution: "did-resolver@npm:4.0.1"
-  checksum: 1d039ce4da70b004f7679a65122c698e5b7c492eb9b2771daef6a3742b35be5cf3bb4b60af45aee3048bc1cf3161ac1dc4e2dbfcb956a0a47ea2efb405cce76d
-  languageName: node
-  linkType: hard
-
 "diff-sequences@npm:^29.4.3":
   version: 29.4.3
   resolution: "diff-sequences@npm:29.4.3"
@@ -5470,6 +5435,13 @@ __metadata:
   version: 3.2.5
   resolution: "flatted@npm:3.2.5"
   checksum: 3c436e9695ccca29620b4be5671dd72e5dd0a7500e0856611b7ca9bd8169f177f408c3b9abfa78dfe1493ee2d873e2c119080a8a9bee4e1a186a9e60ca6c89f1
+  languageName: node
+  linkType: hard
+
+"foreach@npm:^2.0.4":
+  version: 2.0.6
+  resolution: "foreach@npm:2.0.6"
+  checksum: f7b68494545ee41cbd0b0425ebf5386c265dc38ef2a9b0d5cd91a1b82172e939b4cf9387f8e0ebf6db4e368fc79ed323f2198424d5c774515ac3ed9b08901c0e
   languageName: node
   linkType: hard
 
@@ -6790,6 +6762,15 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
+"json-pointer@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "json-pointer@npm:0.6.2"
+  dependencies:
+    foreach: ^2.0.4
+  checksum: 668143014b16d7f90e6f0e6c2d756b00b799424f58d750794a79a24cbce595855b224f7861986aaff719579558fbab81fb83c7371f5e24aded9dc33b3838de30
+  languageName: node
+  linkType: hard
+
 "json-schema-traverse@npm:^0.4.1":
   version: 0.4.1
   resolution: "json-schema-traverse@npm:0.4.1"
@@ -7157,7 +7138,7 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"marked@npm:^4.2.12":
+"marked@npm:^4.3.0":
   version: 4.3.0
   resolution: "marked@npm:4.3.0"
   bin:
@@ -7248,12 +7229,12 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^7.1.3":
-  version: 7.4.6
-  resolution: "minimatch@npm:7.4.6"
+"minimatch@npm:^9.0.0":
+  version: 9.0.3
+  resolution: "minimatch@npm:9.0.3"
   dependencies:
     brace-expansion: ^2.0.1
-  checksum: 1a6c8d22618df9d2a88aabeef1de5622eb7b558e9f8010be791cb6b0fa6e102d39b11c28d75b855a1e377b12edc7db8ff12a99c20353441caa6a05e78deb5da9
+  checksum: 253487976bf485b612f16bf57463520a14f512662e592e95c571afdab1442a6a6864b6c88f248ce6fc4ff0b6de04ac7aa6c8bb51e868e99d1d65eb0658a708b5
   languageName: node
   linkType: hard
 
@@ -7389,10 +7370,12 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^9.4.2, multiformats@npm:^9.6.5":
-  version: 9.9.0
-  resolution: "multiformats@npm:9.9.0"
-  checksum: d3e8c1be400c09a014f557ea02251a2710dbc9fca5aa32cc702ff29f636c5471e17979f30bdcb0a9cbb556f162a8591dc2e1219c24fc21394a56115b820bb84e
+"multibase@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "multibase@npm:4.0.6"
+  dependencies:
+    "@multiformats/base-x": ^4.0.1
+  checksum: 891ce47f509c6070d2306e7e00aef3ef41fbb50a848a1e1bec5e75ca63c5032015a436cf09e9e3939b5b2ca81e74804151eb410a388f10e9aabf7a2f5a35d272
   languageName: node
   linkType: hard
 
@@ -8322,7 +8305,7 @@ fsevents@^2.3.2:
     testcontainers: ^9.0.0
     ts-jest: ^29.1.1
     ts-jest-resolver: ^2.0.1
-    typedoc: ^0.23.0
+    typedoc: ^0.24.8
     typescript: ^4.8.3
   languageName: unknown
   linkType: soft
@@ -9301,19 +9284,19 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.23.0":
-  version: 0.23.28
-  resolution: "typedoc@npm:0.23.28"
+"typedoc@npm:^0.24.8":
+  version: 0.24.8
+  resolution: "typedoc@npm:0.24.8"
   dependencies:
     lunr: ^2.3.9
-    marked: ^4.2.12
-    minimatch: ^7.1.3
+    marked: ^4.3.0
+    minimatch: ^9.0.0
     shiki: ^0.14.1
   peerDependencies:
-    typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
+    typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x
   bin:
     typedoc: bin/typedoc
-  checksum: 40eb4e207aac1b734e09400cf03f543642cc7b11000895198dd5a0d3166315759ccf4ac30a2915153597c5c186101c72bac2f1fc12b428184a9274d3a0e44c5e
+  checksum: a46a14497f789fb3594e6c3af2e45276934ac46df40b7ed15a504ee51dc7a8013a2ffb3a54fd73abca6a2b71f97d3ec9ad356fa9aa81d29743e4645a965a2ae0
   languageName: node
   linkType: hard
 
@@ -9352,15 +9335,6 @@ typescript@^4.8.3:
   bin:
     uglifyjs: bin/uglifyjs
   checksum: 5b62e748b7fa1d982f0949ed1876b9367dcde4782f74159f4ea0b3d130835336eb0245e090456ec057468d937eb016114677bb38a7a4fdc7f68c3d002ca760ee
-  languageName: node
-  linkType: hard
-
-"uint8arrays@npm:^3.0.0":
-  version: 3.1.1
-  resolution: "uint8arrays@npm:3.1.1"
-  dependencies:
-    multiformats: ^9.4.2
-  checksum: b93b6c3f0a526b116799f3a3409bd4b5d5553eb3e73e485998ece7974742254fbc0d2f7988dd21ac86c4b974552f45d9ae9cf9cba9647e529f8eb1fdd2ed84d0
   languageName: node
   linkType: hard
 
@@ -9714,9 +9688,9 @@ typescript@^4.8.3:
   linkType: hard
 
 "word-wrap@npm:^1.2.3":
-  version: 1.2.3
-  resolution: "word-wrap@npm:1.2.3"
-  checksum: 30b48f91fcf12106ed3186ae4fa86a6a1842416df425be7b60485de14bec665a54a68e4b5156647dec3a70f25e84d270ca8bc8cd23182ed095f5c7206a938c1f
+  version: 1.2.5
+  resolution: "word-wrap@npm:1.2.5"
+  checksum: f93ba3586fc181f94afdaff3a6fef27920b4b6d9eaefed0f428f8e07adea2a7f54a5f2830ce59406c8416f033f86902b91eb824072354645eea687dff3691ccb
   languageName: node
   linkType: hard
 

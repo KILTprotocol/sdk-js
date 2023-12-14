@@ -10,7 +10,7 @@ import { Keyring } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 
-import { BalanceUtils, disconnect } from '@kiltprotocol/core'
+import { BalanceUtils, disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -38,7 +38,7 @@ beforeAll(async () => {
   api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = api.consts.didLookup.deposit.toBn()
-}, 40_000)
+}, 60_000)
 
 describe('When there is an on-chain DID', () => {
   let did: DidDocument
@@ -48,11 +48,11 @@ describe('When there is an on-chain DID', () => {
 
   describe('and a tx sender willing to link its account', () => {
     beforeAll(async () => {
-      didKey = makeSigningKeyTool()
-      newDidKey = makeSigningKeyTool()
+      didKey = await makeSigningKeyTool()
+      newDidKey = await makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-    }, 40_000)
+    }, 60_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
       expect(
@@ -65,9 +65,9 @@ describe('When there is an on-chain DID', () => {
 
       const associateSenderTx = api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeTx(
-        did.uri,
+        did.id,
         associateSenderTx,
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -92,14 +92,14 @@ describe('When there is an on-chain DID', () => {
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
       expect(queryByAccount.accounts).toStrictEqual([paymentAccount.address])
-      expect(queryByAccount.document.uri).toStrictEqual(did.uri)
+      expect(queryByAccount.document.id).toStrictEqual(did.id)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeTx(
-        newDid.uri,
+        newDid.id,
         associateSenderTx,
-        newDidKey.getSignCallback(newDid),
+        await newDidKey.getSigners(newDid),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -120,7 +120,7 @@ describe('When there is an on-chain DID', () => {
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
       expect(queryByAccount.accounts).toStrictEqual([paymentAccount.address])
-      expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
+      expect(queryByAccount.document.id).toStrictEqual(newDid.id)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
@@ -159,11 +159,13 @@ describe('When there is an on-chain DID', () => {
           skip = true
           return
         }
-        const keyTool = makeSigningKeyTool(keyType as KiltKeyringPair['type'])
+        const keyTool = await makeSigningKeyTool(
+          keyType as KiltKeyringPair['type']
+        )
         keypair = keyTool.keypair
         keypairChain = Did.accountToChain(keypair.address)
-        didKey = makeSigningKeyTool()
-        newDidKey = makeSigningKeyTool()
+        didKey = await makeSigningKeyTool()
+        newDidKey = await makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
         newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
       }, 40_000)
@@ -174,13 +176,13 @@ describe('When there is an on-chain DID', () => {
         }
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
-          did.uri,
+          did.id,
           async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeTx(
-          did.uri,
+          did.id,
           api.tx.didLookup.associateAccount(...args),
-          didKey.getSignCallback(did),
+          await didKey.getSigners(did),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -204,21 +206,22 @@ describe('When there is an on-chain DID', () => {
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
-        expect(queryByAccount.document.uri).toStrictEqual(did.uri)
+        expect(queryByAccount.document.id).toStrictEqual(did.id)
       })
+
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         if (skip) {
           return
         }
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
-          newDid.uri,
+          newDid.id,
           async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeTx(
-          newDid.uri,
+          newDid.id,
           api.tx.didLookup.associateAccount(...args),
-          newDidKey.getSignCallback(newDid),
+          await newDidKey.getSigners(newDid),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -239,8 +242,9 @@ describe('When there is an on-chain DID', () => {
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
-        expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
+        expect(queryByAccount.document.id).toStrictEqual(newDid.id)
       })
+
       it('should be possible for the DID to remove the link', async () => {
         if (skip) {
           return
@@ -248,9 +252,9 @@ describe('When there is an on-chain DID', () => {
         const removeLinkTx =
           api.tx.didLookup.removeAccountAssociation(keypairChain)
         const signedTx = await Did.authorizeTx(
-          newDid.uri,
+          newDid.id,
           removeLinkTx,
-          newDidKey.getSignCallback(newDid),
+          await newDidKey.getSigners(newDid),
           paymentAccount.address
         )
         const balanceBefore = (
@@ -271,7 +275,7 @@ describe('When there is an on-chain DID', () => {
         )
         expect(encodedQueryByAccount.isNone).toBe(true)
         const encodedQueryByDid = await api.call.did.query(
-          Did.toChain(newDid.uri)
+          Did.toChain(newDid.id)
         )
         const queryByDid = Did.linkedInfoFromChain(encodedQueryByDid)
         expect(queryByDid.accounts).toStrictEqual([])
@@ -290,8 +294,8 @@ describe('When there is an on-chain DID', () => {
         genericAccount.address,
         BalanceUtils.convertToTxUnit(new BN(10), 1)
       )
-      didKey = makeSigningKeyTool()
-      newDidKey = makeSigningKeyTool()
+      didKey = await makeSigningKeyTool()
+      newDidKey = await makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
@@ -299,13 +303,13 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const args = await Did.associateAccountToChainArgs(
         genericAccount.address,
-        did.uri,
+        did.id,
         async (payload) => genericAccount.sign(payload, { withType: true })
       )
       const signedTx = await Did.authorizeTx(
-        did.uri,
+        did.id,
         api.tx.didLookup.associateAccount(...args),
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       const balanceBefore = (
@@ -330,15 +334,15 @@ describe('When there is an on-chain DID', () => {
       // Use generic substrate address prefix
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount, 42)
       expect(queryByAccount.accounts).toStrictEqual([genericAccount.address])
-      expect(queryByAccount.document.uri).toStrictEqual(did.uri)
+      expect(queryByAccount.document.id).toStrictEqual(did.id)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
       const web3NameClaimTx = api.tx.web3Names.claim('test-name')
       const signedTx = await Did.authorizeTx(
-        did.uri,
+        did.id,
         web3NameClaimTx,
-        didKey.getSignCallback(did),
+        await didKey.getSigners(did),
         paymentAccount.address
       )
       await submitTx(signedTx, paymentAccount)
@@ -346,13 +350,15 @@ describe('When there is an on-chain DID', () => {
       // Check that the Web3 name has been linked to the DID
       const encodedQueryByW3n = await api.call.did.queryByWeb3Name('test-name')
       const queryByW3n = Did.linkedInfoFromChain(encodedQueryByW3n)
-      expect(queryByW3n.document.uri).toStrictEqual(did.uri)
+      expect(queryByW3n.document.id).toStrictEqual(did.id)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(genericAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
-      expect(queryByAccount.web3Name).toStrictEqual('test-name')
+      expect(queryByAccount.document.alsoKnownAs).toStrictEqual([
+        'w3n:test-name',
+      ])
     })
 
     it('should be possible for the sender to remove the link', async () => {

@@ -10,12 +10,13 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+import { randomAsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Blockchain, connect, init } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { CType, connect, init } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import type {
   ICType,
   KeyringPair,
@@ -109,7 +110,7 @@ export const devBob = Crypto.makeKeypairFromUri('//Bob')
 export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
-  return makeSigningKeyTool('ed25519').keypair.address
+  return encodeAddress(randomAsU8a())
 }
 
 export async function isCtypeOnChain(cType: ICType): Promise<boolean> {
@@ -154,7 +155,7 @@ export const nftNameCType = CType.fromProperties('NFT collection name', {
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(
   extrinsic: SubmittableExtrinsic,
-  submitter: KeyringPair,
+  submitter: KeyringPair | Blockchain.TransactionSigner,
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
@@ -163,7 +164,7 @@ export async function submitTx(
 }
 
 export async function endowAccounts(
-  faucet: KeyringPair,
+  faucet: KeyringPair | Blockchain.TransactionSigner,
   addresses: string[],
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
@@ -187,7 +188,7 @@ export async function fundAccount(
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
 ): Promise<KiltKeyringPair> {
-  const { keypair } = makeSigningKeyTool()
+  const { keypair } = await makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
 }

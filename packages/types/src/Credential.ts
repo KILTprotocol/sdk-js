@@ -5,9 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidSignature } from './DidDocument'
 import type { IClaim } from './Claim'
 import type { IDelegationNode } from './Delegation'
+import type { DidSignature } from './Did'
 import type { HexString } from './Imported'
 
 export type Hash = HexString
