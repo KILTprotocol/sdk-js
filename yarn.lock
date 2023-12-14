@@ -1934,7 +1934,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/asset-credentials@workspace:packages/asset-credentials"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:^"
+    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
@@ -1950,7 +1950,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@workspace:*, @kiltprotocol/augment-api@workspace:^, @kiltprotocol/augment-api@workspace:packages/augment-api":
+"@kiltprotocol/augment-api@workspace:*, @kiltprotocol/augment-api@workspace:packages/augment-api":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
