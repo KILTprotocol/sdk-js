@@ -418,7 +418,7 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const signer = await Signers.selectSigner(
+  const signer = Signers.selectSigner(
     signers,
     Signers.select.verifiableOnChain(),
     Signers.select.bySignerId([

@@ -556,7 +556,7 @@ export async function createPresentation({
       `Unable to sign: Failed to resolve claimer DID ${credential.claim.owner}`
     )
   }
-  const signer = await Signers.selectSigner(
+  const signer = Signers.selectSigner(
     signers,
     verifiableOnChain(),
     byDid(didDoc, { verificationRelationship: 'authentication' })

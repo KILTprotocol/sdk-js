@@ -33,7 +33,6 @@ const common = {
     'packages/types/',
     'packages/augment-api/',
     'packages/type-definitions/',
-    'packages/core/src/kilt/',
     'index.ts',
     'types.ts',
     '.chain.ts',

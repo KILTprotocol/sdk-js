@@ -172,7 +172,7 @@ export async function authorizeTx(
     )
   }
 
-  const signer = await Signers.selectSigner<DidPalletSigner>(
+  const signer = Signers.selectSigner<DidPalletSigner>(
     signers,
     verifiableOnChain(),
     byDid(didDocument, { verificationRelationship })
@@ -297,7 +297,7 @@ export async function authorizeBatch({
 
     const { verificationRelationship } = group
 
-    const signer = await Signers.selectSigner<DidPalletSigner>(
+    const signer = Signers.selectSigner<DidPalletSigner>(
       signers,
       verifiableOnChain(),
       byDid(didDocument as DidDocument, { verificationRelationship })

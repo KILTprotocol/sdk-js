@@ -230,7 +230,7 @@ export async function signWithDid<T>({
     ({ requiredAlgorithm }) => requiredAlgorithm
   )
 
-  const signer = await Signers.selectSigner(
+  const signer = Signers.selectSigner(
     signers,
     byAlgorithm(requiredAlgorithms),
     byDid(signerDocument, {

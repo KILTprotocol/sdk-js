@@ -266,7 +266,7 @@ export class DelegationNode implements IDelegationNode {
     signers: readonly SignerInterface[]
   ): Promise<Did.EncodedSignature> {
     const { byDid, verifiableOnChain } = Signers.select
-    const signer = await Signers.selectSigner(
+    const signer = Signers.selectSigner(
       signers,
       verifiableOnChain(),
       byDid(delegateDid, {
