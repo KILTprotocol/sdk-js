@@ -9,17 +9,29 @@
  * @module @kiltprotocol/sdk-js
  */
 
-export * from '@kiltprotocol/credentials'
-export { ConfigService } from '@kiltprotocol/config'
-export {
-  Blockchain,
-  BalanceUtils,
+import { Holder, Issuer, Verifier } from '@kiltprotocol/credentials'
+import { ConfigService } from '@kiltprotocol/config'
+import { Signers } from '@kiltprotocol/utils'
+import {
   connect,
   disconnect,
   init,
+  Blockchain,
 } from '@kiltprotocol/chain-helpers'
-export * as ChainHelpers from '@kiltprotocol/chain-helpers'
-export * as Did from '@kiltprotocol/did'
-export * as Utils from '@kiltprotocol/utils'
-export * from '@kiltprotocol/types'
-export { SDKErrors } from '@kiltprotocol/utils'
+import { resolver as DidResolver } from '@kiltprotocol/did'
+
+const { signAndSubmitTx } = Blockchain // TODO: maybe we don't even need that if we have the identity class
+const { signerFromKeypair } = Signers
+
+export {
+  init,
+  connect,
+  disconnect,
+  DidResolver,
+  Holder,
+  Verifier,
+  Issuer,
+  signerFromKeypair,
+  signAndSubmitTx,
+  ConfigService,
+}

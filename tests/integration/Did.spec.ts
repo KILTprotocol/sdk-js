@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   DidDocument,
   KiltKeyringPair,
@@ -14,11 +13,13 @@ import type {
   SignerInterface,
   VerificationMethod,
 } from '@kiltprotocol/types'
+import type { ApiPromise } from '@polkadot/api'
 
 import { BN } from '@polkadot/util'
 
-import { CType, Did, disconnect } from '@kiltprotocol/sdk-js'
-import { DelegationNode } from '@kiltprotocol/credentials'
+import { CType, DelegationNode } from '@kiltprotocol/credentials'
+import * as Did from '@kiltprotocol/did'
+import { disconnect } from '@kiltprotocol/sdk-js'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
@@ -27,9 +28,9 @@ import type { KeyTool } from '../testUtils/index.js'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
-  makeEncryptionKeyTool,
-  makeSigningKeyTool,
   getStoreTxFromDidDocument,
+  makeEncryptionKey,
+  makeSigningKeyTool,
 } from '../testUtils/index.js'
 import {
   createEndowedTestAccount,
@@ -335,7 +336,7 @@ describe('DID migration', () => {
     const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const { keyAgreement } = makeEncryptionKey(
       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     )
     const lightDid = Did.createLightDidDocument({
@@ -449,7 +450,7 @@ describe('DID migration', () => {
     const { storeDidSigner, authentication } = await makeSigningKeyTool(
       'ed25519'
     )
-    const { keyAgreement } = makeEncryptionKeyTool(
+    const { keyAgreement } = makeEncryptionKey(
       '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
     )
     const service: Did.NewService[] = [

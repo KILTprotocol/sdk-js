@@ -8,13 +8,14 @@
 import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import { Did, CType, disconnect } from '@kiltprotocol/sdk-js'
-import { DelegationNode } from '@kiltprotocol/credentials'
+import { CType, DelegationNode } from '@kiltprotocol/credentials'
+import * as Did from '@kiltprotocol/did'
 import {
+  Attestation,
   Claim,
   Credential,
-  Attestation,
 } from '@kiltprotocol/legacy-credentials'
+import { disconnect } from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   ICType,
@@ -22,7 +23,7 @@ import type {
   KiltKeyringPair,
   SignerInterface,
 } from '@kiltprotocol/types'
-import { Permission, PermissionType } from '@kiltprotocol/types'
+import { Permission, type PermissionType } from '@kiltprotocol/types'
 
 import {
   KeyTool,
