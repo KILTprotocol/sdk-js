@@ -50,6 +50,10 @@
     "yargs": "^16.2.0"
   },
   "dependencies": {
-    "@kiltprotocol/type-definitions": "workspace:*"
+    "@kiltprotocol/type-definitions": "workspace:*",
+    "@polkadot/api-base": "^10.0.0",
+    "@polkadot/rpc-core": "^10.0.0",
+    "@polkadot/types": "^10.0.0",
+    "@polkadot/types-codec": "^10.0.0"
   }
 }

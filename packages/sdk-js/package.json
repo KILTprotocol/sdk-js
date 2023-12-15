@@ -43,7 +43,6 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*"
   }
 }

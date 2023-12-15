@@ -1934,6 +1934,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/asset-credentials@workspace:packages/asset-credentials"
   dependencies:
+    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
@@ -1955,7 +1956,11 @@ __metadata:
   dependencies:
     "@kiltprotocol/type-definitions": "workspace:*"
     "@polkadot/api": ^10.4.0
+    "@polkadot/api-base": ^10.0.0
+    "@polkadot/rpc-core": ^10.0.0
     "@polkadot/typegen": ^10.4.0
+    "@polkadot/types": ^10.0.0
+    "@polkadot/types-codec": ^10.0.0
     "@types/node": ^16.11.7
     glob: ^7.1.1
     rimraf: ^3.0.2
@@ -1974,7 +1979,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.4.0
-    "@polkadot/keyring": ^12.0.0
+    "@polkadot/api-derive": ^10.0.0
     "@polkadot/types": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
@@ -2007,7 +2012,6 @@ __metadata:
     "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
     "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
-    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.4.0
@@ -2016,10 +2020,8 @@ __metadata:
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     "@types/json-pointer": ^1.0.34
-    "@types/uuid": ^8.0.0
     json-pointer: ^0.6.2
     rimraf: ^3.0.2
-    testcontainers: ^9.0.0
     typescript: ^4.8.3
   languageName: unknown
   linkType: soft
@@ -2037,7 +2039,6 @@ __metadata:
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
     "@polkadot/types": ^10.4.0
-    "@polkadot/types-codec": ^10.4.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     multibase: ^4.0.6
@@ -2102,7 +2103,6 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     terser-webpack-plugin: ^5.1.1
@@ -2127,6 +2127,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
   dependencies:
+    "@polkadot/types": ^10.0.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -2152,13 +2153,13 @@ __metadata:
   dependencies:
     "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
     "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
-    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
     "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^10.4.0
     "@polkadot/keyring": ^12.0.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
+    "@types/uuid": ^8.0.0
     cbor-web: ^9.0.0
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
@@ -2293,7 +2294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-base@npm:10.7.3":
+"@polkadot/api-base@npm:10.7.3, @polkadot/api-base@npm:^10.0.0":
   version: 10.7.3
   resolution: "@polkadot/api-base@npm:10.7.3"
   dependencies:
@@ -2306,7 +2307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-derive@npm:10.7.3":
+"@polkadot/api-derive@npm:10.7.3, @polkadot/api-derive@npm:^10.0.0":
   version: 10.7.3
   resolution: "@polkadot/api-derive@npm:10.7.3"
   dependencies:
@@ -2387,7 +2388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-core@npm:10.7.3":
+"@polkadot/rpc-core@npm:10.7.3, @polkadot/rpc-core@npm:^10.0.0":
   version: 10.7.3
   resolution: "@polkadot/rpc-core@npm:10.7.3"
   dependencies:
@@ -2466,7 +2467,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:10.7.3, @polkadot/types-codec@npm:^10.4.0":
+"@polkadot/types-codec@npm:10.7.3, @polkadot/types-codec@npm:^10.0.0":
   version: 10.7.3
   resolution: "@polkadot/types-codec@npm:10.7.3"
   dependencies:
@@ -2512,7 +2513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.4.0":
+"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.0.0, @polkadot/types@npm:^10.4.0":
   version: 10.7.3
   resolution: "@polkadot/types@npm:10.7.3"
   dependencies:
