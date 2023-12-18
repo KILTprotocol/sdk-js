@@ -5,10 +5,10 @@
 
 Data sovereignty and interoperability
 
-# Verifiable Credentials Compatibility Package
+# Linked Data Proofs Compatibility Package
 
-This package helps you to translate KILT credentials to the popular [Verifiable Credential](https://www.w3.org/TR/vc-data-model/) format and structure.
-It provides you with tools to export your existing KILT credentials to the widely understood Verifiable Credential, produce Verifiable Presentations from a Verifiable Credential, and to verify the associated proofs.
+This package helps integrating KILT credentials with the popular `@digitalbazaar/vc` library (formerly known as `vc-js`) for issuing and verifying Verifiable Credentials and related tool chain (`jsonld-signatures`, `crypto-ld` & `jsonld`).
+It provides you with Linked Data Proof suites and documentLoader implementations that act as plugins to these libraries, enhancing them with support for the proof types and DIDs used in KILT credentials.
 
 ## Installation
 
@@ -26,42 +26,33 @@ yarn add @kiltprotocol/jsonld-suites
 
 ## Contents
 
-- exporting
-  - `exportICredentialToVc()`: translates an existing `ICredential` object to a `VerifiableCredential` with an embedded proof.
-    The resulting VC still verifies against the original attestation record and thus is valid as long as the original credential remains valid (i.e., not revoked).
-- `KiltCredentialV1`
-  - functions that create a VC of type `KiltCredentialV1` either from claims and other input, or of an existing `ICredential`.
-  - a JSON-schema and functions to validate the structure and data model of a `KiltCredentialV1` type VC.
 - `KiltAttestationProofV1`
-  - functions that verify VCs with a proof type `KiltAttestationProofV1`.
-  - functions that help in creating a new `KiltAttestationProofV1` type proof for a `KiltCredentialV1` type VC.
-  - functions that produce a `KiltAttestationProofV1` type from an existing `ICredential`.
-  - functions that update a `KiltAttestationProofV1` after applying selective disclosure.
-- `KiltRevocationStatusV1`
-  - a function to check the revocation status of a VC with a `KiltAttestationProofV1`.
-  - a function to help create a `credentialStatus` object of type `KiltRevocationStatusV1`.
-- `CredentialSchema`
-  - a function to validate the disclosed `credentialSubject` properties against the schema of a KILT CType, which is a prescriptive schema detailing fields and their data types.
-- `Presentation`
-  - Tools for creating and verifying Verifiable Presentations and signing them in the JSON Web Token (JWT) serialization.
-- `DidJWT`
-  - Tools for signing JWTs using your KILT DID. Used by the `Presentation` tools.
-- `vcjs`
-  - Various tools needed to integrate KILT VCs & DIDs with the popular `@digitalbazaar/vc` library (formerly known as `vc-js`) and related tool chain (`jsonld-signatures`, `crypto-ld` & `jsonld` libraries), including:
-  - A `jsonld-signatures` suite for creating and verifying `KiltAttestationProofV1` type proofs.
-    - Addionally, a `ProofPurpose` class to be used in combination with that suite.
-  - A `jsonld-signatures` suite for creating and verifying sr25519 linked data signatures.
-    - Includes a `Sr25519VerificationKey2020` key class for use with `crypto-ld`.
-  - JSON-LD context defintions for all types introduced here.
-  - `documentLoader` implementations to load these contexts as well as KILT DID documents and their verification methods.
+
+  - When used as a `suite` in `@digitalbazaar/vc` or `jsonld-signatures`, you can:
+    - verify VCs with a proof type `KiltAttestationProofV1`.
+    - issue a `KiltAttestationProofV1` type proof for a `KiltCredentialV1` type VC.
+    - check the revocation status of a `KiltCredentialV1`.
+
+- `KiltAttestationProofV1Purpose`
+
+  - `ProofPurpose` class to be used in combination with the attestation proof suite above.
+
+- `Sr25519Signature2020`
+  - A `suite` implementation for creating and verifying sr25519 linked data signatures.
+- `Sr25519VerificationKey2020`
+
+  - A key class for use with the above signature suite.
+
+- `contexts`
+
+  - JSON-LD context defintions for all types and fields used by our suites and credentials.
+
+- `defaultDocumentLoader`
+  - a `documentLoader` implementation that loads all KILT-specific contexts and credential schemas as well as KILT DID documents and their verification methods.
 
 ## Examples
 
 See unit test files for usage examples.
 
-- [Transforing an `ICredential` to a `KiltCredentialV1` with a `KiltAttestationProofV1`](./src/exportToVerifiableCredential.spec.ts)
-- [Producing, verifying, and modifying (->selective disclosure) a `KiltAttestationProofV1`](./src/KiltAttestationProofV1.spec.ts)
-- [Producing, DID-signing and verifying a Verifiable Presentation](./src/Presentation.spec.ts)
-- [Signing and verifying JWTs using your DID keys](./src/DidJwt.spec.ts)
-- [Issuing & verifying a `KiltAttestationProofV1` as well as Verifiable Presentations via `@digitalbazaar/vc` & `jsonld-signatures`](./src/vc-js/suites/KiltAttestationProofV1.spec.ts)
-- [Signing Linked Data documents using your DIDs Sr25519 keys](./src/vc-js/suites/Sr25519Signature2020.spec.ts)
+- [Issuing & verifying a `KiltAttestationProofV1` as well as Verifiable Presentations via `@digitalbazaar/vc` & `jsonld-signatures`](./src/suites/KiltAttestationProofV1.spec.ts)
+- [Signing Linked Data documents using your DIDs Sr25519 keys](./src/suites/Sr25519Signature2020.spec.ts)
