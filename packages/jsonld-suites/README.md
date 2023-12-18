@@ -33,7 +33,7 @@ yarn add @kiltprotocol/jsonld-suites
     - issue a `KiltAttestationProofV1` type proof for a `KiltCredentialV1` type VC.
     - check the revocation status of a `KiltCredentialV1`.
 
-- `KiltAttestationProofV1Purpose`
+- `NoProofPurpose`
 
   - `ProofPurpose` class to be used in combination with the attestation proof suite above.
 

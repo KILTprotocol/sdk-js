@@ -50,7 +50,7 @@ import {
   kiltDidLoader,
 } from '../documentLoader.js'
 import ingosCredential from '../examples/KiltCredentialV1.json'
-import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
+import { NoProofPurpose } from '../purposes/NoProofPurpose.js'
 import {
   CredentialStub,
   KiltAttestationV1Suite,
@@ -152,7 +152,7 @@ const documentLoader = combineDocumentLoaders([
 ])
 
 let suite: KiltAttestationV1Suite
-let purpose: KiltAttestationProofV1Purpose
+let purpose: NoProofPurpose
 let proof: KiltAttestationProofV1.Interface
 let keypair: KiltKeyringPair
 let didDocument: DidDocument
@@ -161,7 +161,7 @@ beforeAll(async () => {
   suite = new KiltAttestationV1Suite({
     ctypes: [cType, emailCType],
   })
-  purpose = new KiltAttestationProofV1Purpose()
+  purpose = new NoProofPurpose()
   proof = attestedVc.proof as KiltAttestationProofV1.Interface
   ;({ keypair, didDocument } = await makeFakeDid())
 })
@@ -334,7 +334,7 @@ describe('vc-js', () => {
       const result = await vcjs.verify({
         presentation,
         suite: [suite, new Sr25519Signature2020()],
-        purpose: new KiltAttestationProofV1Purpose(),
+        purpose: new NoProofPurpose(),
         challenge: '0x1234',
         documentLoader,
         checkStatus: suite.checkStatus,
@@ -385,7 +385,7 @@ describe('vc-js', () => {
         challenge: '0x1234',
         documentLoader: extendedDocLoader,
         checkStatus: suite.checkStatus,
-        purpose: new KiltAttestationProofV1Purpose(),
+        purpose: new NoProofPurpose(),
       })
 
       expect(result.presentationResult).not.toHaveProperty(
