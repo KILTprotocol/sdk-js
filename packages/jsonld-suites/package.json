@@ -1,5 +1,5 @@
 {
-  "name": "@kiltprotocol/vc-export",
+  "name": "@kiltprotocol/jsonld-suites",
   "version": "0.34.0",
   "description": "",
   "main": "./lib/cjs/index.js",

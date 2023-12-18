@@ -56,7 +56,7 @@ import {
   KiltAttestationV1Suite,
 } from './KiltAttestationProofV1.js'
 import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
-import { makeFakeDid } from './Sr25519Signature2020.spec'
+import { makeFakeDid } from './Sr25519Signature2020.spec.js'
 
 jest.mock('@kiltprotocol/did', () => ({
   ...jest.requireActual('@kiltprotocol/did'),

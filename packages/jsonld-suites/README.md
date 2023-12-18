@@ -15,13 +15,13 @@ It provides you with tools to export your existing KILT credentials to the widel
 NPM:
 
 ```
-npm install @kiltprotocol/vc-export
+npm install @kiltprotocol/jsonld-suites
 ```
 
 YARN:
 
 ```
-yarn add @kiltprotocol/vc-export
+yarn add @kiltprotocol/jsonld-suites
 ```
 
 ## Contents
