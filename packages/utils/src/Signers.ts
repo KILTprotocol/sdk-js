@@ -41,6 +41,7 @@ import type {
   DidUrl,
   KeyringPair,
   UriFragment,
+  KiltAddress,
 } from '@kiltprotocol/types'
 
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
@@ -153,7 +154,7 @@ const signerFactory = {
  */
 export async function signerFromKeypair<
   Alg extends KnownAlgorithms,
-  Id extends string
+  Id extends string = KiltAddress
 >({
   id,
   keypair,
@@ -226,7 +227,7 @@ function algsForKeyType(keyType: string): KnownAlgorithms[] {
  * @param input.type If `keypair` is not a {@link KeyringPair}, provide the key type here; otherwise, this is ignored.
  * @returns An array of signer interfaces based on the keypair and type.
  */
-export async function getSignersForKeypair<Id extends string>({
+export async function getSignersForKeypair<Id extends string = KiltAddress>({
   id,
   keypair,
   type = (keypair as KeyringPair).type,
