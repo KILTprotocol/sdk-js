@@ -29,7 +29,7 @@ const {
 async function createFullDidIdentity(
   payer: SignerInterface<'Ed25519', KiltAddress>,
   seed: string,
-  signKeyType: KiltKeyringPair['type'] = 'sr25519'
+  signKeyType: KiltKeyringPair['type'] = 'ed25519'
 ) {
   const keypair = generateKeypair({ seed, type: signKeyType })
 
@@ -59,7 +59,7 @@ async function runAll() {
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const payerKp = generateKeypair({ seed: FaucetSeed, type: 'ed25519' })
-  const payerSigner = await signerFromKeypair<'Ed25519', KiltAddress>({
+  const payerSigner = await signerFromKeypair({
     keypair: payerKp,
     algorithm: 'Ed25519',
   })
@@ -81,16 +81,8 @@ async function runAll() {
 
   console.log('bob setup done')
 
-  const authPublicKey = new Uint8Array([
-    170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170,
-    170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170,
-    170, 170,
-  ])
-  const encPublicKey = new Uint8Array([
-    187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187,
-    187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187,
-    187, 187,
-  ])
+  const authPublicKey = new Uint8Array(32).fill(170)
+  const encPublicKey = new Uint8Array(32).fill(187)
   const testDid = await newIdentity({
     keys: {
       authentication: [
@@ -172,7 +164,7 @@ async function runAll() {
     throw new Error('Claim content inside Credential mismatching')
   }
 
-  const issued = await Issuer.issue(credential, alice as any)
+  const issued = await Issuer.issue(credential, alice)
   console.info('Credential issued')
 
   const credentialResult = await Verifier.verifyCredential(
