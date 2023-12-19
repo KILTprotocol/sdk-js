@@ -12,6 +12,7 @@ on:
           - beta
           - rc
         type: choice
+        default: dev
 
 jobs:
   build:
@@ -45,7 +46,7 @@ jobs:
         id: package_version
         run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT    
       - name: Publish to NPM
-        run: yarn run publish --tag rc
+        run: yarn run publish --tag ${{ inputs.npm_tag }} 
         env:
           YARN_NPM_AUTH_TOKEN: ${{secrets.npm_token}}
       - name: Repository Dispatch
