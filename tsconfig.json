@@ -12,7 +12,7 @@
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
-      "@kiltprotocol/vc-export": ["vc-export/src"],
+      "@kiltprotocol/jsonld-suites": ["jsonld-suites/src"],
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/augment-api": ["augment-api/src"],

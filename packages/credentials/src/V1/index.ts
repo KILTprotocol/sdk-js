@@ -6,7 +6,7 @@
  */
 
 /**
- * @module @kiltprotocol/vc-export
+ * @module @kiltprotocol/jsonld-suites
  */
 
 export * as KiltCredentialV1 from './KiltCredentialV1.js'
