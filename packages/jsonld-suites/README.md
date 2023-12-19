@@ -27,26 +27,18 @@ yarn add @kiltprotocol/jsonld-suites
 ## Contents
 
 - `KiltAttestationProofV1`
-
   - When used as a `suite` in `@digitalbazaar/vc` or `jsonld-signatures`, you can:
     - verify VCs with a proof type `KiltAttestationProofV1`.
     - issue a `KiltAttestationProofV1` type proof for a `KiltCredentialV1` type VC.
     - check the revocation status of a `KiltCredentialV1`.
-
 - `NoProofPurpose`
-
   - `ProofPurpose` class to be used in combination with the attestation proof suite above.
-
 - `Sr25519Signature2020`
   - A `suite` implementation for creating and verifying sr25519 linked data signatures.
 - `Sr25519VerificationKey2020`
-
   - A key class for use with the above signature suite.
-
 - `contexts`
-
   - JSON-LD context defintions for all types and fields used by our suites and credentials.
-
 - `defaultDocumentLoader`
   - a `documentLoader` implementation that loads all KILT-specific contexts and credential schemas as well as KILT DID documents and their verification methods.
 
