@@ -1,6 +1,17 @@
 name: Publish candidate package
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      npm_tag:
+        description: The tag with which the package is tagged on npm.
+        required: true
+        options:
+          - dev
+          - alpha
+          - beta
+          - rc
+        type: choice
 
 jobs:
   build:
