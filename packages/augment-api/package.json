@@ -33,7 +33,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=16.0"
+    "node": ">=18.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
