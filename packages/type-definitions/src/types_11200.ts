@@ -34,13 +34,16 @@ export const types11200: RegistryTypes = {
   RevealedLeaves: 'Vec<RevealedLeaf>',
   RevealedLeaf: {
     _enum: {
-      DidKey: '(DidKeyMerkleKey, DidKeyMerkleValue)',
-      Web3Name: '(Web3NameMerkleKey, Web3NameMerkleValue)',
-      LinkedAccount: '(LinkedAccountMerkleKey, LinkedAccountMerkleValue)',
+      DidKey: 'RevealedDidKey',
+      Web3Name: 'RevealedWeb3Name',
+      LinkedAccount: 'RevealedAccountId',
     },
   },
-  DidKeyMerkleKey: '(KeyId, KeyRelationship)',
-  KeyId: 'Hash',
+  RevealedDidKey: {
+    id: 'Hash',
+    relationship: 'KeyRelationship',
+    details: 'DidDidDetailsDidPublicKeyDetails',
+  },
   KeyRelationship: {
     _enum: {
       Encryption: 'Null',
@@ -55,11 +58,11 @@ export const types11200: RegistryTypes = {
       'AssertionMethod',
     ],
   },
-  DidKeyMerkleValue: 'DidDidDetailsDidPublicKeyDetails',
-  Web3NameMerkleKey: 'Text',
-  Web3NameMerkleValue: 'BlockNumber',
-  LinkedAccountMerkleKey: 'PalletDidLookupLinkableAccountLinkableAccountId',
-  LinkedAccountMerkleValue: 'Null',
+  RevealedWeb3Name: {
+    web3Name: 'Text',
+    claimedAt: 'BlockNumber',
+  },
+  RevealedAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
   RuntimeApiDipProofError: {
     _enum: {
       IdentityProvider: 'LinkedDidIdentityProviderError',
