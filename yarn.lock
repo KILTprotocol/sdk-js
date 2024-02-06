@@ -1533,10 +1533,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@digitalbazaar/multikey-context@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@digitalbazaar/multikey-context@npm:1.0.0"
-  checksum: e651253ce101a0a5de0e46de5c6f7c936aa07fd14e5b14d38ba57c105eaa2490c256245482bc1f5173269a992cab2ebe5eec6c26523f0e61aae03d3a6788cc6b
+"@digitalbazaar/multikey-context@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "@digitalbazaar/multikey-context@npm:2.0.1"
+  checksum: 74e0d65110fa84167d899bcdfb69ed3612b664564866089a9b8a1402648f9a4900cc82260922c1a2a3128218f7ecd95a98e3854b43be5216642d5e9c6694b339
   languageName: node
   linkType: hard
 
@@ -2030,7 +2030,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
-    "@digitalbazaar/multikey-context": ^1.0.0
+    "@digitalbazaar/multikey-context": ^2.0.0
     "@digitalbazaar/security-context": ^1.0.0
     "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
