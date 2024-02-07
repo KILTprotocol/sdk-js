@@ -2092,7 +2092,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@workspace:*, @kiltprotocol/augment-api@workspace:packages/augment-api":
+"@kiltprotocol/augment-api@workspace:*, @kiltprotocol/augment-api@workspace:^, @kiltprotocol/augment-api@workspace:packages/augment-api":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
@@ -2116,6 +2116,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
+    "@kiltprotocol/augment-api": "workspace:^"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"

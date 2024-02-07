@@ -5,11 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import '@kiltprotocol/augment-api'
+
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
-import type { GenericCall, GenericExtrinsic, Vec } from '@polkadot/types'
+import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber, IMethod } from '@polkadot/types/types'
 import type { BN } from '@polkadot/util'
 
 import type {
@@ -210,9 +212,9 @@ export async function signAndSubmitTx(
  * @returns True if it's a batch, false otherwise.
  */
 export function isBatch(
-  extrinsic: Extrinsic | Call,
+  extrinsic: IMethod,
   api?: ApiPromise
-): extrinsic is GenericExtrinsic<[Vec<Call>]> | GenericCall<[Vec<Call>]> {
+): extrinsic is IMethod<[Vec<Call>]> {
   const apiPromise = api ?? ConfigService.get('api')
   return (
     apiPromise.tx.utility.batch.is(extrinsic) ||
@@ -231,10 +233,17 @@ export function isBatch(
  *
  * @returns A list of {@link Call} nested according to the rules above.
  */
-export function flattenCalls(call: Call, api?: ApiPromise): Call[] {
-  if (isBatch(call, api)) {
+export function flattenCalls(call: IMethod, api?: ApiPromise): IMethod[] {
+  const apiObject = api ?? ConfigService.get('api')
+  if (isBatch(call, apiObject)) {
     // Inductive case
-    return call.args[0].flatMap((c) => flattenCalls(c, api))
+    return call.args[0].flatMap((c) => flattenCalls(c, apiObject))
+  }
+  if (apiObject.tx.did.submitDidCall.is(call)) {
+    return flattenCalls(call.args[0].call, api)
+  }
+  if (apiObject.tx.did.dispatchAs.is(call)) {
+    return flattenCalls(call.args[1], api)
   }
   // Base case
   return [call]

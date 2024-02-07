@@ -14,9 +14,7 @@ import type {
   Did,
   HexString,
 } from '@kiltprotocol/types'
-import type { ApiPromise } from '@polkadot/api'
 import type { GenericCall, Option } from '@polkadot/types'
-import type { Call } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 import type {
   PublicCredentialsCredentialsCredential,
@@ -125,28 +123,6 @@ export function fromChain(
 }
 
 // Given a (nested) call, flattens them and filter by calls that are of type `api.tx.publicCredentials.add`.
-function extractPublicCredentialCreationCallsFromDidCall(
-  api: ApiPromise,
-  call: Call
-): Array<GenericCall<typeof api.tx.publicCredentials.add.args>> {
-  const extrinsicCalls = Blockchain.flattenCalls(call, api)
-  return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.publicCredentials.add.args> =>
-      api.tx.publicCredentials.add.is(c)
-  )
-}
-
-// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
-function extractDidCallsFromBatchCall(
-  api: ApiPromise,
-  call: Call
-): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
-  const extrinsicCalls = Blockchain.flattenCalls(call, api)
-  return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
-      api.tx.did.submitDidCall.is(c)
-  )
-}
 
 /**
  * Retrieves from the blockchain the {@link IPublicCredential} that is identified by the provided identifier.
@@ -164,18 +140,32 @@ export async function fetchCredentialFromChain(
   const publicCredentialEntry = await api.call.publicCredentials.getById(
     credentialId
   )
-  const { blockNumber, revoked } = publicCredentialEntry.unwrap()
-
-  const extrinsic = await Blockchain.retrieveExtrinsicFromBlock(
+  const {
     blockNumber,
-    ({ events }) =>
-      events.some(
-        (event) =>
-          api.events.publicCredentials.CredentialStored.is(event) &&
-          event.data[1].toString() === credentialId
-      ),
-    api
+    revoked,
+    attester: attesterId,
+  } = publicCredentialEntry.unwrap()
+
+  const { extrinsics, events } = await api.derive.chain.getBlockByNumber(
+    blockNumber
   )
+
+  const createdEvent = events
+    .reverse()
+    .find(
+      ({ event }) =>
+        api.events.publicCredentials.CredentialStored.is(event) &&
+        event.data[1].toString() === credentialId
+    )
+
+  if (typeof createdEvent === 'undefined') {
+    throw new Error(
+      `A credential stored event was not found at the specified block`
+    )
+  }
+
+  const extrinsicIndex = createdEvent.phase.asApplyExtrinsic.toNumber()
+  const extrinsic = extrinsics[extrinsicIndex]
 
   if (extrinsic === null) {
     throw new SDKErrors.PublicCredentialError(
@@ -183,53 +173,32 @@ export async function fetchCredentialFromChain(
     )
   }
 
-  if (
-    !Blockchain.isBatch(extrinsic, api) &&
-    !api.tx.did.submitDidCall.is(extrinsic)
-  ) {
-    throw new SDKErrors.PublicCredentialError(
-      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
-    )
-  }
+  // Unpack any nested calls, e.g., within a batch or `submit_did_call`
+  const extrinsicCalls = Blockchain.flattenCalls(extrinsic.extrinsic, api)
 
-  // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
-  // otherwise the extrinsic is itself a submit_did_call, so just take it.
-  const didCalls = Blockchain.isBatch(extrinsic, api)
-    ? extrinsic.args[0].flatMap((batchCall) =>
-        extractDidCallsFromBatchCall(api, batchCall)
-      )
-    : [extrinsic]
+  // only consider public_credentials::add calls
+  const publicCredentialCalls = extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.publicCredentials.add.args> =>
+      api.tx.publicCredentials.add.is(c)
+  )
 
-  // From the list of DID calls, only consider public_credentials::add calls, bundling each of them with their DID submitter.
-  // It returns a list of [reconstructedCredential, attesterDid].
-  const callCredentialsContent = didCalls.flatMap((didCall) => {
-    const publicCredentialCalls =
-      extractPublicCredentialCreationCallsFromDidCall(api, didCall.args[0].call)
-    // Re-create the issued public credential for each call identified.
-    return publicCredentialCalls.map(
-      (credentialCreationCall) =>
-        [
-          credentialInputFromChain(credentialCreationCall.args[0]),
-          didFromChain(didCall.args[0].did),
-        ] as const
-    )
-  })
-
-  // If more than one call is present, it always considers the last one as the valid one, and takes its attester.
-  const lastRightCredentialCreationCall = callCredentialsContent
+  // Re-create the issued public credential for each call identified.
+  const lastRightCredentialCreationCall = publicCredentialCalls
     .reverse()
-    .find(([credential, attester]) => {
-      const reconstructedId = getIdForCredential(credential, attester)
-      return reconstructedId === credentialId
-    })
+    .find((credentialCreationCall) =>
+      credentialInputFromChain(credentialCreationCall.args[0])
+    )
 
-  if (!lastRightCredentialCreationCall) {
+  if (typeof lastRightCredentialCreationCall === 'undefined') {
     throw new SDKErrors.PublicCredentialError(
       'Block should always contain the full credential, eventually.'
     )
   }
 
-  const [credentialInput, attester] = lastRightCredentialCreationCall
+  const credentialInput = credentialInputFromChain(
+    lastRightCredentialCreationCall.args[0]
+  )
+  const attester = didFromChain(attesterId)
 
   return {
     ...credentialInput,
