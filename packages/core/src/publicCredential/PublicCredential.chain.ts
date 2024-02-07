@@ -29,7 +29,12 @@ import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors, cbor } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
-import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
+import {
+  type DidAuthorizationCall,
+  flattenCalls,
+  isBatch,
+  retrieveExtrinsicFromBlock,
+} from '../utils.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -137,15 +142,15 @@ function extractPublicCredentialCreationCallsFromDidCall(
   )
 }
 
-// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall` or `api.tx.did.dispatchAs`.
 function extractDidCallsFromBatchCall(
   api: ApiPromise,
   call: Call
-): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
+): DidAuthorizationCall[] {
   const extrinsicCalls = flattenCalls(api, call)
   return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
-      api.tx.did.submitDidCall.is(c)
+    (c): c is DidAuthorizationCall =>
+      api.tx.did.submitDidCall.is(c) || api.tx.did.dispatchAs.is(c)
   )
 }
 
@@ -184,9 +189,13 @@ export async function fetchCredentialFromChain(
     )
   }
 
-  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
+  if (
+    !isBatch(api, extrinsic) &&
+    !api.tx.did.submitDidCall.is(extrinsic) &&
+    !api.tx.did.dispatchAs.is(extrinsic)
+  ) {
     throw new SDKErrors.PublicCredentialError(
-      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
+      'Extrinsic should be either a `did.submitDidCall` or `did.dispatchAs` extrinsic or a batch containing at least one of those'
     )
   }
 
@@ -202,13 +211,22 @@ export async function fetchCredentialFromChain(
   // It returns a list of [reconstructedCredential, attesterDid].
   const callCredentialsContent = didCalls.flatMap((didCall) => {
     const publicCredentialCalls =
-      extractPublicCredentialCreationCallsFromDidCall(api, didCall.args[0].call)
+      extractPublicCredentialCreationCallsFromDidCall(
+        api,
+        api.tx.did.submitDidCall.is(didCall)
+          ? didCall.args[0].call
+          : didCall.args[1]
+      )
     // Re-create the issued public credential for each call identified.
     return publicCredentialCalls.map(
       (credentialCreationCall) =>
         [
           credentialInputFromChain(credentialCreationCall.args[0]),
-          didFromChain(didCall.args[0].did),
+          didFromChain(
+            api.tx.did.submitDidCall.is(didCall)
+              ? didCall.args[0].did
+              : didCall.args[0]
+          ),
         ] as const
     )
   })
