@@ -515,6 +515,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Permanent: AugmentedError<ApiType>;
     };
+    migration: {
+      KeyParse: AugmentedError<ApiType>;
+    };
     multisig: {
       /**
        * Call is already approved by this signatory.
