@@ -16,7 +16,7 @@ export const types11200: RegistryTypes = {
   DipProofRequest: {
     identifier: 'AccountId32',
     version: 'IdentityCommitmentVersion',
-    keys: 'Vec<Hash>',
+    proofKeys: 'Vec<Hash>',
     accounts: 'Vec<PalletDidLookupLinkableAccountLinkableAccountId>',
     shouldIncludeWeb3Name: 'bool',
   },

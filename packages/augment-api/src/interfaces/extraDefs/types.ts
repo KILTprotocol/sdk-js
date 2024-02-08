@@ -49,7 +49,7 @@ export interface DidMerkleProofError extends Enum {
 export interface DipProofRequest extends Struct {
   readonly identifier: AccountId32;
   readonly version: IdentityCommitmentVersion;
-  readonly _keys: Vec<Hash>;
+  readonly proofKeys: Vec<Hash>;
   readonly accounts: Vec<PalletDidLookupLinkableAccountLinkableAccountId>;
   readonly shouldIncludeWeb3Name: bool;
 }
