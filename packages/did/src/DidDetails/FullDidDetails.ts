@@ -31,7 +31,7 @@ import { parse } from '../Did.utils.js'
 import { resolve } from '../DidResolver/DidResolver.js'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
-// in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
+// in https://github.com/KILTprotocol/kilt-node/blob/develop/runtimes/spiritnet/src/lib.rs
 // TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
 const methodMapping: Record<
   string,
