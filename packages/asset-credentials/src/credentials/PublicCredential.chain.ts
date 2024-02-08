@@ -145,6 +145,7 @@ export async function fetchCredentialFromChain(
     revoked,
     attester: attesterId,
   } = publicCredentialEntry.unwrap()
+  const attester = didFromChain(attesterId)
 
   const extrinsic = await Blockchain.retrieveExtrinsicFromBlock(
     blockNumber,
@@ -172,28 +173,31 @@ export async function fetchCredentialFromChain(
       api.tx.publicCredentials.add.is(c)
   )
 
-  // Re-create the issued public credential for each call identified.
-  const lastRightCredentialCreationCall = publicCredentialCalls
-    .reverse()
-    .find((credentialCreationCall) =>
-      credentialInputFromChain(credentialCreationCall.args[0])
-    )
+  // Re-create the issued public credential for each call identified to find the credential with the id we're looking for
+  const credentialInput = publicCredentialCalls.reduceRight<
+    IPublicCredentialInput | undefined
+  >((selectedCredential, credentialCreationCall) => {
+    if (selectedCredential) {
+      return selectedCredential
+    }
+    const credential = credentialInputFromChain(credentialCreationCall.args[0])
+    const reconstructedId = getIdForCredential(credential, attester)
+    if (reconstructedId === credentialId) {
+      return credential
+    }
+    return undefined
+  }, undefined)
 
-  if (typeof lastRightCredentialCreationCall === 'undefined') {
+  if (typeof credentialInput === 'undefined') {
     throw new SDKErrors.PublicCredentialError(
       'Block should always contain the full credential, eventually.'
     )
   }
 
-  const credentialInput = credentialInputFromChain(
-    lastRightCredentialCreationCall.args[0]
-  )
-  const attester = didFromChain(attesterId)
-
   return {
     ...credentialInput,
     attester,
-    id: getIdForCredential(credentialInput, attester),
+    id: credentialId,
     blockNumber,
     revoked: revoked.toPrimitive(),
   }
