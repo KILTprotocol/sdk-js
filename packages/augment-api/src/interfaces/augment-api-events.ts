@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H256, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { AttestationAuthorizedBy, DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -18,16 +18,24 @@ declare module '@polkadot/api-base/types/events' {
     attestation: {
       /**
        * A new attestation has been created.
+       * \[attester ID, claim hash, CType hash, (optional) delegation ID\]
        **/
-      AttestationCreated: AugmentedEvent<ApiType, [attester: AccountId32, claimHash: H256, ctypeHash: H256, authorization: Option<RuntimeCommonAuthorizationAuthorizationId>], { attester: AccountId32, claimHash: H256, ctypeHash: H256, authorization: Option<RuntimeCommonAuthorizationAuthorizationId> }>;
+      AttestationCreated: AugmentedEvent<ApiType, [AccountId32, H256, H256, Option<RuntimeCommonAuthorizationAuthorizationId>]>;
       /**
        * An attestation has been removed.
+       * \[account id, claim hash\]
        **/
-      AttestationRemoved: AugmentedEvent<ApiType, [authorizedBy: AttestationAuthorizedBy, attester: AccountId32, ctypeHash: H256, claimHash: H256], { authorizedBy: AttestationAuthorizedBy, attester: AccountId32, ctypeHash: H256, claimHash: H256 }>;
+      AttestationRemoved: AugmentedEvent<ApiType, [AccountId32, H256]>;
       /**
        * An attestation has been revoked.
+       * \[account id, claim hash\]
        **/
-      AttestationRevoked: AugmentedEvent<ApiType, [authorizedBy: AttestationAuthorizedBy, attester: AccountId32, ctypeHash: H256, claimHash: H256], { authorizedBy: AttestationAuthorizedBy, attester: AccountId32, ctypeHash: H256, claimHash: H256 }>;
+      AttestationRevoked: AugmentedEvent<ApiType, [AccountId32, H256]>;
+      /**
+       * The deposit owner reclaimed a deposit by removing an attestation.
+       * \[account id, claim hash\]
+       **/
+      DepositReclaimed: AugmentedEvent<ApiType, [AccountId32, H256]>;
     };
     balances: {
       /**
@@ -195,6 +203,11 @@ declare module '@polkadot/api-base/types/events' {
        * \[revoker ID, delegation node ID\]
        **/
       DelegationRevoked: AugmentedEvent<ApiType, [AccountId32, H256]>;
+      /**
+       * The deposit owner reclaimed a deposit by removing a delegation
+       * subtree. \[revoker ID, delegation node ID\]
+       **/
+      DepositReclaimed: AugmentedEvent<ApiType, [AccountId32, H256]>;
       /**
        * A new hierarchy has been created.
        * \[creator ID, root node ID, CTYPE hash\]
