@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.34.1-rc.1",
+  "version": "0.35.0-rc.1",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
