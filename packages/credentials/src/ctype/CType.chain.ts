@@ -137,35 +137,25 @@ export async function fetchFromChain(
       'Cannot fetch CType definitions on a chain that does not store the createdAt block'
     )
 
-  const { extrinsics, events } = await api.derive.chain.getBlockByNumber(
-    createdAt
+  const extrinsic = await Blockchain.retrieveExtrinsicFromBlock(
+    createdAt,
+    ({ events }) =>
+      events.some(
+        (event) =>
+          api.events.ctype.CTypeCreated.is(event) &&
+          event.data[1].toHex() === cTypeHash
+      ),
+    api
   )
 
-  const createdEvent = events
-    .reverse()
-    .find(
-      ({ event }) =>
-        api.events.ctype.CTypeCreated.is(event) &&
-        event.data[1].toHex() === cTypeHash
-    )
-
-  if (typeof createdEvent === 'undefined') {
-    throw new Error(
-      `A ctype creation event was not found at the specified block`
-    )
-  }
-
-  const extrinsicIndex = createdEvent.phase.asApplyExtrinsic.toNumber()
-  const extrinsic = extrinsics[extrinsicIndex]
-
-  if (typeof extrinsic === 'undefined') {
+  if (extrinsic === null) {
     throw new SDKErrors.CTypeError(
       `There is no CType with the provided ID "${cTypeId}" on chain.`
     )
   }
 
   // Unpack any nested calls, e.g., within a batch or `submit_did_call`
-  const extrinsicCalls = Blockchain.flattenCalls(extrinsic.extrinsic, api)
+  const extrinsicCalls = Blockchain.flattenCalls(extrinsic, api)
 
   // only consider ctype::add calls
   const ctypeCreationCalls = extrinsicCalls.filter(

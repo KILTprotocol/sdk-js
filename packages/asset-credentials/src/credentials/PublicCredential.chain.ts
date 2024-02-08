@@ -146,26 +146,16 @@ export async function fetchCredentialFromChain(
     attester: attesterId,
   } = publicCredentialEntry.unwrap()
 
-  const { extrinsics, events } = await api.derive.chain.getBlockByNumber(
-    blockNumber
+  const extrinsic = await Blockchain.retrieveExtrinsicFromBlock(
+    blockNumber,
+    ({ events }) =>
+      events.some(
+        (event) =>
+          api.events.publicCredentials.CredentialStored.is(event) &&
+          event.data[1].toString() === credentialId
+      ),
+    api
   )
-
-  const createdEvent = events
-    .reverse()
-    .find(
-      ({ event }) =>
-        api.events.publicCredentials.CredentialStored.is(event) &&
-        event.data[1].toString() === credentialId
-    )
-
-  if (typeof createdEvent === 'undefined') {
-    throw new Error(
-      `A credential stored event was not found at the specified block`
-    )
-  }
-
-  const extrinsicIndex = createdEvent.phase.asApplyExtrinsic.toNumber()
-  const extrinsic = extrinsics[extrinsicIndex]
 
   if (extrinsic === null) {
     throw new SDKErrors.PublicCredentialError(
@@ -174,7 +164,7 @@ export async function fetchCredentialFromChain(
   }
 
   // Unpack any nested calls, e.g., within a batch or `submit_did_call`
-  const extrinsicCalls = Blockchain.flattenCalls(extrinsic.extrinsic, api)
+  const extrinsicCalls = Blockchain.flattenCalls(extrinsic, api)
 
   // only consider public_credentials::add calls
   const publicCredentialCalls = extrinsicCalls.filter(
