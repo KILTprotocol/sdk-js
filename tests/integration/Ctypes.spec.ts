@@ -89,6 +89,48 @@ describe('When there is an CtypeCreator and a verifier', () => {
     }
   }, 40_000)
 
+  it('should fetch a ctype created with dispatchAs', async () => {
+    if (typeof api.tx.did.dispatchAs !== 'function' || !hasBlockNumbers) {
+      console.warn('skipping dispatchAs tests')
+      return
+    }
+
+    const minBalance = 10n ** 16n
+
+    const assertionMethodKey = key.keypair.address
+    // assertionMethod keypair needs balance
+    if (
+      (
+        await api.query.system.account(assertionMethodKey)
+      ).data.free.toBigInt() < minBalance
+    ) {
+      console.log('sending funds to assertion method key account...')
+      const fundsTx = api.tx.balances.transfer(assertionMethodKey, minBalance)
+      await submitTx(fundsTx, paymentAccount)
+      console.log('sending funds completed')
+    }
+
+    const cType = makeCType()
+    // nest ctype call for extra complexity
+    const storeTx = api.tx.utility.batchAll([
+      api.tx.ctype.add(CType.toChain(cType)),
+    ])
+    // authorize via dispatchAs
+    const authorizedStoreTx = api.tx.did.dispatchAs(
+      Did.toChain(ctypeCreator.id),
+      storeTx
+    )
+    // sign with assertionMethod keypair
+    await submitTx(authorizedStoreTx, key.keypair)
+
+    const { cType: originalCtype, creator } = await CType.fetchFromChain(
+      cType.$id
+    )
+    expect(originalCtype).toStrictEqual(cType)
+    expect(creator).toBe(ctypeCreator.id)
+    await expect(CType.verifyStored(originalCtype)).resolves.not.toThrow()
+  }, 40_000)
+
   it('should not be possible to create a claim type that exists', async () => {
     const cType = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(cType))
