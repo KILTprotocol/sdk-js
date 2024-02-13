@@ -165,21 +165,29 @@ export async function fetchFromChain(
 
   // Re-create the ctype for each call identified to find the right ctype.
   // If more than one matching call is present, it always considers the last one as the valid one.
-  const lastRightCTypeCreationCall = ctypeCreationCalls
-    .reverse()
-    .find(
-      (ctypeCreationCall) =>
-        cTypeInputFromChain(ctypeCreationCall.args[0]).$id === cTypeId
-    )
+  const cTypeDefinition = ctypeCreationCalls.reduceRight<ICType | undefined>(
+    (selectedCType, cTypeCreationCall) => {
+      if (selectedCType) {
+        return selectedCType
+      }
+      const cType = cTypeInputFromChain(cTypeCreationCall.args[0])
 
-  if (typeof lastRightCTypeCreationCall === 'undefined') {
+      if (cType.$id === cTypeId) {
+        return cType
+      }
+      return undefined
+    },
+    undefined
+  )
+
+  if (typeof cTypeDefinition === 'undefined') {
     throw new SDKErrors.CTypeError(
       'Block should always contain the full CType, eventually.'
     )
   }
 
   return {
-    cType: cTypeInputFromChain(lastRightCTypeCreationCall.args[0]),
+    cType: cTypeDefinition,
     creator,
     createdAt,
   }
