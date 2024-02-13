@@ -240,10 +240,16 @@ export function flattenCalls(call: IMethod, api?: ApiPromise): IMethod[] {
     return call.args[0].flatMap((c) => flattenCalls(c, apiObject))
   }
   if (apiObject.tx.did.submitDidCall.is(call)) {
-    return flattenCalls(call.args[0].call, api)
+    return flattenCalls(call.args[0].call, apiObject)
   }
   if (apiObject.tx.did.dispatchAs.is(call)) {
-    return flattenCalls(call.args[1], api)
+    return flattenCalls(call.args[1], apiObject)
+  }
+  if (apiObject.tx.proxy.proxy.is(call)) {
+    return flattenCalls(call.args[2], apiObject)
+  }
+  if (apiObject.tx.proxy.proxyAnnounced.is(call)) {
+    return flattenCalls(call.args[3], apiObject)
   }
   // Base case
   return [call]
