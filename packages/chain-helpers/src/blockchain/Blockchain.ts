@@ -217,9 +217,9 @@ export function isBatch(
 ): extrinsic is IMethod<[Vec<Call>]> {
   const apiPromise = api ?? ConfigService.get('api')
   return (
-    apiPromise.tx.utility.batch.is(extrinsic) ||
-    apiPromise.tx.utility.batchAll.is(extrinsic) ||
-    apiPromise.tx.utility.forceBatch.is(extrinsic)
+    apiPromise.tx.utility?.batch?.is(extrinsic) ||
+    apiPromise.tx.utility?.batchAll?.is(extrinsic) ||
+    apiPromise.tx.utility?.forceBatch?.is(extrinsic)
   )
 }
 
@@ -239,16 +239,16 @@ export function flattenCalls(call: IMethod, api?: ApiPromise): IMethod[] {
     // Inductive case
     return call.args[0].flatMap((c) => flattenCalls(c, apiObject))
   }
-  if (apiObject.tx.did.submitDidCall.is(call)) {
+  if (apiObject.tx.did?.submitDidCall?.is(call)) {
     return flattenCalls(call.args[0].call, apiObject)
   }
-  if (apiObject.tx.did.dispatchAs.is(call)) {
+  if (apiObject.tx.did?.dispatchAs?.is(call)) {
     return flattenCalls(call.args[1], apiObject)
   }
-  if (apiObject.tx.proxy.proxy.is(call)) {
+  if (apiObject.tx.proxy?.proxy?.is(call)) {
     return flattenCalls(call.args[2], apiObject)
   }
-  if (apiObject.tx.proxy.proxyAnnounced.is(call)) {
+  if (apiObject.tx.proxy?.proxyAnnounced?.is(call)) {
     return flattenCalls(call.args[3], apiObject)
   }
   // Base case

@@ -142,7 +142,7 @@ export async function fetchFromChain(
     ({ events }) =>
       events.some(
         (event) =>
-          api.events.ctype.CTypeCreated.is(event) &&
+          api.events.ctype?.CTypeCreated?.is(event) &&
           event.data[1].toHex() === cTypeHash
       ),
     api
@@ -160,7 +160,7 @@ export async function fetchFromChain(
   // only consider ctype::add calls
   const ctypeCreationCalls = extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
-      api.tx.ctype.add.is(c)
+      api.tx.ctype?.add?.is(c)
   )
 
   // Re-create the ctype for each call identified to find the right ctype.

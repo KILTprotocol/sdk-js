@@ -152,7 +152,7 @@ export async function fetchCredentialFromChain(
     ({ events }) =>
       events.some(
         (event) =>
-          api.events.publicCredentials.CredentialStored.is(event) &&
+          api.events.publicCredentials?.CredentialStored?.is(event) &&
           event.data[1].toString() === credentialId
       ),
     api
@@ -170,7 +170,7 @@ export async function fetchCredentialFromChain(
   // only consider public_credentials::add calls
   const publicCredentialCalls = extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.publicCredentials.add.args> =>
-      api.tx.publicCredentials.add.is(c)
+      api.tx.publicCredentials?.add?.is(c)
   )
 
   // Re-create the issued public credential for each call identified to find the credential with the id we're looking for
