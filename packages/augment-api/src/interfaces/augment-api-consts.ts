@@ -250,6 +250,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       initialPeriodReward: u128 & AugmentedConst<ApiType>;
     };
+    migration: {
+      /**
+       * The max amount on migrations for each pallet
+       **/
+      maxMigrationsPerPallet: u32 & AugmentedConst<ApiType>;
+    };
     multisig: {
       /**
        * The base amount of currency needed to reserve for creating a multisig execution or to

@@ -3,7 +3,6 @@
   "version": "0.34.0",
   "description": "",
   "types": "./lib/index.d.ts",
-  "type": "module",
   "main": "./index.cjs",
   "exports": {
     ".": {
@@ -27,8 +26,8 @@
     "build:types": "yarn generate:defs && yarn generate:meta && yarn build:fixes",
     "build:fixes": "node scripts/fixTypes.mjs",
     "build:ts": "tsc -p tsconfig.build.json",
-    "generate:defs": "ts-node --esm -P tsconfig.build.json ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api --input ./src/interfaces --endpoint ./metadata/spiritnet.json",
-    "generate:meta": "ts-node --esm -P tsconfig.build.json ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/augment-api --endpoint ./metadata/spiritnet.json --output ./src/interfaces  --strict",
+    "generate:defs": "tsx ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api --input ./src/interfaces --endpoint ./metadata/spiritnet.json",
+    "generate:meta": "tsx ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/augment-api --endpoint ./metadata/spiritnet.json --output ./src/interfaces  --strict",
     "update-metadata": "node ./scripts/fetchMetadata.cjs -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'"
   },
   "repository": "github:kiltprotocol/sdk-js",
@@ -45,7 +44,7 @@
     "@types/node": "^16.11.7",
     "glob": "^7.1.1",
     "rimraf": "^3.0.2",
-    "ts-node": "^10.4.0",
+    "tsx": "^4.7.0",
     "typescript": "^4.8.3",
     "yargs": "^16.2.0"
   },
