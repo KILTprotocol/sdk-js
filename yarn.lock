@@ -1941,8 +1941,8 @@ __metadata:
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^10.4.0
-    "@polkadot/types": ^10.4.0
+    "@polkadot/api": ^10.7.3
+    "@polkadot/types": ^10.7.3
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
@@ -1955,10 +1955,10 @@ __metadata:
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
     "@kiltprotocol/type-definitions": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/api-base": ^10.0.0
     "@polkadot/rpc-core": ^10.0.0
-    "@polkadot/typegen": ^10.4.0
+    "@polkadot/typegen": ^10.7.3
     "@polkadot/types": ^10.0.0
     "@polkadot/types-codec": ^10.0.0
     "@types/node": ^16.11.7
@@ -1978,9 +1978,9 @@ __metadata:
     "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/api-derive": ^10.0.0
-    "@polkadot/types": ^10.4.0
+    "@polkadot/types": ^10.7.3
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
@@ -1993,7 +1993,7 @@ __metadata:
   resolution: "@kiltprotocol/config@workspace:packages/config"
   dependencies:
     "@kiltprotocol/types": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     rimraf: ^3.0.2
     typescript: ^4.8.3
     typescript-logging: ^1.0.0
@@ -2014,9 +2014,9 @@ __metadata:
     "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/keyring": ^12.0.0
-    "@polkadot/types": ^10.4.0
+    "@polkadot/types": ^10.7.3
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     "@types/json-pointer": ^1.0.34
@@ -2036,9 +2036,9 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/keyring": ^12.0.0
-    "@polkadot/types": ^10.4.0
+    "@polkadot/types": ^10.7.3
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     multibase: ^4.0.6
@@ -2159,9 +2159,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/keyring": ^12.0.0
-    "@polkadot/types": ^10.4.0
+    "@polkadot/types": ^10.7.3
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
     rimraf: ^3.0.2
@@ -2177,7 +2177,7 @@ __metadata:
     "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
     "@kiltprotocol/types": "workspace:*"
-    "@polkadot/api": ^10.4.0
+    "@polkadot/api": ^10.7.3
     "@polkadot/keyring": ^12.0.0
     "@polkadot/util": ^12.0.0
     "@polkadot/util-crypto": ^12.0.0
@@ -2325,7 +2325,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:10.7.3, @polkadot/api@npm:^10.4.0":
+"@polkadot/api@npm:10.7.3, @polkadot/api@npm:^10.7.3":
   version: 10.7.3
   resolution: "@polkadot/api@npm:10.7.3"
   dependencies:
@@ -2426,7 +2426,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/typegen@npm:^10.4.0":
+"@polkadot/typegen@npm:^10.7.3":
   version: 10.7.3
   resolution: "@polkadot/typegen@npm:10.7.3"
   dependencies:
@@ -2513,7 +2513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.0.0, @polkadot/types@npm:^10.4.0":
+"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.0.0, @polkadot/types@npm:^10.7.3":
   version: 10.7.3
   resolution: "@polkadot/types@npm:10.7.3"
   dependencies:
