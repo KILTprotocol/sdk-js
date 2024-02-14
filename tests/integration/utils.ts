@@ -37,7 +37,7 @@ export async function getStartedTestContainer(
   hostPort?: number
 ): Promise<StartedTestContainer> {
   const image =
-    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/standalone-node'
   console.log(`using testcontainer with image ${image}`)
   const strategies = [
     ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],

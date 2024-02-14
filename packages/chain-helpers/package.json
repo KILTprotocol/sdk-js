@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -38,7 +38,7 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^10.4.0",
-    "@polkadot/types": "^10.4.0"
+    "@polkadot/api": "^10.7.3",
+    "@polkadot/types": "^10.7.3"
   }
 }

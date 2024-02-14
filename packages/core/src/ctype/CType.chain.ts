@@ -24,7 +24,12 @@ import {
   serializeForHash,
   verifyDataStructure,
 } from './CType.js'
-import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
+import {
+  type DidAuthorizationCall,
+  flattenCalls,
+  isBatch,
+  retrieveExtrinsicFromBlock,
+} from '../utils.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -130,15 +135,15 @@ function extractCTypeCreationCallsFromDidCall(
   )
 }
 
-// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall` or `api.tx.did.dispatchAs`.
 function extractDidCallsFromBatchCall(
   api: ApiPromise,
   call: Call
-): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
+): DidAuthorizationCall[] {
   const extrinsicCalls = flattenCalls(api, call)
   return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
-      api.tx.did.submitDidCall.is(c)
+    (c): c is DidAuthorizationCall =>
+      api.tx.did.submitDidCall.is(c) || api.tx.did.dispatchAs.is(c)
   )
 }
 
@@ -179,9 +184,13 @@ export async function fetchFromChain(
     )
   }
 
-  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
+  if (
+    !isBatch(api, extrinsic) &&
+    !api.tx.did.submitDidCall.is(extrinsic) &&
+    !api.tx.did.dispatchAs.is(extrinsic)
+  ) {
     throw new SDKErrors.PublicCredentialError(
-      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
+      'Extrinsic should be either a `did.submitDidCall` or `did.dispatchAs` extrinsic or a batch containing at least one of those'
     )
   }
 
@@ -198,14 +207,20 @@ export async function fetchFromChain(
   const ctypeCallContent = didCalls.flatMap((didCall) => {
     const ctypeCreationCalls = extractCTypeCreationCallsFromDidCall(
       api,
-      didCall.args[0].call
+      api.tx.did.submitDidCall.is(didCall)
+        ? didCall.args[0].call
+        : didCall.args[1]
     )
     // Re-create the issued public credential for each call identified.
     return ctypeCreationCalls.map(
       (ctypeCreationCall) =>
         [
           cTypeInputFromChain(ctypeCreationCall.args[0]),
-          Did.fromChain(didCall.args[0].did),
+          Did.fromChain(
+            api.tx.did.submitDidCall.is(didCall)
+              ? didCall.args[0].did
+              : didCall.args[0]
+          ),
         ] as const
     )
   })

@@ -40,6 +40,10 @@ export function isBatch(
   )
 }
 
+export type DidAuthorizationCall =
+  | GenericCall<ApiPromise['tx']['did']['submitDidCall']['args']>
+  | GenericCall<ApiPromise['tx']['did']['dispatchAs']['args']>
+
 /**
  * Flatten all calls into a single array following a DFS approach.
  *

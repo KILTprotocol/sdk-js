@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "",
   "type": "commonjs",
   "main": "./lib/index.js",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^10.4.0",
+    "@polkadot/api": "^10.7.3",
     "typescript-logging": "^1.0.0"
   }
 }
