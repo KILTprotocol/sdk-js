@@ -26,7 +26,7 @@
     "test:integration": "jest -c tests/integration/jest.config.integration.js",
     "build:esm-tests": "rimraf tests/integration/dist && tsc -p tests/integration/tsconfig.esm.json && echo '{\"type\":\"module\"}' > tests/integration/dist/package.json",
     "test:integration:esm": "yarn build:esm-tests && yarn node --experimental-vm-modules $(yarn bin jest) -c tests/integration/jest.config.integration.esm.js",
-    "test:integration:latest-develop": "TESTCONTAINERS_NODE_IMG=kiltprotocol/mashnet-node:latest-develop yarn test:integration",
+    "test:integration:latest-develop": "TESTCONTAINERS_NODE_IMG=kiltprotocol/standalone-node:latest-develop yarn test:integration",
     "test:watch": "yarn test --watch",
     "test:bundle": "tsc -p tests/bundle/tsconfig.json && yarn ./tests/bundle playwright test --config playwright.config.ts",
     "test:ci:bundle": "yarn test:ci:bundle:preparation && yarn test:bundle",
