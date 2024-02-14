@@ -224,9 +224,15 @@ export function isBatch(
 }
 
 /**
- * Flatten all calls into a single array following a DFS approach.
+ * Flatten all nested calls into a single array following a DFS approach.
  *
  * For example, given the calls [[N1, N2], [N3, [N4, N5], N6]], the final list will look like [N1, N2, N3, N4, N5, N6].
+ *
+ * The following extrinsics are recognized as containing nested calls and will be unpacked:
+ *
+ * - pallet `utility`: `batch`, `batchAll`, `forceBatch`.
+ * - pallet `did`: `submitDidCall`, `dispatchAs`.
+ * - pallet `proxy`: `proxy`, `proxyAnnounced`.
  *
  * @param call The {@link Call} which can potentially contain nested calls.
  * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
