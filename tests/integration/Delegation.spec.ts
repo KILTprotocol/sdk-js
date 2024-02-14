@@ -285,7 +285,7 @@ describe('revocation', () => {
 
     // Delegation removal can only be done by either the delegation owner themselves via DID call
     // or the deposit owner as a regular signed call.
-    // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
+    // Change introduced in https://github.com/KILTprotocol/kilt-node/pull/304
     const removeTx = await delegationA.getRemoveTx()
     const authorizedRemoveTx = await Did.authorizeTx(
       delegator.id,

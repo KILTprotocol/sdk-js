@@ -2,9 +2,9 @@ version: '3.2'
 
 services:
   dev-node:
-    image: local/mashnet-node
+    image: local/standalone-node
     build:
-      context: https://github.com/KILTprotocol/mashnet-node.git
+      context: https://github.com/KILTprotocol/kilt-node.git
       cache_from:
-        - kiltprotocol/mashnet-node
-        - local/mashnet-node
+        - kiltprotocol/standalone-node
+        - local/standalone-node
