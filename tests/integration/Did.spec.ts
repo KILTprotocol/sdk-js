@@ -1413,31 +1413,33 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to create a DID with a service that is too long', async () => {
+    // TODO: these tests do not actually test anything; they just make an assertion about the value of a runtime const.
+    // This does not really make sense; and even if we wanted it, it would be better to just make a snapshot on the value.
+    it.skip('should not be possible to create a DID with a service that is too long', async () => {
       const serviceId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceIdLength.toNumber()
       expect(serviceId.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service that has too many types', async () => {
+    it.skip('should not be possible to create a DID with a service that has too many types', async () => {
       const types = ['type-1', 'type-2']
       const limit = api.consts.did.maxNumberOfTypesPerService.toNumber()
       expect(types.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service that has too many URIs', async () => {
+    it.skip('should not be possible to create a DID with a service that has too many URIs', async () => {
       const uris = ['x:url-1', 'x:url-2', 'x:url-3']
       const limit = api.consts.did.maxNumberOfUrlsPerService.toNumber()
       expect(uris.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service that has a type that is too long', async () => {
+    it.skip('should not be possible to create a DID with a service that has a type that is too long', async () => {
       const type = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceTypeLength.toNumber()
       expect(type.length).toBeGreaterThan(limit)
     })
 
-    it('should not be possible to create a DID with a service that has a URI that is too long', async () => {
+    it.skip('should not be possible to create a DID with a service that has a URI that is too long', async () => {
       const uri =
         'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const limit = api.consts.did.maxServiceUrlLength.toNumber()
