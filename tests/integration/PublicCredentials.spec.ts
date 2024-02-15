@@ -267,6 +267,67 @@ describe('When there is an attester and ctype NFT name', () => {
       allAssetCredentialsBeforeRevocation.length - 1
     )
   }, 60_000)
+
+  it('should fetch a credential created with dispatchAs', async () => {
+    if (typeof api.tx.did.dispatchAs !== 'function') {
+      console.warn('skipping dispatchAs tests')
+      return
+    }
+
+    const minBalance = 10n ** 16n
+
+    const assertionMethodKey = attesterKey.keypair.address
+    // assertionMethod keypair needs balance
+    if (
+      (
+        await api.query.system.account(assertionMethodKey)
+      ).data.free.toBigInt() < minBalance
+    ) {
+      console.log('sending funds to assertion method key account...')
+      const fundsTx = api.tx.balances.transfer(assertionMethodKey, minBalance)
+      await submitTx(fundsTx, tokenHolder)
+      console.log('sending funds completed')
+    }
+
+    latestCredential = {
+      claims: {
+        name: `Certified NFT collection with id ${UUID.generate()}`,
+      },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+
+    // authorize via dispatchAs
+    const authorizedStoreTx = api.tx.did.dispatchAs(
+      Did.toChain(attester.id),
+      api.tx.publicCredentials.add(PublicCredentials.toChain(latestCredential))
+    )
+    // nest call for extra complexity
+    const nestedCall = api.tx.utility.batch([authorizedStoreTx])
+
+    // sign with assertionMethod keypair
+    await submitTx(nestedCall, attesterKey.keypair)
+
+    const credentialId = PublicCredentials.getIdForCredential(
+      latestCredential,
+      attester.id
+    )
+
+    const completeCredential = await PublicCredentials.fetchCredentialFromChain(
+      credentialId
+    )
+
+    // Verify that the retrieved credential matches the input one, plus the generated ID and the attester DID.
+    expect(completeCredential).toEqual(
+      expect.objectContaining({
+        ...latestCredential,
+        id: credentialId,
+        attester: attester.id,
+        revoked: false,
+      })
+    )
+  }, 40_000)
 })
 
 describe('When there is an issued public credential', () => {

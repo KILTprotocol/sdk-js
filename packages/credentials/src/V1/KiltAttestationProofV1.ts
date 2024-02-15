@@ -244,7 +244,7 @@ async function verifyAttestedAt(
     .find(
       ({ phase, event }) =>
         phase.isApplyExtrinsic &&
-        api.events.attestation.AttestationCreated.is(event) &&
+        api.events.attestation?.AttestationCreated?.is(event) &&
         u8aEq(event.data[1], claimHash)
     )
   if (!attestationEvent)

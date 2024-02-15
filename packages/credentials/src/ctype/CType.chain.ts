@@ -5,9 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type { Bytes, GenericCall, Option } from '@polkadot/types'
-import type { AccountId, Call } from '@polkadot/types/interfaces'
+import type { AccountId } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
@@ -118,30 +117,6 @@ export function fromChain(
   }
 }
 
-// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.ctype.add`.
-function extractCTypeCreationCallsFromDidCall(
-  api: ApiPromise,
-  call: Call
-): Array<GenericCall<typeof api.tx.ctype.add.args>> {
-  const extrinsicCalls = Blockchain.flattenCalls(call, api)
-  return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
-      api.tx.ctype.add.is(c)
-  )
-}
-
-// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
-function extractDidCallsFromBatchCall(
-  api: ApiPromise,
-  call: Call
-): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
-  const extrinsicCalls = Blockchain.flattenCalls(call, api)
-  return extrinsicCalls.filter(
-    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
-      api.tx.did.submitDidCall.is(c)
-  )
-}
-
 /**
  * Resolves a CType identifier to the CType definition by fetching data from the block containing the transaction that registered the CType on chain.
  *
@@ -156,7 +131,7 @@ export async function fetchFromChain(
   const cTypeHash = idToHash(cTypeId)
 
   const cTypeEntry = await api.query.ctype.ctypes(cTypeHash)
-  const { createdAt } = fromChain(cTypeEntry)
+  const { createdAt, creator } = fromChain(cTypeEntry)
   if (typeof createdAt === 'undefined')
     throw new SDKErrors.CTypeError(
       'Cannot fetch CType definitions on a chain that does not store the createdAt block'
@@ -167,72 +142,52 @@ export async function fetchFromChain(
     ({ events }) =>
       events.some(
         (event) =>
-          api.events.ctype.CTypeCreated.is(event) &&
-          event.data[1].toString() === cTypeHash
+          api.events.ctype?.CTypeCreated?.is(event) &&
+          event.data[1].toHex() === cTypeHash
       ),
     api
   )
 
   if (extrinsic === null) {
     throw new SDKErrors.CTypeError(
-      `There is not CType with the provided ID "${cTypeId}" on chain.`
+      `There is no CType with the provided ID "${cTypeId}" on chain.`
     )
   }
 
-  if (
-    !Blockchain.isBatch(extrinsic, api) &&
-    !api.tx.did.submitDidCall.is(extrinsic)
-  ) {
-    throw new SDKErrors.PublicCredentialError(
-      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
-    )
-  }
+  // Unpack any nested calls, e.g., within a batch or `submit_did_call`
+  const extrinsicCalls = Blockchain.flattenCalls(extrinsic, api)
 
-  // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
-  // otherwise the extrinsic is itself a submit_did_call, so just take it.
-  const didCalls = Blockchain.isBatch(extrinsic, api)
-    ? extrinsic.args[0].flatMap((batchCall) =>
-        extractDidCallsFromBatchCall(api, batchCall)
-      )
-    : [extrinsic]
+  // only consider ctype::add calls
+  const ctypeCreationCalls = extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
+      api.tx.ctype?.add?.is(c)
+  )
 
-  // From the list of DID calls, only consider ctype::add calls, bundling each of them with their DID submitter.
-  // It returns a list of [reconstructedCType, attesterDid].
-  const ctypeCallContent = didCalls.flatMap((didCall) => {
-    const ctypeCreationCalls = extractCTypeCreationCallsFromDidCall(
-      api,
-      didCall.args[0].call
-    )
-    // Re-create the issued public credential for each call identified.
-    return ctypeCreationCalls.map(
-      (ctypeCreationCall) =>
-        [
-          cTypeInputFromChain(ctypeCreationCall.args[0]),
-          Did.fromChain(didCall.args[0].did),
-        ] as const
-    )
-  })
+  // Re-create the ctype for each call identified to find the right ctype.
+  // If more than one matching call is present, it always considers the last one as the valid one.
+  const cTypeDefinition = ctypeCreationCalls.reduceRight<ICType | undefined>(
+    (selectedCType, cTypeCreationCall) => {
+      if (selectedCType) {
+        return selectedCType
+      }
+      const cType = cTypeInputFromChain(cTypeCreationCall.args[0])
 
-  // If more than a call is present, it always considers the last one as the valid one.
-  const lastRightCTypeCreationCall = ctypeCallContent
-    .reverse()
-    .find((cTypeInput) => {
-      return cTypeInput[0].$id === cTypeId
-    })
+      if (cType.$id === cTypeId) {
+        return cType
+      }
+      return undefined
+    },
+    undefined
+  )
 
-  if (!lastRightCTypeCreationCall) {
+  if (typeof cTypeDefinition === 'undefined') {
     throw new SDKErrors.CTypeError(
       'Block should always contain the full CType, eventually.'
     )
   }
 
-  const [ctypeInput, creator] = lastRightCTypeCreationCall
-
   return {
-    cType: {
-      ...ctypeInput,
-      $id: cTypeId,
-    },
+    cType: cTypeDefinition,
     creator,
     createdAt,
   }
