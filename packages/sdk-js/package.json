@@ -39,10 +39,12 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
+    "@kiltprotocol/augment-api": "file:.yalc/@kiltprotocol/augment-api",
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/typegen": "^10.7.3"
   }
 }

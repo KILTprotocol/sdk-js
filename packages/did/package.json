@@ -33,10 +33,12 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
+  "peerDependencies": {
+    "@kiltprotocol/augment-api": "*"
+  },
   "dependencies": {
     "@digitalbazaar/multikey-context": "^2.0.1",
     "@digitalbazaar/security-context": "^1.0.0",
-    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
