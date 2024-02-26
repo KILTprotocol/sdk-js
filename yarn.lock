@@ -2006,9 +2006,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@file:.yalc/@kiltprotocol/augment-api::locator=%40kiltprotocol%2Fsdk-js%40workspace%3Apackages%2Fsdk-js":
-  version: 1.11.1-spiritnet
-  resolution: "@kiltprotocol/augment-api@file:.yalc/@kiltprotocol/augment-api#.yalc/@kiltprotocol/augment-api::hash=13a16e&locator=%40kiltprotocol%2Fsdk-js%40workspace%3Apackages%2Fsdk-js"
+"@kiltprotocol/augment-api@git@github.com:KILTprotocol/types-augment.git":
+  version: 1.12.1-spiritnet
+  resolution: "@kiltprotocol/augment-api@git@github.com:KILTprotocol/types-augment.git#commit=595bfcdd7404c7e2ca4b378007b072e79ee29207"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.0.2
     "@typescript-eslint/parser": ^7.0.2
@@ -2020,7 +2020,7 @@ __metadata:
     "@polkadot/typegen": ^10.11.0
   bin:
     kilt_reaugment: ./script.mjs
-  checksum: 347e9b1195ef82a866566e44c1f6a9f5a5178b0da04ac224b20c620947cb4924bb56cfa38e50d108dfa87561ef603558c66b8f0fdf03cc062ad999987f23c51d
+  checksum: 821379d5a7c5be3ebc9a181567de5e2a74fb0f8aa2e55899e9e27d468a869e104a5cff3f4fc4121caecc3ffebd882b07f375b4e854c498fd536f37bdbca5fe78
   languageName: node
   linkType: hard
 
@@ -2179,7 +2179,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "file:.yalc/@kiltprotocol/augment-api"
+    "@kiltprotocol/augment-api": "git@github.com:KILTprotocol/types-augment.git"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
