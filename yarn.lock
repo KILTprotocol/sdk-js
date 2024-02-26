@@ -2008,7 +2008,7 @@ __metadata:
 
 "@kiltprotocol/augment-api@file:.yalc/@kiltprotocol/augment-api::locator=%40kiltprotocol%2Fsdk-js%40workspace%3Apackages%2Fsdk-js":
   version: 1.11.1-spiritnet
-  resolution: "@kiltprotocol/augment-api@file:.yalc/@kiltprotocol/augment-api#.yalc/@kiltprotocol/augment-api::hash=708787&locator=%40kiltprotocol%2Fsdk-js%40workspace%3Apackages%2Fsdk-js"
+  resolution: "@kiltprotocol/augment-api@file:.yalc/@kiltprotocol/augment-api#.yalc/@kiltprotocol/augment-api::hash=13a16e&locator=%40kiltprotocol%2Fsdk-js%40workspace%3Apackages%2Fsdk-js"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.0.2
     "@typescript-eslint/parser": ^7.0.2
@@ -2020,7 +2020,7 @@ __metadata:
     "@polkadot/typegen": ^10.11.0
   bin:
     kilt_reaugment: ./script.mjs
-  checksum: b6af38aa9b7d41dcf6237c4a973529235d5866492114b50ea02d32400acf371e23cc011e8f7c00eab89c6d6539647edfcc4513976cf114a64ab4e51983fa85c8
+  checksum: 347e9b1195ef82a866566e44c1f6a9f5a5178b0da04ac224b20c620947cb4924bb56cfa38e50d108dfa87561ef603558c66b8f0fdf03cc062ad999987f23c51d
   languageName: node
   linkType: hard
 

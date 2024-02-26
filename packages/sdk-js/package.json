@@ -16,6 +16,7 @@
     "dist/*"
   ],
   "scripts": {
+    "postinstall": "yarn run kilt_reaugment",
     "clean": "rimraf ./lib dist",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",

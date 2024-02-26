@@ -97,7 +97,7 @@ const revokedVc = KiltAttestationProofV1.finalizeProof(
 
 jest.mocked(mockedApi.query.attestation.attestations).mockImplementation(
   // @ts-expect-error
-  async (claimHash) => {
+  async (claimHash: string) => {
     if (u8aEq(claimHash, KiltCredentialV1.idToRootHash(attestedVc.id))) {
       return mockedApi.createType(
         'Option<AttestationAttestationsAttestationDetails>',
