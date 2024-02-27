@@ -2006,9 +2006,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@git@github.com:KILTprotocol/types-augment.git":
+"@kiltprotocol/augment-api@https://github.com/KILTprotocol/types-augment.git":
   version: 1.12.1-spiritnet
-  resolution: "@kiltprotocol/augment-api@git@github.com:KILTprotocol/types-augment.git#commit=595bfcdd7404c7e2ca4b378007b072e79ee29207"
+  resolution: "@kiltprotocol/augment-api@https://github.com/KILTprotocol/types-augment.git#commit=595bfcdd7404c7e2ca4b378007b072e79ee29207"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.0.2
     "@typescript-eslint/parser": ^7.0.2
@@ -2179,7 +2179,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "git@github.com:KILTprotocol/types-augment.git"
+    "@kiltprotocol/augment-api": "https://github.com/KILTprotocol/types-augment.git"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
