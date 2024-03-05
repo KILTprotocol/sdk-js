@@ -183,6 +183,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
     )
 
     await submitTx(authorizedTx, paymentAccount)
+    const encodedDidInfo = await api.call.did.query(
+      Did.toChain(otherWeb3NameCreator.id)
+    )
+    const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
+    expect(didInfo.document.alsoKnownAs).toStrictEqual([`w3n:${nick}`])
   }, 40_000)
 })
 
