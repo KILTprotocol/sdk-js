@@ -2006,21 +2006,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@https://github.com/KILTprotocol/types-augment.git":
-  version: 1.12.1-spiritnet
-  resolution: "@kiltprotocol/augment-api@https://github.com/KILTprotocol/types-augment.git#commit=595bfcdd7404c7e2ca4b378007b072e79ee29207"
+"@kiltprotocol/augment-api@npm:1.11210.0-rc":
+  version: 1.11210.0-rc
+  resolution: "@kiltprotocol/augment-api@npm:1.11210.0-rc"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.0.2
     "@typescript-eslint/parser": ^7.0.2
+    dotenv: ^16.4.5
     eslint: ^8.57.0
     eslint-plugin-unused-imports: ^3.1.0
   peerDependencies:
     "@kiltprotocol/type-definitions": ^0.35.0
-    "@polkadot/api": ^10.11.0
-    "@polkadot/typegen": ^10.11.0
+    "@polkadot/api": ~10.12.0
+    "@polkadot/typegen": ~10.12.0
+    typescript: "*"
   bin:
-    kilt_reaugment: ./script.mjs
-  checksum: 821379d5a7c5be3ebc9a181567de5e2a74fb0f8aa2e55899e9e27d468a869e104a5cff3f4fc4121caecc3ffebd882b07f375b4e854c498fd536f37bdbca5fe78
+    kilt_reaugment: augmentFromFile.mjs
+    kilt_updateMetadata: updateMetadata.mjs
+  checksum: 44288830a41e467f32d8efcd5f5027a73810b5835f0d92ab1dfbd30935ad66951802db14633ab67cd0f81ee26755cb4cc77d55bf0f3c180432a9bc844d83e7ac
   languageName: node
   linkType: hard
 
@@ -2179,7 +2182,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "https://github.com/KILTprotocol/types-augment.git"
+    "@kiltprotocol/augment-api": 1.11210.0-rc
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
@@ -4898,6 +4901,13 @@ __metadata:
   dependencies:
     is-obj: ^2.0.0
   checksum: d5775790093c234ef4bfd5fbe40884ff7e6c87573e5339432870616331189f7f5d86575c5b5af2dcf0f61172990f4f734d07844b1f23482fff09e3c4bead05ea
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.4.5":
+  version: 16.4.5
+  resolution: "dotenv@npm:16.4.5"
+  checksum: 301a12c3d44fd49888b74eb9ccf9f07a1f5df43f489e7fcb89647a2edcd84c42d6bc349dc8df099cd18f07c35c7b04685c1a4f3e6a6a9e6b30f8d48c15b7f49c
   languageName: node
   linkType: hard
 

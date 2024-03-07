@@ -16,7 +16,6 @@
     "dist/*"
   ],
   "scripts": {
-    "postinstall": "yarn run kilt_reaugment",
     "clean": "rimraf ./lib dist",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",
@@ -40,7 +39,7 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "@kiltprotocol/augment-api": "https://github.com/KILTprotocol/types-augment.git",
+    "@kiltprotocol/augment-api": "1.11210.0-rc",
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
