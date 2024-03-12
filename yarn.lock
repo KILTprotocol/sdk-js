@@ -2194,6 +2194,8 @@ __metadata:
     typescript: ^4.8.3
     webpack: ^5.76.0
     webpack-cli: ^4.9.2
+  peerDependencies:
+    "@kiltprotocol/augment-api": ^1.11210.0
   languageName: unknown
   linkType: soft
 
