@@ -36,6 +36,11 @@
   "peerDependencies": {
     "@kiltprotocol/augment-api": "*"
   },
+  "peerDependenciesMeta": {
+    "@kiltprotocol/augment-api": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/type-definitions": "workspace:*",

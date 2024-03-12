@@ -5,15 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import '@kiltprotocol/augment-api'
-
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
 import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, IMethod } from '@polkadot/types/types'
 import type { BN } from '@polkadot/util'
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
+import type * as _ from '@kiltprotocol/augment-api'
 import type {
   ISubmittableResult,
   KeyringPair,
