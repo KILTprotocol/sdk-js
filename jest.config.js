@@ -31,7 +31,6 @@ const common = {
     '/tests/',
     // not properly testable
     'packages/types/',
-    'packages/type-definitions/',
     'index.ts',
     'types.ts',
     '.chain.ts',
