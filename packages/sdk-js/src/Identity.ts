@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aEq } from '@polkadot/util'
 import type { Keypair } from '@polkadot/util-crypto/types'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
@@ -18,8 +17,8 @@ import {
   didKeyToVerificationMethod,
   getFullDid,
   getStoreTx,
-  multibaseKeyToDidKey,
   resolve,
+  signersForDid,
 } from '@kiltprotocol/did'
 import type {
   Did,
@@ -169,37 +168,7 @@ class IdentityClass implements Identity {
   public async addKeypair(
     ...keypairs: Array<Keypair | KeyringPair>
   ): Promise<IdentityClass> {
-    const didKeys = this.didDocument.verificationMethod?.map(
-      ({ publicKeyMultibase, id }) => ({
-        ...multibaseKeyToDidKey(publicKeyMultibase),
-        id,
-      })
-    )
-    if (didKeys && didKeys.length !== 0) {
-      await Promise.all(
-        keypairs.map(async (keypair) => {
-          const thisType = 'type' in keypair ? keypair.type : undefined
-          const matchingKey = didKeys?.find(({ publicKey, keyType }) => {
-            if (thisType && thisType !== keyType) {
-              return false
-            }
-            return u8aEq(publicKey, keypair.publicKey)
-          })
-          if (matchingKey) {
-            const id = matchingKey.id.startsWith('#')
-              ? this.did + matchingKey.id
-              : matchingKey.id
-            this.addSigner(
-              ...(await Signers.getSignersForKeypair({
-                keypair,
-                id,
-                type: matchingKey.keyType,
-              }))
-            )
-          }
-        })
-      )
-    }
+    this.addSigner(...(await signersForDid(this.didDocument, ...keypairs)))
     return this
   }
 
