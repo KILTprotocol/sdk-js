@@ -5,7 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { isHex } from '@polkadot/util'
+import { isHex, u8aEq } from '@polkadot/util'
+import type { Keypair } from '@polkadot/util-crypto/types'
 
 import type {
   DereferenceDidUrl,
@@ -14,9 +15,11 @@ import type {
   Did,
   DidUrl,
   SignatureVerificationRelationship,
+  KeyringPair,
+  SignerInterface,
 } from '@kiltprotocol/types'
 
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import { multibaseKeyToDidKey, parse, validateDid } from './Did.utils.js'
 import { dereference } from './DidResolver/DidResolver.js'
@@ -181,4 +184,50 @@ export function signatureFromJson(input: DidSignature | LegacyDidSignature): {
   })()
   const signature = Crypto.coToUInt8(input.signature)
   return { signature, keyUri }
+}
+
+/**
+ * Creates signers for {@link Did} based on a {@link DidDocument} and one or more {@link Keypair} / {@link KeyringPair}.
+ *
+ * @param didDocument The Did's DidDocument.
+ * @param keypairs One or more signing key pairs.
+ * @returns An array of signers based on the key pair.
+ */
+export async function signersForDid(
+  didDocument: DidDocument,
+  ...keypairs: Array<Keypair | KeyringPair>
+): Promise<Array<SignerInterface<string, DidUrl>>> {
+  const didKeys = didDocument.verificationMethod?.map(
+    ({ publicKeyMultibase, id }) => ({
+      ...multibaseKeyToDidKey(publicKeyMultibase),
+      id,
+    })
+  )
+  if (didKeys && didKeys.length !== 0) {
+    return (
+      await Promise.all(
+        keypairs.map(async (keypair) => {
+          const thisType = 'type' in keypair ? keypair.type : undefined
+          const matchingKey = didKeys?.find(({ publicKey, keyType }) => {
+            if (thisType && thisType !== keyType) {
+              return false
+            }
+            return u8aEq(publicKey, keypair.publicKey)
+          })
+          if (matchingKey) {
+            const id: DidUrl = matchingKey.id.startsWith('#')
+              ? `${didDocument.id}${matchingKey.id}`
+              : (matchingKey.id as DidUrl)
+            return Signers.getSignersForKeypair({
+              keypair,
+              id,
+              type: matchingKey.keyType,
+            })
+          }
+          return []
+        })
+      )
+    ).flat()
+  }
+  return []
 }
