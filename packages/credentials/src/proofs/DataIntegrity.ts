@@ -65,6 +65,37 @@ export type DataIntegrityProof = {
   previousProof?: string
 }
 
+async function createVerifyData({
+  proof,
+  document,
+  suite,
+  options = {},
+}: {
+  proof: DataIntegrityProof
+  document: Record<string, unknown>
+  suite: CryptoSuite<any>
+  options?: Record<string, unknown>
+}): Promise<Uint8Array> {
+  if (suite.createVerifyData) {
+    return suite.createVerifyData({ proof, document })
+  }
+  const proofOpts = { ...proof }
+  // @ts-expect-error property is non-optional but not part of canonized proof
+  delete proofOpts.proofValue
+  const canonizedProof = await suite.canonize(
+    {
+      // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
+      // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
+      // JCS suites must implement `createVerifyData` for this to work.
+      '@context': document['@context'],
+      ...proofOpts,
+    },
+    options
+  )
+  const canonizedDoc = await suite.canonize(document, options)
+  return u8aConcat(sha256AsU8a(canonizedProof), sha256AsU8a(canonizedDoc))
+}
+
 /**
  * Creates a data integrity proof for the provided document.
  * This function:
@@ -146,21 +177,8 @@ export async function createProof<T>(
     proof.previousProof = previousProof
   }
 
-  const canonizedProof = await suite.canonize({
-    // TODO: It's unclear if this behaviour is desirable (see https://github.com/digitalbazaar/data-integrity/issues/19).
-    // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
-    // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
-    // Not sure how to proceed; implement to spec or allow interoperability.
-    '@context': document['@context'],
-    ...proof,
-  })
-  const canonizedDoc = await suite.canonize(document)
-
-  const combinedHashes = u8aConcat(
-    sha256AsU8a(canonizedProof),
-    sha256AsU8a(canonizedDoc)
-  )
-  const signatureBytes = await signer.sign({ data: combinedHashes })
+  const verifyData = await createVerifyData({ proof, document, suite })
+  const signatureBytes = await signer.sign({ data: verifyData })
   proof.proofValue = MULTIBASE_BASE58BTC_HEADER + base58Encode(signatureBytes)
 
   return { ...document, proof }
@@ -422,17 +440,7 @@ export async function verifyProof(
     verificationMethod,
   })
   // transform document & proof options
-  const proofOpts: Record<string, unknown> = {
-    '@context': unsecuredDocument['@context'],
-    ...proof,
-  }
-  delete proofOpts.proofValue
-  const canonizedProof = await suite.canonize(proofOpts)
-  const canonizedDoc = await suite.canonize(unsecuredDocument)
-  const transformedData = u8aConcat(
-    sha256AsU8a(canonizedProof),
-    sha256AsU8a(canonizedDoc)
-  )
+  const transformedData = await createVerifyData({ proof, document, suite })
   // verify signature
   const verified = await verifier.verify({ data: transformedData, signature })
   // verify challenge & domain

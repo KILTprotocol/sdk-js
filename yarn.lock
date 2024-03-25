@@ -2151,10 +2151,10 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.1
-    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.1
-    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.1
-    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.1
+    "@kiltprotocol/eddsa-jcs-2022": 0.1.0-rc.2
+    "@kiltprotocol/es256k-jcs-2023": 0.1.0-rc.2
+    "@kiltprotocol/jcs-data-integrity-proofs-common": 0.1.0-rc.2
+    "@kiltprotocol/sr25519-jcs-2023": 0.1.0-rc.2
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.7.3
@@ -2201,6 +2201,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.2":
+  version: 0.1.0-rc.2
+  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.2"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.2
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: f0d5e6060f43e9e0a340cd942c2a4b8df1136d8fefc3256bb8a8ce48b8f8f7ca206b1aa5a491f839b108a66d541d98f480b1150ee8f59d5c637307f0898cc299
+  languageName: node
+  linkType: hard
+
 "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1":
   version: 0.1.0-rc.1
   resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.1"
@@ -2212,7 +2223,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.1":
+"@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.2":
+  version: 0.1.0-rc.2
+  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.2"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.2
+    "@noble/curves": ^1.0.0
+    "@scure/base": ^1.1.1
+  checksum: 2dde304294d89d4d2ad24fcdd4c04707b8cb0b8e32f06f56ea21a1a5145313e9fcd8506b1eb41452df67d179f166861282c24beffb0371882cf646c907bcd720
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.2, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.2":
+  version: 0.1.0-rc.2
+  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.2"
+  dependencies:
+    "@noble/hashes": ^1.3.0
+    canonicalize: ^2.0.0
+  peerDependencies:
+    "@scure/base": ^1.1.0
+  checksum: e7a219dad6f31c29f21c7b656c1f0c7669b634dedc053bb0088c68c2334a404f631827d3e1168546292d5b7b371b7f7761bab1e0242f0bd87d606210fb03ec5f
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.1":
   version: 0.1.0-rc.1
   resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.1"
   dependencies:
@@ -2288,6 +2322,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.2":
+  version: 0.1.0-rc.2
+  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.2"
+  dependencies:
+    "@kiltprotocol/jcs-data-integrity-proofs-common": ^0.1.0-rc.2
+    "@polkadot/util-crypto": ^12.0.1
+    "@scure/base": ^1.1.1
+  checksum: f831ed34299a72502cd26be95a52e288944db0bd2f59b908a8954aa3c91cfae3d603cbcc89852dc606d57fdcb07a63570dbb3d9493b9461959dfa7e65bbe0fbe
+  languageName: node
+  linkType: hard
+
 "@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
@@ -2360,6 +2405,13 @@ __metadata:
   version: 1.3.0
   resolution: "@noble/hashes@npm:1.3.0"
   checksum: d7ddb6d7c60f1ce1f87facbbef5b724cdea536fc9e7f59ae96e0fc9de96c8f1a2ae2bdedbce10f7dcc621338dfef8533daa73c873f2b5c87fa1a4e05a95c2e2e
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:^1.3.0":
+  version: 1.4.0
+  resolution: "@noble/hashes@npm:1.4.0"
+  checksum: 8ba816ae26c90764b8c42493eea383716396096c5f7ba6bea559993194f49d80a73c081f315f4c367e51bd2d5891700bcdfa816b421d24ab45b41cb03e4f3342
   languageName: node
   linkType: hard
 
