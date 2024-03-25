@@ -43,6 +43,7 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/util": "^12.0.0"
   }
 }

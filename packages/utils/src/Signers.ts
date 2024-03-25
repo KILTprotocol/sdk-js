@@ -17,6 +17,7 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
+  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
@@ -40,9 +41,11 @@ import type {
   DidUrl,
   KeyringPair,
   UriFragment,
+  KiltAddress,
 } from '@kiltprotocol/types'
 
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
+import { makeKeypairFromUri } from './Crypto.js'
 
 export const ALGORITHMS = Object.freeze({
   ECRECOVER_SECP256K1_BLAKE2B: 'Ecrecover-Secp256k1-Blake2b' as const, // could also be called ES256K-R-Blake2b
@@ -151,7 +154,7 @@ const signerFactory = {
  */
 export async function signerFromKeypair<
   Alg extends KnownAlgorithms,
-  Id extends string
+  Id extends string = KiltAddress
 >({
   id,
   keypair,
@@ -224,7 +227,7 @@ function algsForKeyType(keyType: string): KnownAlgorithms[] {
  * @param input.type If `keypair` is not a {@link KeyringPair}, provide the key type here; otherwise, this is ignored.
  * @returns An array of signer interfaces based on the keypair and type.
  */
-export async function getSignersForKeypair<Id extends string>({
+export async function getSignersForKeypair<Id extends string = KiltAddress>({
   id,
   keypair,
   type = (keypair as KeyringPair).type,
@@ -451,4 +454,35 @@ export function getPolkadotSigner(
       }
     },
   }
+}
+
+export function generateKeypair<T extends string = 'ed25519'>(args?: {
+  seed?: string
+  type?: T
+}): Keypair & { type: T }
+export function generateKeypair({
+  seed = randomAsHex(32),
+  type = 'ed25519',
+}: {
+  seed?: string
+  type?: string
+} = {}): Keypair & { type: string } {
+  let typeForKeyring = type as KeyringPair['type']
+  switch (type.toLowerCase()) {
+    case 'secpk256k1':
+      typeForKeyring = 'ecdsa'
+      break
+    case 'x25519':
+      typeForKeyring = 'ed25519'
+      break
+    default:
+  }
+
+  const keyRingPair = makeKeypairFromUri(
+    seed.toLowerCase(),
+    typeForKeyring as any
+  )
+  const secretKey = extractPk(keyRingPair)
+  const { publicKey } = keyRingPair
+  return { secretKey, publicKey, type }
 }
