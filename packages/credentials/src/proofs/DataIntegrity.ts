@@ -17,6 +17,7 @@ import type {
 import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
 import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+import { createVerifyData as createVerifyDataJcs } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import { parse, resolve } from '@kiltprotocol/did'
 import type {
@@ -79,6 +80,10 @@ async function createVerifyData({
   if (suite.createVerifyData) {
     return suite.createVerifyData({ proof, document })
   }
+  // jcs suites will not work with the logic below - this would fix it.
+  if (suite.name.includes('-jcs-')) {
+    return createVerifyDataJcs({ document, proof })
+  }
   const proofOpts = { ...proof }
   // @ts-expect-error property is non-optional but not part of canonized proof
   delete proofOpts.proofValue
@@ -86,7 +91,6 @@ async function createVerifyData({
     {
       // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
       // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
-      // JCS suites must implement `createVerifyData` for this to work.
       '@context': document['@context'],
       ...proofOpts,
     },
