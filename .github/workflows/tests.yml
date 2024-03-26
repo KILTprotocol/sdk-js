@@ -100,6 +100,8 @@ jobs:
         run: unzip build.zip -d .
       - name: unit tests
         run: yarn test:ci
+        env:
+          YARN_IGNORE_NODE: 1
 
   cache_imgs:
     runs-on: ubuntu-latest
