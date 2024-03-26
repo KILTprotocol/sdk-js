@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -38,7 +38,7 @@ export async function getStartedTestContainer(
   hostPort?: number
 ): Promise<StartedTestContainer> {
   const image =
-    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/standalone-node'
   console.log(`using testcontainer with image ${image}`)
   const strategies = [
     ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],

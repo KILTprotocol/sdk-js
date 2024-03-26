@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -7,11 +7,12 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
-import type { GenericCall, GenericExtrinsic, Vec } from '@polkadot/types'
+import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber, IMethod } from '@polkadot/types/types'
 import type { BN } from '@polkadot/util'
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
+import type * as _ from '@kiltprotocol/augment-api'
 import type {
   ISubmittableResult,
   KeyringPair,
@@ -210,31 +211,50 @@ export async function signAndSubmitTx(
  * @returns True if it's a batch, false otherwise.
  */
 export function isBatch(
-  extrinsic: Extrinsic | Call,
+  extrinsic: IMethod,
   api?: ApiPromise
-): extrinsic is GenericExtrinsic<[Vec<Call>]> | GenericCall<[Vec<Call>]> {
+): extrinsic is IMethod<[Vec<Call>]> {
   const apiPromise = api ?? ConfigService.get('api')
   return (
-    apiPromise.tx.utility.batch.is(extrinsic) ||
-    apiPromise.tx.utility.batchAll.is(extrinsic) ||
-    apiPromise.tx.utility.forceBatch.is(extrinsic)
+    apiPromise.tx.utility?.batch?.is(extrinsic) ||
+    apiPromise.tx.utility?.batchAll?.is(extrinsic) ||
+    apiPromise.tx.utility?.forceBatch?.is(extrinsic)
   )
 }
 
 /**
- * Flatten all calls into a single array following a DFS approach.
+ * Flatten all nested calls into a single array following a DFS approach.
  *
  * For example, given the calls [[N1, N2], [N3, [N4, N5], N6]], the final list will look like [N1, N2, N3, N4, N5, N6].
+ *
+ * The following extrinsics are recognized as containing nested calls and will be unpacked:
+ *
+ * - pallet `utility`: `batch`, `batchAll`, `forceBatch`.
+ * - pallet `did`: `submitDidCall`, `dispatchAs`.
+ * - pallet `proxy`: `proxy`, `proxyAnnounced`.
  *
  * @param call The {@link Call} which can potentially contain nested calls.
  * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
  *
  * @returns A list of {@link Call} nested according to the rules above.
  */
-export function flattenCalls(call: Call, api?: ApiPromise): Call[] {
-  if (isBatch(call, api)) {
+export function flattenCalls(call: IMethod, api?: ApiPromise): IMethod[] {
+  const apiObject = api ?? ConfigService.get('api')
+  if (isBatch(call, apiObject)) {
     // Inductive case
-    return call.args[0].flatMap((c) => flattenCalls(c, api))
+    return call.args[0].flatMap((c) => flattenCalls(c, apiObject))
+  }
+  if (apiObject.tx.did?.submitDidCall?.is(call)) {
+    return flattenCalls(call.args[0].call, apiObject)
+  }
+  if (apiObject.tx.did?.dispatchAs?.is(call)) {
+    return flattenCalls(call.args[1], apiObject)
+  }
+  if (apiObject.tx.proxy?.proxy?.is(call)) {
+    return flattenCalls(call.args[2], apiObject)
+  }
+  if (apiObject.tx.proxy?.proxyAnnounced?.is(call)) {
+    return flattenCalls(call.args[3], apiObject)
   }
   // Base case
   return [call]

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -285,7 +285,7 @@ describe('revocation', () => {
 
     // Delegation removal can only be done by either the delegation owner themselves via DID call
     // or the deposit owner as a regular signed call.
-    // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
+    // Change introduced in https://github.com/KILTprotocol/kilt-node/pull/304
     const removeTx = await delegationA.getRemoveTx()
     const authorizedRemoveTx = await Did.authorizeTx(
       delegator.id,

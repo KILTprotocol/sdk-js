@@ -25,13 +25,14 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=16.0"
+    "node": ">=18.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
+    "@kiltprotocol/augment-api": "1.11210.0-rc",
     "rimraf": "^3.0.2",
     "terser-webpack-plugin": "^5.1.1",
     "typescript": "^4.8.3",
@@ -43,7 +44,10 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/typegen": "^10.7.3"
+  },
+  "peerDependencies": {
+    "@kiltprotocol/augment-api": "^1.11210.0"
   }
 }

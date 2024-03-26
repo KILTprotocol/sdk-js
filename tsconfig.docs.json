@@ -5,7 +5,6 @@
     "entryPointStrategy": "resolve",
     "entryPoints": [
       "packages/asset-credentials/src/index.ts",
-      "packages/augment-api/src/index.ts",
       "packages/chain-helpers/src/index.ts",
       "packages/config/src/index.ts",
       "packages/credentials/src/index.ts",
@@ -15,7 +14,7 @@
       "packages/type-definitions/src/index.ts",
       "packages/types/src/index.ts",
       "packages/utils/src/index.ts",
-      "packages/vc-export/src/index.ts",
+      "packages/jsonld-suites/src/index.ts",
     ],
     "out": "docs/api",
     "theme": "default",

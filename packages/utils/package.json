@@ -23,23 +23,23 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=16.0"
+    "node": ">=18.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
+    "@types/uuid": "^8.0.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
   "dependencies": {
     "@kiltprotocol/eddsa-jcs-2022": "0.1.0-rc.1",
     "@kiltprotocol/es256k-jcs-2023": "0.1.0-rc.1",
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.1",
     "@kiltprotocol/sr25519-jcs-2023": "0.1.0-rc.1",
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^10.4.0",
+    "@polkadot/api": "^10.7.3",
     "@polkadot/keyring": "^12.0.0",
     "@polkadot/util": "^12.0.0",
     "@polkadot/util-crypto": "^12.0.0",
