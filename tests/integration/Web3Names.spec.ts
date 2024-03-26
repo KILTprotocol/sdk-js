@@ -172,6 +172,23 @@ describe('When there is an Web3NameCreator and a payer', () => {
     )
     await submitTx(authorizedTx, paymentAccount)
   }, 40_000)
+
+  it('should be possible to reclaim a name after a w3n has been reclaimed by a payment account', async () => {
+    const tx = api.tx.web3Names.claim(nick)
+    const authorizedTx = await Did.authorizeTx(
+      otherWeb3NameCreator.id,
+      tx,
+      await otherW3NCreatorKey.getSigners(otherWeb3NameCreator),
+      paymentAccount.address
+    )
+
+    await submitTx(authorizedTx, paymentAccount)
+    const encodedDidInfo = await api.call.did.query(
+      Did.toChain(otherWeb3NameCreator.id)
+    )
+    const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
+    expect(didInfo.document.alsoKnownAs).toStrictEqual([`w3n:${nick}`])
+  }, 40_000)
 })
 
 describe('Runtime constraints', () => {
