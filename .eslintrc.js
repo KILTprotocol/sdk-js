@@ -153,12 +153,6 @@ module.exports = {
       },
     },
     {
-      files: ['**/augment-api/src/interfaces/**/*.ts'],
-      rules: {
-        'license-header/header': 'off',
-      },
-    },
-    {
       files: ['tests/**/*'],
       rules: {
         'import/extensions': 'off',
