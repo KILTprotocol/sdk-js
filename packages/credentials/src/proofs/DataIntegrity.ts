@@ -17,6 +17,7 @@ import type {
 import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
 import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
+import { createVerifyData as createVerifyDataJcs } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import { parse, resolve } from '@kiltprotocol/did'
 import type {
@@ -63,6 +64,47 @@ export type DataIntegrityProof = {
   domain?: string
   challenge?: string
   previousProof?: string
+}
+
+const KNOWN_JCS_SUITES = [
+  'ecdsa-jcs-2019',
+  eddsaSuite.name,
+  ecdsaSuite.name,
+  sr25519Suite.name,
+]
+
+async function createVerifyData({
+  proof,
+  document,
+  suite,
+  options = {},
+}: {
+  proof: DataIntegrityProof
+  document: Record<string, unknown>
+  suite: CryptoSuite<any>
+  options?: Record<string, unknown>
+}): Promise<Uint8Array> {
+  if (suite.createVerifyData) {
+    return suite.createVerifyData({ proof, document })
+  }
+  // jcs suites will not work with the default logic. Use createVerifyData from jcs common instead.
+  if (KNOWN_JCS_SUITES.includes(suite.name)) {
+    return createVerifyDataJcs({ document, proof })
+  }
+  const proofOpts = { ...proof }
+  // @ts-expect-error property is non-optional but not part of canonized proof
+  delete proofOpts.proofValue
+  const canonizedProof = await suite.canonize(
+    {
+      // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
+      // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
+      '@context': document['@context'],
+      ...proofOpts,
+    },
+    options
+  )
+  const canonizedDoc = await suite.canonize(document, options)
+  return u8aConcat(sha256AsU8a(canonizedProof), sha256AsU8a(canonizedDoc))
 }
 
 /**
@@ -146,21 +188,8 @@ export async function createProof<T>(
     proof.previousProof = previousProof
   }
 
-  const canonizedProof = await suite.canonize({
-    // TODO: It's unclear if this behaviour is desirable (see https://github.com/digitalbazaar/data-integrity/issues/19).
-    // Adding the document context to the proof should NOT happen for a jcs proof according to the relevant specs;
-    // however both digitalbazaar/jsonld-signatures as well as digitalbazaar/data-integrity currently do enforce this.
-    // Not sure how to proceed; implement to spec or allow interoperability.
-    '@context': document['@context'],
-    ...proof,
-  })
-  const canonizedDoc = await suite.canonize(document)
-
-  const combinedHashes = u8aConcat(
-    sha256AsU8a(canonizedProof),
-    sha256AsU8a(canonizedDoc)
-  )
-  const signatureBytes = await signer.sign({ data: combinedHashes })
+  const verifyData = await createVerifyData({ proof, document, suite })
+  const signatureBytes = await signer.sign({ data: verifyData })
   proof.proofValue = MULTIBASE_BASE58BTC_HEADER + base58Encode(signatureBytes)
 
   return { ...document, proof }
@@ -422,17 +451,7 @@ export async function verifyProof(
     verificationMethod,
   })
   // transform document & proof options
-  const proofOpts: Record<string, unknown> = {
-    '@context': unsecuredDocument['@context'],
-    ...proof,
-  }
-  delete proofOpts.proofValue
-  const canonizedProof = await suite.canonize(proofOpts)
-  const canonizedDoc = await suite.canonize(unsecuredDocument)
-  const transformedData = u8aConcat(
-    sha256AsU8a(canonizedProof),
-    sha256AsU8a(canonizedDoc)
-  )
+  const transformedData = await createVerifyData({ proof, document, suite })
   // verify signature
   const verified = await verifier.verify({ data: transformedData, signature })
   // verify challenge & domain
