@@ -5,7 +5,6 @@
     "entryPointStrategy": "resolve",
     "entryPoints": [
       "packages/asset-credentials/src/index.ts",
-      "packages/augment-api/src/index.ts",
       "packages/chain-helpers/src/index.ts",
       "packages/config/src/index.ts",
       "packages/credentials/src/index.ts",
