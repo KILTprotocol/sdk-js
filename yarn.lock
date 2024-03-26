@@ -2035,7 +2035,6 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/type-definitions": "npm:^0.35.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^10.7.3"
@@ -2047,6 +2046,7 @@ __metadata:
     typescript: "npm:^4.8.3"
   peerDependencies:
     "@kiltprotocol/augment-api": "*"
+    "@kiltprotocol/type-definitions": ^0.35.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2201,6 +2201,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/type-definitions": "npm:^0.35.0"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/typegen": "npm:^10.7.3"
     rimraf: "npm:^3.0.2"

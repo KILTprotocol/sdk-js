@@ -45,6 +45,7 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/type-definitions": "^0.35.0",
     "@kiltprotocol/utils": "workspace:*"
   },
   "peerDependencies": {
