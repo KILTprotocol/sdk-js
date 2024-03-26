@@ -8,10 +8,10 @@
   "license": "BSD-4-Clause",
   "scripts": {
     "check": "tsc -p tsconfig.json --noEmit",
-    "build": "yarn workspaces foreach -ptAv --exclude '{root-workspace}' run build",
+    "build": "yarn workspaces foreach -ptAvv --exclude '{root-workspace}' run build",
     "build:docs": "typedoc --theme default --out docs/api --tsconfig tsconfig.docs.json && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
-    "clean": "rimraf tests/bundle/dist && rimraf tests/integration/dist && yarn workspaces foreach -p --exclude '{root-workspace}' run clean",
+    "clean": "rimraf tests/bundle/dist && rimraf tests/integration/dist && yarn workspaces foreach -pA --exclude '{root-workspace}' run clean",
     "clean:docs": "rimraf docs/api",
     "prepublish": "yarn workspaces foreach -pA --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -ptAv --no-private npm publish",
@@ -70,5 +70,5 @@
     "typescript": "^4.8.3"
   },
   "version": "0.34.0",
-  "packageManager": "yarn@3.3.1"
+  "packageManager": "yarn@4.1.1"
 }

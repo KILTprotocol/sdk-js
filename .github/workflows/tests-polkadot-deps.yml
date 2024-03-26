@@ -93,7 +93,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: build-16.x
+          name: build-20.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -137,7 +137,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: deps-16.x
+          name: deps-20.x
       - name: set dependencies env
         run: |
           echo 'DEPS<<EOF' >> $GITHUB_ENV
