@@ -66,6 +66,13 @@ export type DataIntegrityProof = {
   previousProof?: string
 }
 
+const KNOWN_JCS_SUITES = [
+  'ecdsa-jcs-2019',
+  eddsaSuite.name,
+  ecdsaSuite.name,
+  sr25519Suite.name,
+]
+
 async function createVerifyData({
   proof,
   document,
@@ -80,8 +87,8 @@ async function createVerifyData({
   if (suite.createVerifyData) {
     return suite.createVerifyData({ proof, document })
   }
-  // jcs suites will not work with the logic below - this would fix it.
-  if (suite.name.includes('-jcs-')) {
+  // jcs suites will not work with the default logic. Use createVerifyData from jcs common instead.
+  if (KNOWN_JCS_SUITES.includes(suite.name)) {
     return createVerifyDataJcs({ document, proof })
   }
   const proofOpts = { ...proof }
