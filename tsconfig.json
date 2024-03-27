@@ -15,7 +15,6 @@
       "@kiltprotocol/jsonld-suites": ["jsonld-suites/src"],
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/type-definitions": ["type-definitions/src"],
       "@kiltprotocol/legacy-credentials": ["legacy-credentials/src"]
       }
   },

@@ -2035,7 +2035,6 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^10.7.3"
@@ -2047,6 +2046,7 @@ __metadata:
     typescript: "npm:^4.8.3"
   peerDependencies:
     "@kiltprotocol/augment-api": "*"
+    "@kiltprotocol/type-definitions": ^0.35.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2201,6 +2201,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/type-definitions": "npm:^0.35.0"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/typegen": "npm:^10.7.3"
     rimraf: "npm:^3.0.2"
@@ -2224,15 +2225,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
-  version: 0.0.0-use.local
-  resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
-  dependencies:
-    "@polkadot/types": "npm:^10.0.0"
-    rimraf: "npm:^3.0.2"
-    typescript: "npm:^4.8.3"
-  languageName: unknown
-  linkType: soft
+"@kiltprotocol/type-definitions@npm:^0.35.0":
+  version: 0.35.0
+  resolution: "@kiltprotocol/type-definitions@npm:0.35.0"
+  checksum: 10c0/810865fdf51d6441a394c35972a8f91fbf7cf99d1efceed34f9d9262e8b36762b30a36cd56985430c698f33c9f1c1d9d0dc51d15c68bffd8807cb6985a6cd78c
+  languageName: node
+  linkType: hard
 
 "@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
   version: 0.0.0-use.local
@@ -2592,7 +2590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.0.0, @polkadot/types@npm:^10.7.3":
+"@polkadot/types@npm:10.7.3, @polkadot/types@npm:^10.7.3":
   version: 10.7.3
   resolution: "@polkadot/types@npm:10.7.3"
   dependencies:
