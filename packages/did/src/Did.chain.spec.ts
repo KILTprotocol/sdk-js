@@ -27,6 +27,13 @@ describe('did create', () => {
     )
     const { authentication, id } = createLightDidDocument({
       authentication: [keypair],
+      service: [
+        {
+          id: '#thing',
+          type: ['thang'],
+          serviceEndpoint: ['http://example.com'],
+        },
+      ],
     })
     const keyId = id + authentication?.[0]
     const signer = await Signers.signerFromKeypair({
