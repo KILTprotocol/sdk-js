@@ -26,7 +26,6 @@ import type {
   SubmittableExtrinsic,
   UriFragment,
 } from '@kiltprotocol/types'
-
 import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, Signers, ss58Format } from '@kiltprotocol/utils'
 
@@ -37,7 +36,6 @@ import type {
   NewDidVerificationKey,
   NewDidEncryptionKey,
 } from './DidDetails/DidDetails.js'
-
 import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
 import {
   keypairToMultibaseKey,
@@ -45,6 +43,10 @@ import {
   getFullDid,
   parse,
 } from './Did.utils.js'
+import {
+  type NewLightDidVerificationKey,
+  createLightDidDocument,
+} from './DidDetails/LightDidDetails.js'
 
 export type ChainDidIdentifier = KiltAddress
 
@@ -420,9 +422,14 @@ export async function getStoreTx(
     .toU8a()
 
   // signers can identify using the authentication public key encoded as address or hex, or a light did authentication key
-  const lightDidRegex = RegExp(`^did:kilt:light:.+${did}.*#authentication$`)
-  const matchesLightDid: Signers.SignerSelector = ({ id }) =>
-    lightDidRegex.test(id)
+  const matchesLightDid: Signers.SignerSelector = ({ id }) => {
+    try {
+      const { address, fragment } = parse(id as Did)
+      return address === did && fragment === '#authentication'
+    } catch {
+      return false
+    }
+  }
   const matchesPublicKey = Signers.select.bySignerId([
     did,
     Crypto.u8aToHex(authenticationKey.publicKey),
@@ -442,7 +449,13 @@ export async function getStoreTx(
           id: [
             did,
             Crypto.u8aToHex(authenticationKey.publicKey),
-            lightDidRegex.toString(),
+            ...(authenticationKey.type !== 'ecdsa'
+              ? createLightDidDocument({
+                  authentication: [
+                    authenticationKey as NewLightDidVerificationKey,
+                  ],
+                }).authentication ?? []
+              : []),
           ], // TODO: we could compute the key id and accept it too
           algorithm: [Signers.DID_PALLET_SUPPORTED_ALGORITHMS],
         },
