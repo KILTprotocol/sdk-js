@@ -171,9 +171,9 @@ export async function resolve(
  */
 export async function resolveRepresentation(
   did: Did,
-  { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON_CONTENT_TYPE,
-  }
+  {
+    accept = DID_JSON_CONTENT_TYPE,
+  }: DereferenceOptions<SupportedContentType> = {}
 ): Promise<RepresentationResolutionResult<SupportedContentType>> {
   const inputTransform = (() => {
     switch (accept) {
@@ -341,10 +341,9 @@ async function dereferenceInternal(
  */
 export async function dereference(
   didUrl: Did | DidUrl,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON_CONTENT_TYPE,
-  }
+  {
+    accept = DID_JSON_CONTENT_TYPE,
+  }: DereferenceOptions<SupportedContentType> = {}
 ): Promise<DereferenceResult<SupportedContentType>> {
   // The spec does not include an error for unsupported content types for dereferences
   const contentType = isValidContentType(accept)
