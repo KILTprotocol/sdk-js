@@ -43,7 +43,7 @@
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/util": "^12.0.0",
     "@polkadot/util-crypto": "^12.0.0",
-    "crypto-ld": "^6.0.0"
+    "crypto-ld": "^7.0.0"
   },
   "peerDependencies": {
     "jsonld": "^8.1.0",
