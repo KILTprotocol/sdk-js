@@ -171,14 +171,14 @@ export function isDidSignature(
  */
 export function signatureFromJson(input: DidSignature | LegacyDidSignature): {
   signature: Uint8Array
-  keyUri: DidUrl
+  signerUrl: DidUrl
 } {
-  const keyUri = (() => {
+  const signerUrl = (() => {
     if ('keyId' in input) {
       return input.keyId
     }
     return input.keyUri
   })()
   const signature = Crypto.coToUInt8(input.signature)
-  return { signature, keyUri }
+  return { signature, signerUrl }
 }
