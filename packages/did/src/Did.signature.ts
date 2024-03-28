@@ -14,9 +14,6 @@ import type {
   Did,
   DidUrl,
   SignatureVerificationRelationship,
-  SignResponseData,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  SignCallback,
 } from '@kiltprotocol/types'
 
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -166,33 +163,14 @@ export function isDidSignature(
 }
 
 /**
- * Transforms the output of a {@link SignCallback} into the {@link DidSignature} format suitable for json-based data exchange.
- *
- * @param input Signature data returned from the {@link SignCallback}.
- * @param input.signature Signature bytes.
- * @param input.verificationMethod The verification method used to generate the signature.
- * @returns A {@link DidSignature} object where signature is hex-encoded.
- */
-export function signatureToJson({
-  signature,
-  verificationMethod,
-}: SignResponseData): DidSignature {
-  return {
-    signature: Crypto.u8aToHex(signature),
-    keyUri: `${verificationMethod.controller}${verificationMethod.id}`,
-  }
-}
-
-/**
  * Deserializes a {@link DidSignature} for signature verification.
  * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
  *
  * @param input A {@link DidSignature} object.
  * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
  */
-export function signatureFromJson(
-  input: DidSignature | LegacyDidSignature
-): Pick<SignResponseData, 'signature'> & {
+export function signatureFromJson(input: DidSignature | LegacyDidSignature): {
+  signature: Uint8Array
   keyUri: DidUrl
 } {
   const keyUri = (() => {
