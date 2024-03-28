@@ -26,7 +26,6 @@ import type {
   SubmittableExtrinsic,
   UriFragment,
 } from '@kiltprotocol/types'
-
 import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, Signers, ss58Format } from '@kiltprotocol/utils'
 
@@ -37,7 +36,6 @@ import type {
   NewDidVerificationKey,
   NewDidEncryptionKey,
 } from './DidDetails/DidDetails.js'
-
 import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
 import {
   keypairToMultibaseKey,
@@ -45,6 +43,10 @@ import {
   getFullDid,
   parse,
 } from './Did.utils.js'
+import {
+  type NewLightDidVerificationKey,
+  createLightDidDocument,
+} from './DidDetails/LightDidDetails.js'
 
 export type ChainDidIdentifier = KiltAddress
 
@@ -333,7 +335,8 @@ interface GetStoreTxInput {
  * @param input The DID keys and services to store.
  * @param submitter The KILT address authorized to submit the creation operation.
  * @param signers An array of signer interfaces. A suitable signer will be selected if available.
- * The signer has to use the authentication public key encoded as a Kilt Address or as a hex string as its id.
+ * The signer has to use the authentication public key encoded as a Kilt Address or as a hex string as its id,
+ * or alternatively the authentication key id of the light DID to be upgraded.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
@@ -418,13 +421,23 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
+  // signers can identify using the authentication public key encoded as address or hex, or a light did authentication key
+  const matchesLightDid: Signers.SignerSelector = ({ id }) => {
+    try {
+      const { address, fragment } = parse(id as Did)
+      return address === did && fragment === '#authentication'
+    } catch {
+      return false
+    }
+  }
+  const matchesPublicKey = Signers.select.bySignerId([
+    did,
+    Crypto.u8aToHex(authenticationKey.publicKey),
+  ])
   const signer = Signers.selectSigner(
     signers,
     Signers.select.verifiableOnChain(),
-    Signers.select.bySignerId([
-      did,
-      Crypto.u8aToHex(authenticationKey.publicKey),
-    ])
+    (sig) => matchesPublicKey(sig) || matchesLightDid(sig)
   )
 
   if (!signer) {
@@ -433,7 +446,17 @@ export async function getStoreTx(
       {
         availableSigners: signers,
         signerRequirements: {
-          id: [did, Crypto.u8aToHex(authenticationKey.publicKey)], // TODO: we could compute the key id and accept it too, or accept light Dids as signers
+          id: [
+            did,
+            Crypto.u8aToHex(authenticationKey.publicKey),
+            ...(authenticationKey.type !== 'ecdsa'
+              ? createLightDidDocument({
+                  authentication: [
+                    authenticationKey as NewLightDidVerificationKey,
+                  ],
+                }).authentication ?? []
+              : []),
+          ], // TODO: we could compute the key id and accept it too
           algorithm: [Signers.DID_PALLET_SUPPORTED_ALGORITHMS],
         },
       }

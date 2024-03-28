@@ -6,15 +6,49 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
+import { Crypto, Signers } from '@kiltprotocol/utils'
 
 import { ApiMocks } from '../../../tests/testUtils'
-import { serviceToChain } from './Did.chain'
+import { getStoreTx, serviceToChain } from './Did.chain'
+import { createLightDidDocument } from './DidDetails'
 
 let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
   ConfigService.set({ api })
+})
+
+describe('did create', () => {
+  it('accepts light did signers', async () => {
+    const keypair = Crypto.makeKeypairFromUri(
+      Crypto.mnemonicGenerate(),
+      'ed25519'
+    )
+    const { authentication, id } = createLightDidDocument({
+      authentication: [keypair],
+      service: [
+        {
+          id: '#thing',
+          type: ['thang'],
+          serviceEndpoint: ['http://example.com'],
+        },
+      ],
+    })
+    const keyId = id + authentication?.[0]
+    const signer = await Signers.signerFromKeypair({
+      id: keyId,
+      algorithm: 'Ed25519',
+      keypair,
+    })
+    await expect(
+      getStoreTx(
+        { authentication: [keypair], assertionMethod: [keypair] },
+        keypair.address,
+        [signer]
+      )
+    ).resolves.toHaveProperty('method.method', 'create')
+  })
 })
 
 describe('services validation', () => {
