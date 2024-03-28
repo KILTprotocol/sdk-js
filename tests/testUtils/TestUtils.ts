@@ -10,7 +10,6 @@ import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 import type {
   DidDocument,
   DidUrl,
-  EncryptCallback,
   KeyringPair,
   KiltAddress,
   KiltEncryptionKeypair,
@@ -44,10 +43,6 @@ import {
   toChain,
   linkedInfoFromChain,
 } from '@kiltprotocol/did'
-
-export type EncryptionKeyToolCallback = (
-  didDocument: DidDocument
-) => EncryptCallback
 
 export interface EncryptionKeyTool {
   keyAgreement: [KiltEncryptionKeypair]
