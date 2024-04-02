@@ -21,6 +21,7 @@ import type {
   DidUrl,
   KiltAddress,
   Service,
+  UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
@@ -34,11 +35,11 @@ import type {
 
 function servicesFromChain(
   encoded: DidServiceEndpointsDidEndpoint[],
-  did: Did
-): Service[] {
+  did?: Did
+): Array<Service<UriFragment | DidUrl>> {
   return encoded.map((encodedValue) => {
     const service = serviceFromChain(encodedValue)
-    return { ...service, id: `${did}${service.id}` }
+    return { ...service, id: `${did ?? ''}${service.id}` }
   })
 }
 
@@ -72,22 +73,40 @@ function connectedAccountsFromChain(
   )
 }
 
-export interface LinkedDidInfo {
-  document: DidDocument
+export interface LinkedDidInfo<IdType extends DidUrl | UriFragment> {
+  document: DidDocument<IdType>
   accounts: Address[]
 }
+
+export function linkedInfoFromChain(
+  encoded: Option<RawDidLinkedInfo>,
+  networkPrefix?: number,
+  relativeURLs?: false
+): LinkedDidInfo<DidUrl>
+export function linkedInfoFromChain(
+  encoded: Option<RawDidLinkedInfo>,
+  networkPrefix: number | undefined,
+  relativeURLs: true
+): LinkedDidInfo<UriFragment>
+export function linkedInfoFromChain(
+  encoded: Option<RawDidLinkedInfo>,
+  networkPrefix: number | undefined,
+  relativeURLs?: boolean
+): LinkedDidInfo<DidUrl | UriFragment>
 
 /**
  * Decodes accounts, DID, and web3name linked to the provided account.
  *
  * @param encoded The data returned by `api.call.did.queryByAccount()`, `api.call.did.query()`, and `api.call.did.queryByWeb3Name()`.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
+ * @param relativeURLs
  * @returns The accounts, DID, and web3name.
  */
 export function linkedInfoFromChain(
   encoded: Option<RawDidLinkedInfo>,
-  networkPrefix = ss58Format
-): LinkedDidInfo {
+  networkPrefix = ss58Format,
+  relativeURLs = false
+): LinkedDidInfo<DidUrl | UriFragment> {
   const { identifier, accounts, w3n, serviceEndpoints, details } =
     encoded.unwrap()
 
@@ -100,22 +119,22 @@ export function linkedInfoFromChain(
   } = details
 
   const did = fromChain(identifier)
-  const idPrefix = `${did}#` as const
-  function formatKeyId(keyId: Codec): DidUrl {
+  const idPrefix = relativeURLs === true ? `#` : (`${did}#` as const)
+  function formatKeyId(keyId: Codec): DidUrl | UriFragment {
     return `${idPrefix}${keyId.toHex()}`
   }
 
-  const verificationMethod: VerificationMethod[] = [
+  const verificationMethod: Array<VerificationMethod<DidUrl | UriFragment>> = [
     ...publicKeys.entries(),
   ].map(([keyId, keyDetails]) => {
-    const { publicKey, type, id } = publicKeyFromChain(keyId, keyDetails)
-    return didKeyToVerificationMethod(did, `${did}${id}` as const, {
+    const { publicKey, type } = publicKeyFromChain(keyId, keyDetails)
+    return didKeyToVerificationMethod(did, formatKeyId(keyId), {
       keyType: type,
       publicKey,
     })
   })
 
-  const document: DidDocument = {
+  const document: DidDocument<DidUrl | UriFragment> = {
     id: fromChain(identifier),
     verificationMethod,
     authentication: [formatKeyId(authenticationKey)],
@@ -130,7 +149,10 @@ export function linkedInfoFromChain(
     document.keyAgreement = [...keyAgreementKeys.values()].map(formatKeyId)
   }
 
-  const services = servicesFromChain(serviceEndpoints, did)
+  const services = servicesFromChain(
+    serviceEndpoints,
+    relativeURLs === true ? undefined : did
+  )
   if (services.length > 0) {
     document.service = services
   }

@@ -17,9 +17,9 @@ import type {
   FailedDereferenceMetadata,
   JsonLd,
   RepresentationResolutionResult,
-  ResolutionDocumentMetadata,
   ResolutionOptions,
   ResolutionResult,
+  UriFragment,
 } from '@kiltprotocol/types'
 
 import { stringToU8a } from '@polkadot/util'
@@ -53,26 +53,54 @@ function isValidContentType(input: unknown): input is SupportedContentType {
   )
 }
 
-type InternalResolutionResult = {
-  document?: DidDocument
-  documentMetadata: ResolutionDocumentMetadata
-}
-
 async function resolveInternal(
-  did: Did
-): Promise<InternalResolutionResult | null> {
+  did: Did,
+  relativeURLs: boolean
+): Promise<
+  Omit<ResolutionResult, 'didDocument'> & {
+    didDocument?: DidDocument<DidUrl | UriFragment>
+  }
+>
+async function resolveInternal(
+  did: Did,
+  relativeURLs: true
+): Promise<
+  Omit<ResolutionResult, 'didDocument'> & {
+    didDocument?: DidDocument<UriFragment>
+  }
+>
+async function resolveInternal(did: Did): Promise<ResolutionResult>
+async function resolveInternal(
+  did: Did,
+  relativeURLs = false
+): Promise<
+  Omit<ResolutionResult, 'didDocument'> & {
+    didDocument?: DidDocument<DidUrl | UriFragment>
+  }
+> {
+  try {
+    validateDid(did, 'Did')
+  } catch (error) {
+    return {
+      didResolutionMetadata: {
+        error: 'invalidDid',
+      },
+      didDocumentMetadata: {},
+    }
+  }
   const { type } = parse(did)
   const api = ConfigService.get('api')
 
   const { document } = await api.call.did
     .query(toChain(did))
-    .then(linkedInfoFromChain)
+    .then((i) => linkedInfoFromChain(i, undefined, relativeURLs))
     .catch(() => ({ document: undefined }))
 
   if (type === 'full' && document !== undefined) {
     return {
-      document,
-      documentMetadata: {},
+      didDocument: document,
+      didDocumentMetadata: {},
+      didResolutionMetadata: {},
     }
   }
 
@@ -81,27 +109,34 @@ async function resolveInternal(
   if (isFullDidDeleted) {
     return {
       // No canonicalId is returned as we consider this DID deactivated/deleted.
-      documentMetadata: {
+      didDocumentMetadata: {
         deactivated: true,
       },
-      document: {
+      didDocument: {
         id: did,
       },
+      didResolutionMetadata: {},
     }
   }
 
   if (type === 'full') {
-    return null
+    return {
+      didResolutionMetadata: {
+        error: 'notFound',
+      },
+      didDocumentMetadata: {},
+    }
   }
 
   const lightDocument = parseDocumentFromLightDid(did, false)
   // If a full DID with same subject is present, return the resolution metadata accordingly.
   if (document !== undefined) {
     return {
-      documentMetadata: {
+      didDocumentMetadata: {
         canonicalId: getFullDid(did),
       },
-      document: {
+      didResolutionMetadata: {},
+      didDocument: {
         id: lightDocument.id,
       },
     }
@@ -109,8 +144,9 @@ async function resolveInternal(
 
   // If no full DID details nor deletion info is found, the light DID is un-migrated.
   return {
-    document: lightDocument,
-    documentMetadata: {},
+    didDocument: lightDocument,
+    didDocumentMetadata: {},
+    didResolutionMetadata: {},
   }
 }
 
@@ -128,35 +164,7 @@ export async function resolve(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolutionOptions: ResolutionOptions = {}
 ): Promise<ResolutionResult> {
-  try {
-    validateDid(did, 'Did')
-  } catch (error) {
-    return {
-      didResolutionMetadata: {
-        error: 'invalidDid',
-      },
-      didDocumentMetadata: {},
-    }
-  }
-
-  const resolutionResult = await resolveInternal(did)
-  if (resolutionResult === null) {
-    return {
-      didResolutionMetadata: {
-        error: 'notFound',
-      },
-      didDocumentMetadata: {},
-    }
-  }
-
-  const { documentMetadata: didDocumentMetadata, document: didDocument } =
-    resolutionResult
-
-  return {
-    didResolutionMetadata: {},
-    didDocumentMetadata,
-    didDocument,
-  }
+  return resolveInternal(did)
 }
 
 /**
@@ -207,7 +215,7 @@ export async function resolveRepresentation(
   }
 
   const { didDocumentMetadata, didResolutionMetadata, didDocument } =
-    await resolve(did)
+    await resolveInternal(did)
 
   if (didDocument === undefined) {
     return {
@@ -231,7 +239,7 @@ type InternalDereferenceResult =
   | FailedDereferenceMetadata
   | {
       contentMetadata: DereferenceContentMetadata
-      contentStream: DereferenceContentStream
+      contentStream: DereferenceContentStream<DidUrl | UriFragment>
     }
 
 /**
@@ -248,12 +256,14 @@ export function isFailedDereferenceMetadata(
 
 async function dereferenceInternal(
   didUrl: Did | DidUrl,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  dereferenceOptions: DereferenceOptions<SupportedContentType>
+  { relativeURLs = false }: DereferenceOptions<SupportedContentType>
 ): Promise<InternalDereferenceResult> {
   const { did, queryParameters, fragment } = parse(didUrl)
 
-  const { didDocument, didDocumentMetadata } = await resolve(did)
+  const { didDocument, didDocumentMetadata } = await resolveInternal(
+    did,
+    relativeURLs
+  )
 
   if (didDocument === undefined) {
     return {
@@ -331,6 +341,25 @@ async function dereferenceInternal(
   }
 }
 
+export async function dereference<
+  Accept extends SupportedContentType = typeof DID_JSON_CONTENT_TYPE
+>(
+  didUrl: Did | DidUrl,
+  derefOptions?: DereferenceOptions<Accept>
+): Promise<DereferenceResult<Accept, DidUrl | UriFragment>>
+export async function dereference<
+  Accept extends SupportedContentType = typeof DID_JSON_CONTENT_TYPE
+>(
+  didUrl: Did | DidUrl,
+  derefOptions: DereferenceOptions<Accept> & { relativeURLs: true }
+): Promise<DereferenceResult<Accept, UriFragment>>
+export async function dereference<
+  Accept extends SupportedContentType = typeof DID_JSON_CONTENT_TYPE
+>(
+  didUrl: Did | DidUrl,
+  derefOptions?: DereferenceOptions<Accept> & { relativeURLs?: false }
+): Promise<DereferenceResult<Accept, DidUrl>>
+
 /**
  * Implementation of `dereference` compliant with {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  * If a DID URL is invalid or has not been registered, this is indicated by the `error` property on the `dereferencingMetadata`.
@@ -338,15 +367,15 @@ async function dereferenceInternal(
  * @param didUrl The DID URL to dereference.
  * @param resolutionOptions The resolution options accepted by the `dereference` function as specified in the {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  * @param resolutionOptions.accept The content type accepted by the requesting client.
+ * @param resolutionOptions.relativeURLs
  * @returns The resolution result for the `dereference` function as specified in the {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  */
-export async function dereference(
+export async function dereference<
+  Accept extends SupportedContentType = typeof DID_JSON_CONTENT_TYPE
+>(
   didUrl: Did | DidUrl,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON_CONTENT_TYPE,
-  }
-): Promise<DereferenceResult<SupportedContentType>> {
+  { accept, relativeURLs = false }: DereferenceOptions<Accept> = {}
+): Promise<DereferenceResult<Accept, DidUrl | UriFragment>> {
   // The spec does not include an error for unsupported content types for dereferences
   const contentType = isValidContentType(accept)
     ? accept
@@ -365,6 +394,7 @@ export async function dereference(
 
   const dereferenceResult = await dereferenceInternal(didUrl, {
     accept: contentType,
+    relativeURLs,
   })
 
   if (isFailedDereferenceMetadata(dereferenceResult)) {
@@ -401,7 +431,7 @@ export async function dereference(
 
   return {
     dereferencingMetadata: {
-      contentType: contentTypeValue as SupportedContentType,
+      contentType: contentTypeValue as Accept,
     },
     contentMetadata: dereferenceResult.contentMetadata,
     contentStream: stream,

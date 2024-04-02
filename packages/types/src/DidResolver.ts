@@ -12,6 +12,7 @@ import type {
   VerificationMethod,
   Service,
   JsonLd,
+  UriFragment,
 } from './Did'
 
 /**
@@ -73,7 +74,9 @@ export type ResolutionResult = {
   didDocumentMetadata: ResolutionDocumentMetadata
 }
 
-export type RepresentationResolutionOptions<Accept extends string = string> = {
+export type RepresentationResolutionOptions<
+  Accept extends string = string // Absolute extends boolean = false
+> = {
   /**
    * The Media Type of the caller's preferred representation of the DID document.
    * The Media Type MUST be expressed as an ASCII string.
@@ -81,6 +84,7 @@ export type RepresentationResolutionOptions<Accept extends string = string> = {
    * This property is OPTIONAL for the resolveRepresentation function and MUST NOT be used with the resolve function.
    */
   accept?: Accept
+  relativeURLs?: boolean
 }
 
 export type SuccessfulRepresentationResolutionMetadata<
@@ -135,7 +139,7 @@ export type RepresentationResolutionResult<
  * The resolve function returns the DID document in its abstract form (a map).
  */
 export interface ResolveDid<Accept extends string = string> {
-  resolve: (
+  resolve(
     /**
      * This is the DID to resolve.
      * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
@@ -146,9 +150,9 @@ export interface ResolveDid<Accept extends string = string> {
      * This input is REQUIRED, but the structure MAY be empty.
      */
     resolutionOptions: ResolutionOptions
-  ) => Promise<ResolutionResult>
+  ): Promise<ResolutionResult>
 
-  resolveRepresentation: (
+  resolveRepresentation(
     /**
      * This is the DID to resolve.
      * This input is REQUIRED and the value MUST be a conformant DID as defined in 3.1 DID Syntax.
@@ -159,16 +163,20 @@ export interface ResolveDid<Accept extends string = string> {
      * This input is REQUIRED, but the structure MAY be empty.
      */
     resolutionOptions: RepresentationResolutionOptions<Accept>
-  ) => Promise<RepresentationResolutionResult<Accept>>
+  ): Promise<RepresentationResolutionResult<Accept>>
 }
 
-export type DereferenceOptions<Accept extends string = string> = {
+export type DereferenceOptions<
+  Accept extends string = string
+  // Absolute extends boolean = boolean
+> = {
   /**
    * The Media Type that the caller prefers for contentStream.
    * The Media Type MUST be expressed as an ASCII string.
    * The DID URL dereferencing implementation SHOULD use this value to determine the contentType of the representation contained in the returned value if such a representation is supported and available.
    */
   accept?: Accept
+  relativeURLs?: boolean
 }
 
 export type SuccessfulDereferenceMetadata<ContentType extends string = string> =
@@ -198,18 +206,21 @@ export type DereferenceMetadata<ContentType extends string = string> =
   | SuccessfulDereferenceMetadata<ContentType>
   | FailedDereferenceMetadata
 
-export type DereferenceContentStream =
-  | DidDocument
-  | JsonLd<DidDocument>
-  | VerificationMethod
-  | JsonLd<VerificationMethod>
-  | Service
-  | JsonLd<Service>
+export type DereferenceContentStream<IdType extends string = DidUrl> =
+  | DidDocument<IdType>
+  | JsonLd<DidDocument<IdType>>
+  | VerificationMethod<IdType>
+  | JsonLd<VerificationMethod<IdType>>
+  | Service<IdType>
+  | JsonLd<Service<IdType>>
   | Uint8Array
 
 export type DereferenceContentMetadata = ResolutionDocumentMetadata
 
-export type DereferenceResult<ContentType extends string = string> = {
+export type DereferenceResult<
+  ContentType extends string = string,
+  IdType extends string = DidUrl
+> = {
   /**
    * A metadata structure consisting of values relating to the results of the DID URL dereferencing process.
    * This structure is REQUIRED, and in the case of an error in the dereferencing process, this MUST NOT be empty.
@@ -222,7 +233,7 @@ export type DereferenceResult<ContentType extends string = string> = {
    * The contentStream MAY be a resource such as a DID document that is serializable in one of the conformant representations, a Verification Method, a service, or any other resource format that can be identified via a Media Type and obtained through the resolution process.
    * If the dereferencing is unsuccessful, this value MUST be empty.
    */
-  contentStream?: DereferenceContentStream
+  contentStream?: DereferenceContentStream<IdType>
   /**
    * If the dereferencing is successful, this MUST be a metadata structure, but the structure MAY be empty.
    * This structure contains metadata about the contentStream.
@@ -232,8 +243,36 @@ export type DereferenceResult<ContentType extends string = string> = {
   contentMetadata: DereferenceContentMetadata
 }
 
-export interface DereferenceDidUrl<Accept extends string = string> {
-  dereference: (
+export interface DereferenceDidUrl<Accepted extends string = string> {
+  dereference<Accept extends Accepted>(
+    /**
+     * A conformant DID URL as a single string.
+     * This is the DID URL to dereference.
+     * To dereference a DID fragment, the complete DID URL including the DID fragment MUST be used. This input is REQUIRED.
+     */
+    didUrl: Did | DidUrl,
+    /**
+     * A metadata structure consisting of input options to the dereference function in addition to the didUrl itself.
+     * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.
+     * This input is REQUIRED, but the structure MAY be empty.
+     */
+    dereferenceOptions: DereferenceOptions<Accept> & { relativeURLs?: false }
+  ): Promise<DereferenceResult<Accept, DidUrl>>
+  dereference<Accept extends Accepted>(
+    /**
+     * A conformant DID URL as a single string.
+     * This is the DID URL to dereference.
+     * To dereference a DID fragment, the complete DID URL including the DID fragment MUST be used. This input is REQUIRED.
+     */
+    didUrl: Did | DidUrl,
+    /**
+     * A metadata structure consisting of input options to the dereference function in addition to the didUrl itself.
+     * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.
+     * This input is REQUIRED, but the structure MAY be empty.
+     */
+    dereferenceOptions: DereferenceOptions<Accept> & { relativeURLs: true }
+  ): Promise<DereferenceResult<Accept, UriFragment>>
+  dereference<Accept extends Accepted>(
     /**
      * A conformant DID URL as a single string.
      * This is the DID URL to dereference.
@@ -246,7 +285,7 @@ export interface DereferenceDidUrl<Accept extends string = string> {
      * This input is REQUIRED, but the structure MAY be empty.
      */
     dereferenceOptions: DereferenceOptions<Accept>
-  ) => Promise<DereferenceResult<Accept>>
+  ): Promise<DereferenceResult<Accept, DidUrl | UriFragment>>
 }
 
 export interface DidResolver<Accept extends string = string>
