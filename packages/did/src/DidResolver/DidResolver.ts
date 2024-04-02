@@ -270,7 +270,8 @@ async function dereferenceInternal(
 
   const [dereferencedResource, dereferencingError] = (() => {
     const verificationMethod = didDocument?.verificationMethod?.find(
-      ({ controller, id }) => controller === didDocument.id && id === fragment
+      ({ controller, id }) =>
+        controller === didDocument.id && id.endsWith(fragment)
     )
 
     if (verificationMethod !== undefined) {
@@ -308,7 +309,7 @@ async function dereferenceInternal(
     }
 
     // If no verification method is found, try to retrieve a service with the provided ID, ignoring any query parameters.
-    const service = didDocument?.service?.find((s) => s.id === fragment)
+    const service = didDocument?.service?.find((s) => s.id.endsWith(fragment))
     if (service === undefined) {
       return [
         null,

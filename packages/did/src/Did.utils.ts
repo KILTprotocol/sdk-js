@@ -222,11 +222,11 @@ export function keypairToMultibaseKey({
  * @param key.publicKey The public component of the key.
  * @returns The provided key encoded as a {@link VerificationMethod}.
  */
-export function didKeyToVerificationMethod(
+export function didKeyToVerificationMethod<IdType extends DidUrl | UriFragment>(
   controller: VerificationMethod['controller'],
-  id: VerificationMethod['id'],
+  id: IdType,
   { keyType, publicKey }: DecodedVerificationMethod
-): VerificationMethod {
+): VerificationMethod<IdType> {
   const multiCodecPublicKeyPrefix = multicodecReversePrefixes[keyType]
   if (multiCodecPublicKeyPrefix === undefined) {
     throw new SDKErrors.DidError(

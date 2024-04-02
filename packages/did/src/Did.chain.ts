@@ -69,13 +69,13 @@ export function toChain(did: Did): ChainDidIdentifier {
 }
 
 /**
- * Format a DID fragment to be used as a parameter for the blockchain API functions.
+ * Extract a fragment from a DID URL to be used as a parameter for the blockchain API functions.
 
- * @param id The DID fragment to format.
+ * @param id The DID URL or fragment to format.
  * @returns The blockchain-formatted ID.
  */
-export function fragmentIdToChain(id: UriFragment): string {
-  return id.replace(/^#/, '')
+export function urlFragmentToChain(id: UriFragment | DidUrl): string {
+  return id.slice(id.indexOf('#') + 1)
 }
 
 /**
@@ -174,7 +174,7 @@ export function documentFromChain(
   const keys: Record<string, ChainDidKey> = [...publicKeys.entries()]
     .map(([keyId, keyDetails]) => publicKeyFromChain(keyId, keyDetails))
     .reduce((res, key) => {
-      res[fragmentIdToChain(key.id)] = key
+      res[urlFragmentToChain(key.id)] = key
       return res
     }, {})
 
@@ -247,7 +247,7 @@ export function validateNewService(endpoint: NewService): void {
       `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URL, which is violated by id "${id}"`
     )
   }
-  if (!isUriFragment(fragmentIdToChain(id))) {
+  if (!isUriFragment(urlFragmentToChain(id))) {
     throw new SDKErrors.DidError(
       `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
     )
@@ -267,11 +267,12 @@ export function validateNewService(endpoint: NewService): void {
  * @param service The DID service to format.
  * @returns The blockchain-formatted DID service.
  */
-export function serviceToChain(service: NewService): ChainDidService {
-  validateNewService(service)
+export function serviceToChain(service: NewService | Service): ChainDidService {
   const { id, type, serviceEndpoint } = service
+  const chainId = urlFragmentToChain(id)
+  validateNewService({ ...service, id: `#${chainId}` })
   return {
-    id: fragmentIdToChain(id),
+    id: chainId,
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -284,9 +285,9 @@ export function serviceToChain(service: NewService): ChainDidService {
  * @returns The DID service.
  */
 export function serviceFromChain(
-  encoded: Option<DidServiceEndpointsDidEndpoint>
-): Service {
-  const { id, serviceTypes, urls } = encoded.unwrap()
+  encoded: DidServiceEndpointsDidEndpoint
+): Service<UriFragment> {
+  const { id, serviceTypes, urls } = encoded
   return {
     id: `#${id.toUtf8()}`,
     type: serviceTypes.map((type) => type.toUtf8()),
@@ -318,7 +319,7 @@ interface GetStoreTxInput {
   capabilityDelegation?: [NewDidVerificationKey]
   keyAgreement?: NewDidEncryptionKey[]
 
-  service?: NewService[]
+  service?: Array<NewService | Service>
 }
 
 /**
