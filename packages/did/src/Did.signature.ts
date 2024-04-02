@@ -120,8 +120,7 @@ export async function verifyDidSignature({
   }
   const didDocument = contentStream as DidDocument
   const verificationMethod = didDocument.verificationMethod?.find(
-    ({ controller, id }) =>
-      controller === didDocument.id && id === signer.fragment
+    ({ controller, id }) => controller === didDocument.id && id === signerUrl
   )
   if (verificationMethod === undefined) {
     throw new SDKErrors.DidNotFoundError('Verification method not found in DID')

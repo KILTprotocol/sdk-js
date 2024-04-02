@@ -74,8 +74,8 @@ export function toChain(did: Did): ChainDidIdentifier {
  * @param id The DID fragment to format.
  * @returns The blockchain-formatted ID.
  */
-export function fragmentIdToChain(id: UriFragment): string {
-  return id.replace(/^#/, '')
+export function fragmentIdToChain(id: UriFragment | DidUrl): string {
+  return id.slice(id.lastIndexOf('#') + 1)
 }
 
 /**
@@ -267,11 +267,12 @@ export function validateNewService(endpoint: NewService): void {
  * @param service The DID service to format.
  * @returns The blockchain-formatted DID service.
  */
-export function serviceToChain(service: NewService): ChainDidService {
-  validateNewService(service)
+export function serviceToChain(service: NewService | Service): ChainDidService {
   const { id, type, serviceEndpoint } = service
+  const chainId = fragmentIdToChain(id)
+  validateNewService({ ...service, id: `#${chainId}` })
   return {
-    id: fragmentIdToChain(id),
+    id: chainId,
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -284,9 +285,9 @@ export function serviceToChain(service: NewService): ChainDidService {
  * @returns The DID service.
  */
 export function serviceFromChain(
-  encoded: Option<DidServiceEndpointsDidEndpoint>
-): Service {
-  const { id, serviceTypes, urls } = encoded.unwrap()
+  encoded: DidServiceEndpointsDidEndpoint
+): Service<UriFragment> {
+  const { id, serviceTypes, urls } = encoded
   return {
     id: `#${id.toUtf8()}`,
     type: serviceTypes.map((type) => type.toUtf8()),
@@ -318,7 +319,7 @@ interface GetStoreTxInput {
   capabilityDelegation?: [NewDidVerificationKey]
   keyAgreement?: NewDidEncryptionKey[]
 
-  service?: NewService[]
+  service?: Array<NewService | Service>
 }
 
 /**

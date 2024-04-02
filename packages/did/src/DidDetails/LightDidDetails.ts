@@ -115,7 +115,7 @@ function validateCreateDocumentInput({
   // when upgrading to a full DID.
   service?.forEach((s) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
-    if (s.id === '#authentication' || s.id === '#encryption') {
+    if (s.id.endsWith('#authentication') || s.id.endsWith('#encryption')) {
       throw new SDKErrors.DidError(
         `Cannot specify a service ID with the name "${s.id}" as it is a reserved keyword`
       )
@@ -239,16 +239,20 @@ export function createLightDidDocument({
   const did =
     `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as Did
 
+  const authKey = `${did}${authenticationKeyId}` as const
   const didDocument: DidDocument = {
     id: did,
-    authentication: [authenticationKeyId],
+    authentication: [authKey],
     verificationMethod: [
-      didKeyToVerificationMethod(did, authenticationKeyId, {
+      didKeyToVerificationMethod(did, authKey, {
         keyType: authentication[0].type,
         publicKey: authentication[0].publicKey,
       }),
     ],
-    service,
+  }
+
+  if (typeof service !== 'undefined' && service?.length > 0) {
+    didDocument.service = service.map((i) => ({ ...i, id: `${did}${i.id}` }))
   }
 
   if (keyAgreement !== undefined) {
