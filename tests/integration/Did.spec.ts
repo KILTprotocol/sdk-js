@@ -11,6 +11,7 @@ import type {
   ResolutionResult,
   Service,
   SignerInterface,
+  UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
@@ -106,8 +107,11 @@ describe('write and didDeleteTx', () => {
       publicKeyMultibase,
     })
     const fullDidLinkedInfo = await api.call.did.query(Did.toChain(fullDid))
-    const { document: fullDidDocument } =
-      Did.linkedInfoFromChain(fullDidLinkedInfo)
+    const { document: fullDidDocument } = Did.linkedInfoFromChain(
+      fullDidLinkedInfo,
+      undefined,
+      true
+    )
 
     // this is to make sure we have signers for the full DID available (same keys, but different id)
     signers.push(
@@ -118,7 +122,7 @@ describe('write and didDeleteTx', () => {
       }))
     )
 
-    expect(fullDidDocument).toMatchObject<DidDocument>({
+    expect(fullDidDocument).toMatchObject<DidDocument<UriFragment>>({
       id: fullDid,
       service: [
         {
@@ -294,7 +298,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   const encodedDid = Did.toChain(fullDid.id)
   const linkedInfo = Did.linkedInfoFromChain(
-    await api.call.did.query(encodedDid)
+    await api.call.did.query(encodedDid),
+    undefined,
+    true
   )
   expect(
     linkedInfo.document.service?.find((s) => s.id === newEndpoint.id)
@@ -314,7 +320,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   const linkedInfo2 = Did.linkedInfoFromChain(
-    await api.call.did.query(encodedDid)
+    await api.call.did.query(encodedDid),
+    undefined,
+    true
   )
   expect(
     linkedInfo2.document.service?.find((s) => s.id === newEndpoint.id)
@@ -361,7 +369,7 @@ describe('DID migration', () => {
 
     expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
       id: migratedFullDid,
-      verificationMethod: [
+      verificationMethod: expect.arrayContaining([
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDid,
           type: 'Multikey',
@@ -374,7 +382,7 @@ describe('DID migration', () => {
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
-      ],
+      ]),
     })
     expect(migratedFullDidDocument.authentication).toHaveLength(1)
     expect(migratedFullDidDocument.keyAgreement).toHaveLength(1)
@@ -478,10 +486,14 @@ describe('DID migration', () => {
       Did.toChain(migratedFullDid)
     )
     const { document: migratedFullDidDocument } = Did.linkedInfoFromChain(
-      migratedFullDidLinkedInfo
+      migratedFullDidLinkedInfo,
+      undefined,
+      true
     )
 
-    expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
+    expect(migratedFullDidDocument).toMatchObject(<
+      Partial<DidDocument<UriFragment>>
+    >{
       id: migratedFullDid,
       verificationMethod: [
         expect.objectContaining(<Partial<VerificationMethod>>{
@@ -675,7 +687,11 @@ describe('DID management batching', () => {
           })
         )
       )
-      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
+      const { document: fullDid } = Did.linkedInfoFromChain(
+        fullDidLinkedInfo,
+        undefined,
+        true
+      )
 
       expect(fullDid).not.toBeNull()
       expect(fullDid.verificationMethod).toEqual<Partial<VerificationMethod[]>>(
@@ -733,7 +749,7 @@ describe('DID management batching', () => {
           }),
         ])
       )
-      expect(fullDid).toMatchObject(<Partial<DidDocument>>{
+      expect(fullDid).toMatchObject(<Partial<DidDocument<UriFragment>>>{
         service: [
           {
             id: '#id-3',
@@ -972,11 +988,13 @@ describe('DID management batching', () => {
         Did.toChain(initialFullDid.id)
       )
       const { document: finalFullDid } = Did.linkedInfoFromChain(
-        finalFullDidLinkedInfo
+        finalFullDidLinkedInfo,
+        undefined,
+        true
       )
 
       expect(finalFullDid).not.toBeNull()
-      expect(finalFullDid).toMatchObject(<Partial<DidDocument>>{
+      expect(finalFullDid).toMatchObject(<Partial<DidDocument<UriFragment>>>{
         verificationMethod: [
           // Authentication
           expect.objectContaining(<Partial<VerificationMethod>>{
@@ -1062,10 +1080,12 @@ describe('DID management batching', () => {
         Did.toChain(fullDid.id)
       )
       const { document: updatedFullDid } = Did.linkedInfoFromChain(
-        updatedFullDidLinkedInfo
+        updatedFullDidLinkedInfo,
+        undefined,
+        true
       )
 
-      expect(updatedFullDid).toMatchObject<Partial<DidDocument>>({
+      expect(updatedFullDid).toMatchObject<Partial<DidDocument<UriFragment>>>({
         verificationMethod: [
           expect.objectContaining({
             // Authentication and assertionMethod
@@ -1150,14 +1170,16 @@ describe('DID management batching', () => {
         Did.toChain(fullDid.id)
       )
       const { document: updatedFullDid } = Did.linkedInfoFromChain(
-        updatedFullDidLinkedInfo
+        updatedFullDidLinkedInfo,
+        undefined,
+        true
       )
       // .setAttestationKey() extrinsic went through but it was then reverted
       expect(updatedFullDid.assertionMethod).toBeUndefined()
       // The service will match the one manually added, and not the one set in the builder.
       expect(
         updatedFullDid.service?.find((s) => s.id === '#id-1')
-      ).toStrictEqual<Service>({
+      ).toStrictEqual<Service<UriFragment>>({
         id: '#id-1',
         type: ['type-1'],
         serviceEndpoint: ['x:url-1'],

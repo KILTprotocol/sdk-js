@@ -126,7 +126,7 @@ export async function makeSigningKeyTool(
         didDocument.verificationMethod?.map(({ id }) =>
           Signers.getSignersForKeypair({
             keypair,
-            id: `${didDocument.id}${id}`,
+            id: `${id.startsWith('#') ? didDocument.id : ''}${id}`,
           })
         ) ?? []
       )
