@@ -112,7 +112,7 @@ describe('write and didDeleteTx', () => {
     // this is to make sure we have signers for the full DID available (same keys, but different id)
     signers.push(
       ...signers.map(({ algorithm, sign }) => ({
-        id: fullDidDocument.id + fullDidDocument.authentication?.[0],
+        id: fullDidDocument.authentication![0],
         algorithm,
         sign,
       }))
@@ -122,12 +122,12 @@ describe('write and didDeleteTx', () => {
       id: fullDid,
       service: [
         {
-          id: '#test-id-1',
+          id: `${fullDid}#test-id-1`,
           serviceEndpoint: ['x:test-url-1'],
           type: ['test-type-1'],
         },
         {
-          id: '#test-id-2',
+          id: `${fullDid}#test-id-2`,
           serviceEndpoint: ['x:test-url-2'],
           type: ['test-type-2'],
         },
@@ -297,12 +297,14 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     await api.call.did.query(encodedDid)
   )
   expect(
-    linkedInfo.document.service?.find((s) => s.id === newEndpoint.id)
-  ).toStrictEqual(newEndpoint)
+    linkedInfo.document.service?.find(
+      (s) => s.id === `${fullDid.id}${newEndpoint.id}`
+    )
+  ).toStrictEqual({ ...newEndpoint, id: `${fullDid.id}${newEndpoint.id}` })
 
   // Delete the added service
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
-    Did.fragmentIdToChain(newEndpoint.id)
+    Did.urlFragmentToChain(newEndpoint.id)
   )
   const tx4 = await Did.authorizeTx(
     fullDid.id,
@@ -317,7 +319,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     await api.call.did.query(encodedDid)
   )
   expect(
-    linkedInfo2.document.service?.find((s) => s.id === newEndpoint.id)
+    linkedInfo2.document.service?.find(
+      (s) => s.id === `${newDid.id}${newEndpoint.id}`
+    )
   ).toBe(undefined)
 
   // Claim the deposit back
@@ -361,7 +365,7 @@ describe('DID migration', () => {
 
     expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
       id: migratedFullDid,
-      verificationMethod: [
+      verificationMethod: expect.arrayContaining([
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDid,
           type: 'Multikey',
@@ -374,7 +378,7 @@ describe('DID migration', () => {
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
-      ],
+      ]),
     })
     expect(migratedFullDidDocument.authentication).toHaveLength(1)
     expect(migratedFullDidDocument.keyAgreement).toHaveLength(1)
@@ -483,7 +487,7 @@ describe('DID migration', () => {
 
     expect(migratedFullDidDocument).toMatchObject(<Partial<DidDocument>>{
       id: migratedFullDid,
-      verificationMethod: [
+      verificationMethod: expect.arrayContaining([
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDid,
           type: 'Multikey',
@@ -496,10 +500,10 @@ describe('DID migration', () => {
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
           publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
         }),
-      ],
+      ]),
       service: [
         {
-          id: '#id-1',
+          id: `${migratedFullDid}#id-1`,
           type: ['type-1'],
           serviceEndpoint: ['x:url-1'],
         },
@@ -736,17 +740,17 @@ describe('DID management batching', () => {
       expect(fullDid).toMatchObject(<Partial<DidDocument>>{
         service: [
           {
-            id: '#id-3',
+            id: `${fullDid.id}#id-3`,
             type: ['type-3'],
             serviceEndpoint: ['x:url-3'],
           },
           {
-            id: '#id-1',
+            id: `${fullDid.id}#id-1`,
             type: ['type-1'],
             serviceEndpoint: ['x:url-1'],
           },
           {
-            id: '#id-2',
+            id: `${fullDid.id}#id-2`,
             type: ['type-2'],
             serviceEndpoint: ['x:url-2'],
           },
@@ -866,14 +870,14 @@ describe('DID management batching', () => {
         did: initialFullDid.id,
         extrinsics: [
           api.tx.did.removeKeyAgreementKey(
-            Did.fragmentIdToChain(
+            Did.urlFragmentToChain(
               initialFullDid.verificationMethod!.find(
                 (vm) => vm.id === encryptionKeys[0]
               )!.id
             )
           ),
           api.tx.did.removeKeyAgreementKey(
-            Did.fragmentIdToChain(
+            Did.urlFragmentToChain(
               initialFullDid.verificationMethod!.find(
                 (vm) => vm.id === encryptionKeys[1]
               )!.id
@@ -990,12 +994,12 @@ describe('DID management batching', () => {
         ],
         service: [
           {
-            id: '#id-1',
+            id: `${initialFullDid.id}#id-1`,
             type: ['type-1'],
             serviceEndpoint: ['x:url-1'],
           },
           {
-            id: '#id-2',
+            id: `${initialFullDid.id}#id-2`,
             type: ['type-2'],
             serviceEndpoint: ['x:url-2'],
           },
@@ -1077,7 +1081,7 @@ describe('DID management batching', () => {
         // Old service maintained
         service: [
           {
-            id: '#id-1',
+            id: `${fullDid.id}#id-1`,
             type: ['type-1'],
             serviceEndpoint: ['x:url-1'],
           },
@@ -1156,9 +1160,9 @@ describe('DID management batching', () => {
       expect(updatedFullDid.assertionMethod).toBeUndefined()
       // The service will match the one manually added, and not the one set in the builder.
       expect(
-        updatedFullDid.service?.find((s) => s.id === '#id-1')
+        updatedFullDid.service?.find((s) => s.id === `${fullDid.id}#id-1`)
       ).toStrictEqual<Service>({
-        id: '#id-1',
+        id: `${fullDid.id}#id-1`,
         type: ['type-1'],
         serviceEndpoint: ['x:url-1'],
       })

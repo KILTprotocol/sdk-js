@@ -14,7 +14,6 @@ import {
   RepresentationResolutionResult,
   ResolutionResult,
   Service,
-  UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { Crypto, cbor } from '@kiltprotocol/utils'
@@ -84,7 +83,7 @@ function generateAuthenticationVerificationMethod(
   controller: KiltDid
 ): VerificationMethod {
   return {
-    id: '#auth',
+    id: `${controller}#auth`,
     controller,
     type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -98,7 +97,7 @@ function generateEncryptionVerificationMethod(
   controller: KiltDid
 ): VerificationMethod {
   return {
-    id: '#enc',
+    id: `${controller}#enc`,
     controller,
     type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -112,7 +111,7 @@ function generateAssertionVerificationMethod(
   controller: KiltDid
 ): VerificationMethod {
   return {
-    id: '#att',
+    id: `${controller}#att`,
     controller,
     type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -126,7 +125,7 @@ function generateCapabilityDelegationVerificationMethod(
   controller: KiltDid
 ): VerificationMethod {
   return {
-    id: '#del',
+    id: `${controller}#del`,
     controller,
     type: 'Multikey',
     publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -136,8 +135,8 @@ function generateCapabilityDelegationVerificationMethod(
   }
 }
 
-function generateServiceEndpoint(serviceId: UriFragment): Service {
-  const fragment = serviceId.substring(1)
+function generateServiceEndpoint<T extends string>(serviceId: T): Service<T> {
+  const [fragment] = serviceId.split('#').reverse()
   return {
     id: serviceId,
     type: [`type-${fragment}`],
@@ -158,7 +157,7 @@ jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
       id: did,
       authentication: [authMethod.id],
       verificationMethod: [authMethod],
-      service: [generateServiceEndpoint('#service-1')],
+      service: [generateServiceEndpoint(`${did}#service-1`)],
     },
   }
 })
@@ -233,7 +232,7 @@ describe('When resolving a service', () => {
       contentMetadata: {},
       dereferencingMetadata: { contentType: 'application/did+json' },
       contentStream: {
-        id: '#service-1',
+        id: `${fullDid}#service-1`,
         type: [`type-service-1`],
         serviceEndpoint: [`x:url-service-1`],
       },
@@ -302,11 +301,11 @@ describe('When resolving a full DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: fullDidWithAuthenticationKey,
-        authentication: ['#auth'],
+        authentication: [`${fullDidWithAuthenticationKey}#auth`],
         verificationMethod: [
           {
             controller: fullDidWithAuthenticationKey,
-            id: '#auth',
+            id: `${fullDidWithAuthenticationKey}#auth`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
@@ -348,14 +347,14 @@ describe('When resolving a full DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: fullDidWithAllKeys,
-        authentication: ['#auth'],
-        keyAgreement: ['#enc'],
-        assertionMethod: ['#att'],
-        capabilityDelegation: ['#del'],
+        authentication: [`${fullDidWithAllKeys}#auth`],
+        keyAgreement: [`${fullDidWithAllKeys}#enc`],
+        assertionMethod: [`${fullDidWithAllKeys}#att`],
+        capabilityDelegation: [`${fullDidWithAllKeys}#del`],
         verificationMethod: [
           {
             controller: fullDidWithAllKeys,
-            id: '#auth',
+            id: `${fullDidWithAllKeys}#auth`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
@@ -364,7 +363,7 @@ describe('When resolving a full DID', () => {
           },
           {
             controller: fullDidWithAllKeys,
-            id: '#enc',
+            id: `${fullDidWithAllKeys}#enc`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'x25519',
@@ -373,7 +372,7 @@ describe('When resolving a full DID', () => {
           },
           {
             controller: fullDidWithAllKeys,
-            id: '#att',
+            id: `${fullDidWithAllKeys}#att`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'sr25519',
@@ -382,7 +381,7 @@ describe('When resolving a full DID', () => {
           },
           {
             controller: fullDidWithAllKeys,
-            id: '#del',
+            id: `${fullDidWithAllKeys}#del`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ecdsa',
@@ -408,8 +407,8 @@ describe('When resolving a full DID', () => {
           authentication: [authMethod.id],
           verificationMethod: [authMethod],
           service: [
-            generateServiceEndpoint('#id-1'),
-            generateServiceEndpoint('#id-2'),
+            generateServiceEndpoint(`${did}#id-1`),
+            generateServiceEndpoint(`${did}#id-2`),
           ],
         },
       }
@@ -422,11 +421,11 @@ describe('When resolving a full DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: fullDidWithServiceEndpoints,
-        authentication: ['#auth'],
+        authentication: [`${fullDidWithServiceEndpoints}#auth`],
         verificationMethod: [
           {
             controller: fullDidWithServiceEndpoints,
-            id: '#auth',
+            id: `${fullDidWithServiceEndpoints}#auth`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
@@ -436,12 +435,12 @@ describe('When resolving a full DID', () => {
         ],
         service: [
           {
-            id: '#id-1',
+            id: `${fullDidWithServiceEndpoints}#id-1`,
             type: ['type-id-1'],
             serviceEndpoint: ['x:url-id-1'],
           },
           {
-            id: '#id-2',
+            id: `${fullDidWithServiceEndpoints}#id-2`,
             type: ['type-id-2'],
             serviceEndpoint: ['x:url-id-2'],
           },
@@ -474,11 +473,11 @@ describe('When resolving a full DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: didWithAuthenticationKey,
-        authentication: ['#auth'],
+        authentication: [`${didWithAuthenticationKey}#auth`],
         verificationMethod: [
           {
             controller: didWithAuthenticationKey,
-            id: '#auth',
+            id: `${didWithAuthenticationKey}#auth`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               type: 'ed25519',
@@ -549,11 +548,11 @@ describe('When resolving a light DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: lightDidWithAuthenticationKey.id,
-        authentication: ['#authentication'],
+        authentication: [`${lightDidWithAuthenticationKey.id}#authentication`],
         verificationMethod: [
           {
             controller: lightDidWithAuthenticationKey.id,
-            id: '#authentication',
+            id: `${lightDidWithAuthenticationKey.id}#authentication`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               ...authKey,
@@ -561,7 +560,6 @@ describe('When resolving a light DID', () => {
             }),
           },
         ],
-        service: undefined,
       },
     })
   })
@@ -580,12 +578,12 @@ describe('When resolving a light DID', () => {
       didResolutionMetadata: {},
       didDocument: {
         id: lightDid.id,
-        authentication: ['#authentication'],
-        keyAgreement: ['#encryption'],
+        authentication: [`${lightDid.id}#authentication`],
+        keyAgreement: [`${lightDid.id}#encryption`],
         verificationMethod: [
           {
             controller: lightDid.id,
-            id: '#authentication',
+            id: `${lightDid.id}#authentication`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({
               ...authKey,
@@ -594,19 +592,19 @@ describe('When resolving a light DID', () => {
           },
           {
             controller: lightDid.id,
-            id: '#encryption',
+            id: `${lightDid.id}#encryption`,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey(encryptionKey),
           },
         ],
         service: [
           {
-            id: '#service-1',
+            id: `${lightDid.id}#service-1`,
             type: ['type-service-1'],
             serviceEndpoint: ['x:url-service-1'],
           },
           {
-            id: '#service-2',
+            id: `${lightDid.id}#service-2`,
             type: ['type-service-2'],
             serviceEndpoint: ['x:url-service-2'],
           },
@@ -723,10 +721,10 @@ describe('DID Resolution compliance', () => {
         didResolutionMetadata: {},
         didDocument: {
           id: did,
-          authentication: ['#auth'],
+          authentication: [`${did}#auth`],
           verificationMethod: [
             {
-              id: '#auth',
+              id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -772,10 +770,10 @@ describe('DID Resolution compliance', () => {
         didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
-            authentication: ['#auth'],
+            authentication: [`${did}#auth`],
             verificationMethod: [
               {
-                id: '#auth',
+                id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -803,10 +801,10 @@ describe('DID Resolution compliance', () => {
         didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
-            authentication: ['#auth'],
+            authentication: [`${did}#auth`],
             verificationMethod: [
               {
-                id: '#auth',
+                id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -833,10 +831,10 @@ describe('DID Resolution compliance', () => {
         didDocumentStream: Uint8Array.from(
           cbor.encode({
             id: did,
-            authentication: ['#auth'],
+            authentication: [`${did}#auth`],
             verificationMethod: [
               {
-                id: '#auth',
+                id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -897,10 +895,10 @@ describe('DID Resolution compliance', () => {
         dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
         contentStream: {
           id: did,
-          authentication: ['#auth'],
+          authentication: [`${did}#auth`],
           verificationMethod: [
             {
-              id: '#auth',
+              id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -924,10 +922,10 @@ describe('DID Resolution compliance', () => {
         },
         contentStream: {
           id: did,
-          authentication: ['#auth'],
+          authentication: [`${did}#auth`],
           verificationMethod: [
             {
-              id: '#auth',
+              id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
               publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -951,10 +949,10 @@ describe('DID Resolution compliance', () => {
         contentStream: Uint8Array.from(
           cbor.encode({
             id: did,
-            authentication: ['#auth'],
+            authentication: [`${did}#auth`],
             verificationMethod: [
               {
-                id: '#auth',
+                id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
                 publicKeyMultibase: Did.keypairToMultibaseKey({
@@ -976,7 +974,7 @@ describe('DID Resolution compliance', () => {
         contentMetadata: {},
         dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
         contentStream: {
-          id: '#auth',
+          id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
           controller:
             'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
           type: 'Multikey',
@@ -1001,7 +999,7 @@ describe('DID Resolution compliance', () => {
             verificationMethod: [authMethod],
             service: [
               {
-                id: '#id-1',
+                id: `${did}#id-1`,
                 type: ['type'],
                 serviceEndpoint: ['x:url'],
               },
@@ -1017,7 +1015,7 @@ describe('DID Resolution compliance', () => {
         contentMetadata: {},
         dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
         contentStream: {
-          id: '#id-1',
+          id: didUrl,
           type: ['type'],
           serviceEndpoint: ['x:url'],
         },
@@ -1057,10 +1055,10 @@ describe('DID Resolution compliance', () => {
       dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
       contentStream: {
         id: did,
-        authentication: ['#auth'],
+        authentication: [`${did}#auth`],
         verificationMethod: [
           {
-            id: '#auth',
+            id: `${did}#auth`,
             controller: did,
             type: 'Multikey',
             publicKeyMultibase: Did.keypairToMultibaseKey({

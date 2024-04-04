@@ -43,21 +43,20 @@ const documentLoader = combineDocumentLoaders([
 
 export async function makeFakeDid() {
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
+  const id = ingosCredential.credentialSubject.id as KiltDid
   const didDocument: DidDocument = {
-    id: ingosCredential.credentialSubject.id as KiltDid,
-    authentication: ['#authentication'],
-    assertionMethod: ['#assertion'],
+    id,
+    authentication: [`${id}#authentication`],
+    assertionMethod: [`${id}#assertion`],
     verificationMethod: [
-      Did.didKeyToVerificationMethod(
-        ingosCredential.credentialSubject.id as KiltDid,
-        '#authentication',
-        { ...keypair, keyType: keypair.type }
-      ),
-      Did.didKeyToVerificationMethod(
-        ingosCredential.credentialSubject.id as KiltDid,
-        '#assertion',
-        { ...keypair, keyType: keypair.type }
-      ),
+      Did.didKeyToVerificationMethod(id, `${id}#authentication`, {
+        ...keypair,
+        keyType: keypair.type,
+      }),
+      Did.didKeyToVerificationMethod(id, `${id}#assertion`, {
+        ...keypair,
+        keyType: keypair.type,
+      }),
     ],
   }
 
@@ -94,7 +93,7 @@ beforeAll(async () => {
 it('issues and verifies a signed credential', async () => {
   const signer = {
     sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-    id: didDocument.id + didDocument.assertionMethod![0],
+    id: didDocument.assertionMethod![0],
   }
   const attestationSigner = new Sr25519Signature2020({ signer })
 
@@ -120,26 +119,26 @@ it('issues and verifies a signed credential', async () => {
   expect(result).toHaveProperty('verified', true)
 
   const authenticationMethod = (() => {
-    const m = didDocument.verificationMethod?.find(({ id }) =>
+    const vm = didDocument.verificationMethod?.find(({ id }) =>
       id.includes('authentication')
     )
-    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const { publicKey } = Did.multibaseKeyToDidKey(vm!.publicKeyMultibase)
     const publicKeyBase58 = base58Encode(publicKey)
     return {
-      ...m,
-      id: didDocument.id + m!.id,
+      ...vm,
+      id: vm!.id,
       publicKeyBase58,
     }
   })()
   const assertionMethod = (() => {
-    const m = didDocument.verificationMethod?.find(({ id }) =>
+    const vc = didDocument.verificationMethod?.find(({ id }) =>
       id.includes('assertion')
     )
-    const { publicKey } = Did.multibaseKeyToDidKey(m!.publicKeyMultibase)
+    const { publicKey } = Did.multibaseKeyToDidKey(vc!.publicKeyMultibase)
     const publicKeyBase58 = base58Encode(publicKey)
     return {
-      ...m,
-      id: didDocument.id + m!.id,
+      ...vc,
+      id: vc!.id,
       publicKeyBase58,
     }
   })()
