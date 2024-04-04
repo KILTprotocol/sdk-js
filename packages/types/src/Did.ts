@@ -54,7 +54,7 @@ type Base58BtcMultibaseString = `z${string}`
  */
 export type VerificationMethod<IdType extends string = DidUrl> = {
   /**
-   * The relative identifier (i.e., `#<id>`) of the verification method.
+   * The identifier (DID + fragment, `#<id>`) of the verification method.
    */
   id: IdType
   /**
@@ -76,7 +76,7 @@ export type VerificationMethod<IdType extends string = DidUrl> = {
  */
 export type Service<IdType extends string = DidUrl> = {
   /*
-   * The relative identifier (i.e., `#<id>`) of the verification method.
+   * The identifier (DID + fragment, i.e., `#<id>`) of the verification method.
    */
   id: IdType
   /*
