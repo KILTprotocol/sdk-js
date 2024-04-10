@@ -9,7 +9,8 @@ import { Did, DidDocument, KeyringPair } from '@kiltprotocol/types'
 import { Derives } from '@kiltprotocol/utils'
 import { DeriveCustom } from '@polkadot/types/types'
 import { Extrinsic } from '@polkadot/types/interfaces'
-import { map, tap, mergeAll, from, Observable, filter, first } from 'rxjs'
+import { map, mergeAll, from, Observable, first, combineLatest } from 'rxjs'
+import { SubmittableResult } from '@polkadot/api'
 import { getVerificationRelationshipForTx } from './DidDetails/index.js'
 import { toChain } from './Did.chain.js'
 import { linkedInfoFromChain } from './Did.rpc.js'
@@ -21,6 +22,20 @@ export type CreateArgs = {
   submitter?: KeyringPair
 }
 
+function formatError(
+  err: SubmittableResult['dispatchError'],
+  api: Derives.DeriveApi
+) {
+  if (err?.isModule) {
+    const { method, section, docs } = api.registry.findMetaError(err.asModule)
+    return `${section}.${method}: ${docs.join(' ')}`
+  }
+  if (err) {
+    return `${err.type}: ${err.value.toHuman()}`
+  }
+  return undefined
+}
+
 const create = Derives.makeDerive(
   (api) =>
     ({
@@ -28,7 +43,10 @@ const create = Derives.makeDerive(
       assertionMethod,
       capabilityDelegation,
       submitter,
-    }: CreateArgs): Observable<DidDocument> => {
+    }: CreateArgs): Observable<{
+      didDocument?: DidDocument
+      error?: string
+    }> => {
       let result
       if (submitter) {
         let tx = api.tx.did.create(
@@ -82,34 +100,45 @@ const create = Derives.makeDerive(
         result = tx.signAsync(authentication)
       }
 
-      // let txHash: Hash
-      return from(result).pipe(
-        tap({
-          next: (ex) => {
-            console.log(ex.toHuman())
-            // txHash = ex.hash
-          },
-          error: console.error,
-        }),
-        map((ex) => api.rpc.author.submitAndWatchExtrinsic(ex)),
+      const results = from(result).pipe(
+        map((ex) => Derives.fixSubmittable(ex, api).send()),
         mergeAll(),
-        // map((status) => new SubmittableResult({ status, txHash }))
-        filter((status) => status.isFinalized),
-        map(() => api.call.did.query(authentication.address)),
-        mergeAll(),
-        first(),
-        map((didInfo) => linkedInfoFromChain(didInfo).document)
+        first((result) => result.isCompleted)
+      )
+      const document = results.pipe(
+        map(() =>
+          api.call.did
+            .query(authentication.address)
+            .pipe(
+              map((didInfo) =>
+                didInfo.isSome
+                  ? linkedInfoFromChain(didInfo).document
+                  : undefined
+              )
+            )
+        ),
+        mergeAll()
+      )
+      const error = results.pipe(
+        map((result) => formatError(result.dispatchError, api))
       )
 
-      // return result
-      //   return result.pipe(() => {
-      //     const query = api.call.did
-      //       .query(authentication.address)
-      //       .pipe(first())
-      //       .pipe(map((queried) => linkedInfoFromChain(queried)))
-      //   })
+      return combineLatest([error, document]).pipe(
+        map(([error, didDocument]) => ({ error, didDocument }))
+      )
     }
 )
+
+const resolve = Derives.makeDerive(function (api) {
+  return (did: Did) =>
+    api.call.did
+      .query(toChain(did))
+      .pipe(
+        map((info) =>
+          info.isSome ? linkedInfoFromChain(info).document : undefined
+        )
+      )
+})
 
 const verificationMethodsForTransaction = Derives.makeDerive(function (api) {
   return function (did: Did, transaction: Extrinsic) {
@@ -136,6 +165,8 @@ const verificationMethodsForTransaction = Derives.makeDerive(function (api) {
   }
 })
 
-const _derives = { did: { create, verificationMethodsForTransaction } }
+const _derives = {
+  did: { create, verificationMethodsForTransaction, resolve },
+}
 
 export const derives: DeriveCustom & typeof _derives = _derives
