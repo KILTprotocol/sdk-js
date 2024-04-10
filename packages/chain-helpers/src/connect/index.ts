@@ -15,9 +15,26 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import type { ApiOptions } from '@polkadot/api/types'
+import type { AnyFunction } from '@polkadot/types/types/codec'
 
 import { ConfigService } from '@kiltprotocol/config'
 import { typesBundle } from '@kiltprotocol/type-definitions'
+import { derives } from '@kiltprotocol/did'
+
+type DeriveSection<Section> = {
+  [M in keyof Section]: Section[M] extends AnyFunction
+    ? ReturnType<Section[M]>
+    : never
+}
+type DeriveAllSections<AllSections> = {
+  [S in keyof AllSections]: DeriveSection<AllSections[S]>
+}
+
+// extends the api augmentation of derives
+declare module '@polkadot/api-derive/derive' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  export interface ExactDerive extends DeriveAllSections<typeof derives> {}
+}
 
 /**
  * Prepares crypto modules (required for identity creation and others) and calls ConfigService.set().
@@ -53,6 +70,7 @@ export async function connect(
     provider,
     typesBundle,
     noInitWarn,
+    derives,
     ...apiOpts,
   })
   await init({ api })

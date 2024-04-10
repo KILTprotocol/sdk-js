@@ -2035,6 +2035,7 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^10.7.3"

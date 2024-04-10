@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
+    "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^10.7.3",
