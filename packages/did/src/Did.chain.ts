@@ -285,9 +285,12 @@ export function serviceToChain(service: NewService | Service): ChainDidService {
  * @returns The DID service.
  */
 export function serviceFromChain(
-  encoded: DidServiceEndpointsDidEndpoint
+  encoded:
+    | Option<DidServiceEndpointsDidEndpoint>
+    | DidServiceEndpointsDidEndpoint
 ): Service<UriFragment> {
-  const { id, serviceTypes, urls } = encoded
+  const { id, serviceTypes, urls } =
+    'unwrap' in encoded ? encoded.unwrap() : encoded
   return {
     id: `#${id.toUtf8()}`,
     type: serviceTypes.map((type) => type.toUtf8()),
