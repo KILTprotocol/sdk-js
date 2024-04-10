@@ -52,9 +52,9 @@ type Base58BtcMultibaseString = `z${string}`
 /**
  * The verification method of a DID.
  */
-export type VerificationMethod<IdType extends string = DidUrl> = {
+export type VerificationMethod<IdType extends DidUrl | UriFragment = DidUrl> = {
   /**
-   * The identifier (DID + fragment, `#<id>`) of the verification method.
+   * The identifier (DID + fragment, i.e., `#<id>`) of the verification method.
    */
   id: IdType
   /**
@@ -74,7 +74,7 @@ export type VerificationMethod<IdType extends string = DidUrl> = {
 /*
  * The service of a KILT DID.
  */
-export type Service<IdType extends string = DidUrl> = {
+export type Service<IdType extends DidUrl | UriFragment = DidUrl> = {
   /*
    * The identifier (DID + fragment, i.e., `#<id>`) of the verification method.
    */
@@ -89,7 +89,7 @@ export type Service<IdType extends string = DidUrl> = {
   serviceEndpoint: string[]
 }
 
-export type DidDocument<IdType extends string = DidUrl> = {
+export type DidDocument<IdType extends DidUrl | UriFragment = DidUrl> = {
   id: Did
   alsoKnownAs?: string[]
   verificationMethod?: Array<VerificationMethod<IdType>>

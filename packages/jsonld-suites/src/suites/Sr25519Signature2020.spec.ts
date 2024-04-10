@@ -131,14 +131,14 @@ it('issues and verifies a signed credential', async () => {
     }
   })()
   const assertionMethod = (() => {
-    const vc = didDocument.verificationMethod?.find(({ id }) =>
+    const vm = didDocument.verificationMethod?.find(({ id }) =>
       id.includes('assertion')
     )
-    const { publicKey } = Did.multibaseKeyToDidKey(vc!.publicKeyMultibase)
+    const { publicKey } = Did.multibaseKeyToDidKey(vm!.publicKeyMultibase)
     const publicKeyBase58 = base58Encode(publicKey)
     return {
-      ...vc,
-      id: vc!.id,
+      ...vm,
+      id: vm!.id,
       publicKeyBase58,
     }
   })()

@@ -392,7 +392,6 @@ describe('vc-js', () => {
         'error',
         expect.any(Array)
       )
-      console.log(JSON.stringify(result))
       expect(result).toMatchObject({
         verified: true,
         presentationResult: { verified: true },

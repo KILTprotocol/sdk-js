@@ -15,6 +15,7 @@ import {
   ResolutionResult,
   Service,
   VerificationMethod,
+  UriFragment,
 } from '@kiltprotocol/types'
 import { Crypto, cbor } from '@kiltprotocol/utils'
 import { stringToU8a } from '@polkadot/util'
@@ -135,7 +136,9 @@ function generateCapabilityDelegationVerificationMethod(
   }
 }
 
-function generateServiceEndpoint<T extends string>(serviceId: T): Service<T> {
+function generateServiceEndpoint<T extends DidUrl | UriFragment>(
+  serviceId: T
+): Service<T> {
   const [fragment] = serviceId.split('#').reverse()
   return {
     id: serviceId,

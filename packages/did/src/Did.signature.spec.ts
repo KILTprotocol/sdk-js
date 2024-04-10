@@ -214,7 +214,7 @@ describe('light DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      keyUri: `${did.authentication![0]}`,
+      keyUri: did.authentication![0],
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
