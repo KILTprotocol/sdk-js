@@ -9,7 +9,17 @@ import { Did, DidDocument, KeyringPair } from '@kiltprotocol/types'
 import { Derives } from '@kiltprotocol/utils'
 import { DeriveCustom } from '@polkadot/types/types'
 import { Extrinsic } from '@polkadot/types/interfaces'
-import { map, mergeAll, from, Observable, first, combineLatest } from 'rxjs'
+import {
+  map,
+  from,
+  Observable,
+  find,
+  mergeMap,
+  combineLatest,
+  takeWhile,
+  take,
+  filter,
+} from 'rxjs'
 import { SubmittableResult } from '@polkadot/api'
 import { getVerificationRelationshipForTx } from './DidDetails/index.js'
 import { toChain } from './Did.chain.js'
@@ -101,28 +111,19 @@ const create = Derives.makeDerive(
       }
 
       const results = from(result).pipe(
-        map((ex) => Derives.fixSubmittable(ex, api).send()),
-        mergeAll(),
-        first((result) => result.isCompleted)
+        mergeMap((ex) => Derives.fixSubmittable(ex, api).send()),
+        takeWhile((result) => !result.isCompleted)
       )
       const document = results.pipe(
-        map(() =>
-          api.call.did
-            .query(authentication.address)
-            .pipe(
-              map((didInfo) =>
-                didInfo.isSome
-                  ? linkedInfoFromChain(didInfo).document
-                  : undefined
-              )
-            )
-        ),
-        mergeAll()
+        filter((result) => !!result.findRecord('did', 'DidCreated')),
+        take(1),
+        mergeMap(() => api.call.did.query(authentication.address)),
+        find((didInfo) => didInfo.isSome), // important: this makes the observable emit at least one value (undefined) if no matching result occurs
+        map((didInfo) => didInfo && linkedInfoFromChain(didInfo).document)
       )
       const error = results.pipe(
         map((result) => formatError(result.dispatchError, api))
       )
-
       return combineLatest([error, document]).pipe(
         map(([error, didDocument]) => ({ error, didDocument }))
       )
