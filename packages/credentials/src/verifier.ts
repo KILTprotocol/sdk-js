@@ -77,9 +77,11 @@ export async function checkStatus(
  * @param config - Additional configuration (optional).
  * @param config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.cTypes - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
- * An array of CType definitions can be passed instead, which has the effect of restricting allowable credential types to these known CTypes.
- * By default, this retrieves CType defitions from the KILT blockchain, using a loader with an internal definitions cache.
+ * @param config.cTypes - To ensure that the credential' structure follows specific CType's schemas (definitions), with this parameter it is possible to pass:
+ *  - either an array of CType definitions
+ *  - or a CType-Loader that retrieves the definition of the CType linked to the credential.
+ *
+ * By default, this retrieves CType definitions from the KILT blockchain, using a loader with an internal definitions cache.
  * @param config.credentialStatusLoader - An alternative credential status resolver.
  * This function takes the credential as input and is expected to return a promise of an {@link CredentialStatusResult}.
  * Defaults to {@link checkStatus}.
@@ -216,7 +218,7 @@ export async function verifyCredential(
  * @param config - Additional configuration (optional).
  * @param config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.cTypes - An alternative CType loader for credential verification, or alternatively an array of CTypes.
+ * @param config.cTypes - Alternative input for the credential structural verification. It can either be an array of CTypes or a CType loader.
  * See {@link verifyCredential} for details.
  * @param config.credentialStatusLoader - An alternative credential status resolver.
  * See {@link verifyCredential} for details.
