@@ -216,7 +216,7 @@ export async function verifyCredential(
  * @param config - Additional configuration (optional).
  * @param config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.ctypeLoader - An alternative CType loader for credential verification, or alternatively an array of CTypes.
+ * @param config.cTypes - An alternative CType loader for credential verification, or alternatively an array of CTypes.
  * See {@link verifyCredential} for details.
  * @param config.credentialStatusLoader - An alternative credential status resolver.
  * See {@link verifyCredential} for details.
@@ -241,7 +241,7 @@ export async function verifyPresentation(
   } = {},
   config: {
     didResolver?: typeof resolve | DidDocument[]
-    ctypeLoader?: CTypeLoader | ICType[]
+    cTypes?: CTypeLoader | ICType[]
     credentialStatusLoader?: (
       credential: VerifiableCredential
     ) => Promise<CredentialStatusResult>
@@ -256,7 +256,7 @@ export async function verifyPresentation(
       tolerance = 0,
       presentation: { proofTypes: presentationProofTypes } = {},
     } = verificationCriteria
-    const { ctypeLoader, credentialStatusLoader } = config
+    const { cTypes, credentialStatusLoader } = config
     // prepare did resolver to be used for loading issuer & holder did documents
     let { didResolver = resolve } = config
     if (Array.isArray(didResolver)) {
@@ -322,7 +322,7 @@ export async function verifyPresentation(
         const credentialResult = await verifyCredential(
           credential,
           { ...verificationCriteria.credentials, now, tolerance },
-          { credentialStatusLoader, cTypes: ctypeLoader, didResolver }
+          { credentialStatusLoader, cTypes, didResolver }
         )
         return { ...credentialResult, credential }
       })
