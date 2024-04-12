@@ -292,7 +292,7 @@ async function runAll() {
     issued,
     {},
     {
-      ctypeLoader: [DriversLicense],
+      cTypes: [DriversLicense],
     }
   )
   if (credentialResult.verified) {

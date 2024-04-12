@@ -77,7 +77,7 @@ export async function checkStatus(
  * @param config - Additional configuration (optional).
  * @param config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.ctypeLoader - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
+ * @param config.cTypes - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
  * An array of CType definitions can be passed instead, which has the effect of restricting allowable credential types to these known CTypes.
  * By default, this retrieves CType defitions from the KILT blockchain, using a loader with an internal definitions cache.
  * @param config.credentialStatusLoader - An alternative credential status resolver.
@@ -95,7 +95,7 @@ export async function verifyCredential(
   } = {},
   config: {
     didResolver?: typeof resolve | DidDocument[]
-    ctypeLoader?: CTypeLoader | ICType[]
+    cTypes?: CTypeLoader | ICType[]
     credentialStatusLoader?: (
       credential: VerifiableCredential
     ) => Promise<CredentialStatusResult>
@@ -132,14 +132,14 @@ export async function verifyCredential(
               )
             }
 
-            const { ctypeLoader } = config
+            const { cTypes } = config
             const options: Parameters<typeof KiltAttestationProofV1.verify>[2] =
               {}
-            if (Array.isArray(ctypeLoader)) {
-              options.cTypes = ctypeLoader
+            if (Array.isArray(cTypes)) {
+              options.cTypes = cTypes
               options.loadCTypes = false
-            } else if (typeof ctypeLoader === 'function') {
-              options.loadCTypes = ctypeLoader
+            } else if (typeof cTypes === 'function') {
+              options.loadCTypes = cTypes
             }
             await KiltAttestationProofV1.verify(
               credential as KiltCredentialV1.Interface,
@@ -322,7 +322,7 @@ export async function verifyPresentation(
         const credentialResult = await verifyCredential(
           credential,
           { ...verificationCriteria.credentials, now, tolerance },
-          { credentialStatusLoader, ctypeLoader, didResolver }
+          { credentialStatusLoader, cTypes: ctypeLoader, didResolver }
         )
         return { ...credentialResult, credential }
       })
