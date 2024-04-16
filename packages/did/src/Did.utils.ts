@@ -161,11 +161,11 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
 ): DecodedVerificationMethod {
-  const decodedMulticodecPublicKey = base58Decode(
-    publicKeyMultibase.startsWith('z')
-      ? publicKeyMultibase.slice(1)
-      : publicKeyMultibase
-  )
+  if (!publicKeyMultibase.startsWith('z')) {
+    throw new SDKErrors.DidError(`invalid format for '${publicKeyMultibase}'`)
+  }
+  publicKeyMultibase.slice(1)
+  const decodedMulticodecPublicKey = base58Decode(publicKeyMultibase)
   const [keyTypeFlag, publicKey] = [
     decodedMulticodecPublicKey.subarray(0, 1)[0],
     decodedMulticodecPublicKey.subarray(1),
@@ -216,11 +216,8 @@ export function keypairToMultibaseKey({
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
 
   const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
-  const prefixedEncodedPublicKey = encodedPublicKey.startsWith('z')
-    ? encodedPublicKey
-    : `z${encodedPublicKey}`
 
-  return prefixedEncodedPublicKey as `z${string}`
+  return `z${encodedPublicKey}`
 }
 
 /**
@@ -253,9 +250,7 @@ export function didKeyToVerificationMethod(
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
 
   const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
-  const prefixedEncodedPublicKey = encodedPublicKey.startsWith('z')
-    ? encodedPublicKey
-    : `z${encodedPublicKey}`
+  const prefixedEncodedPublicKey = `z${encodedPublicKey}`
 
   return {
     controller,
