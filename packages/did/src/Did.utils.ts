@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToString } from '@polkadot/util'
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import type {
   Did,
@@ -16,7 +15,7 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
+import { base58btc } from 'multiformats/bases/base58'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
@@ -158,7 +157,7 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
 ): DecodedVerificationMethod {
-  const decodedMulticodecPublicKey = multibaseDecode(publicKeyMultibase)
+  const decodedMulticodecPublicKey = base58btc.decode(publicKeyMultibase)
   const [keyTypeFlag, publicKey] = [
     decodedMulticodecPublicKey.subarray(0, 1)[0],
     decodedMulticodecPublicKey.subarray(1),
@@ -207,9 +206,7 @@ export function keypairToMultibaseKey({
     )
   }
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
-  return u8aToString(
-    multibaseEncode('base58btc', Uint8Array.from(multiCodecPublicKey))
-  ) as `z${string}`
+  return base58btc.encode(Uint8Array.from(multiCodecPublicKey)) as `z${string}`
 }
 
 /**
@@ -244,8 +241,8 @@ export function didKeyToVerificationMethod(
     controller,
     id,
     type: 'Multikey',
-    publicKeyMultibase: u8aToString(
-      multibaseEncode('base58btc', Uint8Array.from(multiCodecPublicKey))
+    publicKeyMultibase: base58btc.encode(
+      Uint8Array.from(multiCodecPublicKey)
     ) as `z${string}`,
   }
 }

@@ -2109,7 +2109,7 @@ __metadata:
     "@polkadot/types": "npm:^10.7.3"
     "@polkadot/util": "npm:^12.0.0"
     "@polkadot/util-crypto": "npm:^12.0.0"
-    multibase: "npm:^4.0.6"
+    multiformats: "npm:^13.1.0"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
@@ -2266,13 +2266,6 @@ __metadata:
     uuid: "npm:^9.0.0"
   languageName: unknown
   linkType: soft
-
-"@multiformats/base-x@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "@multiformats/base-x@npm:4.0.1"
-  checksum: 10c0/f6d16d2d7793ea371206fc17853a0932a7e697ddc739a6b63421a7ee090ee8ab28224c3c7e4401899d0a343bc95284a5f0aa7502edadfb5ad21967f9cbd6a9d2
-  languageName: node
-  linkType: hard
 
 "@noble/curves@npm:1.0.0, @noble/curves@npm:^1.0.0":
   version: 1.0.0
@@ -7657,12 +7650,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multibase@npm:^4.0.6":
-  version: 4.0.6
-  resolution: "multibase@npm:4.0.6"
-  dependencies:
-    "@multiformats/base-x": "npm:^4.0.1"
-  checksum: 10c0/1e931f2d018a195f7ea1d157782a6ab2eb3913674b79a9193e05ee2ded58383a373124ec9d84d20b12a2561a34659d2fe5a7e49e4ba493af5127b0009fdaf33d
+"multiformats@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "multiformats@npm:13.1.0"
+  checksum: 10c0/b04e51a443a6b5c0b9ca50aec8ef137bb1f46ca28a3827ca96336e7d7cb2a3367cfafcccd618b0c4147ceed674498635fb1ce115ab94e8b33c763b8168f0ab78
   languageName: node
   linkType: hard
 
