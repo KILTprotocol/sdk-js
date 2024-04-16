@@ -11,7 +11,6 @@ import type {
   DidDocument,
   DidUrl,
   DidSignature,
-  DereferenceResult,
   SignerInterface,
 } from '@kiltprotocol/types'
 
@@ -26,14 +25,14 @@ import {
   signatureFromJson,
   verifyDidSignature,
 } from './Did.signature'
-import { dereference, SupportedContentType } from './DidResolver/DidResolver'
+import { resolve } from './DidResolver/DidResolver'
 import { keypairToMultibaseKey, multibaseKeyToDidKey, parse } from './Did.utils'
 import { createLightDidDocument } from './DidDetails'
 
 jest.mock('./DidResolver/DidResolver')
 jest
-  .mocked(dereference)
-  .mockImplementation(jest.requireActual('./DidResolver').dereference)
+  .mocked(resolve)
+  .mockImplementation(jest.requireActual('./DidResolver').resolve)
 
 describe('light DID', () => {
   let keypair: KiltKeyringPair
@@ -53,24 +52,22 @@ describe('light DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(dereference)
+      .mocked(resolve)
       .mockReset()
-      .mockImplementation(
-        async (didUrl): Promise<DereferenceResult<SupportedContentType>> => {
-          const { address } = parse(didUrl)
-          if (address === keypair.address) {
-            return {
-              contentMetadata: {},
-              dereferencingMetadata: { contentType: 'application/did+json' },
-              contentStream: did,
-            }
-          }
+      .mockImplementation(async (didUrl): ReturnType<typeof resolve> => {
+        const { address } = parse(didUrl)
+        if (address === keypair.address) {
           return {
-            contentMetadata: {},
-            dereferencingMetadata: { error: 'notFound' },
+            didDocumentMetadata: {},
+            didResolutionMetadata: {},
+            didDocument: did,
           }
         }
-      )
+        return {
+          didDocumentMetadata: {},
+          didResolutionMetadata: { error: 'notFound' },
+        }
+      })
   })
 
   it('verifies did signature over string', async () => {
@@ -144,9 +141,9 @@ describe('light DID', () => {
     const signature = await authenticationSigner.sign({
       data: Crypto.coToUInt8(SIGNED_STRING),
     })
-    jest.mocked(dereference).mockResolvedValue({
-      contentMetadata: {},
-      dereferencingMetadata: { error: 'notFound' },
+    jest.mocked(resolve).mockResolvedValue({
+      didDocumentMetadata: {},
+      didResolutionMetadata: { error: 'notFound' },
     })
     await expect(
       verifyDidSignature({
@@ -174,7 +171,7 @@ describe('light DID', () => {
   })
 
   it('fails if verification method id malformed', async () => {
-    jest.mocked(dereference).mockRestore()
+    jest.mocked(resolve).mockRestore()
     const SIGNED_STRING = 'signed string'
 
     const signature = await authenticationSigner.sign({
@@ -191,12 +188,12 @@ describe('light DID', () => {
   })
 
   it('does not verify if migrated to Full DID', async () => {
-    jest.mocked(dereference).mockResolvedValue({
-      contentMetadata: {
+    jest.mocked(resolve).mockResolvedValue({
+      didDocumentMetadata: {
         canonicalId: did.id,
       },
-      dereferencingMetadata: { contentType: 'application/did+json' },
-      contentStream: { id: did.id },
+      didResolutionMetadata: {},
+      didDocument: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
     const signature = await authenticationSigner.sign({
@@ -309,24 +306,22 @@ describe('full DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(dereference)
+      .mocked(resolve)
       .mockReset()
-      .mockImplementation(
-        async (didUrl): Promise<DereferenceResult<SupportedContentType>> => {
-          const { address } = parse(didUrl)
-          if (address === keypair.address) {
-            return {
-              contentMetadata: {},
-              dereferencingMetadata: { contentType: 'application/did+json' },
-              contentStream: did,
-            }
-          }
+      .mockImplementation(async (didUrl): ReturnType<typeof resolve> => {
+        const { address } = parse(didUrl)
+        if (address === keypair.address) {
           return {
-            contentMetadata: {},
-            dereferencingMetadata: { error: 'notFound' },
+            didDocumentMetadata: {},
+            didResolutionMetadata: {},
+            didDocument: did,
           }
         }
-      )
+        return {
+          didDocumentMetadata: {},
+          didResolutionMetadata: { error: 'notFound' },
+        }
+      })
   })
 
   it('verifies did signature over string', async () => {
@@ -360,10 +355,10 @@ describe('full DID', () => {
   })
 
   it('does not verify if deactivated', async () => {
-    jest.mocked(dereference).mockResolvedValue({
-      contentMetadata: { deactivated: true },
-      dereferencingMetadata: { contentType: 'application/did+json' },
-      contentStream: { id: did.id },
+    jest.mocked(resolve).mockResolvedValue({
+      didDocumentMetadata: { deactivated: true },
+      didResolutionMetadata: {},
+      didDocument: { id: did.id },
     })
     const SIGNED_STRING = 'signed string'
     const signature = await signer.sign({
@@ -380,9 +375,9 @@ describe('full DID', () => {
   })
 
   it('does not verify if not on chain', async () => {
-    jest.mocked(dereference).mockResolvedValue({
-      contentMetadata: {},
-      dereferencingMetadata: { error: 'notFound' },
+    jest.mocked(resolve).mockResolvedValue({
+      didDocumentMetadata: {},
+      didResolutionMetadata: { error: 'notFound' },
     })
     const SIGNED_STRING = 'signed string'
     const signature = await signer.sign({

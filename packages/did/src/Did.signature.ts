@@ -8,8 +8,6 @@
 import { isHex } from '@polkadot/util'
 
 import type {
-  DereferenceDidUrl,
-  DidDocument,
   DidSignature,
   Did,
   DidUrl,
@@ -19,7 +17,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { multibaseKeyToDidKey, parse, validateDid } from './Did.utils.js'
-import { dereference } from './DidResolver/DidResolver.js'
+import { resolve } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
@@ -28,7 +26,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: Did
   allowUpgraded?: boolean
   expectedVerificationRelationship?: SignatureVerificationRelationship
-  dereferenceDidUrl?: DereferenceDidUrl['dereference']
+  didResolver?: typeof resolve
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -66,7 +64,7 @@ function verifyDidSignatureDataStructure(
  * @param input.expectedSigner If given, verification fails if the controller of the signing verification method is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationRelationship Which relationship to the signer DID the verification method must have.
- * @param input.dereferenceDidUrl Allows specifying a custom DID dereferencer. Defaults to the built-in {@link dereference}.
+ * @param input.didResolver Allows specifying a custom DID resolver. Defaults to the built-in {@link resolve}.
  */
 export async function verifyDidSignature({
   message,
@@ -75,7 +73,7 @@ export async function verifyDidSignature({
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationRelationship,
-  dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
+  didResolver = resolve,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if signer URL points to the right did; alternatively we could check the verification method's controller
   const signer = parse(signerUrl)
@@ -102,23 +100,19 @@ export async function verifyDidSignature({
     )
   }
 
-  const { contentStream, contentMetadata } = await dereferenceDidUrl(
-    signer.did,
-    {}
-  )
-  if (contentStream === undefined) {
+  const { didDocument, didDocumentMetadata } = await didResolver(signer.did, {})
+  if (didDocument === undefined) {
     throw new SDKErrors.SignatureUnverifiableError(
       `Error validating the DID signature. Cannot fetch DID Document or the verification method for "${signerUrl}".`
     )
   }
   // If the light DID has been upgraded we consider the old key ID invalid, the full DID should be used instead.
-  if (contentMetadata.canonicalId !== undefined) {
+  if (didDocumentMetadata.canonicalId !== undefined) {
     throw new SDKErrors.DidResolveUpgradedDidError()
   }
-  if (contentMetadata.deactivated) {
+  if (didDocumentMetadata.deactivated) {
     throw new SDKErrors.DidDeactivatedError()
   }
-  const didDocument = contentStream as DidDocument
   const verificationMethod = didDocument.verificationMethod?.find(
     ({ controller, id }) =>
       controller === didDocument.id && id === signer.fragment
