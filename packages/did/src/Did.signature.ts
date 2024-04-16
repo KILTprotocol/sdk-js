@@ -66,7 +66,7 @@ function verifyDidSignatureDataStructure(
  * @param input.expectedSigner If given, verification fails if the controller of the signing verification method is not the expectedSigner.
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationRelationship Which relationship to the signer DID the verification method must have.
- * @param input.dereferenceDidUrl Allows specifying a custom DID dereferenced. Defaults to the built-in {@link dereference}.
+ * @param input.dereferenceDidUrl Allows specifying a custom DID dereferencer. Defaults to the built-in {@link dereference}.
  */
 export async function verifyDidSignature({
   message,
