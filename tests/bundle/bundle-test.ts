@@ -287,13 +287,12 @@ async function runAll() {
   })
   console.info('Credential issued')
 
-  const credentialResult = await Verifier.verifyCredential(
-    issued,
-    {},
-    {
+  const credentialResult = await Verifier.verifyCredential({
+    credential: issued,
+    config: {
       ctypeLoader: [DriversLicense],
-    }
-  )
+    },
+  })
   if (credentialResult.verified) {
     console.info('Credential proof verified')
     console.info('Credential status verified')
@@ -322,8 +321,9 @@ async function runAll() {
   )
   console.info('Presentation created')
 
-  const presentationResult = await Verifier.verifyPresentation(presentation, {
-    presentation: { challenge },
+  const presentationResult = await Verifier.verifyPresentation({
+    presentation,
+    verificationCriteria: { challenge },
   })
   if (presentationResult.verified) {
     console.info('Presentation verified')

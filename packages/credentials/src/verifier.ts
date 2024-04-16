@@ -58,6 +58,20 @@ export async function checkStatus(
   }
 }
 
+type VerificationCriteria = {
+  proofTypes?: string[]
+  proofPurpose?: string
+  now?: Date
+  tolerance?: number
+}
+type VerificationConfig = {
+  didResolver?: typeof resolve | DidDocument[]
+  ctypeLoader?: CTypeLoader | ICType[]
+  credentialStatusLoader?: (
+    credential: VerifiableCredential
+  ) => Promise<CredentialStatusResult>
+}
+
 /**
  * Verifies a Verifiable Credential and checks its revocation status.
  *
@@ -66,41 +80,35 @@ export async function checkStatus(
  * - Checks the revocation status of a verified credential.
  * - Returns a verification result containing proof and status verification results.
  *
- * @param credential - The Verifiable Credential to be verified.
- * @param verificationCriteria - Verification options.
- * @param verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
+ * @param args - An object holding named arguments.
+ * @param args.credential - The Verifiable Credential to be verified.
+ * @param args.verificationCriteria - Verification options.
+ * @param args.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
  * Defaults to {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1 } which, as of now, is the only type suppported.
  * @param verificationCriteria.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
  * As {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1} proofs default to `assertionMethod`, any other value will currently fail verification.
- * @param verificationCriteria.now - The reference time for verification as Date (default is current time).
- * @param verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- * @param config - Additional configuration (optional).
- * @param config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
+ * @param args.verificationCriteria.now - The reference time for verification as Date (default is current time).
+ * @param args.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ * @param args.config - Additional configuration (optional).
+ * @param args.config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.ctypeLoader - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
+ * @param args.config.ctypeLoader - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
  * An array of CType definitions can be passed instead, which has the effect of restricting allowable credential types to these known CTypes.
  * By default, this retrieves CType defitions from the KILT blockchain, using a loader with an internal definitions cache.
- * @param config.credentialStatusLoader - An alternative credential status resolver.
+ * @param args.config.credentialStatusLoader - An alternative credential status resolver.
  * This function takes the credential as input and is expected to return a promise of an {@link CredentialStatusResult}.
  * Defaults to {@link checkStatus}.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside any potential errors and detailed information on proof verification results and credential status.
  */
-export async function verifyCredential(
-  credential: VerifiableCredential,
-  verificationCriteria: {
-    proofTypes?: string[]
-    proofPurpose?: string
-    now?: Date
-    tolerance?: number
-  } = {},
-  config: {
-    didResolver?: typeof resolve | DidDocument[]
-    ctypeLoader?: CTypeLoader | ICType[]
-    credentialStatusLoader?: (
-      credential: VerifiableCredential
-    ) => Promise<CredentialStatusResult>
-  } = {}
-): Promise<VerifyCredentialResult> {
+export async function verifyCredential({
+  credential,
+  verificationCriteria = {},
+  config = {},
+}: {
+  credential: VerifiableCredential
+  verificationCriteria?: VerificationCriteria
+  config?: VerificationConfig
+}): Promise<VerifyCredentialResult> {
   const result: VerifyCredentialResult = {
     verified: false,
   }
@@ -196,57 +204,46 @@ export async function verifyCredential(
  * - Checks the status of each verified credential.
  * - Returns a composite verification result for the presentation and each credential.
  *
- * @param presentation - The Verifiable Presentation to be verified.
- * @param verificationCriteria - Verification options.
- * @param verificationCriteria.now - The reference time for verification as Date (default is current time).
- * @param verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- * @param verificationCriteria.credentials - Verification criteria to be passed on to {@link verifyCredential}.
- * @param verificationCriteria.credentials.proofTypes See {@link verifyCredential}.
- * @param verificationCriteria.credentials.proofPurpose See {@link verifyCredential}.
- * @param verificationCriteria.presentation - Verification criteria for presentation verification.
- * @param verificationCriteria.presentation.proofTypes - The types of acceptable proofs on the presentation.
+ * @param args - An object holding named arguments.
+ * @param args.presentation - The Verifiable Presentation to be verified.
+ * @param args.verificationCriteria - Verification options.
+ * @param args.verificationCriteria.now - The reference time for verification as Date (default is current time).
+ * @param args.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ * @param args.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
  * Defaults to {@link DataIntegrity.PROOF_TYPE DataIntegrityProof } which, as of now, is the only type suppported.
  * Any other values will be mapped to a known algorithm or cryptosuite for use with this proof type, thus allowing to control the signature algorithm to be used.
- * @param verificationCriteria.presentation.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
+ * @param args.verificationCriteria.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
  * If specified, verification fails if the proof is issued for a different purpose.
- * @param verificationCriteria.presentation.challenge - The expected challenge value for the presentation, if any.
+ * @param args.verificationCriteria.challenge - The expected challenge value for the presentation, if any.
  * If given, verification fails if the proof does not contain the challenge value.
- * @param verificationCriteria.presentation.domain - Expected domain for the proof. Verification fails if mismatched.
- * @param verificationCriteria.presentation.verifier - The expected verifier for the presentation, if any.
- * @param config - Additional configuration (optional).
- * @param config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
+ * @param args.verificationCriteria.domain - Expected domain for the proof. Verification fails if mismatched.
+ * @param args.verificationCriteria.verifier - The expected verifier for the presentation, if any.
+ * @param args.verificationCriteria.credentials - Verification criteria to be passed on to {@link verifyCredential}.
+ * @param args.verificationCriteria.credentials.proofTypes See {@link verifyCredential}.
+ * @param args.verificationCriteria.credentials.proofPurpose See {@link verifyCredential}.
+ * @param args.config - Additional configuration (optional).
+ * @param args.config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.ctypeLoader - An alternative CType loader for credential verification, or alternatively an array of CTypes.
+ * @param args.config.ctypeLoader - An alternative CType loader for credential verification, or alternatively an array of CTypes.
  * See {@link verifyCredential} for details.
- * @param config.credentialStatusLoader - An alternative credential status resolver.
+ * @param args.config.credentialStatusLoader - An alternative credential status resolver.
  * See {@link verifyCredential} for details.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside detailed information on presentation and credential verification results.
  */
-export async function verifyPresentation(
-  presentation: VerifiablePresentation,
-  verificationCriteria: {
-    now?: Date
-    tolerance?: number
-    credentials?: {
-      proofTypes?: string[]
-      proofPurpose?: string
-    }
-    presentation?: {
-      proofTypes?: string[]
-      proofPurpose?: string
-      challenge?: string
-      domain?: string
-      verifier?: Did
-    }
-  } = {},
-  config: {
-    didResolver?: typeof resolve | DidDocument[]
-    ctypeLoader?: CTypeLoader | ICType[]
-    credentialStatusLoader?: (
-      credential: VerifiableCredential
-    ) => Promise<CredentialStatusResult>
-  } = {}
-): Promise<VerifyPresentationResult> {
+export async function verifyPresentation({
+  presentation,
+  verificationCriteria = {},
+  config = {},
+}: {
+  presentation: VerifiablePresentation
+  verificationCriteria?: VerificationCriteria & {
+    credentials?: Pick<VerificationCriteria, 'proofTypes' | 'proofPurpose'>
+    challenge?: string
+    domain?: string
+    verifier?: Did
+  }
+  config?: VerificationConfig
+}): Promise<VerifyPresentationResult> {
   const result: VerifyPresentationResult = {
     verified: false,
   }
@@ -254,7 +251,7 @@ export async function verifyPresentation(
     const {
       now = new Date(),
       tolerance = 0,
-      presentation: { proofTypes: presentationProofTypes } = {},
+      proofTypes: presentationProofTypes,
     } = verificationCriteria
     const { ctypeLoader, credentialStatusLoader } = config
     // prepare did resolver to be used for loading issuer & holder did documents
@@ -296,7 +293,7 @@ export async function verifyPresentation(
     const { verified, proofResults, error } = await verifyPresentationProof(
       presentation,
       {
-        ...verificationCriteria.presentation,
+        ...verificationCriteria,
         now,
         cryptosuites,
         didResolver,
@@ -319,11 +316,15 @@ export async function verifyPresentation(
     // verify each credential (including proof & status)
     result.credentialResults = await Promise.all(
       credentials.map(async (credential) => {
-        const credentialResult = await verifyCredential(
+        const credentialResult = await verifyCredential({
           credential,
-          { ...verificationCriteria.credentials, now, tolerance },
-          { credentialStatusLoader, ctypeLoader, didResolver }
-        )
+          verificationCriteria: {
+            ...verificationCriteria.credentials,
+            now,
+            tolerance,
+          },
+          config: { credentialStatusLoader, ctypeLoader, didResolver },
+        })
         return { ...credentialResult, credential }
       })
     )
