@@ -262,20 +262,19 @@ async function runAll() {
 
   // Attestation workflow
   console.log('Attestation workflow started')
-  const content = { name: 'Bob', age: 21 }
+  const credentialSubject = { id: bob.id, name: 'Bob', age: 21 }
 
   const credential = await Issuer.createCredential({
     cType: DriversLicense,
-    claims: content,
-    subject: bob.id,
+    credentialSubject,
     issuer: alice.id,
   })
 
   console.info('Credential subject conforms to CType')
 
   if (
-    credential.credentialSubject.name !== content.name ||
-    credential.credentialSubject.age !== content.age ||
+    credential.credentialSubject.name !== credentialSubject.name ||
+    credential.credentialSubject.age !== credentialSubject.age ||
     credential.credentialSubject.id !== bob.id
   ) {
     throw new Error('Claim content inside Credential mismatching')
