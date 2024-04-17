@@ -5,8 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToString } from '@polkadot/util'
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
+import {
+  blake2AsU8a,
+  encodeAddress,
+  base58Decode,
+  base58Encode,
+} from '@polkadot/util-crypto'
 import type {
   Did,
   DidUrl,
@@ -16,7 +20,6 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import { decode as multibaseDecode, encode as multibaseEncode } from 'multibase'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
@@ -158,7 +161,10 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
 ): DecodedVerificationMethod {
-  const decodedMulticodecPublicKey = multibaseDecode(publicKeyMultibase)
+  if (!publicKeyMultibase.startsWith('z')) {
+    throw new SDKErrors.DidError(`invalid format for '${publicKeyMultibase}'`)
+  }
+  const decodedMulticodecPublicKey = base58Decode(publicKeyMultibase.slice(1))
   const [keyTypeFlag, publicKey] = [
     decodedMulticodecPublicKey.subarray(0, 1)[0],
     decodedMulticodecPublicKey.subarray(1),
@@ -207,9 +213,10 @@ export function keypairToMultibaseKey({
     )
   }
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
-  return u8aToString(
-    multibaseEncode('base58btc', Uint8Array.from(multiCodecPublicKey))
-  ) as `z${string}`
+
+  const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
+
+  return `z${encodedPublicKey}`
 }
 
 /**
@@ -240,13 +247,15 @@ export function didKeyToVerificationMethod(
     )
   }
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
+
+  const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
+  const prefixedEncodedPublicKey = `z${encodedPublicKey}` as const
+
   return {
     controller,
     id,
     type: 'Multikey',
-    publicKeyMultibase: u8aToString(
-      multibaseEncode('base58btc', Uint8Array.from(multiCodecPublicKey))
-    ) as `z${string}`,
+    publicKeyMultibase: prefixedEncodedPublicKey,
   }
 }
 
