@@ -52,11 +52,11 @@ type Base58BtcMultibaseString = `z${string}`
 /**
  * The verification method of a DID.
  */
-export type VerificationMethod = {
+export type VerificationMethod<IdType extends DidUrl | UriFragment = DidUrl> = {
   /**
-   * The relative identifier (i.e., `#<id>`) of the verification method.
+   * The identifier (DID + fragment, i.e., `#<id>`) of the verification method.
    */
-  id: UriFragment
+  id: IdType
   /**
    * The type of the verification method. This is fixed for KILT DIDs.
    */
@@ -74,11 +74,11 @@ export type VerificationMethod = {
 /*
  * The service of a KILT DID.
  */
-export type Service = {
+export type Service<IdType extends DidUrl | UriFragment = DidUrl> = {
   /*
-   * The relative identifier (i.e., `#<id>`) of the verification method.
+   * The identifier (DID + fragment, i.e., `#<id>`) of the verification method.
    */
-  id: UriFragment
+  id: IdType
   /*
    * The set of service types.
    */
@@ -89,15 +89,15 @@ export type Service = {
   serviceEndpoint: string[]
 }
 
-export type DidDocument = {
+export type DidDocument<IdType extends DidUrl | UriFragment = DidUrl> = {
   id: Did
   alsoKnownAs?: string[]
-  verificationMethod?: VerificationMethod[]
-  authentication?: UriFragment[]
-  assertionMethod?: UriFragment[]
-  keyAgreement?: UriFragment[]
-  capabilityDelegation?: UriFragment[]
-  service?: Service[]
+  verificationMethod?: Array<VerificationMethod<IdType>>
+  authentication?: IdType[]
+  assertionMethod?: IdType[]
+  keyAgreement?: IdType[]
+  capabilityDelegation?: IdType[]
+  service?: Array<Service<IdType>>
 }
 
 export type JsonLd<T> = T & { '@context': string[] }

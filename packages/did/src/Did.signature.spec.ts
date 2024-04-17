@@ -45,7 +45,7 @@ describe('light DID', () => {
       authentication: keyTool.authentication,
     })
     authenticationSigner = (await keyTool.getSigners(did)).find(
-      ({ id }) => id === did.id + did.authentication?.[0]
+      ({ id }) => id === did.authentication?.[0]
     )!
     expect(authenticationSigner).toBeDefined()
   })
@@ -211,7 +211,7 @@ describe('light DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      keyUri: `${did.id}${did.authentication![0]}`,
+      keyUri: did.authentication![0],
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
@@ -287,11 +287,11 @@ describe('full DID', () => {
     keypair = Crypto.makeKeypairFromSeed()
     did = {
       id: `did:kilt:${keypair.address}`,
-      authentication: ['#0x12345'],
+      authentication: [`did:kilt:${keypair.address}#0x12345`],
       verificationMethod: [
         {
           controller: `did:kilt:${keypair.address}`,
-          id: '#0x12345',
+          id: `did:kilt:${keypair.address}#0x12345`,
           publicKeyMultibase: keypairToMultibaseKey(keypair),
           type: 'Multikey',
         },
@@ -438,7 +438,7 @@ describe('full DID', () => {
 
   it('typeguard accepts legal signature objects', () => {
     const signature: DidSignature = {
-      keyUri: `${did.id}${did.authentication![0]}`,
+      keyUri: did.authentication![0],
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)

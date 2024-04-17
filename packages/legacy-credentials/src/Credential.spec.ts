@@ -643,9 +643,8 @@ describe('Presentations', () => {
       didDocument: identityAlice,
     })
     // but replace signer key reference with authentication verification method of light did
-    presentation.claimerSignature.keyUri = `${identityDave.id}${
-      identityDave.authentication![0]
-    }`
+    const [keyUri] = identityDave.authentication!
+    presentation.claimerSignature.keyUri = keyUri
 
     // signature would check out but mismatch should be detected
     await expect(
@@ -770,14 +769,15 @@ describe('create presentation', () => {
         lightDidVerificationMethod.publicKeyMultibase
       )
       // Override the verification method ID to the computed one
-      lightDidVerificationMethod.id = computeKeyId(publicKey)
+      lightDidVerificationMethod.id = `${id}${computeKeyId(publicKey)}`
       return lightDidVerificationMethod
     })()
 
+    const authId = `${id}${authMethod.id}` as const
     return {
       id,
-      authentication: [authMethod.id],
-      verificationMethod: [authMethod],
+      authentication: [authId],
+      verificationMethod: [{ ...authMethod, id: authId }],
     }
   }
 

@@ -77,7 +77,7 @@ async function createFullDid(
       >(({ id }) => [
         {
           ...signer,
-          id: `${didDocument.id}${id}`,
+          id,
         },
       ]) ?? []
     ).flat()
