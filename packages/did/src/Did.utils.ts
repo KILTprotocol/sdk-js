@@ -164,8 +164,7 @@ export function multibaseKeyToDidKey(
   if (!publicKeyMultibase.startsWith('z')) {
     throw new SDKErrors.DidError(`invalid format for '${publicKeyMultibase}'`)
   }
-  publicKeyMultibase.slice(1)
-  const decodedMulticodecPublicKey = base58Decode(publicKeyMultibase)
+  const decodedMulticodecPublicKey = base58Decode(publicKeyMultibase.slice(1))
   const [keyTypeFlag, publicKey] = [
     decodedMulticodecPublicKey.subarray(0, 1)[0],
     decodedMulticodecPublicKey.subarray(1),
@@ -250,13 +249,13 @@ export function didKeyToVerificationMethod(
   const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
 
   const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
-  const prefixedEncodedPublicKey = `z${encodedPublicKey}`
+  const prefixedEncodedPublicKey = `z${encodedPublicKey}` as const
 
   return {
     controller,
     id,
     type: 'Multikey',
-    publicKeyMultibase: prefixedEncodedPublicKey as `z${string}`,
+    publicKeyMultibase: prefixedEncodedPublicKey,
   }
 }
 
