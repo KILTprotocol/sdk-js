@@ -85,11 +85,11 @@ export interface LinkedDidInfo {
  * @returns The accounts, DID, and web3name.
  */
 export function linkedInfoFromChain(
-  encoded: Option<RawDidLinkedInfo>,
+  encoded: Option<RawDidLinkedInfo> | RawDidLinkedInfo,
   networkPrefix = ss58Format
 ): LinkedDidInfo {
   const { identifier, accounts, w3n, serviceEndpoints, details } =
-    encoded.unwrap()
+    'unwrap' in encoded ? encoded.unwrap() : encoded
 
   const {
     publicKeys,

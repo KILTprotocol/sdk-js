@@ -91,7 +91,7 @@ export type ICTypeDetails = { cType: ICType } & CTypeChainDetails
  * @returns An object indicating the CType creator.
  */
 export function fromChain(
-  encoded: Option<AccountId>
+  encoded: Option<AccountId> | AccountId
 ): Pick<CTypeChainDetails, 'creator'>
 /**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
@@ -99,12 +99,18 @@ export function fromChain(
  * @param encoded The data from the blockchain.
  * @returns An object indicating the CType creator and createdAt block.
  */
-export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails
+export function fromChain(
+  encoded: Option<CtypeCtypeEntry> | CtypeCtypeEntry
+): CTypeChainDetails
 // eslint-disable-next-line jsdoc/require-jsdoc
 export function fromChain(
-  encoded: Option<CtypeCtypeEntry> | Option<AccountId>
+  encoded:
+    | Option<CtypeCtypeEntry>
+    | Option<AccountId>
+    | CtypeCtypeEntry
+    | AccountId
 ): CTypeChainDetails | Pick<CTypeChainDetails, 'creator'> {
-  const unwrapped = encoded.unwrap()
+  const unwrapped = 'unwrap' in encoded ? encoded.unwrap() : encoded
   if ('creator' in unwrapped && 'createdAt' in unwrapped) {
     const { creator, createdAt } = unwrapped
     return {

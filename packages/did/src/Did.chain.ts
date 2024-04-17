@@ -159,7 +159,7 @@ export function publicKeyFromChain(
  * @returns The DID Document.
  */
 export function documentFromChain(
-  encoded: Option<DidDidDetails>
+  encoded: Option<DidDidDetails> | DidDidDetails
 ): ChainDidDetails {
   const {
     publicKeys,
@@ -169,7 +169,7 @@ export function documentFromChain(
     keyAgreementKeys,
     lastTxCounter,
     deposit,
-  } = encoded.unwrap()
+  } = 'unwrap' in encoded ? encoded.unwrap() : encoded
 
   const keys: Record<string, ChainDidKey> = [...publicKeys.entries()]
     .map(([keyId, keyDetails]) => publicKeyFromChain(keyId, keyDetails))

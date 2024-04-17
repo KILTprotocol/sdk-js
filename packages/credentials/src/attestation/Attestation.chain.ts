@@ -21,10 +21,12 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * @returns The attestation.
  */
 export function fromChain(
-  encoded: Option<AttestationAttestationsAttestationDetails>,
+  encoded:
+    | Option<AttestationAttestationsAttestationDetails>
+    | AttestationAttestationsAttestationDetails,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation {
-  const chainAttestation = encoded.unwrap()
+  const chainAttestation = 'unwrap' in encoded ? encoded.unwrap() : encoded
   const delegationId = chainAttestation.authorizationId
     .unwrapOr(undefined)
     ?.value.toHex()

@@ -150,7 +150,8 @@ function generateServiceEndpoint<T extends DidUrl | UriFragment>(
 jest.mock('../Did.rpc.js')
 // By default its mock returns a DIDDocument with the test authentication key, test service, and the DID derived from the identifier provided in the resolution.
 jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
-  const { identifier } = linkedInfo.unwrap()
+  const { identifier } =
+    'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
   const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
   const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -245,7 +246,8 @@ describe('When resolving a service', () => {
   it('returns error if either the DID or the service do not exist', async () => {
     // Mock transform function changed to not return any services (twice).
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -259,7 +261,8 @@ describe('When resolving a service', () => {
       }
     })
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -323,7 +326,8 @@ describe('When resolving a full DID', () => {
   it('correctly resolves the document with all keys', async () => {
     // Mock transform function changed to return all keys for the DIDDocument.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
       const encMethod = generateEncryptionVerificationMethod(did)
@@ -399,7 +403,8 @@ describe('When resolving a full DID', () => {
   it('correctly resolves the document with services', async () => {
     // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -455,7 +460,8 @@ describe('When resolving a full DID', () => {
   it('correctly resolves the document with web3Name', async () => {
     // Mock transform function changed to return two services.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -701,7 +707,8 @@ describe('DID Resolution compliance', () => {
         })
       })
     jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
-      const { identifier } = linkedInfo.unwrap()
+      const { identifier } =
+        'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
       const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
@@ -990,7 +997,8 @@ describe('DID Resolution compliance', () => {
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` (ignoring the provided `accept` option) representation when successfully returning a service for a DID that has not been deleted nor migrated', async () => {
       jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
-        const { identifier } = linkedInfo.unwrap()
+        const { identifier } =
+          'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
         const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
         const authMethod = generateAuthenticationVerificationMethod(did)
 

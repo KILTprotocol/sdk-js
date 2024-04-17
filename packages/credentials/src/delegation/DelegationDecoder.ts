@@ -39,10 +39,13 @@ export type DelegationHierarchyDetailsRecord = Pick<
 >
 
 export function delegationHierarchyDetailsFromChain(
-  encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
+  encoded:
+    | Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
+    | DelegationDelegationHierarchyDelegationHierarchyDetails
 ): DelegationHierarchyDetailsRecord {
+  const { ctypeHash } = 'unwrap' in encoded ? encoded.unwrap() : encoded
   return {
-    cTypeHash: encoded.unwrap().ctypeHash.toHex(),
+    cTypeHash: ctypeHash.toHex(),
   }
 }
 
@@ -74,9 +77,11 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 export type DelegationNodeId = Hash
 
 export function delegationNodeFromChain(
-  encoded: Option<DelegationDelegationHierarchyDelegationNode>
+  encoded:
+    | Option<DelegationDelegationHierarchyDelegationNode>
+    | DelegationDelegationHierarchyDelegationNode
 ): DelegationNodeRecord {
-  const delegationNode = encoded.unwrap()
+  const delegationNode = 'unwrap' in encoded ? encoded.unwrap() : encoded
 
   return {
     hierarchyId: delegationNode.hierarchyRootId.toHex(),

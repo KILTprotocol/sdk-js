@@ -107,10 +107,12 @@ export interface PublicCredentialEntry {
  * @returns The decoded data.
  */
 export function fromChain(
-  encoded: Option<PublicCredentialsCredentialsCredentialEntry>
+  encoded:
+    | Option<PublicCredentialsCredentialsCredentialEntry>
+    | PublicCredentialsCredentialsCredentialEntry
 ): PublicCredentialEntry {
   const { attester, authorizationId, blockNumber, ctypeHash, revoked } =
-    encoded.unwrap()
+    'unwrap' in encoded ? encoded.unwrap() : encoded
   return {
     ctypeHash: ctypeHash.toHex(),
     attester: didFromChain(attester),
