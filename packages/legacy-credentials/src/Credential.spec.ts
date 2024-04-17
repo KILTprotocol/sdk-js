@@ -13,7 +13,6 @@ import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType } from '@kiltprotocol/credentials'
 import * as Did from '@kiltprotocol/did'
 import type {
-  DereferenceResult,
   DidDocument,
   DidSignature,
   Did as KiltDid,
@@ -25,11 +24,11 @@ import type {
   ICredentialPresentation,
   SignerInterface,
   VerificationMethod,
+  DidResolver,
 } from '@kiltprotocol/types'
 import {
   didKeyToVerificationMethod,
   NewDidVerificationKey,
-  SupportedContentType,
 } from '@kiltprotocol/did'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 
@@ -443,9 +442,9 @@ describe('Presentations', () => {
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
 
-  async function dereferenceDidUrl(
+  async function didResolver(
     didUrl: DidUrl | KiltDid
-  ): Promise<DereferenceResult<SupportedContentType>> {
+  ): ReturnType<DidResolver['resolve']> {
     const { did } = Did.parse(didUrl)
     const didDocument = [
       identityAlice,
@@ -455,13 +454,13 @@ describe('Presentations', () => {
     ].find(({ id }) => id === did)
     if (!didDocument)
       return {
-        contentMetadata: {},
-        dereferencingMetadata: { error: 'notFound' },
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'notFound' },
       }
     return {
-      contentMetadata: {},
-      dereferencingMetadata: { contentType: 'application/did+json' },
-      contentStream: didDocument,
+      didDocumentMetadata: {},
+      didResolutionMetadata: {},
+      didDocument,
     }
   }
 
@@ -543,7 +542,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).resolves.toMatchObject({ revoked: false, attester: identityBob.id })
   })
@@ -569,7 +568,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).resolves.toMatchObject({ revoked: false, attester: identityBob.id })
   })
@@ -587,7 +586,7 @@ describe('Presentations', () => {
     await expect(
       Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrow()
   })
@@ -616,7 +615,7 @@ describe('Presentations', () => {
 
     await expect(
       Credential.verifySignature(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
@@ -651,7 +650,7 @@ describe('Presentations', () => {
     // signature would check out but mismatch should be detected
     await expect(
       Credential.verifySignature(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
@@ -678,7 +677,7 @@ describe('Presentations', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrowError()
   })
@@ -782,43 +781,43 @@ describe('create presentation', () => {
     }
   }
 
-  async function dereferenceDidUrl(
+  async function didResolver(
     didUrl: DidUrl | KiltDid
-  ): Promise<DereferenceResult<SupportedContentType>> {
+  ): ReturnType<DidResolver['resolve']> {
     const { did } = Did.parse(didUrl)
     switch (did) {
       case migratedClaimerLightDid.id: {
         return {
-          contentMetadata: { canonicalId: migratedClaimerFullDid.id },
-          dereferencingMetadata: { contentType: 'application/did+json' },
-          contentStream: { id: migratedClaimerLightDid.id },
+          didDocumentMetadata: { canonicalId: migratedClaimerFullDid.id },
+          didResolutionMetadata: {},
+          didDocument: { id: migratedClaimerLightDid.id },
         }
       }
       case unmigratedClaimerLightDid.id: {
         return {
-          contentMetadata: {},
-          dereferencingMetadata: { contentType: 'application/did+json' },
-          contentStream: unmigratedClaimerLightDid,
+          didDocumentMetadata: {},
+          didResolutionMetadata: {},
+          didDocument: unmigratedClaimerLightDid,
         }
       }
       case migratedClaimerFullDid.id: {
         return {
-          contentMetadata: {},
-          dereferencingMetadata: { contentType: 'application/did+json' },
-          contentStream: migratedClaimerFullDid,
+          didDocumentMetadata: {},
+          didResolutionMetadata: {},
+          didDocument: migratedClaimerFullDid,
         }
       }
       case attester.id: {
         return {
-          contentMetadata: {},
-          dereferencingMetadata: { contentType: 'application/did+json' },
-          contentStream: attester,
+          didDocumentMetadata: {},
+          didResolutionMetadata: {},
+          didDocument: attester,
         }
       }
       default: {
         return {
-          contentMetadata: {},
-          dereferencingMetadata: { error: 'notFound' },
+          didDocumentMetadata: {},
+          didResolutionMetadata: { error: 'notFound' },
         }
       }
     }
@@ -884,7 +883,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -912,7 +911,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -944,7 +943,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).resolves.toMatchObject({ revoked: false, attester: attester.id })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -977,7 +976,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(att, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrow()
   })
@@ -1009,7 +1008,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        dereferenceDidUrl,
+        didResolver,
       })
     ).rejects.toThrow()
   })
