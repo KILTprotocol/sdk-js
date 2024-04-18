@@ -20,8 +20,8 @@
 import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType } from '@kiltprotocol/credentials'
 import {
+  DidResolver,
   isDidSignature,
-  resolve,
   signatureFromJson,
   verifyDidSignature,
 } from '@kiltprotocol/did'
@@ -37,6 +37,7 @@ import type {
   IDelegationNode,
   SignerInterface,
   DidDocument,
+  ResolveDid,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors, Signers } from '@kiltprotocol/utils'
 import * as Claim from './Claim.js'
@@ -212,10 +213,10 @@ export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    didResolver = resolve,
+    didResolver,
   }: {
     challenge?: string
-    didResolver?: typeof resolve
+    didResolver?: ResolveDid['resolve']
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -279,7 +280,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  didResolver?: typeof resolve
+  didResolver?: ResolveDid['resolve']
 }
 
 /**
@@ -542,7 +543,12 @@ export async function createPresentation({
   )
 
   const didDoc =
-    didDocument ?? (await resolve(credential.claim.owner)).didDocument
+    didDocument ??
+    (
+      await DidResolver({ api: ConfigService.get('api') }).resolve(
+        credential.claim.owner
+      )
+    ).didDocument
 
   if (!didDoc) {
     throw new Error(

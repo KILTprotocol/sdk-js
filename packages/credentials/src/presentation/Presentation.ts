@@ -11,10 +11,9 @@ import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 
 import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
-import type { Did } from '@kiltprotocol/types'
+import type { Did, DidResolver } from '@kiltprotocol/types'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
-import { resolve } from '@kiltprotocol/did'
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
@@ -242,7 +241,7 @@ export async function verifyPresentationProof(
     challenge?: string
     domain?: string
     verifier?: string | undefined
-    didResolver?: typeof resolve
+    didResolver?: DidResolver['resolve']
     proofPurpose?: string
   }
 ): Promise<Omit<VerifyPresentationResult, 'credentialResults'>> {

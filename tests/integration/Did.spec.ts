@@ -41,9 +41,11 @@ import {
 
 let paymentAccount: KiltKeyringPair
 let api: ApiPromise
+let resolver: ReturnType<typeof Did.DidResolver>
 
 beforeAll(async () => {
   api = await initializeApi()
+  resolver = Did.DidResolver({ api })
 }, 30_000)
 
 beforeAll(async () => {
@@ -389,7 +391,7 @@ describe('DID migration', () => {
       (await api.call.did.query(Did.toChain(migratedFullDidDocument.id))).isSome
     ).toBe(true)
 
-    const { didDocumentMetadata } = (await Did.resolve(
+    const { didDocumentMetadata } = (await resolver.resolve(
       lightDid.id
     )) as ResolutionResult
 
@@ -440,9 +442,7 @@ describe('DID migration', () => {
       (await api.call.did.query(Did.toChain(migratedFullDidDocument.id))).isSome
     ).toBe(true)
 
-    const { didDocumentMetadata } = (await Did.resolve(
-      lightDid.id
-    )) as ResolutionResult
+    const { didDocumentMetadata } = await resolver.resolve(lightDid.id)
 
     expect(didDocumentMetadata.canonicalId).toStrictEqual(
       migratedFullDidDocument.id
@@ -517,9 +517,7 @@ describe('DID migration', () => {
     const encodedDid = Did.toChain(migratedFullDidDocument.id)
     expect((await api.call.did.query(encodedDid)).isSome).toBe(true)
 
-    const { didDocumentMetadata } = (await Did.resolve(
-      lightDid.id
-    )) as ResolutionResult
+    const { didDocumentMetadata } = await resolver.resolve(lightDid.id)
 
     expect(didDocumentMetadata.canonicalId).toStrictEqual(
       migratedFullDidDocument.id

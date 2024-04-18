@@ -13,7 +13,7 @@ import {
   DID_CONTEXTS,
   KILT_DID_CONTEXT_URL,
   parse,
-  resolve as resolveDid,
+  DidResolver,
   W3C_DID_CONTEXT_URL,
   multibaseKeyToDidKey,
 } from '@kiltprotocol/did'
@@ -24,6 +24,7 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { CType } from '@kiltprotocol/credentials'
+import { ConfigService } from '@kiltprotocol/config'
 
 import { validationContexts } from './context/index.js'
 import { Sr25519VerificationKey2020 } from './suites/Sr25519VerificationKey.js'
@@ -93,7 +94,9 @@ type LegacyVerificationMethod = Pick<
 // Returns legacy representations of a KILT DID verification method.
 export const kiltDidLoader: DocumentLoader = async (url) => {
   const { did } = parse(url as Did)
-  const { didDocument: resolvedDidDocument } = await resolveDid(did)
+  const { didDocument: resolvedDidDocument } = await DidResolver({
+    api: ConfigService.get('api'),
+  }).resolve(did)
   const didDocument = (() => {
     if (resolvedDidDocument === undefined) {
       return {}

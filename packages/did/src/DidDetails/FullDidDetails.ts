@@ -28,7 +28,7 @@ import {
   toChain,
 } from '../Did.chain.js'
 import { parse } from '../Did.utils.js'
-import { resolve } from '../DidResolver/DidResolver.js'
+import { DidResolver } from '../DidResolver/DidResolver.js'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/kilt-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -118,7 +118,9 @@ async function conditionalLoadDocument(
   didOrDidDocument: Did | DidDocument
 ): Promise<DidDocument> {
   if (typeof didOrDidDocument === 'string') {
-    const { didDocument, didDocumentMetadata } = await resolve(didOrDidDocument)
+    const { didDocument, didDocumentMetadata } = await DidResolver({
+      api: ConfigService.get('api'),
+    }).resolve(didOrDidDocument)
     if (!didDocument || didDocumentMetadata.deactivated === true) {
       throw new SDKErrors.DidNotFoundError('Failed to resolve signer DID')
     }

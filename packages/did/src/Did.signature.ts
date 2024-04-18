@@ -12,12 +12,13 @@ import type {
   Did,
   DidUrl,
   SignatureVerificationRelationship,
+  ResolveDid,
 } from '@kiltprotocol/types'
-
+import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { multibaseKeyToDidKey, parse, validateDid } from './Did.utils.js'
-import { resolve } from './DidResolver/DidResolver.js'
+import { DidResolver } from './DidResolver/DidResolver.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
@@ -26,7 +27,7 @@ export type DidSignatureVerificationInput = {
   expectedSigner?: Did
   allowUpgraded?: boolean
   expectedVerificationRelationship?: SignatureVerificationRelationship
-  didResolver?: typeof resolve
+  didResolver?: ResolveDid['resolve']
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -73,7 +74,7 @@ export async function verifyDidSignature({
   expectedSigner,
   allowUpgraded = false,
   expectedVerificationRelationship,
-  didResolver = resolve,
+  didResolver = DidResolver({ api: ConfigService.get('api') }).resolve,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if signer URL points to the right did; alternatively we could check the verification method's controller
   const signer = parse(signerUrl)

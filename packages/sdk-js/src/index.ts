@@ -18,7 +18,7 @@ import {
   init,
   Blockchain,
 } from '@kiltprotocol/chain-helpers'
-import { resolver as DidResolver } from '@kiltprotocol/did'
+import { DidResolver } from '@kiltprotocol/did'
 
 const { signAndSubmitTx } = Blockchain // TODO: maybe we don't even need that if we have the identity class
 const { signerFromKeypair } = Signers

@@ -7,9 +7,10 @@
 
 import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
-import { resolve } from '@kiltprotocol/did'
-import type { Did, DidDocument, ICType } from '@kiltprotocol/types'
+import { DidResolver } from '@kiltprotocol/did'
+import type { Did, DidDocument, ICType, ResolveDid } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 
 import {
   KiltAttestationProofV1,
@@ -65,7 +66,7 @@ type VerificationCriteria = {
   tolerance?: number
 }
 type VerificationConfig = {
-  didResolver?: typeof resolve | DidDocument[]
+  didResolver?: ResolveDid['resolve'] | DidDocument[]
   ctypeLoader?: CTypeLoader | ICType[]
   credentialStatusLoader?: (
     credential: VerifiableCredential
@@ -255,7 +256,9 @@ export async function verifyPresentation({
     } = verificationCriteria
     const { ctypeLoader, credentialStatusLoader } = config
     // prepare did resolver to be used for loading issuer & holder did documents
-    let { didResolver = resolve } = config
+    let {
+      didResolver = DidResolver({ api: ConfigService.get('api') }).resolve,
+    } = config
     if (Array.isArray(didResolver)) {
       const knownDocuments = new Map(
         didResolver.map((document) => {

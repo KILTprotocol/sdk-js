@@ -19,14 +19,16 @@ import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
 import { createVerifyData as createVerifyDataJcs } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
-import { parse, resolve } from '@kiltprotocol/did'
+import { DidResolver, parse } from '@kiltprotocol/did'
 import type {
-  Did,
   DidDocument,
+  ResolveDid,
   DidUrl,
   VerificationMethod,
+  Did,
 } from '@kiltprotocol/types'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 import type { SecuredDocument } from '../interfaces.js'
 
 export const PROOF_TYPE = 'DataIntegrityProof'
@@ -233,7 +235,7 @@ export async function signWithDid<T>({
   previousProof,
 }: {
   document: T
-  signerDid: Did | DidDocument
+  signerDid: DidDocument | Did
   signers: readonly SignerInterface[]
   cryptosuites?: ReadonlyArray<CryptoSuite<any>>
   proofPurpose?: string
@@ -246,7 +248,11 @@ export async function signWithDid<T>({
 }): Promise<T & { proof: DataIntegrityProof }> {
   const signerDocument =
     typeof signerDid === 'string'
-      ? (await resolve(signerDid)).didDocument
+      ? (
+          await DidResolver({ api: ConfigService.get('api') }).resolve(
+            signerDid
+          )
+        ).didDocument
       : signerDid
 
   if (!signerDocument?.id) {
@@ -331,7 +337,7 @@ export class INVALID_PROOF_PURPOSE_FOR_VERIFICATION_METHOD extends Error {
 
 async function retrieveVerificationMethod(
   proof: DataIntegrityProof,
-  resolver: typeof resolve
+  resolver: ResolveDid['resolve']
 ): Promise<VerificationMethod> {
   const { did } = parse(proof.verificationMethod as DidUrl)
   const { didDocument, didDocumentMetadata, didResolutionMetadata } =
@@ -396,7 +402,7 @@ export async function verifyProof(
     challenge?: string
     now?: Date
     tolerance?: number
-    didResolver?: typeof resolve
+    didResolver?: ResolveDid['resolve']
   }
   // TODO: make VerificationResult?
 ): Promise<boolean> {
@@ -439,7 +445,8 @@ export async function verifyProof(
   // retrieve verification method and create verifier
   const verificationMethod = await retrieveVerificationMethod(
     proof,
-    proofOptions.didResolver ?? resolve
+    proofOptions.didResolver ??
+      DidResolver({ api: ConfigService.get('api') }).resolve
   )
   if (
     proofOptions.expectedController &&

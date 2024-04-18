@@ -97,7 +97,7 @@ async function createFullDid(
 
   await signAndSubmitTx(tx, payer)
 
-  const { didDocument } = await DidResolver.resolve(
+  const { didDocument } = await DidResolver({ api }).resolve(
     `did:kilt:${address}` as Did,
     {}
   )
@@ -177,7 +177,7 @@ async function runAll() {
   //   '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
   const address = api.createType('Address', authPublicKey).toString()
-  const resolved = await DidResolver.resolve(
+  const resolved = await DidResolver({ api }).resolve(
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW` as Did,
     {}
   )
@@ -225,7 +225,7 @@ async function runAll() {
 
   await signAndSubmitTx(deleteTx, payerSigner)
 
-  const resolvedAgain = await DidResolver.resolve(fullDid.id, {})
+  const resolvedAgain = await DidResolver({ api }).resolve(fullDid.id, {})
   if (resolvedAgain.didDocumentMetadata.deactivated) {
     console.info('DID successfully deleted')
   } else {

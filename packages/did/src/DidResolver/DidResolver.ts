@@ -5,14 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import { stringToU8a } from '@polkadot/util'
+
 import type {
   DereferenceContentMetadata,
   DereferenceContentStream,
   DereferenceOptions,
   DereferenceResult,
+  Did,
   DidDocument,
   DidResolver,
-  Did,
   DidUrl,
   FailedDereferenceMetadata,
   JsonLd,
@@ -21,17 +24,14 @@ import type {
   ResolutionOptions,
   ResolutionResult,
 } from '@kiltprotocol/types'
-
-import { stringToU8a } from '@polkadot/util'
-import { ConfigService } from '@kiltprotocol/config'
 import { cbor } from '@kiltprotocol/utils'
 
-import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
-import { linkedInfoFromChain } from '../Did.rpc.js'
 import { toChain } from '../Did.chain.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDid, parse, validateDid } from '../Did.utils.js'
-import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
 import { isValidVerificationRelationship } from '../DidDetails/DidDetails.js'
+import { parseDocumentFromLightDid } from '../DidDetails/LightDidDetails.js'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 
 export const DID_JSON_CONTENT_TYPE = 'application/did+json'
 export const DID_JSON_LD_CONTENT_TYPE = 'application/did+ld+json'
@@ -59,10 +59,10 @@ type InternalResolutionResult = {
 }
 
 async function resolveInternal(
-  did: Did
+  did: Did,
+  api: ApiPromise
 ): Promise<InternalResolutionResult | null> {
   const { type } = parse(did)
-  const api = ConfigService.get('api')
 
   const { document } = await api.call.did
     .query(toChain(did))
@@ -115,6 +115,18 @@ async function resolveInternal(
 }
 
 /**
+ * Type guard checking whether the provided input is a {@link FailedDereferenceMetadata}.
+ *
+ * @param input The input to check.
+ * @returns Whether the input is a {@link FailedDereferenceMetadata}.
+ */
+export function isFailedDereferenceMetadata(
+  input: unknown
+): input is FailedDereferenceMetadata {
+  return (input as FailedDereferenceMetadata)?.error !== undefined
+}
+
+/**
  * Implementation of `resolve` compliant with {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
  * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
@@ -126,7 +138,8 @@ async function resolveInternal(
 export async function resolve(
   did: Did,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resolutionOptions: ResolutionOptions = {}
+  resolutionOptions: ResolutionOptions = {},
+  api: ApiPromise
 ): Promise<ResolutionResult> {
   try {
     validateDid(did, 'Did')
@@ -139,7 +152,7 @@ export async function resolve(
     }
   }
 
-  const resolutionResult = await resolveInternal(did)
+  const resolutionResult = await resolveInternal(did, api)
   if (resolutionResult === null) {
     return {
       didResolutionMetadata: {
@@ -169,11 +182,12 @@ export async function resolve(
  * @param resolutionOptions.accept The content type accepted by the requesting client.
  * @returns The resolution result for the `resolveRepresentation` function as specified in the {@link https://www.w3.org/TR/did-core/#did-resolution | W3C DID specifications }.
  */
-export async function resolveRepresentation(
+async function resolveRepresentation(
   did: Did,
   {
     accept = DID_JSON_CONTENT_TYPE,
-  }: DereferenceOptions<SupportedContentType> = {}
+  }: DereferenceOptions<SupportedContentType> = {},
+  api: ApiPromise
 ): Promise<RepresentationResolutionResult<SupportedContentType>> {
   const inputTransform = (() => {
     switch (accept) {
@@ -207,7 +221,7 @@ export async function resolveRepresentation(
   }
 
   const { didDocumentMetadata, didResolutionMetadata, didDocument } =
-    await resolve(did)
+    await resolve(did, {}, api)
 
   if (didDocument === undefined) {
     return {
@@ -234,26 +248,15 @@ type InternalDereferenceResult =
       contentStream: DereferenceContentStream
     }
 
-/**
- * Type guard checking whether the provided input is a {@link FailedDereferenceMetadata}.
- *
- * @param input The input to check.
- * @returns Whether the input is a {@link FailedDereferenceMetadata}.
- */
-export function isFailedDereferenceMetadata(
-  input: unknown
-): input is FailedDereferenceMetadata {
-  return (input as FailedDereferenceMetadata)?.error !== undefined
-}
-
 async function dereferenceInternal(
   didUrl: Did | DidUrl,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  dereferenceOptions: DereferenceOptions<SupportedContentType>
+  dereferenceOptions: DereferenceOptions<SupportedContentType>,
+  api: ApiPromise
 ): Promise<InternalDereferenceResult> {
   const { did, queryParameters, fragment } = parse(didUrl)
 
-  const { didDocument, didDocumentMetadata } = await resolve(did)
+  const { didDocument, didDocumentMetadata } = await resolve(did, {}, api)
 
   if (didDocument === undefined) {
     return {
@@ -340,11 +343,12 @@ async function dereferenceInternal(
  * @param resolutionOptions.accept The content type accepted by the requesting client.
  * @returns The resolution result for the `dereference` function as specified in the {@link https://www.w3.org/TR/did-core/#did-url-dereferencing  | W3C DID specifications }.
  */
-export async function dereference(
+async function dereference(
   didUrl: Did | DidUrl,
   {
     accept = DID_JSON_CONTENT_TYPE,
-  }: DereferenceOptions<SupportedContentType> = {}
+  }: DereferenceOptions<SupportedContentType> = {},
+  api: ApiPromise
 ): Promise<DereferenceResult<SupportedContentType>> {
   // The spec does not include an error for unsupported content types for dereferences
   const contentType = isValidContentType(accept)
@@ -362,9 +366,13 @@ export async function dereference(
     }
   }
 
-  const dereferenceResult = await dereferenceInternal(didUrl, {
-    accept: contentType,
-  })
+  const dereferenceResult = await dereferenceInternal(
+    didUrl,
+    {
+      accept: contentType,
+    },
+    api
+  )
 
   if (isFailedDereferenceMetadata(dereferenceResult)) {
     return {
@@ -410,8 +418,14 @@ export async function dereference(
 /**
  * Fully-fledged default resolver capable of resolving DIDs in their canonical form, encoded for a specific content type, and of dereferencing parts of a DID Document according to the dereferencing specification.
  */
-export const resolver: DidResolver<SupportedContentType> = {
-  resolve,
-  resolveRepresentation,
-  dereference,
+export function DidResolver({
+  api,
+}: {
+  api: ApiPromise
+}): DidResolver<SupportedContentType> {
+  return {
+    resolve: (did, opts) => resolve(did, opts, api),
+    resolveRepresentation: (did, opts) => resolveRepresentation(did, opts, api),
+    dereference: (didUrl, opts) => dereference(didUrl, opts, api),
+  }
 }

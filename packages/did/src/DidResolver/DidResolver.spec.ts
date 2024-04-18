@@ -5,17 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ConfigService } from '@kiltprotocol/config'
 import {
   DereferenceResult,
-  Did as KiltDid,
+  Did,
   DidUrl,
   KiltAddress,
   RepresentationResolutionResult,
   ResolutionResult,
   Service,
-  VerificationMethod,
   UriFragment,
+  VerificationMethod,
 } from '@kiltprotocol/types'
 import { Crypto, cbor } from '@kiltprotocol/utils'
 import { stringToU8a } from '@polkadot/util'
@@ -23,17 +22,29 @@ import { stringToU8a } from '@polkadot/util'
 import { ApiMocks, makeSigningKeyTool } from '../../../../tests/testUtils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 
-import * as Did from '../index.js'
+import {
+  getFullDidFromVerificationMethod,
+  keypairToMultibaseKey,
+} from '../Did.utils'
+import { createLightDidDocument } from '../DidDetails'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts'
+import {
+  DID_CBOR_CONTENT_TYPE,
+  DID_JSON_CONTENT_TYPE,
+  DID_JSON_LD_CONTENT_TYPE,
+  DidResolver,
+  SupportedContentType,
+} from './DidResolver.js'
 
 const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const didWithAuthenticationKey: KiltDid = `did:kilt:${addressWithAuthenticationKey}`
+const didWithAuthenticationKey: Did = `did:kilt:${addressWithAuthenticationKey}`
 const addressWithAllKeys = `4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp`
-const didWithAllKeys: KiltDid = `did:kilt:${addressWithAllKeys}`
+const didWithAllKeys: Did = `did:kilt:${addressWithAllKeys}`
 const addressWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN`
-const didWithServiceEndpoints: KiltDid = `did:kilt:${addressWithServiceEndpoints}`
+const didWithServiceEndpoints: Did = `did:kilt:${addressWithServiceEndpoints}`
 const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
-const deletedDid: KiltDid = `did:kilt:${deletedAddress}`
+const deletedDid: Did = `did:kilt:${deletedAddress}`
 
 const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
   'did',
@@ -44,9 +55,10 @@ const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
 const augmentedApi = ApiMocks.createAugmentedApi()
 
 let mockedApi: any
+let resolver: ReturnType<typeof DidResolver>
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  ConfigService.set({ api: mockedApi })
+  resolver = DidResolver({ api: mockedApi })
 
   // Mock `api.call.did.query(did)`
   // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
@@ -81,13 +93,13 @@ beforeAll(() => {
 })
 
 function generateAuthenticationVerificationMethod(
-  controller: KiltDid
+  controller: Did
 ): VerificationMethod {
   return {
     id: `${controller}#auth`,
     controller,
     type: 'Multikey',
-    publicKeyMultibase: Did.keypairToMultibaseKey({
+    publicKeyMultibase: keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(0),
       type: 'ed25519',
     }),
@@ -95,13 +107,13 @@ function generateAuthenticationVerificationMethod(
 }
 
 function generateEncryptionVerificationMethod(
-  controller: KiltDid
+  controller: Did
 ): VerificationMethod {
   return {
     id: `${controller}#enc`,
     controller,
     type: 'Multikey',
-    publicKeyMultibase: Did.keypairToMultibaseKey({
+    publicKeyMultibase: keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(1),
       type: 'x25519',
     }),
@@ -109,13 +121,13 @@ function generateEncryptionVerificationMethod(
 }
 
 function generateAssertionVerificationMethod(
-  controller: KiltDid
+  controller: Did
 ): VerificationMethod {
   return {
     id: `${controller}#att`,
     controller,
     type: 'Multikey',
-    publicKeyMultibase: Did.keypairToMultibaseKey({
+    publicKeyMultibase: keypairToMultibaseKey({
       publicKey: new Uint8Array(32).fill(2),
       type: 'sr25519',
     }),
@@ -123,13 +135,13 @@ function generateAssertionVerificationMethod(
 }
 
 function generateCapabilityDelegationVerificationMethod(
-  controller: KiltDid
+  controller: Did
 ): VerificationMethod {
   return {
     id: `${controller}#del`,
     controller,
     type: 'Multikey',
-    publicKeyMultibase: Did.keypairToMultibaseKey({
+    publicKeyMultibase: keypairToMultibaseKey({
       publicKey: new Uint8Array(33).fill(3),
       type: 'ecdsa',
     }),
@@ -152,7 +164,7 @@ jest.mock('../Did.rpc.js')
 jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
   const { identifier } =
     'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-  const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+  const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
   const authMethod = generateAuthenticationVerificationMethod(did)
 
   return {
@@ -172,7 +184,7 @@ describe('When dereferencing a verification method', () => {
     const verificationMethodUrl: DidUrl = `${fullDid}#auth`
 
     expect(
-      await Did.dereference(verificationMethodUrl, {
+      await resolver.dereference(verificationMethodUrl, {
         accept: 'application/did+json',
       })
     ).toStrictEqual<DereferenceResult>({
@@ -186,7 +198,7 @@ describe('When dereferencing a verification method', () => {
     let verificationMethodUrl: DidUrl = `${deletedDid}#enc`
 
     expect(
-      await Did.dereference(verificationMethodUrl)
+      await resolver.dereference(verificationMethodUrl)
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
@@ -196,7 +208,7 @@ describe('When dereferencing a verification method', () => {
     verificationMethodUrl = `${didWithNoEncryptionKey}#enc`
 
     expect(
-      await Did.dereference(verificationMethodUrl)
+      await resolver.dereference(verificationMethodUrl)
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
@@ -205,7 +217,9 @@ describe('When dereferencing a verification method', () => {
 
   it('throws for invalid URLs', async () => {
     const invalidUrl = 'invalid-url' as DidUrl
-    expect(await Did.dereference(invalidUrl)).toStrictEqual<DereferenceResult>({
+    expect(
+      await resolver.dereference(invalidUrl)
+    ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'invalidDidUrl' },
     })
@@ -215,7 +229,7 @@ describe('When dereferencing a verification method', () => {
     const invalidLightDidUrl =
       `did:kilt:light:00${addressWithAuthenticationKey}:z22222#auth` as DidUrl
     expect(
-      await Did.dereference(invalidLightDidUrl)
+      await resolver.dereference(invalidLightDidUrl)
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'invalidDidUrl' },
@@ -229,7 +243,7 @@ describe('When resolving a service', () => {
     const serviceIdUrl: DidUrl = `${fullDid}#service-1`
 
     expect(
-      await Did.dereference(serviceIdUrl, {
+      await resolver.dereference(serviceIdUrl, {
         accept: 'application/did+json',
       })
     ).toStrictEqual<DereferenceResult>({
@@ -248,7 +262,7 @@ describe('When resolving a service', () => {
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -263,7 +277,7 @@ describe('When resolving a service', () => {
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -279,7 +293,7 @@ describe('When resolving a service', () => {
     let serviceIdUrl: DidUrl = `${deletedDid}#service-1`
 
     expect(
-      await Did.dereference(serviceIdUrl)
+      await resolver.dereference(serviceIdUrl)
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
@@ -289,7 +303,7 @@ describe('When resolving a service', () => {
     serviceIdUrl = `${didWithNoServiceEndpoints}#service-1`
 
     expect(
-      await Did.dereference(serviceIdUrl)
+      await resolver.dereference(serviceIdUrl)
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
@@ -301,7 +315,7 @@ describe('When resolving a full DID', () => {
   it('correctly resolves the document with an authentication verification method', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
     expect(
-      await Did.resolve(fullDidWithAuthenticationKey)
+      await resolver.resolve(fullDidWithAuthenticationKey)
     ).toMatchObject<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: {},
@@ -313,7 +327,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithAuthenticationKey,
             id: `${fullDidWithAuthenticationKey}#auth`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
             }),
@@ -328,7 +342,7 @@ describe('When resolving a full DID', () => {
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
       const encMethod = generateEncryptionVerificationMethod(did)
       const attMethod = generateAssertionVerificationMethod(did)
@@ -348,7 +362,7 @@ describe('When resolving a full DID', () => {
     })
     const fullDidWithAllKeys = didWithAllKeys
     expect(
-      await Did.resolve(fullDidWithAllKeys)
+      await resolver.resolve(fullDidWithAllKeys)
     ).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: {},
@@ -363,7 +377,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithAllKeys,
             id: `${fullDidWithAllKeys}#auth`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
             }),
@@ -372,7 +386,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithAllKeys,
             id: `${fullDidWithAllKeys}#enc`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(1),
             }),
@@ -381,7 +395,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithAllKeys,
             id: `${fullDidWithAllKeys}#att`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'sr25519',
               publicKey: new Uint8Array(32).fill(2),
             }),
@@ -390,7 +404,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithAllKeys,
             id: `${fullDidWithAllKeys}#del`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'ecdsa',
               publicKey: new Uint8Array(33).fill(3),
             }),
@@ -405,7 +419,7 @@ describe('When resolving a full DID', () => {
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -423,7 +437,7 @@ describe('When resolving a full DID', () => {
     })
     const fullDidWithServiceEndpoints = didWithServiceEndpoints
     expect(
-      await Did.resolve(fullDidWithServiceEndpoints)
+      await resolver.resolve(fullDidWithServiceEndpoints)
     ).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: {},
@@ -435,7 +449,7 @@ describe('When resolving a full DID', () => {
             controller: fullDidWithServiceEndpoints,
             id: `${fullDidWithServiceEndpoints}#auth`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
             }),
@@ -462,7 +476,7 @@ describe('When resolving a full DID', () => {
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -476,7 +490,7 @@ describe('When resolving a full DID', () => {
       }
     })
     expect(
-      await Did.resolve(didWithAuthenticationKey)
+      await resolver.resolve(didWithAuthenticationKey)
     ).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: {},
@@ -488,7 +502,7 @@ describe('When resolving a full DID', () => {
             controller: didWithAuthenticationKey,
             id: `${didWithAuthenticationKey}#auth`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               type: 'ed25519',
               publicKey: new Uint8Array(32).fill(0),
             }),
@@ -507,10 +521,10 @@ describe('When resolving a full DID', () => {
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     const randomKeypair = (await makeSigningKeyTool()).authentication[0]
-    const randomDid = Did.getFullDidFromVerificationMethod({
-      publicKeyMultibase: Did.keypairToMultibaseKey(randomKeypair),
+    const randomDid = getFullDidFromVerificationMethod({
+      publicKeyMultibase: keypairToMultibaseKey(randomKeypair),
     })
-    expect(await Did.resolve(randomDid)).toStrictEqual<ResolutionResult>({
+    expect(await resolver.resolve(randomDid)).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: { error: 'notFound' },
     })
@@ -525,7 +539,7 @@ describe('When resolving a full DID', () => {
       )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
-    expect(await Did.resolve(deletedDid)).toStrictEqual<ResolutionResult>({
+    expect(await resolver.resolve(deletedDid)).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: { deactivated: true },
       didResolutionMetadata: {},
       didDocument: { id: deletedDid },
@@ -547,11 +561,11 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves the document with an authentication key', async () => {
-    const lightDidWithAuthenticationKey = Did.createLightDidDocument({
+    const lightDidWithAuthenticationKey = createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
     expect(
-      await Did.resolve(lightDidWithAuthenticationKey.id)
+      await resolver.resolve(lightDidWithAuthenticationKey.id)
     ).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: {},
@@ -563,7 +577,7 @@ describe('When resolving a light DID', () => {
             controller: lightDidWithAuthenticationKey.id,
             id: `${lightDidWithAuthenticationKey.id}#authentication`,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               ...authKey,
               type: 'sr25519',
             }),
@@ -574,7 +588,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves the document with authentication key, encryption key, and two services', async () => {
-    const lightDid = Did.createLightDidDocument({
+    const lightDid = createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encryptionKey.publicKey, type: 'x25519' }],
       service: [
@@ -582,44 +596,46 @@ describe('When resolving a light DID', () => {
         generateServiceEndpoint('#service-2'),
       ],
     })
-    expect(await Did.resolve(lightDid.id)).toStrictEqual<ResolutionResult>({
-      didDocumentMetadata: {},
-      didResolutionMetadata: {},
-      didDocument: {
-        id: lightDid.id,
-        authentication: [`${lightDid.id}#authentication`],
-        keyAgreement: [`${lightDid.id}#encryption`],
-        verificationMethod: [
-          {
-            controller: lightDid.id,
-            id: `${lightDid.id}#authentication`,
-            type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
-              ...authKey,
-              type: 'sr25519',
-            }),
-          },
-          {
-            controller: lightDid.id,
-            id: `${lightDid.id}#encryption`,
-            type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey(encryptionKey),
-          },
-        ],
-        service: [
-          {
-            id: `${lightDid.id}#service-1`,
-            type: ['type-service-1'],
-            serviceEndpoint: ['x:url-service-1'],
-          },
-          {
-            id: `${lightDid.id}#service-2`,
-            type: ['type-service-2'],
-            serviceEndpoint: ['x:url-service-2'],
-          },
-        ],
-      },
-    })
+    expect(await resolver.resolve(lightDid.id)).toStrictEqual<ResolutionResult>(
+      {
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+        didDocument: {
+          id: lightDid.id,
+          authentication: [`${lightDid.id}#authentication`],
+          keyAgreement: [`${lightDid.id}#encryption`],
+          verificationMethod: [
+            {
+              controller: lightDid.id,
+              id: `${lightDid.id}#authentication`,
+              type: 'Multikey',
+              publicKeyMultibase: keypairToMultibaseKey({
+                ...authKey,
+                type: 'sr25519',
+              }),
+            },
+            {
+              controller: lightDid.id,
+              id: `${lightDid.id}#encryption`,
+              type: 'Multikey',
+              publicKeyMultibase: keypairToMultibaseKey(encryptionKey),
+            },
+          ],
+          service: [
+            {
+              id: `${lightDid.id}#service-1`,
+              type: ['type-service-1'],
+              serviceEndpoint: ['x:url-service-1'],
+            },
+            {
+              id: `${lightDid.id}#service-2`,
+              type: ['type-service-2'],
+              serviceEndpoint: ['x:url-service-2'],
+            },
+          ],
+        },
+      }
+    )
   })
 
   it('correctly resolves a migrated and not deleted DID', async () => {
@@ -643,33 +659,39 @@ describe('When resolving a light DID', () => {
         },
       })
     )
-    const migratedDid: KiltDid = `did:kilt:light:00${addressWithAuthenticationKey}`
-    expect(await Did.resolve(migratedDid)).toStrictEqual<ResolutionResult>({
-      didDocumentMetadata: { canonicalId: didWithAuthenticationKey },
-      didResolutionMetadata: {},
-      didDocument: {
-        id: migratedDid,
-      },
-    })
+    const migratedDid: Did = `did:kilt:light:00${addressWithAuthenticationKey}`
+    expect(await resolver.resolve(migratedDid)).toStrictEqual<ResolutionResult>(
+      {
+        didDocumentMetadata: { canonicalId: didWithAuthenticationKey },
+        didResolutionMetadata: {},
+        didDocument: {
+          id: migratedDid,
+        },
+      }
+    )
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
     // Mock the resolved DID as deleted.
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
-    const migratedDid: KiltDid = `did:kilt:light:00${deletedAddress}`
-    expect(await Did.resolve(migratedDid)).toStrictEqual<ResolutionResult>({
-      didDocumentMetadata: { deactivated: true },
-      didResolutionMetadata: {},
-      didDocument: {
-        id: migratedDid,
-      },
-    })
+    const migratedDid: Did = `did:kilt:light:00${deletedAddress}`
+    expect(await resolver.resolve(migratedDid)).toStrictEqual<ResolutionResult>(
+      {
+        didDocumentMetadata: { deactivated: true },
+        didResolutionMetadata: {},
+        didDocument: {
+          id: migratedDid,
+        },
+      }
+    )
   })
 
   it('throws for valid a light DID but with details that cannot be decoded', async () => {
-    const invalidLightDid: KiltDid = `did:kilt:light:00${addressWithAuthenticationKey}:z22222`
-    expect(await Did.resolve(invalidLightDid)).toStrictEqual<ResolutionResult>({
+    const invalidLightDid: Did = `did:kilt:light:00${addressWithAuthenticationKey}:z22222`
+    expect(
+      await resolver.resolve(invalidLightDid)
+    ).toStrictEqual<ResolutionResult>({
       didDocumentMetadata: {},
       didResolutionMetadata: { error: 'invalidDid' },
     })
@@ -709,7 +731,7 @@ describe('DID Resolution compliance', () => {
     jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
       const { identifier } =
         'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-      const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+      const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
       const authMethod = generateAuthenticationVerificationMethod(did)
 
       return {
@@ -724,9 +746,9 @@ describe('DID Resolution compliance', () => {
   })
   describe('resolve(did, resolutionOptions) → « didResolutionMetadata, didDocument, didDocumentMetadata »', () => {
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata` when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+      expect(await resolver.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: {},
         didDocument: {
@@ -737,7 +759,7 @@ describe('DID Resolution compliance', () => {
               id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
-              publicKeyMultibase: Did.keypairToMultibaseKey({
+              publicKeyMultibase: keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
               }),
@@ -752,16 +774,16 @@ describe('DID Resolution compliance', () => {
         .mockResolvedValueOnce(
           augmentedApi.createType('Option<RawDidLinkedInfo>', null)
         )
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+      expect(await resolver.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'notFound' },
       })
     })
     it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-      const did = 'did:kilt:test-did' as unknown as KiltDid
-      expect(await Did.resolve(did)).toStrictEqual<ResolutionResult>({
+      const did = 'did:kilt:test-did' as unknown as Did
+      expect(await resolver.resolve(did)).toStrictEqual<ResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'invalidDid' },
       })
@@ -770,13 +792,13 @@ describe('DID Resolution compliance', () => {
 
   describe('resolveRepresentation(did, resolutionOptions) → « didResolutionMetadata, didDocumentStream, didDocumentMetadata »', () => {
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.resolveRepresentation(did)
+        await resolver.resolveRepresentation(did)
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
-        didResolutionMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        didResolutionMetadata: { contentType: DID_JSON_CONTENT_TYPE },
         didDocumentStream: stringToU8a(
           JSON.stringify({
             id: did,
@@ -786,7 +808,7 @@ describe('DID Resolution compliance', () => {
                 id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
-                publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKeyMultibase: keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
                 }),
@@ -797,16 +819,16 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.resolveRepresentation(did, {
+        await resolver.resolveRepresentation(did, {
           accept: 'application/did+ld+json',
         })
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: {
-          contentType: Did.DID_JSON_LD_CONTENT_TYPE,
+          contentType: DID_JSON_LD_CONTENT_TYPE,
         },
         didDocumentStream: stringToU8a(
           JSON.stringify({
@@ -817,27 +839,27 @@ describe('DID Resolution compliance', () => {
                 id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
-                publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKeyMultibase: keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
                 }),
               },
             ],
-            '@context': [Did.W3C_DID_CONTEXT_URL, Did.KILT_DID_CONTEXT_URL],
+            '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
           })
         ),
       })
     })
     it('returns empty `didDocumentMetadata` and `didResolutionMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.resolveRepresentation(did, {
+        await resolver.resolveRepresentation(did, {
           accept: 'application/did+cbor',
         })
       ).toMatchObject<RepresentationResolutionResult>({
         didDocumentMetadata: {},
-        didResolutionMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
+        didResolutionMetadata: { contentType: DID_CBOR_CONTENT_TYPE },
         didDocumentStream: Uint8Array.from(
           cbor.encode({
             id: did,
@@ -847,7 +869,7 @@ describe('DID Resolution compliance', () => {
                 id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
-                publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKeyMultibase: keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
                 }),
@@ -864,30 +886,30 @@ describe('DID Resolution compliance', () => {
           augmentedApi.createType('Option<RawDidLinkedInfo>', null)
         )
 
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.resolveRepresentation(did)
+        await resolver.resolveRepresentation(did)
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'notFound' },
       })
     })
     it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-      const did = 'did:kilt:test-did' as unknown as KiltDid
+      const did = 'did:kilt:test-did' as unknown as Did
       expect(
-        await Did.resolveRepresentation(did)
+        await resolver.resolveRepresentation(did)
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'invalidDid' },
       })
     })
     it('returns the right `didResolutionMetadata.error` when the requested content type is not supported', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.resolveRepresentation(did, {
-          accept: 'application/json' as Did.SupportedContentType,
+        await resolver.resolveRepresentation(did, {
+          accept: 'application/json' as SupportedContentType,
         })
       ).toStrictEqual<RepresentationResolutionResult>({
         didDocumentMetadata: {},
@@ -898,11 +920,11 @@ describe('DID Resolution compliance', () => {
 
   describe('dereference(didUrl, dereferenceOptions) → « dereferencingMetadata, contentStream, contentMetadata »', () => {
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-      expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+      expect(await resolver.dereference(did)).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
-        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        dereferencingMetadata: { contentType: DID_JSON_CONTENT_TYPE },
         contentStream: {
           id: did,
           authentication: [`${did}#auth`],
@@ -911,7 +933,7 @@ describe('DID Resolution compliance', () => {
               id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
-              publicKeyMultibase: Did.keypairToMultibaseKey({
+              publicKeyMultibase: keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
               }),
@@ -921,14 +943,14 @@ describe('DID Resolution compliance', () => {
       })
     })
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+ld+json` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.dereference(did, { accept: 'application/did+ld+json' })
+        await resolver.dereference(did, { accept: 'application/did+ld+json' })
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
         dereferencingMetadata: {
-          contentType: Did.DID_JSON_LD_CONTENT_TYPE,
+          contentType: DID_JSON_LD_CONTENT_TYPE,
         },
         contentStream: {
           id: did,
@@ -938,24 +960,24 @@ describe('DID Resolution compliance', () => {
               id: `${did}#auth`,
               controller: did,
               type: 'Multikey',
-              publicKeyMultibase: Did.keypairToMultibaseKey({
+              publicKeyMultibase: keypairToMultibaseKey({
                 publicKey: new Uint8Array(32).fill(0),
                 type: 'ed25519',
               }),
             },
           ],
-          '@context': [Did.W3C_DID_CONTEXT_URL, Did.KILT_DID_CONTEXT_URL],
+          '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
         },
       })
     })
     it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+cbor` representation when successfully returning a DID Document that has not been deleted nor migrated', async () => {
-      const did: KiltDid =
+      const did: Did =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
       expect(
-        await Did.dereference(did, { accept: 'application/did+cbor' })
+        await resolver.dereference(did, { accept: 'application/did+cbor' })
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
-        dereferencingMetadata: { contentType: Did.DID_CBOR_CONTENT_TYPE },
+        dereferencingMetadata: { contentType: DID_CBOR_CONTENT_TYPE },
         contentStream: Uint8Array.from(
           cbor.encode({
             id: did,
@@ -965,7 +987,7 @@ describe('DID Resolution compliance', () => {
                 id: `${did}#auth`,
                 controller: did,
                 type: 'Multikey',
-                publicKeyMultibase: Did.keypairToMultibaseKey({
+                publicKeyMultibase: keypairToMultibaseKey({
                   publicKey: new Uint8Array(32).fill(0),
                   type: 'ed25519',
                 }),
@@ -979,16 +1001,16 @@ describe('DID Resolution compliance', () => {
       const didUrl: DidUrl =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth'
       expect(
-        await Did.dereference(didUrl, { accept: 'application/did+cbor' })
+        await resolver.dereference(didUrl, { accept: 'application/did+cbor' })
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
-        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        dereferencingMetadata: { contentType: DID_JSON_CONTENT_TYPE },
         contentStream: {
           id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
           controller:
             'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
           type: 'Multikey',
-          publicKeyMultibase: Did.keypairToMultibaseKey({
+          publicKeyMultibase: keypairToMultibaseKey({
             publicKey: new Uint8Array(32).fill(0),
             type: 'ed25519',
           }),
@@ -999,7 +1021,7 @@ describe('DID Resolution compliance', () => {
       jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
         const { identifier } =
           'unwrap' in linkedInfo ? linkedInfo.unwrap() : linkedInfo
-        const did: KiltDid = `did:kilt:${identifier as unknown as KiltAddress}`
+        const did: Did = `did:kilt:${identifier as unknown as KiltAddress}`
         const authMethod = generateAuthenticationVerificationMethod(did)
 
         return {
@@ -1021,10 +1043,10 @@ describe('DID Resolution compliance', () => {
       const didUrl: DidUrl =
         'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1'
       expect(
-        await Did.dereference(didUrl, { accept: 'application/did+cbor' })
+        await resolver.dereference(didUrl, { accept: 'application/did+cbor' })
       ).toStrictEqual<DereferenceResult>({
         contentMetadata: {},
-        dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+        dereferencingMetadata: { contentType: DID_JSON_CONTENT_TYPE },
         contentStream: {
           id: didUrl,
           type: ['type'],
@@ -1040,30 +1062,30 @@ describe('DID Resolution compliance', () => {
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
 
-    const did: KiltDid =
+    const did: Did =
       'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-    expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+    expect(await resolver.dereference(did)).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'notFound' },
     })
   })
   it('returns the right `didResolutionMetadata.error` when the input DID is invalid', async () => {
-    const did = 'did:kilt:test-did' as unknown as KiltDid
-    expect(await Did.dereference(did)).toStrictEqual<DereferenceResult>({
+    const did = 'did:kilt:test-did' as unknown as Did
+    expect(await resolver.dereference(did)).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
       dereferencingMetadata: { error: 'invalidDidUrl' },
     })
   })
   it('returns empty `contentMetadata` and `dereferencingMetadata.contentType: application/did+json` (the default value) when the `options.accept` value is invalid', async () => {
-    const did: KiltDid =
+    const did: Did =
       'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
     expect(
-      await Did.dereference(did, {
-        accept: 'application/json' as unknown as Did.SupportedContentType,
+      await resolver.dereference(did, {
+        accept: 'application/json' as unknown as SupportedContentType,
       })
     ).toStrictEqual<DereferenceResult>({
       contentMetadata: {},
-      dereferencingMetadata: { contentType: Did.DID_JSON_CONTENT_TYPE },
+      dereferencingMetadata: { contentType: DID_JSON_CONTENT_TYPE },
       contentStream: {
         id: did,
         authentication: [`${did}#auth`],
@@ -1072,7 +1094,7 @@ describe('DID Resolution compliance', () => {
             id: `${did}#auth`,
             controller: did,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: keypairToMultibaseKey({
               publicKey: new Uint8Array(32).fill(0),
               type: 'ed25519',
             }),

@@ -8,7 +8,7 @@
 import { createSigner, cryptosuite } from '@kiltprotocol/sr25519-jcs-2023'
 import { randomAsHex, sr25519PairFromSeed } from '@polkadot/util-crypto'
 
-import { didKeyToVerificationMethod, resolve } from '@kiltprotocol/did'
+import { didKeyToVerificationMethod, DidResolver } from '@kiltprotocol/did'
 import type { Did } from '@kiltprotocol/types'
 
 import { createProof, verifyProof, signWithDid } from '../proofs/DataIntegrity'
@@ -99,29 +99,34 @@ describe('verification', () => {
   beforeAll(async () => {
     const { publicKey } = sr25519PairFromSeed(seed)
 
-    jest.mocked(resolve).mockImplementation(async (did: string) => {
-      if (did.startsWith(signerDid)) {
-        return {
-          didDocumentMetadata: {},
-          didResolutionMetadata: {},
-          didDocument: {
-            id: signerDid,
-            verificationMethod: [
-              didKeyToVerificationMethod(signerDid, vmUrl, {
-                publicKey,
-                keyType: 'sr25519',
-              }),
-            ],
-            assertionMethod: [vmUrl],
-            authentication: [vmUrl],
+    jest.mocked(DidResolver).mockImplementation(
+      () =>
+        ({
+          resolve: async (did: string) => {
+            if (did.startsWith(signerDid)) {
+              return {
+                didDocumentMetadata: {},
+                didResolutionMetadata: {},
+                didDocument: {
+                  id: signerDid,
+                  verificationMethod: [
+                    didKeyToVerificationMethod(signerDid, vmUrl, {
+                      publicKey,
+                      keyType: 'sr25519',
+                    }),
+                  ],
+                  assertionMethod: [vmUrl],
+                  authentication: [vmUrl],
+                },
+              }
+            }
+            return {
+              didResolutionMetadata: { error: 'notFound' },
+              didDocumentMetadata: {},
+            }
           },
-        }
-      }
-      return {
-        didResolutionMetadata: { error: 'notFound' },
-        didDocumentMetadata: {},
-      }
-    })
+        } as ReturnType<typeof DidResolver>)
+    )
   })
   it('verifies a signature', async () => {
     const presentation = await createPresentation({
