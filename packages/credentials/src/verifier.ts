@@ -77,7 +77,7 @@ export async function checkStatus(
  * @param config - Additional configuration (optional).
  * @param config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.cTypes - To ensure that the credential' structure follows specific CType's schemas (definitions), with this parameter it is possible to pass:
+ * @param config.cTypes -  To ensure that the credential structure agrees with a known CType (credential schema), with this parameter it is possible to pass:
  *  - either an array of CType definitions
  *  - or a CType-Loader that retrieves the definition of the CType linked to the credential.
  *
