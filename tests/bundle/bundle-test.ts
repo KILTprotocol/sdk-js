@@ -287,14 +287,6 @@ async function runAll() {
   })
   console.info('Credential issued')
 
-  const credentialResult = await Verifier.verifyCredential(
-    issued,
-    {},
-    {
-      cTypes: [DriversLicense],
-    }
-  )
-
   const credentialResult = await Verifier.verifyCredential({
     credential: issued,
     config: {
