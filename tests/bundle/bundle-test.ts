@@ -290,9 +290,10 @@ async function runAll() {
   const credentialResult = await Verifier.verifyCredential({
     credential: issued,
     config: {
-      ctypeLoader: [DriversLicense],
+      cTypes: [DriversLicense],
     },
   })
+
   if (credentialResult.verified) {
     console.info('Credential proof verified')
     console.info('Credential status verified')

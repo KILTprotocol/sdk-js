@@ -66,7 +66,7 @@ type VerificationCriteria = {
 }
 type VerificationConfig = {
   didResolver?: typeof resolve | DidDocument[]
-  ctypeLoader?: CTypeLoader | ICType[]
+  cTypes?: CTypeLoader | ICType[]
   credentialStatusLoader?: (
     credential: VerifiableCredential
   ) => Promise<CredentialStatusResult>
@@ -92,10 +92,12 @@ type VerificationConfig = {
  * @param args.config - Additional configuration (optional).
  * @param args.config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param args.config.ctypeLoader - An alternative CType loader that retrieves CType definitions associated with the credential in order to assure they follow the CType's credential schema.
- * An array of CType definitions can be passed instead, which has the effect of restricting allowable credential types to these known CTypes.
- * By default, this retrieves CType defitions from the KILT blockchain, using a loader with an internal definitions cache.
- * @param args.config.credentialStatusLoader - An alternative credential status resolver.
+ * @param config.cTypes -  To ensure that the credential structure agrees with a known CType (credential schema), with this parameter it is possible to pass:
+ *  - either an array of CType definitions
+ *  - or a CType-Loader that retrieves the definition of the CType linked to the credential.
+ *
+ * By default, this retrieves CType definitions from the KILT blockchain, using a loader with an internal definitions cache.
+ * @param config.credentialStatusLoader - An alternative credential status resolver.
  * This function takes the credential as input and is expected to return a promise of an {@link CredentialStatusResult}.
  * Defaults to {@link checkStatus}.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside any potential errors and detailed information on proof verification results and credential status.
@@ -140,14 +142,14 @@ export async function verifyCredential({
               )
             }
 
-            const { ctypeLoader } = config
+            const { cTypes } = config
             const options: Parameters<typeof KiltAttestationProofV1.verify>[2] =
               {}
-            if (Array.isArray(ctypeLoader)) {
-              options.cTypes = ctypeLoader
+            if (Array.isArray(cTypes)) {
+              options.cTypes = cTypes
               options.loadCTypes = false
-            } else if (typeof ctypeLoader === 'function') {
-              options.loadCTypes = ctypeLoader
+            } else if (typeof cTypes === 'function') {
+              options.loadCTypes = cTypes
             }
             await KiltAttestationProofV1.verify(
               credential as KiltCredentialV1.Interface,
@@ -224,7 +226,7 @@ export async function verifyCredential({
  * @param args.config - Additional configuration (optional).
  * @param args.config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param args.config.ctypeLoader - An alternative CType loader for credential verification, or alternatively an array of CTypes.
+ * @param config.cTypes - Alternative input for the credential structural verification. It can either be an array of CTypes or a CType loader.
  * See {@link verifyCredential} for details.
  * @param args.config.credentialStatusLoader - An alternative credential status resolver.
  * See {@link verifyCredential} for details.
@@ -253,7 +255,7 @@ export async function verifyPresentation({
       tolerance = 0,
       proofTypes: presentationProofTypes,
     } = verificationCriteria
-    const { ctypeLoader, credentialStatusLoader } = config
+    const { cTypes, credentialStatusLoader } = config
     // prepare did resolver to be used for loading issuer & holder did documents
     let { didResolver = resolve } = config
     if (Array.isArray(didResolver)) {
@@ -323,8 +325,9 @@ export async function verifyPresentation({
             now,
             tolerance,
           },
-          config: { credentialStatusLoader, ctypeLoader, didResolver },
+          config: { credentialStatusLoader, cTypes, didResolver },
         })
+
         return { ...credentialResult, credential }
       })
     )
