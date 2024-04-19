@@ -111,7 +111,6 @@ export async function verifyCredential({
   verificationCriteria?: VerificationCriteria
   config?: VerificationConfig
 }): Promise<VerifyCredentialResult> {
-
   const result: VerifyCredentialResult = {
     verified: false,
   }
