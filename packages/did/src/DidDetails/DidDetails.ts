@@ -74,7 +74,7 @@ export function isValidDidVerificationType(
 }
 
 export type NewVerificationMethod = Omit<VerificationMethod, 'controller'>
-export type NewService = Service
+export type NewService = Service<UriFragment>
 
 /**
  * Type guard checking whether the provided input represents one of the supported verification relationships.
@@ -160,9 +160,13 @@ export function addKeypairAsVerificationMethod(
   { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
   relationship: VerificationRelationship
 ): void {
-  const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
-    keyType: keyType as DidSigningMethodType,
-    publicKey,
-  })
+  const verificationMethod = didKeyToVerificationMethod(
+    didDocument.id,
+    `${didDocument.id}${id}`,
+    {
+      keyType: keyType as DidSigningMethodType,
+      publicKey,
+    }
+  )
   addVerificationMethod(didDocument, verificationMethod, relationship)
 }

@@ -171,9 +171,9 @@ export async function resolve(
  */
 export async function resolveRepresentation(
   did: Did,
-  { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON_CONTENT_TYPE,
-  }
+  {
+    accept = DID_JSON_CONTENT_TYPE,
+  }: DereferenceOptions<SupportedContentType> = {}
 ): Promise<RepresentationResolutionResult<SupportedContentType>> {
   const inputTransform = (() => {
     switch (accept) {
@@ -270,7 +270,8 @@ async function dereferenceInternal(
 
   const [dereferencedResource, dereferencingError] = (() => {
     const verificationMethod = didDocument?.verificationMethod?.find(
-      ({ controller, id }) => controller === didDocument.id && id === fragment
+      ({ controller, id }) =>
+        controller === didDocument.id && id.endsWith(fragment)
     )
 
     if (verificationMethod !== undefined) {
@@ -308,7 +309,7 @@ async function dereferenceInternal(
     }
 
     // If no verification method is found, try to retrieve a service with the provided ID, ignoring any query parameters.
-    const service = didDocument?.service?.find((s) => s.id === fragment)
+    const service = didDocument?.service?.find((s) => s.id.endsWith(fragment))
     if (service === undefined) {
       return [
         null,
@@ -341,10 +342,9 @@ async function dereferenceInternal(
  */
 export async function dereference(
   didUrl: Did | DidUrl,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { accept }: DereferenceOptions<SupportedContentType> = {
-    accept: DID_JSON_CONTENT_TYPE,
-  }
+  {
+    accept = DID_JSON_CONTENT_TYPE,
+  }: DereferenceOptions<SupportedContentType> = {}
 ): Promise<DereferenceResult<SupportedContentType>> {
   // The spec does not include an error for unsupported content types for dereferences
   const contentType = isValidContentType(accept)

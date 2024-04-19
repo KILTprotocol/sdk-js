@@ -314,7 +314,7 @@ describe('vc-js', () => {
     it('creates and verifies a signed presentation (sr25519)', async () => {
       const signer = {
         sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
-        id: didDocument.id + didDocument.authentication![0],
+        id: didDocument.authentication![0],
       }
       const signingSuite = new Sr25519Signature2020({ signer })
 
@@ -358,7 +358,7 @@ describe('vc-js', () => {
       })
       const edSigner = {
         sign: async ({ data }: { data: Uint8Array }) => edKeypair.sign(data),
-        id: lightDid.id + lightDid.authentication?.[0],
+        id: lightDid.authentication?.[0],
       }
       const signingSuite = new Ed25519Signature2020({ signer: edSigner })
 

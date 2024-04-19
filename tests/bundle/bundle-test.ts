@@ -77,7 +77,7 @@ async function createFullDid(
       >(({ id }) => [
         {
           ...signer,
-          id: `${didDocument.id}${id}`,
+          id,
         },
       ]) ?? []
     ).flat()
@@ -262,20 +262,19 @@ async function runAll() {
 
   // Attestation workflow
   console.log('Attestation workflow started')
-  const content = { name: 'Bob', age: 21 }
+  const credentialSubject = { id: bob.id, name: 'Bob', age: 21 }
 
   const credential = await Issuer.createCredential({
     cType: DriversLicense,
-    claims: content,
-    subject: bob.id,
+    credentialSubject,
     issuer: alice.id,
   })
 
   console.info('Credential subject conforms to CType')
 
   if (
-    credential.credentialSubject.name !== content.name ||
-    credential.credentialSubject.age !== content.age ||
+    credential.credentialSubject.name !== credentialSubject.name ||
+    credential.credentialSubject.age !== credentialSubject.age ||
     credential.credentialSubject.id !== bob.id
   ) {
     throw new Error('Claim content inside Credential mismatching')
@@ -295,6 +294,14 @@ async function runAll() {
       cTypes: [DriversLicense],
     }
   )
+
+  const credentialResult = await Verifier.verifyCredential({
+    credential: issued,
+    config: {
+      cTypes: [DriversLicense],
+    },
+  })
+
   if (credentialResult.verified) {
     console.info('Credential proof verified')
     console.info('Credential status verified')
@@ -323,8 +330,9 @@ async function runAll() {
   )
   console.info('Presentation created')
 
-  const presentationResult = await Verifier.verifyPresentation(presentation, {
-    presentation: { challenge },
+  const presentationResult = await Verifier.verifyPresentation({
+    presentation,
+    verificationCriteria: { challenge },
   })
   if (presentationResult.verified) {
     console.info('Presentation verified')

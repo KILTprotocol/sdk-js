@@ -53,14 +53,15 @@ describe('When creating an instance from the details', () => {
       service,
     })
 
+    const did = `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`
     expect(lightDid).toEqual(<DidDocument>{
-      id: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-      authentication: ['#authentication'],
-      keyAgreement: ['#encryption'],
+      id: did,
+      authentication: [`${did}#authentication`],
+      keyAgreement: [`${did}#encryption`],
       verificationMethod: [
         {
-          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-          id: '#authentication',
+          controller: did,
+          id: `${did}#authentication`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: authKey.publicKey,
             type: 'sr25519',
@@ -68,8 +69,8 @@ describe('When creating an instance from the details', () => {
           type: 'Multikey',
         },
         {
-          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-          id: '#encryption',
+          controller: did,
+          id: `${did}#encryption`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: encKey.publicKey,
             type: 'x25519',
@@ -79,12 +80,12 @@ describe('When creating an instance from the details', () => {
       ],
       service: [
         {
-          id: '#service-1',
+          id: `${did}#service-1`,
           type: ['type-1'],
           serviceEndpoint: ['x:url-1'],
         },
         {
-          id: '#service-2',
+          id: `${did}#service-2`,
           type: ['type-21', 'type-22'],
           serviceEndpoint: ['x:url-21', 'x:url-22'],
         },
@@ -105,14 +106,15 @@ describe('When creating an instance from the details', () => {
 
     expect(parse(lightDid.id).address).toStrictEqual(authKey.address)
 
+    const did = `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`
     expect(lightDid).toEqual(<DidDocument>{
-      id: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
-      authentication: ['#authentication'],
-      keyAgreement: ['#encryption'],
+      id: did,
+      authentication: [`${did}#authentication`],
+      keyAgreement: [`${did}#encryption`],
       verificationMethod: [
         {
-          controller: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
-          id: '#authentication',
+          controller: did,
+          id: `${did}#authentication`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: authKey.publicKey,
             type: 'ed25519',
@@ -120,8 +122,8 @@ describe('When creating an instance from the details', () => {
           type: 'Multikey',
         },
         {
-          controller: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
-          id: '#encryption',
+          controller: did,
+          id: `${did}#encryption`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: encKey.publicKey,
             type: 'x25519',
@@ -182,18 +184,19 @@ describe('When creating an instance from a light DID', () => {
       service: endpoints,
     })
 
-    const { address } = parse(expectedLightDid.id)
     const builtLightDid = parseDocumentFromLightDid(expectedLightDid.id)
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
+    const { address } = parse(expectedLightDid.id)
+    const did = `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`
     expect(builtLightDid).toStrictEqual(<DidDocument>{
-      id: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-      authentication: ['#authentication'],
-      keyAgreement: ['#encryption'],
+      id: did,
+      authentication: [`${did}#authentication`],
+      keyAgreement: [`${did}#encryption`],
       verificationMethod: [
         {
-          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-          id: '#authentication',
+          controller: did,
+          id: `${did}#authentication`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: authKey.publicKey,
             type: 'sr25519',
@@ -201,8 +204,8 @@ describe('When creating an instance from a light DID', () => {
           type: 'Multikey',
         },
         {
-          controller: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
-          id: '#encryption',
+          controller: did,
+          id: `${did}#encryption`,
           publicKeyMultibase: keypairToMultibaseKey({
             publicKey: encKey.publicKey,
             type: 'x25519',
@@ -212,12 +215,12 @@ describe('When creating an instance from a light DID', () => {
       ],
       service: [
         {
-          id: '#service-1',
+          id: `${did}#service-1`,
           type: ['type-1'],
           serviceEndpoint: ['x:url-1'],
         },
         {
-          id: '#service-2',
+          id: `${did}#service-2`,
           type: ['type-21', 'type-22'],
           serviceEndpoint: ['x:url-21', 'x:url-22'],
         },

@@ -94,7 +94,7 @@ jest.mock('@kiltprotocol/did', () => {
 
 describe('verification', () => {
   const signerDid = credential.credentialSubject.id as Did
-  const keyId = `#key-1`
+  const vmUrl = `${signerDid}#key-1` as const
 
   beforeAll(async () => {
     const { publicKey } = sr25519PairFromSeed(seed)
@@ -107,13 +107,13 @@ describe('verification', () => {
           didDocument: {
             id: signerDid,
             verificationMethod: [
-              didKeyToVerificationMethod(signerDid, keyId, {
+              didKeyToVerificationMethod(signerDid, vmUrl, {
                 publicKey,
                 keyType: 'sr25519',
               }),
             ],
-            assertionMethod: [keyId],
-            authentication: [keyId],
+            assertionMethod: [vmUrl],
+            authentication: [vmUrl],
           },
         }
       }
@@ -131,7 +131,7 @@ describe('verification', () => {
 
     const signer = await createSigner({
       seed,
-      id: signerDid + keyId,
+      id: vmUrl,
     })
     const signed = await createProof(presentation, cryptosuite, signer, {
       proofPurpose: 'assertionMethod',
@@ -147,7 +147,7 @@ describe('verification', () => {
   it('verifies a presentation proof', async () => {
     const signer = await createSigner({
       seed,
-      id: signerDid + keyId,
+      id: vmUrl,
     })
     const challenge = randomAsHex()
     let presentation = await createPresentation({

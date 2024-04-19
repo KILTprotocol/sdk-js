@@ -23,10 +23,8 @@ import type { IssuerOptions } from './interfaces.js'
  * This is added to the `type` field on the credential and determines the `credentialSchema` as well.
  * Defaults to the type {@link KiltCredentialV1.CREDENTIAL_TYPE KiltCredentialV1} which, for the time being, is also the only type supported.
  * @param arguments.issuer The Decentralized Identifier (DID) of the identity acting as the authority issuing this credential.
- * @param arguments.subject The DID identifying the subject of the credential, about which `claims` are made.
- * Sets the `credentialSubject.id` property of the credential.
- * @param arguments.claims An object containing key-value pairs that represent claims made about the subject.
- * These key-value pairs are added to the `credentialSubject` property of the credential.
+ * @param arguments.credentialSubject An object containing key-value pairs that represent claims made about the subject of the credential.
+ * @param arguments.credentialSubject.id The DID identifying the subject of the credential, about which claims are made (the remaining key-value pairs).
  * @param arguments.cType CTypes are special credential subtypes that are defined by a schema describing claims that may be made about the subject and are registered on the Kilt blockchain.
  * Each Kilt credential is based on exactly one of these subtypes. This argument is therefore mandatory and expects the schema definition of a CType.
  * @param arguments.cTypeDefinitions Some CTypes are themselves composed of definitions taken from other CTypes; in that case, these definitions need to be supplied here.
@@ -36,21 +34,20 @@ import type { IssuerOptions } from './interfaces.js'
 export async function createCredential({
   type,
   issuer,
-  subject,
-  claims = {},
+  credentialSubject,
   cType,
   cTypeDefinitions,
 }: {
   type?: string
   issuer: Did
-  subject: Did
-  claims?: Record<string, unknown>
+  credentialSubject: Record<string, unknown> & { id: Did }
   cType: ICType
   cTypeDefinitions?: ICType[] | CTypeLoader
 }): Promise<UnsignedVc> {
   switch (type) {
     case undefined:
     case KiltCredentialV1.CREDENTIAL_TYPE: {
+      const { id: subject, ...claims } = credentialSubject
       const credential = KiltCredentialV1.fromInput({
         issuer,
         subject,

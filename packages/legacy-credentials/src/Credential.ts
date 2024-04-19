@@ -22,7 +22,6 @@ import { Attestation, CType } from '@kiltprotocol/credentials'
 import {
   isDidSignature,
   resolve,
-  dereference,
   signatureFromJson,
   verifyDidSignature,
 } from '@kiltprotocol/did'
@@ -37,7 +36,6 @@ import type {
   ICredentialPresentation,
   IDelegationNode,
   SignerInterface,
-  DereferenceDidUrl,
   DidDocument,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors, Signers } from '@kiltprotocol/utils'
@@ -207,17 +205,17 @@ export function verifyDataStructure(input: ICredential): void {
  *
  * @param input - The {@link ICredentialPresentation}.
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.dereferenceDidUrl - The function used to dereference the claimer's DID Document and verification method. Defaults to {@link dereferenceDidUrl}.
+ * @param verificationOpts.didResolver - The function used to resolve the claimer's DID Document and verification method. Defaults to {@link resolve}.
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
+    didResolver = resolve,
   }: {
     challenge?: string
-    dereferenceDidUrl?: DereferenceDidUrl['dereference']
+    didResolver?: typeof resolve
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -235,7 +233,7 @@ export async function verifySignature(
     // allow full did to sign presentation if owned by corresponding light did
     allowUpgraded: true,
     expectedVerificationRelationship: 'authentication',
-    dereferenceDidUrl,
+    didResolver,
   })
 }
 
@@ -281,7 +279,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  dereferenceDidUrl?: DereferenceDidUrl['dereference']
+  didResolver?: typeof resolve
 }
 
 /**
@@ -434,21 +432,17 @@ export async function verifyCredential(
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.dereferenceDidUrl - The function used to dereference the claimer's DID and verification method. Defaults to {@link dereference}.
+ * @param options.didResolver - The function used to resolve the claimer's DID and verification method. Defaults to {@link resolve}.
  * @returns A {@link VerifiedCredential} object, which is the orignal credential presentation with two additional properties:
  * a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
-  {
-    ctype,
-    challenge,
-    dereferenceDidUrl = dereference as DereferenceDidUrl['dereference'],
-  }: VerifyOptions = {}
+  { ctype, challenge, didResolver }: VerifyOptions = {}
 ): Promise<VerifiedCredential> {
   await verifySignature(presentation, {
     challenge,
-    dereferenceDidUrl,
+    didResolver,
   })
   return verifyCredential(presentation, { ctype })
 }

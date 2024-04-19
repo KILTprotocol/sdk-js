@@ -126,7 +126,7 @@ export async function makeSigningKeyTool(
         didDocument.verificationMethod?.map(({ id }) =>
           Signers.getSignersForKeypair({
             keypair,
-            id: `${didDocument.id}${id}`,
+            id: `${id.startsWith('#') ? didDocument.id : ''}${id}`,
           })
         ) ?? []
       )
@@ -174,10 +174,14 @@ function addKeypairAsVerificationMethod(
   { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
   relationship: VerificationRelationship
 ): void {
-  const verificationMethod = didKeyToVerificationMethod(didDocument.id, id, {
-    keyType: keyType as DidVerificationMethodType,
-    publicKey,
-  })
+  const verificationMethod = didKeyToVerificationMethod(
+    didDocument.id,
+    `${didDocument.id}${id}`,
+    {
+      keyType: keyType as DidVerificationMethodType,
+      publicKey,
+    }
+  )
   addVerificationMethod(didDocument, verificationMethod, relationship)
 }
 
@@ -242,7 +246,7 @@ export async function createLocalDemoFullDidFromKeypair(
   const {
     type: keyType,
     publicKey,
-    id: authKeyId,
+    id: authKeyFragment,
   } = makeDidKeyFromKeypair(keypair)
   const id = getFullDidFromVerificationMethod({
     publicKeyMultibase: keypairToMultibaseKey({
@@ -251,6 +255,7 @@ export async function createLocalDemoFullDidFromKeypair(
     }),
   })
 
+  const authKeyId = `${id}${authKeyFragment}` as const
   const result: DidDocument = {
     id,
     authentication: [authKeyId],
@@ -260,7 +265,7 @@ export async function createLocalDemoFullDidFromKeypair(
         publicKey,
       }),
     ],
-    service: endpoints,
+    service: endpoints.map((i) => ({ ...i, id: `${id}${i.id}` })),
   }
 
   if (verificationRelationships.has('keyAgreement')) {

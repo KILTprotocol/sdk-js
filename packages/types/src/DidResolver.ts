@@ -145,7 +145,7 @@ export interface ResolveDid<Accept extends string = string> {
      * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
      * This input is REQUIRED, but the structure MAY be empty.
      */
-    resolutionOptions: ResolutionOptions
+    resolutionOptions?: ResolutionOptions
   ) => Promise<ResolutionResult>
 
   resolveRepresentation: (
@@ -158,7 +158,7 @@ export interface ResolveDid<Accept extends string = string> {
      * A metadata structure containing properties defined in 7.1.1 DID Resolution Options.
      * This input is REQUIRED, but the structure MAY be empty.
      */
-    resolutionOptions: RepresentationResolutionOptions<Accept>
+    resolutionOptions?: RepresentationResolutionOptions<Accept>
   ) => Promise<RepresentationResolutionResult<Accept>>
 }
 
@@ -245,7 +245,7 @@ export interface DereferenceDidUrl<Accept extends string = string> {
      * Properties defined by this specification are in 7.2.1 DID URL Dereferencing Options.
      * This input is REQUIRED, but the structure MAY be empty.
      */
-    dereferenceOptions: DereferenceOptions<Accept>
+    dereferenceOptions?: DereferenceOptions<Accept>
   ) => Promise<DereferenceResult<Accept>>
 }
 
