@@ -123,7 +123,7 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types10800,
   },
   {
-    minmax: [10900, undefined],
+    minmax: [10900, 11199],
     types: types10900,
   },
   {
