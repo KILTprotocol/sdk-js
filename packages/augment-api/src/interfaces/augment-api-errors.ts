@@ -336,6 +336,35 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongUpperBound: AugmentedError<ApiType>;
     };
+    depositStorage: {
+      /**
+       * A deposit with the provided key already exists within the specified
+       * namespace.
+       **/
+      DepositExisting: AugmentedError<ApiType>;
+      /**
+       * The deposit with the provided key was not found within the specified
+       * namespace.
+       **/
+      DepositNotFound: AugmentedError<ApiType>;
+      /**
+       * The origin did not have enough fund to pay for the deposit.
+       **/
+      FailedToHold: AugmentedError<ApiType>;
+      /**
+       * Error when trying to release a previously-reserved deposit.
+       **/
+      FailedToRelease: AugmentedError<ApiType>;
+      /**
+       * The external hook failed.
+       **/
+      Hook: AugmentedError<ApiType>;
+      /**
+       * The origin was not authorized to perform the operation on the
+       * specified deposit entry.
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+    };
     did: {
       /**
        * The DID has already been previously deleted.
@@ -482,6 +511,24 @@ declare module '@polkadot/api-base/types/errors' {
        * The supplied proof of ownership was outdated.
        **/
       OutdatedProof: AugmentedError<ApiType>;
+    };
+    dipProvider: {
+      /**
+       * The specified commitment cannot be found.
+       **/
+      CommitmentNotFound: AugmentedError<ApiType>;
+      /**
+       * Error inside the external hook logic.
+       **/
+      Hook: AugmentedError<ApiType>;
+      /**
+       * Error when generating a commitment for the retrieved identity.
+       **/
+      IdentityCommitmentGenerator: AugmentedError<ApiType>;
+      /**
+       * Error when retrieving the identity details of the provided subject.
+       **/
+      IdentityProvider: AugmentedError<ApiType>;
     };
     dmpQueue: {
       /**

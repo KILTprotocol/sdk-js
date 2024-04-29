@@ -5,7 +5,7 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/types/types/registry';
 
-import type { DidApiAccountId, PublicCredentialError, PublicCredentialFilter, RawDidLinkedInfo, StakingRates } from '@kiltprotocol/augment-api/extraDefs';
+import type { BlindedLeaves, BlindedValue, CompleteMerkleProof, DidApiAccountId, DidIdentityProviderError, DidMerkleProofError, DipProofRequest, IdentityCommitmentVersion, KeyRelationship, LinkedDidIdentityProviderError, MerkleProof, MerkleRoot, PublicCredentialError, PublicCredentialFilter, RawDidLinkedInfo, RevealedAccountId, RevealedDidKey, RevealedLeaf, RevealedLeaves, RevealedWeb3Name, RuntimeApiDipProofError, StakingRates, VerificationRelationship } from '@kiltprotocol/augment-api/extraDefs';
 import type { Data, StorageKey } from '@polkadot/types';
 import type { BitVec, Bool, Bytes, F32, F64, I128, I16, I256, I32, I64, I8, ISize, Json, Null, OptionBool, Raw, Text, Type, U128, U16, U256, U32, U64, U8, USize, bool, f32, f64, i128, i16, i256, i32, i64, i8, isize, u128, u16, u256, u32, u64, u8, usize } from '@polkadot/types-codec';
 import type { AssetApproval, AssetApprovalKey, AssetBalance, AssetDestroyWitness, AssetDetails, AssetMetadata, TAssetBalance, TAssetDepositBalance } from '@polkadot/types/interfaces/assets';
@@ -171,6 +171,8 @@ declare module '@polkadot/types/types/registry' {
     Bidder: Bidder;
     BidKind: BidKind;
     BitVec: BitVec;
+    BlindedLeaves: BlindedLeaves;
+    BlindedValue: BlindedValue;
     Block: Block;
     BlockAttestations: BlockAttestations;
     BlockHash: BlockHash;
@@ -243,6 +245,7 @@ declare module '@polkadot/types/types/registry' {
     CompactAssignmentsWith24: CompactAssignmentsWith24;
     CompactScore: CompactScore;
     CompactScoreCompact: CompactScoreCompact;
+    CompleteMerkleProof: CompleteMerkleProof;
     ConfigData: ConfigData;
     Consensus: Consensus;
     ConsensusEngineId: ConsensusEngineId;
@@ -334,9 +337,12 @@ declare module '@polkadot/types/types/registry' {
     DepositBalanceOf: DepositBalanceOf;
     DestroyWitness: DestroyWitness;
     DidApiAccountId: DidApiAccountId;
+    DidIdentityProviderError: DidIdentityProviderError;
+    DidMerkleProofError: DidMerkleProofError;
     Digest: Digest;
     DigestItem: DigestItem;
     DigestOf: DigestOf;
+    DipProofRequest: DipProofRequest;
     DispatchClass: DispatchClass;
     DispatchError: DispatchError;
     DispatchErrorModule: DispatchErrorModule;
@@ -557,6 +563,7 @@ declare module '@polkadot/types/types/registry' {
     i8: i8;
     I8: I8;
     IdentificationTuple: IdentificationTuple;
+    IdentityCommitmentVersion: IdentityCommitmentVersion;
     IdentityFields: IdentityFields;
     IdentityInfo: IdentityInfo;
     IdentityInfoAdditional: IdentityInfoAdditional;
@@ -610,6 +617,7 @@ declare module '@polkadot/types/types/registry' {
     Justifications: Justifications;
     Key: Key;
     KeyOwnerProof: KeyOwnerProof;
+    KeyRelationship: KeyRelationship;
     Keys: Keys;
     KeyType: KeyType;
     KeyTypeId: KeyTypeId;
@@ -624,6 +632,7 @@ declare module '@polkadot/types/types/registry' {
     LegacyTransaction: LegacyTransaction;
     Limits: Limits;
     LimitsTo264: LimitsTo264;
+    LinkedDidIdentityProviderError: LinkedDidIdentityProviderError;
     LocalValidationData: LocalValidationData;
     LockIdentifier: LockIdentifier;
     LookupSource: LookupSource;
@@ -633,6 +642,8 @@ declare module '@polkadot/types/types/registry' {
     MaybeVrf: MaybeVrf;
     MemberCount: MemberCount;
     MembershipProof: MembershipProof;
+    MerkleProof: MerkleProof;
+    MerkleRoot: MerkleRoot;
     MessageData: MessageData;
     MessageId: MessageId;
     MessageIngestionType: MessageIngestionType;
@@ -893,11 +904,17 @@ declare module '@polkadot/types/types/registry' {
     ResponseV2Error: ResponseV2Error;
     ResponseV2Result: ResponseV2Result;
     Retriable: Retriable;
+    RevealedAccountId: RevealedAccountId;
+    RevealedDidKey: RevealedDidKey;
+    RevealedLeaf: RevealedLeaf;
+    RevealedLeaves: RevealedLeaves;
+    RevealedWeb3Name: RevealedWeb3Name;
     RewardDestination: RewardDestination;
     RewardPoint: RewardPoint;
     RoundSnapshot: RoundSnapshot;
     RoundState: RoundState;
     RpcMethods: RpcMethods;
+    RuntimeApiDipProofError: RuntimeApiDipProofError;
     RuntimeApiMetadataLatest: RuntimeApiMetadataLatest;
     RuntimeApiMetadataV15: RuntimeApiMetadataV15;
     RuntimeApiMethodMetadataV15: RuntimeApiMethodMetadataV15;
@@ -1154,6 +1171,7 @@ declare module '@polkadot/types/types/registry' {
     ValidityAttestation: ValidityAttestation;
     ValidTransaction: ValidTransaction;
     VecInboundHrmpMessage: VecInboundHrmpMessage;
+    VerificationRelationship: VerificationRelationship;
     VersionedMultiAsset: VersionedMultiAsset;
     VersionedMultiAssets: VersionedMultiAssets;
     VersionedMultiLocation: VersionedMultiLocation;

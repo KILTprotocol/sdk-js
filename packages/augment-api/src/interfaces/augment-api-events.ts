@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H256, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { DelegationDelegationHierarchyPermissions, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDepositStorageDepositDepositEntry, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, RuntimeCommonDipDepositDepositNamespace, SpRuntimeDispatchError, SpWeightsWeightV2Weight, SpiritnetRuntimeProxyType, XcmV3MultiLocation, XcmV3MultiassetMultiAssets, XcmV3Response, XcmV3TraitsError, XcmV3TraitsOutcome, XcmV3Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -294,6 +294,16 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Voted: AugmentedEvent<ApiType, [voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote], { voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote }>;
     };
+    depositStorage: {
+      /**
+       * A new deposit has been reserved and stored.
+       **/
+      DepositAdded: AugmentedEvent<ApiType, [namespace: RuntimeCommonDipDepositDepositNamespace, key: Bytes, depositEntry: PalletDepositStorageDepositDepositEntry], { namespace: RuntimeCommonDipDepositDepositNamespace, key: Bytes, depositEntry: PalletDepositStorageDepositDepositEntry }>;
+      /**
+       * A deposit has been released and deleted from storage.
+       **/
+      DepositReclaimed: AugmentedEvent<ApiType, [namespace: RuntimeCommonDipDepositDepositNamespace, key: Bytes, depositEntry: PalletDepositStorageDepositDepositEntry], { namespace: RuntimeCommonDipDepositDepositNamespace, key: Bytes, depositEntry: PalletDepositStorageDepositDepositEntry }>;
+    };
     did: {
       /**
        * A DID-authorised call has been executed.
@@ -333,6 +343,16 @@ declare module '@polkadot/api-base/types/events' {
        * There was some progress in the migration process.
        **/
       MigrationProgress: AugmentedEvent<ApiType, []>;
+    };
+    dipProvider: {
+      /**
+       * A new commitment has been stored.
+       **/
+      VersionedIdentityCommitted: AugmentedEvent<ApiType, [identifier: AccountId32, commitment: H256, version: u16], { identifier: AccountId32, commitment: H256, version: u16 }>;
+      /**
+       * A commitment has been deleted.
+       **/
+      VersionedIdentityDeleted: AugmentedEvent<ApiType, [identifier: AccountId32, version: u16], { identifier: AccountId32, version: u16 }>;
     };
     dmpQueue: {
       /**
