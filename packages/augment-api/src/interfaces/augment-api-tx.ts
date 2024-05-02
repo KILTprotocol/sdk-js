@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Bytes, Compact, Option, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H256, MultiAddress, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportPreimagesBounded, PalletDemocracyConviction, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, PalletVestingVestingInfo, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, SpWeightsWeightV2Weight, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV3MultiLocation, XcmV3WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
+import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportPreimagesBounded, PalletDemocracyConviction, PalletDemocracyMetadataOwner, PalletDemocracyVoteAccountVote, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PalletMigrationEntriesToMigrate, PalletMultisigTimepoint, PalletVestingVestingInfo, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, RuntimeCommonDipDepositDepositNamespace, SpWeightsWeightV2Weight, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV3MultiLocation, XcmV3WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -225,6 +225,12 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       vote: AugmentedSubmittable<(refIndex: Compact<u32> | AnyNumber | Uint8Array, vote: PalletDemocracyVoteAccountVote | { Standard: any } | { Split: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, PalletDemocracyVoteAccountVote]>;
     };
+    depositStorage: {
+      /**
+       * See [`Pallet::reclaim_deposit`].
+       **/
+      reclaimDeposit: AugmentedSubmittable<(namespace: RuntimeCommonDipDepositDepositNamespace | 'DipProvider' | number | Uint8Array, key: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [RuntimeCommonDipDepositDepositNamespace, Bytes]>;
+    };
     did: {
       /**
        * See [`Pallet::add_key_agreement_key`].
@@ -324,6 +330,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * See [`Pallet::update_deposit`].
        **/
       updateDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+    };
+    dipProvider: {
+      /**
+       * See [`Pallet::commit_identity`].
+       **/
+      commitIdentity: AugmentedSubmittable<(identifier: AccountId32 | string | Uint8Array, version: Option<u16> | null | Uint8Array | u16 | AnyNumber) => SubmittableExtrinsic<ApiType>, [AccountId32, Option<u16>]>;
+      /**
+       * See [`Pallet::delete_identity_commitment`].
+       **/
+      deleteIdentityCommitment: AugmentedSubmittable<(identifier: AccountId32 | string | Uint8Array, version: Option<u16> | null | Uint8Array | u16 | AnyNumber) => SubmittableExtrinsic<ApiType>, [AccountId32, Option<u16>]>;
     };
     dmpQueue: {
       /**

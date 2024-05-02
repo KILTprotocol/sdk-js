@@ -149,6 +149,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingPeriod: u64 & AugmentedConst<ApiType>;
     };
+    depositStorage: {
+      /**
+       * The maximum length of keys.
+       **/
+      maxKeyLength: u32 & AugmentedConst<ApiType>;
+    };
     did: {
       /**
        * The amount of balance that will be taken for each DID as a deposit

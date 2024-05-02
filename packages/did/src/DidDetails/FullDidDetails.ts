@@ -39,6 +39,7 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   'did.reclaimDeposit': undefined,
   'did.submitDidCall': undefined,
   didLookup: 'authentication',
+  dipProvider: 'authentication',
   publicCredentials: 'assertionMethod',
   web3Names: 'authentication',
 }

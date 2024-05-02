@@ -1268,8 +1268,7 @@ describe('Runtime constraints', () => {
     })
 
     it('should not be possible to create a DID with a service endpoint that has a URI that is too long', async () => {
-      const uri =
-        'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const uri = `a:${'a'.repeat(1_999)}`
       const limit = api.consts.did.maxServiceUrlLength.toNumber()
       expect(uri.length).toBeGreaterThan(limit)
     })

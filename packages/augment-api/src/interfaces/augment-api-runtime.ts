@@ -5,7 +5,7 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/api-base/types/calls';
 
-import type { DidApiAccountId, PublicCredentialError, PublicCredentialFilter, RawDidLinkedInfo, StakingRates } from '@kiltprotocol/augment-api/extraDefs';
+import type { CompleteMerkleProof, DidApiAccountId, DipProofRequest, PublicCredentialError, PublicCredentialFilter, RawDidLinkedInfo, RuntimeApiDipProofError, StakingRates } from '@kiltprotocol/augment-api/extraDefs';
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, Vec, u32 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
@@ -101,6 +101,13 @@ declare module '@polkadot/api-base/types/calls' {
        * Return the information relative to the owner of the provided web3name, if any.
        **/
       queryByWeb3Name: AugmentedCall<ApiType, (name: Text | string) => Observable<Option<RawDidLinkedInfo>>>;
+    };
+    /** 0xc3b3e8d33273990d/1 */
+    dipProvider: {
+      /**
+       * Generate a Merkle proof for the DIP protocol for the specified request parameters.
+       **/
+      generateProof: AugmentedCall<ApiType, (request: DipProofRequest | { identifier?: any; version?: any; proofKeys?: any; accounts?: any; shouldIncludeWeb3Name?: any } | string | Uint8Array) => Observable<Result<CompleteMerkleProof, RuntimeApiDipProofError>>>;
     };
     /** 0x37e397fc7c91f5e4/2 */
     metadata: {
