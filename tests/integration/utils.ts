@@ -41,7 +41,7 @@ export async function getStartedTestContainer(
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/standalone-node'
   console.log(`using testcontainer with image ${image}`)
   const strategies = [
-    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
+    // ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
     ['--dev', '--rpc-external', `--rpc-port=${WS_PORT}`],
   ]
   // eslint-disable-next-line no-restricted-syntax
@@ -61,7 +61,7 @@ export async function getStartedTestContainer(
       console.log('container started and ready')
       return started
     } catch (error) {
-      console.warn(
+      throw console.error(
         'Failed to start container due to the following error:\n',
         error
       )
