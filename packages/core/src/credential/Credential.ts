@@ -301,10 +301,15 @@ export function verifyWellFormed(
   verifyDataIntegrity(credential)
 
   if (ctype) {
+    if (`kilt:ctype:${credential.claim.cTypeHash}` !== ctype.$id) {
+      throw new SDKErrors.CTypeIdMismatchError(
+        ctype.$id,
+        credential.claim.cTypeHash
+      )
+    }
     verifyClaimAgainstSchema(credential.claim.contents, ctype)
   }
 }
-
 /**
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
