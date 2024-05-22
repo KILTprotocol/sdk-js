@@ -300,6 +300,12 @@ export function verifyWellFormed(
   verifyDataIntegrity(credential)
 
   if (ctype) {
+    if (`kilt:ctype:${credential.claim.cTypeHash}` !== ctype.$id) {
+      throw new SDKErrors.CTypeIdMismatchError(
+        ctype.$id,
+        credential.claim.cTypeHash
+      )
+    }
     CType.verifyClaimAgainstSchema(credential.claim.contents, ctype)
   }
 }
