@@ -298,9 +298,9 @@ export function verifyWellFormed(
 ): void {
   verifyDataStructure(credential)
   verifyDataIntegrity(credential)
-
+  const credentialCTypeId = CType.hashToId(credential.claim.cTypeHash)
   if (ctype) {
-    if (`kilt:ctype:${credential.claim.cTypeHash}` !== ctype.$id) {
+    if (credentialCTypeId !== ctype.$id) {
       throw new SDKErrors.CTypeIdMismatchError(
         ctype.$id,
         credential.claim.cTypeHash
