@@ -39,7 +39,7 @@
     "@kiltprotocol/es256k-jcs-2023": "0.1.0-rc.2",
     "@kiltprotocol/sr25519-jcs-2023": "0.1.0-rc.2",
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^10.7.3",
+    "@polkadot/api": "^11.0.0",
     "@polkadot/keyring": "^12.0.0",
     "@polkadot/util": "^12.0.0",
     "@polkadot/util-crypto": "^12.0.0",
