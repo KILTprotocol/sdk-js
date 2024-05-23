@@ -298,13 +298,10 @@ export function verifyWellFormed(
 ): void {
   verifyDataStructure(credential)
   verifyDataIntegrity(credential)
-  const credentialCTypeId = CType.hashToId(credential.claim.cTypeHash)
   if (ctype) {
+    const credentialCTypeId = CType.hashToId(credential.claim.cTypeHash)
     if (credentialCTypeId !== ctype.$id) {
-      throw new SDKErrors.CTypeIdMismatchError(
-        ctype.$id,
-        credential.claim.cTypeHash
-      )
+      throw new SDKErrors.CTypeIdMismatchError(ctype.$id, credentialCTypeId)
     }
     CType.verifyClaimAgainstSchema(credential.claim.contents, ctype)
   }
