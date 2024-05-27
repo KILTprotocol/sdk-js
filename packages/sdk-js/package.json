@@ -25,7 +25,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=18.0"
+    "node": ">=20.13"
   },
   "author": "",
   "license": "BSD-4-Clause",
