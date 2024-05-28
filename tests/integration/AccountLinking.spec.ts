@@ -213,7 +213,6 @@ describe('When there is an on-chain DID', () => {
         if (skip) {
           return
         }
-        // here is the problem
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           newDid.id,
