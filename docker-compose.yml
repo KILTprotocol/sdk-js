@@ -14,7 +14,7 @@ version: '3.2'
 services:
   dev-node:
     image: kiltprotocol/standalone-node:develop
-    command: '--dev --ws-port 9944 --ws-external'
+    command: '--dev --rpc-port 9944 --rpc-external'
 
   sdk:
     build: .
