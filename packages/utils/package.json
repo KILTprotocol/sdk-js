@@ -45,6 +45,6 @@
     "@polkadot/util-crypto": "^12.0.0",
     "cbor-web": "^9.0.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^9.0.0"
+    "uuid": "^10.0.0"
   }
 }
