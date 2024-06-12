@@ -6,8 +6,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
@@ -19,8 +19,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
@@ -32,7 +32,7 @@ jobs:
         run: yarn run bundle
       - name: Get current package version
         id: package_version
-        run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT                  
+        run: echo "package_version=$(node -pe "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Publish to NPM
         run: yarn run publish --tag latest
         env:
@@ -43,4 +43,4 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: KILTProtocol/docs
           event-type: sdk-update
-          client-payload: '{"latestTag": "${{ steps.package_version.outputs.package_version }}"}'          
+          client-payload: '{"latestTag": "${{ steps.package_version.outputs.package_version }}"}'
