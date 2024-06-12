@@ -37,9 +37,9 @@ jobs:
     needs: check_skip
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
@@ -50,7 +50,7 @@ jobs:
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: build.zip
@@ -60,13 +60,13 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: lint
@@ -90,10 +90,10 @@ jobs:
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - name: unzip
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: make sure testcontainers image is in cache
         uses: ./.github/actions/cached-image-pull
         with:
@@ -129,13 +129,13 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: Log out node version
@@ -169,30 +169,29 @@ jobs:
       - name: run integration tests (cjs)
         timeout-minutes: 60
         run: yarn test:integration -b
-      
+
       - name: run integration tests (esm)
         timeout-minutes: 60
         run: yarn test:integration:esm -b
-
 
   bundle_cache:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: yarn bundle
         run: yarn bundle
       - name: upload bundle artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist/sdk-js.umd.js
@@ -211,17 +210,17 @@ jobs:
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - name: unzip
         run: unzip build.zip -d .
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: checked-nonmin-bundle
           path: packages/sdk-js/dist
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
 
