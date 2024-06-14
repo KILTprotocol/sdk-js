@@ -47,7 +47,7 @@ export type DidSignature = {
   signature: string
 }
 
-type Base58BtcMultibaseString = `z${string}`
+export type Base58BtcMultibaseString = `z${string}`
 
 /**
  * The verification method of a DID.

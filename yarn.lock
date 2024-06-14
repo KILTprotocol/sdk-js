@@ -2102,6 +2102,7 @@ __metadata:
     "@digitalbazaar/multikey-context": "npm:^2.0.1"
     "@digitalbazaar/security-context": "npm:^1.0.1"
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:0.1.0-rc.3"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^12.0.0"
@@ -2111,6 +2112,7 @@ __metadata:
     "@polkadot/util-crypto": "npm:^13.0.0"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
+    varint: "npm:^6.0.0"
   peerDependencies:
     "@kiltprotocol/augment-api": "*"
   peerDependenciesMeta:

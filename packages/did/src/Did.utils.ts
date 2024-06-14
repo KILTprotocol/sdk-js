@@ -5,13 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  blake2AsU8a,
-  encodeAddress,
-  base58Decode,
-  base58Encode,
-} from '@polkadot/util-crypto'
+import { blake2AsU8a, encodeAddress, base58Encode } from '@polkadot/util-crypto'
 import type {
+  Base58BtcMultibaseString,
   Did,
   DidUrl,
   KeyringPair,
@@ -20,6 +16,9 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+// @ts-expect-error Not a typescript module
+import * as varint from 'varint'
+import { decodeBase58BtcMultikey } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
@@ -161,29 +160,35 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
 ): DecodedVerificationMethod {
-  if (!publicKeyMultibase.startsWith('z')) {
-    throw new SDKErrors.DidError(`invalid format for '${publicKeyMultibase}'`)
-  }
-  const decodedMulticodecPublicKey = base58Decode(publicKeyMultibase.slice(1))
-  const [keyTypeFlag, publicKey] = [
-    decodedMulticodecPublicKey.subarray(0, 1)[0],
-    decodedMulticodecPublicKey.subarray(1),
-  ]
-  const [keyType, expectedPublicKeyLength] = multicodecPrefixes[keyTypeFlag]
+  const { keyBytes, prefix } = decodeBase58BtcMultikey(publicKeyMultibase)
+
+  const [keyType, expectedPublicKeyLength] = multicodecPrefixes[prefix]
   if (keyType === undefined) {
     throw new SDKErrors.DidError(
       `Cannot decode key type for multibase key "${publicKeyMultibase}".`
     )
   }
-  if (publicKey.length !== expectedPublicKeyLength) {
+  if (keyBytes.length !== expectedPublicKeyLength) {
     throw new SDKErrors.DidError(
-      `Key of type "${keyType}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${publicKey.length} bytes long instead.`
+      `Key of type "${keyType}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${keyBytes.length} bytes long instead.`
     )
   }
   return {
     keyType,
-    publicKey,
+    publicKey: keyBytes,
   }
+}
+
+function multibase58BtcKeyBytesEncoding(
+  key: Uint8Array,
+  keyPrefix: number
+): Base58BtcMultibaseString {
+  const encodeVarint =
+    typeof varint.encode === 'function' ? varint.encode : varint.default.encode
+  const varintEncodedPrefix = encodeVarint(keyPrefix)
+  const prefixedKey = Uint8Array.from([...varintEncodedPrefix, ...key])
+  const base58BtcEncodedKey = base58Encode(prefixedKey)
+  return `z${Buffer.from(base58BtcEncodedKey).toString()}`
 }
 
 /**
@@ -212,11 +217,12 @@ export function keypairToMultibaseKey({
       `Key of type "${type}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
     )
   }
-  const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
+  const prefixedEncodedPublicKey = multibase58BtcKeyBytesEncoding(
+    publicKey,
+    multiCodecPublicKeyPrefix
+  )
 
-  const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
-
-  return `z${encodedPublicKey}`
+  return prefixedEncodedPublicKey
 }
 
 /**
@@ -246,10 +252,10 @@ export function didKeyToVerificationMethod<IdType extends DidUrl | UriFragment>(
       `Key of type "${keyType}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
     )
   }
-  const multiCodecPublicKey = [multiCodecPublicKeyPrefix, ...publicKey]
-
-  const encodedPublicKey = base58Encode(Uint8Array.from(multiCodecPublicKey))
-  const prefixedEncodedPublicKey = `z${encodedPublicKey}` as const
+  const prefixedEncodedPublicKey = multibase58BtcKeyBytesEncoding(
+    publicKey,
+    multiCodecPublicKeyPrefix
+  )
 
   return {
     controller,
