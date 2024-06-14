@@ -424,10 +424,8 @@ export async function verifyProof(
   )
   if (!suite) {
     throw new PROOF_TRANSFORMATION_ERROR(
-      `proof's cryptosuite ${
-        proof.cryptosuite
-      } not among the supported suites [${
-        proofOptions.cryptosuites?.map(({ name }) => name) ?? []
+      `proof's cryptosuite ${proof.cryptosuite
+      } not among the supported suites [${proofOptions.cryptosuites?.map(({ name }) => name) ?? []
       }]`
     )
   }

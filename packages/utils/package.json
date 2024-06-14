@@ -35,9 +35,9 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@kiltprotocol/eddsa-jcs-2022": "0.1.0-rc.2",
-    "@kiltprotocol/es256k-jcs-2023": "0.1.0-rc.2",
-    "@kiltprotocol/sr25519-jcs-2023": "0.1.0-rc.2",
+    "@kiltprotocol/eddsa-jcs-2022": "0.1.0-rc.3",
+    "@kiltprotocol/es256k-jcs-2023": "0.1.0-rc.3",
+    "@kiltprotocol/sr25519-jcs-2023": "0.1.0-rc.3",
     "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^12.0.0",
     "@polkadot/keyring": "^13.0.0",
