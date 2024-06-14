@@ -138,12 +138,12 @@ const MULTICODEC_ED25519_PREFIX = 0xed
 const MULTICODEC_SR25519_PREFIX = 0xef
 
 const multicodecPrefixes: Record<number, [DidVerificationMethodType, number]> =
-{
-  [MULTICODEC_ECDSA_PREFIX]: ['ecdsa', 33],
-  [MULTICODEC_X25519_PREFIX]: ['x25519', 32],
-  [MULTICODEC_ED25519_PREFIX]: ['ed25519', 32],
-  [MULTICODEC_SR25519_PREFIX]: ['sr25519', 32],
-}
+  {
+    [MULTICODEC_ECDSA_PREFIX]: ['ecdsa', 33],
+    [MULTICODEC_X25519_PREFIX]: ['x25519', 32],
+    [MULTICODEC_ED25519_PREFIX]: ['ed25519', 32],
+    [MULTICODEC_SR25519_PREFIX]: ['sr25519', 32],
+  }
 const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
   ecdsa: MULTICODEC_ECDSA_PREFIX,
   x25519: MULTICODEC_X25519_PREFIX,
@@ -179,6 +179,7 @@ export function multibaseKeyToDidKey(
   }
 }
 
+// TODO: This could also be exposed in a new release candidate of the `@kiltprotocol/jcs-data-integrity-proofs-common` package.
 function multibase58BtcKeyBytesEncoding(
   key: Uint8Array,
   keyPrefix: number
