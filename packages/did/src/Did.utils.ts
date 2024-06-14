@@ -179,6 +179,7 @@ export function multibaseKeyToDidKey(
   }
 }
 
+// TODO: This could also be exposed in a new release candidate of the `@kiltprotocol/jcs-data-integrity-proofs-common` package.
 function multibase58BtcKeyBytesEncoding(
   key: Uint8Array,
   keyPrefix: number
