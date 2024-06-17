@@ -80,12 +80,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [18, 20, 22]
         required: ['required']
         include:
           - node-version: 16
-            required: 'optional'
-          - node-version: 22
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
