@@ -16,7 +16,7 @@ export const calls: DefinitionsCall = {
           params: [
             {
               name: 'remote_asset_id',
-              type: 'VersionedMultiLocation',
+              type: 'StagingXcmVersionedAssetId',
             },
           ],
           type: 'AccountId',
