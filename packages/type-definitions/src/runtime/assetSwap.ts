@@ -15,6 +15,10 @@ export const calls: DefinitionsCall = {
           description: '',
           params: [
             {
+              name: 'pair_id',
+              type: 'Text',
+            },
+            {
               name: 'remote_asset_id',
               type: 'StagingXcmVersionedAssetId',
             },
