@@ -8,7 +8,7 @@
 import type { DefinitionsCall } from '@polkadot/types/types'
 
 export const calls: DefinitionsCall = {
-  AssetSwap: [
+  AssetSwitch: [
     {
       methods: {
         pool_account_id: {

@@ -34,7 +34,7 @@ import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 import { calls as dipProviderCalls } from './runtime/dipProvider.js'
-import { calls as assetSwapCalls } from './runtime/assetSwap.js'
+import { calls as assetSwitchCalls } from './runtime/assetSwitch.js'
 
 export {
   types8,
@@ -61,7 +61,7 @@ export { calls as didCalls } from './runtime/did.js'
 export { calls as stakingCalls } from './runtime/staking.js'
 export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 export { calls as dipProviderCalls } from './runtime/dipProvider.js'
-export { calls as assetSwapCalls } from './runtime/assetSwap.js'
+export { calls as assetSwitchCalls } from './runtime/assetSwitch.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -143,7 +143,7 @@ export const typesBundle: OverrideBundleType = {
         ...stakingCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
@@ -153,7 +153,7 @@ export const typesBundle: OverrideBundleType = {
         ...stakingCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
@@ -163,7 +163,7 @@ export const typesBundle: OverrideBundleType = {
         ...stakingCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
@@ -173,7 +173,7 @@ export const typesBundle: OverrideBundleType = {
         ...stakingCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
@@ -183,7 +183,7 @@ export const typesBundle: OverrideBundleType = {
         ...stakingCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
@@ -199,7 +199,7 @@ export const typesBundle: OverrideBundleType = {
         ...didCalls,
         ...publicCredentialsCalls,
         ...dipProviderCalls,
-        ...assetSwapCalls,
+        ...assetSwitchCalls,
       },
       types: defaultTypesBundle,
     },
