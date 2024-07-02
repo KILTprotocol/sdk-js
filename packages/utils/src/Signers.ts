@@ -22,23 +22,25 @@ import {
 import type { Keypair } from '@polkadot/util-crypto/types'
 
 import {
-  createSigner as es256kSigner,
-  cryptosuite as es256kSuite,
-} from '@kiltprotocol/es256k-jcs-2023'
-import {
   createSigner as ed25519Signer,
   cryptosuite as ed25519Suite,
 } from '@kiltprotocol/eddsa-jcs-2022'
 import {
-  cryptosuite as sr25519Suite,
+  createSigner as es256kSigner,
+  cryptosuite as es256kSuite,
+} from '@kiltprotocol/es256k-jcs-2023'
+import { decodeMultikeyVerificationMethod } from '@kiltprotocol/jcs-data-integrity-proofs-common'
+import {
   createSigner as sr25519Signer,
+  cryptosuite as sr25519Suite,
 } from '@kiltprotocol/sr25519-jcs-2023'
 
+import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 import type {
-  SignerInterface,
   DidDocument,
   DidUrl,
   KeyringPair,
+  SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
 
@@ -126,10 +128,10 @@ export async function ethereumEcdsaSigner<Id extends string>({
  * @param pair The pair, where the private key is inaccessible.
  * @returns The private key as a byte sequence.
  */
-function extractPk(pair: KeyringPair): Uint8Array {
+function extractPk(pair: Pick<KeyringPair, 'encodePkcs8'>): Keypair {
   const encoded = pair.encodePkcs8()
-  const { secretKey } = decodePair(undefined, encoded, 'none')
-  return secretKey
+  const { secretKey, publicKey } = decodePair(undefined, encoded, 'none')
+  return { secretKey, publicKey }
 }
 
 const signerFactory = {
@@ -170,30 +172,25 @@ export async function signerFromKeypair<
     throw new Error(`unknown algorithm ${algorithm}`)
   }
 
-  if (!('secretKey' in keypair) && 'encodePkcs8' in keypair) {
-    const signerId = id ?? (keypair.address as Id)
-    return {
-      id: signerId,
-      algorithm,
-      sign: async (signData) => {
-        // TODO: can probably be optimized; but care must be taken to respect keyring locking
-        const secretKey = extractPk(keypair)
-        const { sign } = await makeSigner({
-          secretKey,
-          publicKey: keypair.publicKey,
-          id: signerId,
-        })
-        return sign(signData)
-      },
-    }
+  if ('secretKey' in keypair && 'publicKey' in keypair) {
+    const { secretKey, publicKey } = keypair
+    return makeSigner({
+      secretKey,
+      publicKey,
+      id: id ?? (encodeAddress(publicKey, 38) as Id),
+    })
   }
 
-  const { secretKey, publicKey } = keypair
-  return makeSigner({
-    secretKey,
-    publicKey,
-    id: id ?? (encodeAddress(publicKey, 38) as Id),
-  })
+  if ('encodePkcs8' in keypair) {
+    const { secretKey, publicKey } = extractPk(keypair)
+    return makeSigner({
+      secretKey,
+      publicKey,
+      id: id ?? (keypair.address as Id),
+    })
+  }
+
+  throw new Error('')
 }
 
 function algsForKeyType(keyType: string): KnownAlgorithms[] {
@@ -227,19 +224,38 @@ function algsForKeyType(keyType: string): KnownAlgorithms[] {
 export async function getSignersForKeypair<Id extends string>({
   id,
   keypair,
-  type = (keypair as KeyringPair).type,
+  type,
 }: {
   id?: Id
-  keypair: Keypair | KeyringPair
+  keypair:
+    | Keypair
+    | KeyringPair
+    | {
+        secretKeyMultibase: `z${string}`
+        publicKeyMultibase: `z${string}`
+      }
   type?: string
 }): Promise<Array<SignerInterface<KnownAlgorithms, Id>>> {
-  if (!type) {
+  let pair: KeyringPair | (Keypair & { type: string })
+  if ('publicKeyMultibase' in keypair) {
+    const { publicKey, keyType } = multibaseKeyToDidKey(
+      keypair.publicKeyMultibase
+    )
+    const { publicKey: secretKey } = decodeMultikeyVerificationMethod({
+      publicKeyMultibase: keypair.secretKeyMultibase,
+    })
+    pair = { publicKey, secretKey, type: keyType }
+  } else if ('type' in keypair) {
+    pair = keypair
+  } else if (type) {
+    pair = { ...keypair, type }
+  } else {
     throw new Error('type is required if keypair.type is not given')
   }
-  const algorithms = algsForKeyType(type)
+  const algorithms = algsForKeyType(pair.type)
   return Promise.all(
     algorithms.map(async (algorithm) => {
-      return signerFromKeypair({ keypair, id, algorithm })
+      return signerFromKeypair({ keypair: pair, id, algorithm })
     })
   )
 }
