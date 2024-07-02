@@ -6,6 +6,7 @@
  */
 
 import { blake2AsU8a, encodeAddress, base58Encode } from '@polkadot/util-crypto'
+import { u8aConcat } from '@polkadot/util'
 import type {
   Base58BtcMultibaseString,
   Did,
@@ -184,12 +185,10 @@ function multibase58BtcKeyBytesEncoding(
   key: Uint8Array,
   keyPrefix: number
 ): Base58BtcMultibaseString {
-  const encodeVarint =
-    typeof varint.encode === 'function' ? varint.encode : varint.default.encode
-  const varintEncodedPrefix = encodeVarint(keyPrefix)
-  const prefixedKey = Uint8Array.from([...varintEncodedPrefix, ...key])
+  const varintEncodedPrefix = varint.encode(keyPrefix)
+  const prefixedKey = u8aConcat(varintEncodedPrefix, key)
   const base58BtcEncodedKey = base58Encode(prefixedKey)
-  return `z${Buffer.from(base58BtcEncodedKey).toString()}`
+  return `z${base58BtcEncodedKey}`
 }
 
 /**
