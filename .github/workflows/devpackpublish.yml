@@ -6,12 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     if: "! startsWith(github.event.head_commit.message, '[CI Skip]') && github.repository == 'kiltprotocol/sdk-js'"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # fetch-depth 0 and token needed to push changes on the package.json files back.
           fetch-depth: 0
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
