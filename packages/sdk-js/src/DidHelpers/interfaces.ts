@@ -8,6 +8,7 @@
 import type {
   DidDocument,
   HexString,
+  ISubmittableResult,
   KeyringPair,
   KiltAddress,
   SignerInterface,
@@ -15,8 +16,30 @@ import type {
 import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { GenericEvent } from '@polkadot/types'
+import { TransactionSigner } from 'chain-helpers/src/blockchain/Blockchain'
 
+// export interface ISubmittableResult {
+//     readonly dispatchError?: DispatchError | undefined;
+//     readonly dispatchInfo?: DispatchInfo | undefined;
+//     readonly events: EventRecord[];
+//     readonly internalError?: Error | undefined;
+//     readonly status: ExtrinsicStatus;
+//     readonly isCompleted: boolean;
+//     readonly isError: boolean;
+//     readonly isFinalized: boolean;
+//     readonly isInBlock: boolean;
+//     readonly isWarning: boolean;
+//     readonly txHash: Hash;
+//     readonly txIndex?: number | undefined;
+//     filterRecords(section: string, method: string): EventRecord[];
+//     findRecord(section: string, method: string): EventRecord | undefined;
+//     toHuman(isExtended?: boolean): AnyJson;
+// }
 export interface TransactionResult {
+  // confirmed: Everything worked as expected. Finalized is not guaranteed.
+  // failed: error thrown by runtime logic (in SubmittableResult's events) don't try again.
+  // rejected: transaction was not processed by the runtime, (invalid transaction by the node and wasn't packed in a block) you might try to submit transaction again.
+  // unknown: IO error, unexpected internal error ..etc.
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
   // these are getters that would throw if status is not as expected
   asConfirmed: {
@@ -45,10 +68,10 @@ export interface TransactionResult {
     txHash: HexString
   }
   // we may or may not add these, given that you can also disambiguate based on the status
-  isConfirmed: boolean
-  isFailed: boolean
-  isRejected: boolean
-  isUnknown: boolean
+  // isConfirmed: boolean
+  // isFailed: boolean
+  // isRejected: boolean
+  // isUnknown: boolean
 }
 
 export interface TransactionHandlers {
@@ -63,7 +86,7 @@ export interface TransactionHandlers {
   submit(options?: {
     awaitFinalized?: boolean // default: false
     timeout?: number // in seconds
-  }): Promise<TransactionResult>
+  }): Promise<ISubmittableResult>
   /**
    * Produces a transaction that can be submitted to a blockchain node for inclusion, or signed and submitted by an external service.
    *
@@ -84,11 +107,11 @@ export interface TransactionHandlers {
      * or constructor parameters for a {@link SubmittableResult}.
      * @returns An object informing on the status and success of the transaction.
      */
-    checkResult(
-      result:
-        | { blockHash: HexString; txHash: HexString }
-        | SubmittableResultValue
-    ): Promise<TransactionResult>
+    // checkResult(
+    //   result:
+    //     | { blockHash: HexString; txHash: HexString }
+    //     | SubmittableResultValue
+    // ): Promise<TransactionResult>
   }>
 }
 
@@ -97,18 +120,21 @@ type Base58Btc = string
 /** Multibase encoding of a public- or private key including multicodec variant flag. */
 type KeyMultibaseEncoded = `z${Base58Btc}`
 
+export type AcceptedSigners =
+  | SignerInterface
+  | KeyringPair
+  | {
+      secretKeyMultibase: KeyMultibaseEncoded
+      publicKeyMultibase: KeyMultibaseEncoded
+    }
+
 export type SharedArguments = {
   didDocument: DidDocument
   api: ApiPromise
-  signers: Array<
-    | SignerInterface
-    | KeyringPair
-    | {
-        secretKeyMultibase: KeyMultibaseEncoded
-        publicKeyMultibase: KeyMultibaseEncoded
-      }
-  >
+  signers: AcceptedSigners[]
+  // TODO: remove submitter account.
   submitterAccount: KiltAddress
+  submitterAccountSigner: KeyringPair | TransactionSigner
 }
 
 export type AcceptedPublicKeyEncodings =
