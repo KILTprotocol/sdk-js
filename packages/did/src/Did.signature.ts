@@ -211,13 +211,14 @@ export async function signersForDid(
     return (
       await Promise.all(
         keypairs.map((keypair) => {
+          // TODO: fix typing
           let keyMatches: (key: any) => boolean
           if ('publicKeyMultibase' in keypair) {
             keyMatches = ({ publicKeyMultibase }) =>
               publicKeyMultibase === keypair.publicKeyMultibase
           } else if ('type' in keypair) {
-            keyMatches = ({ type, publicKey }) =>
-              type === keypair.type && u8aEq(publicKey, keypair.publicKey)
+            keyMatches = ({ keyType, publicKey }) =>
+              keyType === keypair.type && u8aEq(publicKey, keypair.publicKey)
           } else if ('publicKey' in keypair) {
             keyMatches = ({ publicKey }) => u8aEq(publicKey, keypair.publicKey)
           } else if (keypair.id.startsWith('z')) {
