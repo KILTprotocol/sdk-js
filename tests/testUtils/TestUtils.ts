@@ -20,7 +20,7 @@ import type {
   VerificationMethod,
   VerificationRelationship,
 } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/sdk-js'
+import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
 import {

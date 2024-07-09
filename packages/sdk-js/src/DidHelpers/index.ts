@@ -86,10 +86,10 @@ async function checkResult(
   signers: SignerInterface[]
 ): Promise<TransactionResult> {
   let txEvents: EventRecord[] = []
-  let status: TransactionResult['status']
+  let status: TransactionResult['status'] | undefined
   let error: Error | undefined
-  let blockHash: HexString
-  let blockNumber: BigInt
+  let blockHash: HexString | undefined
+  let blockNumber: BigInt | undefined
   if ('status' in result) {
     txEvents = result.events ?? []
     switch (result.status.type) {
@@ -192,7 +192,7 @@ async function checkResult(
         txHash: u8aToHex(u8aToU8a(result.txHash)),
         signers,
         didDocument,
-        block: { hash: blockHash, number: blockNumber },
+        block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
       }
     },
@@ -224,7 +224,7 @@ async function checkResult(
         txHash: u8aToHex(u8aToU8a(result.txHash)),
         signers,
         didDocument: didDocument!,
-        block: { hash: blockHash, number: blockNumber },
+        block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
       }
     },
@@ -259,7 +259,7 @@ export function transact(
       ...options.signers
     )
     const authorized: SubmittableExtrinsic = await authorizeTx(
-      options.didDocument.id,
+      options.didDocument,
       options.call,
       didSigners,
       submitterAccount
@@ -298,7 +298,7 @@ export function transact(
       ...options.signers
     )
     const authorized: SubmittableExtrinsic = await authorizeTx(
-      options.didDocument.id,
+      options.didDocument,
       options.call,
       didSigners,
       submitterAccount
