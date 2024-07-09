@@ -5,41 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  DidDocument,
-  HexString,
-  ISubmittableResult,
-  KeyringPair,
-  KiltAddress,
-  SignerInterface,
-} from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { GenericEvent } from '@polkadot/types'
-import { TransactionSigner } from 'chain-helpers/src/blockchain/Blockchain'
 
-// export interface ISubmittableResult {
-//     readonly dispatchError?: DispatchError | undefined;
-//     readonly dispatchInfo?: DispatchInfo | undefined;
-//     readonly events: EventRecord[];
-//     readonly internalError?: Error | undefined;
-//     readonly status: ExtrinsicStatus;
-//     readonly isCompleted: boolean;
-//     readonly isError: boolean;
-//     readonly isFinalized: boolean;
-//     readonly isInBlock: boolean;
-//     readonly isWarning: boolean;
-//     readonly txHash: Hash;
-//     readonly txIndex?: number | undefined;
-//     filterRecords(section: string, method: string): EventRecord[];
-//     findRecord(section: string, method: string): EventRecord | undefined;
-//     toHuman(isExtended?: boolean): AnyJson;
-// }
+import type { Blockchain } from '@kiltprotocol/chain-helpers'
+import type {
+  DidDocument,
+  HexString,
+  KeyringPair,
+  SignerInterface,
+} from '@kiltprotocol/types'
+
 export interface TransactionResult {
-  // confirmed: Everything worked as expected. Finalized is not guaranteed.
-  // failed: error thrown by runtime logic (in SubmittableResult's events) don't try again.
-  // rejected: transaction was not processed by the runtime, (invalid transaction by the node and wasn't packed in a block) you might try to submit transaction again.
-  // unknown: IO error, unexpected internal error ..etc.
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
   // these are getters that would throw if status is not as expected
   asConfirmed: {
@@ -86,7 +64,7 @@ export interface TransactionHandlers {
   submit(options?: {
     awaitFinalized?: boolean // default: false
     timeout?: number // in seconds
-  }): Promise<ISubmittableResult>
+  }): Promise<TransactionResult>
   /**
    * Produces a transaction that can be submitted to a blockchain node for inclusion, or signed and submitted by an external service.
    *
@@ -107,11 +85,11 @@ export interface TransactionHandlers {
      * or constructor parameters for a {@link SubmittableResult}.
      * @returns An object informing on the status and success of the transaction.
      */
-    // checkResult(
-    //   result:
-    //     | { blockHash: HexString; txHash: HexString }
-    //     | SubmittableResultValue
-    // ): Promise<TransactionResult>
+    checkResult(
+      result:
+        | { blockHash: HexString; txHash: HexString }
+        | SubmittableResultValue
+    ): Promise<TransactionResult>
   }>
 }
 
@@ -132,9 +110,7 @@ export type SharedArguments = {
   didDocument: DidDocument
   api: ApiPromise
   signers: AcceptedSigners[]
-  // TODO: remove submitter account.
-  submitterAccount: KiltAddress
-  submitterAccountSigner: KeyringPair | TransactionSigner
+  submitter: KeyringPair | Blockchain.TransactionSigner
 }
 
 export type AcceptedPublicKeyEncodings =
