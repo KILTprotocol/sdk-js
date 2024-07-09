@@ -5,31 +5,36 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  Did,
-  DidUrl,
-  ISubmittableResult,
-  ResolutionResult,
-  SignerInterface,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import { authorizeTx, signersForDid } from '@kiltprotocol/did'
-import { Signers } from '@kiltprotocol/utils'
+import type { ApiPromise } from '@polkadot/api'
+import type { SubmittableResultValue } from '@polkadot/api/types'
+import type { BlockNumber, Extrinsic } from '@polkadot/types/interfaces'
+import { u8aToHex, u8aToU8a } from '@polkadot/util'
 
 import {
-  IS_FINALIZED,
-  IS_IN_BLOCK,
-  signAndSubmitTx,
-} from 'chain-helpers/src/blockchain/Blockchain'
-import type { Call, Extrinsic, Event } from '@polkadot/types/interfaces'
-import { getSignersForKeypair } from 'utils/src/Signers'
-import { u8aToHex } from 'utils/src/Crypto'
+  FrameSystemEventRecord as EventRecord,
+  SpRuntimeDispatchError,
+} from '@kiltprotocol/augment-api'
+import {
+  authorizeTx,
+  signersForDid,
+  resolver as DidResolver,
+} from '@kiltprotocol/did'
+import {
+  KiltAddress,
+  type Did,
+  type DidUrl,
+  type HexString,
+  type SignerInterface,
+  type SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { Signers } from '@kiltprotocol/utils'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+
 import type {
   SharedArguments,
   TransactionHandlers,
   TransactionResult,
-} from './interfaces'
-import { DidResolver } from '..'
+} from './interfaces.js'
 
 /**
  * Selects and returns a DID signer for a given purpose and algorithm.
@@ -65,6 +70,167 @@ export async function selectSigner({
   return Signers.selectSigner(mappedSigners, ...selectors)
 }
 
+function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
+  if (err.isModule) {
+    const { docs, method, section } = api.findError(err.asModule.index.toU8a())
+    return new Error(`${section}.${method}: ${docs}`)
+  }
+  return new Error(`${err.type}: ${err.value.toHuman()}`)
+}
+
+async function checkResult(
+  result: { blockHash: HexString; txHash: HexString } | SubmittableResultValue,
+  api: ApiPromise,
+  expectedEvents: Array<{ section: string; method: string }>,
+  did: Did,
+  signers: SignerInterface[]
+): Promise<TransactionResult> {
+  let txEvents: EventRecord[] = []
+  let status: TransactionResult['status']
+  let error: Error | undefined
+  let blockHash: HexString
+  let blockNumber: BigInt
+  if ('status' in result) {
+    txEvents = result.events ?? []
+    switch (result.status.type) {
+      case 'Finalized':
+      case 'InBlock':
+        // this is the block hash for both
+        blockHash = result.status.value.toHex()
+        if ('blockNumber' in result) {
+          blockNumber = (result.blockNumber as BlockNumber).toBigInt()
+        }
+        break
+      case 'Dropped':
+      case 'FinalityTimeout':
+      case 'Invalid':
+      case 'Usurped':
+        status = 'rejected'
+        error = new Error(result.status.type)
+        break
+      case 'Broadcast':
+      case 'Future':
+      case 'Ready':
+      case 'Retracted':
+        status = 'unknown'
+        error = new Error(result.status.type)
+        break
+      default:
+        status = 'unknown'
+        error = new Error(`unknown tx status variant ${result.status.type}`)
+    }
+  } else if (
+    'blockHash' in result &&
+    'txHash' in result &&
+    typeof result.blockHash === 'string' &&
+    typeof result.txHash === 'string'
+  ) {
+    const txHashHash = api.createType('Hash', result.blockHash)
+    const {
+      block: { block },
+      events,
+    } = await api.derive.tx.events(txHashHash)
+    blockNumber = block.header.number.toBigInt()
+    blockHash = result.blockHash
+    const txIndex = block.extrinsics.findIndex((tx) =>
+      tx.hash.eq(result.txHash)
+    )
+    txEvents = events.filter(
+      ({ phase }) =>
+        phase.isApplyExtrinsic && phase.asApplyExtrinsic.eqn(txIndex)
+    )
+  } else {
+    status = 'unknown'
+    error = new Error('missing blockHash and/or txHash')
+  }
+  if (typeof status !== 'string') {
+    txEvents.forEach(({ event }) => {
+      if (api.events.system.ExtrinsicFailed.is(event)) {
+        error = mapError(event.data[0], api)
+      } else if (api.events.proxy.ProxyExecuted.is(event)) {
+        const res = event.data[0]
+        if (res.isErr) {
+          error = mapError(res.asErr, api)
+        }
+      } else if (api.events.did.DidCallDispatched.is(event)) {
+        const res = event.data[1]
+        if (res.isErr) {
+          error = mapError(res.asErr, api)
+        }
+      } else if (api.events.utility.ItemFailed.is(event)) {
+        error = mapError(event.data[0], api)
+      } else if (api.events.utility.BatchInterrupted.is(event)) {
+        error = mapError(event.data[1], api)
+      }
+    })
+    const isSuccess =
+      !error &&
+      expectedEvents.every(
+        ({ section, method }) =>
+          typeof txEvents.some(
+            ({ event }) => event.section === section && event.method === method
+          )
+      )
+    status = isSuccess ? 'confirmed' : 'failed'
+  }
+
+  const { didDocument } = await DidResolver.resolve(did)
+  if (blockHash && !blockNumber) {
+    blockNumber = (
+      await (await api.at(blockHash)).query.system.number()
+    ).toBigInt()
+  }
+
+  return {
+    status,
+    get asFailed(): TransactionResult['asFailed'] {
+      if (status !== 'failed') {
+        throw new Error('')
+      }
+      return {
+        error: error!,
+        txHash: u8aToHex(u8aToU8a(result.txHash)),
+        signers,
+        didDocument,
+        block: { hash: blockHash, number: blockNumber },
+        events: txEvents.map(({ event }) => event),
+      }
+    },
+    get asUnknown(): TransactionResult['asUnknown'] {
+      if (status !== 'unknown') {
+        throw new Error('')
+      }
+      return {
+        error: error as Error,
+        txHash: u8aToHex(u8aToU8a(result.txHash)),
+      }
+    },
+    get asRejected(): TransactionResult['asRejected'] {
+      if (status !== 'rejected') {
+        throw new Error('')
+      }
+      return {
+        error: error as Error,
+        txHash: u8aToHex(u8aToU8a(result.txHash)),
+        signers,
+        didDocument,
+      }
+    },
+    get asConfirmed(): TransactionResult['asConfirmed'] {
+      if (status !== 'confirmed') {
+        throw new Error('')
+      }
+      return {
+        txHash: u8aToHex(u8aToU8a(result.txHash)),
+        signers,
+        didDocument: didDocument!,
+        block: { hash: blockHash, number: blockNumber },
+        events: txEvents.map(({ event }) => event),
+      }
+    },
+  }
+}
+
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
  *
@@ -75,9 +241,15 @@ export async function selectSigner({
 export function transact(
   options: SharedArguments & {
     call: Extrinsic
-    methods: string[]
+    expectedEvents: Array<{ section: string; method: string }>
   }
 ): TransactionHandlers {
+  const submitterAccount = (
+    'address' in options.submitter
+      ? options.submitter.address
+      : options.submitter.id
+  ) as KiltAddress
+
   const submit: TransactionHandlers['submit'] = async ({
     awaitFinalized = true,
     timeout = 0,
@@ -90,30 +262,28 @@ export function transact(
       options.didDocument.id,
       options.call,
       didSigners,
-      options.submitterAccount
+      submitterAccount
     )
 
-    let signedTx
-    try {
-      signedTx = await signAndSubmitTx(
-        authorized,
-        options.submitterAccountSigner,
-        {
-          resolveOn: awaitFinalized ? IS_FINALIZED : IS_IN_BLOCK,
-        }
-      )
-    } catch (e) {
-      // ToDo return error result.
-      throw new Error('todo rejected or unknown')
-    }
+    const result = await Blockchain.signAndSubmitTx(
+      authorized,
+      options.submitter,
+      {
+        resolveOn: awaitFinalized
+          ? (res) => res.isFinalized || res.isError
+          : (res) => res.isInBlock || res.isError,
+        rejectOn: () => false,
+        timeout,
+      }
+    )
 
-    // signedTx.events[0].event.method
-    return signedTx
-
-    // return signedTx
-    //   .then((r): TransactionResult => {
-    //   return { status: 'confirmed' }
-    // })
+    return checkResult(
+      result,
+      options.api,
+      options.expectedEvents,
+      options.didDocument.id,
+      didSigners
+    )
   }
 
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (
@@ -131,125 +301,37 @@ export function transact(
       options.didDocument.id,
       options.call,
       didSigners,
-      options.submitterAccount
+      submitterAccount
     )
 
     let signedHex
     if (submitOptions.signSubmittable) {
       const signed =
-        'address' in options.submitterAccountSigner
-          ? await authorized.signAsync(options.submitterAccountSigner)
-          : await authorized.signAsync(options.submitterAccountSigner.id, {
-              signer: Signers.getPolkadotSigner([
-                options.submitterAccountSigner,
-              ]),
+        'address' in options.submitter
+          ? await authorized.signAsync(options.submitter)
+          : await authorized.signAsync(submitterAccount, {
+              signer: Signers.getPolkadotSigner([options.submitter]),
             })
       signedHex = signed.toHex()
     } else {
       signedHex = authorized.toHex()
     }
+
     return {
       txHex: signedHex,
+      checkResult: (input) =>
+        checkResult(
+          input,
+          options.api,
+          options.expectedEvents,
+          options.didDocument.id,
+          didSigners
+        ),
     }
-    // const hex = authorized.toHex()
   }
 
   return {
     submit,
     getSubmittable,
   }
-}
-
-// either confirmed or failed because it's in block.
-async function checkEvents(
-  did: Did,
-  didSigners: SignerInterface[],
-  result: ISubmittableResult,
-  expectedEvents: Array<{ section: string; method: string }>
-): Promise<TransactionResult> {
-  const isSuccess =
-    result.dispatchError &&
-    expectedEvents.every(
-      ({ section, method }) =>
-        typeof result.findRecord(section, method) !== 'undefined'
-    )
-  const {didDocument} = await DidResolver.resolve(did)
-
-  const didResolutionSuccess = !!didDocument;
-  const status: TransactionResult['status'] = isSuccess && didResolutionSuccess ? 'confirmed' : 'failed'
-
-
-  return {
-    status,
-    get asFailed(): TransactionResult['asFailed'] {
-      if (status === 'failed') {
-        throw new Error('')
-        return {
-          error: new Error(""),
-          txHash: u8aToHex(result.txHash),
-          signers: didSigners,
-          didDocument?: didDocument,
-          block: { hash: HexString; number: BigInt },
-          events: GenericEvent[]
-        }
-      } else {
-        throw new Error("can't be")
-      }
-    },
-    get asUnknown(): TransactionResult['asUnknown'] {
-      throw new Error("can't be")
-    },
-    get asRejected(): TransactionResult['asRejected'] {
-      throw new Error("can't be")
-    },
-    get asConfirmed(): TransactionResult['asConfirmed'] {
-      throw new Error("can't be")
-    },
-  }
-
-  // if (result.dispatchError) {
-  //   return {
-  //     status: 'unknown',
-  //     get asUnknown() {
-  //       return {
-  //         error: new Error(''),
-  //         txHash: u8aToHex(result.txHash),
-  //       }
-  //     },
-  //   }
-  // }
-  //
-  // if (result.internalError) {
-  //   return {
-  //     status: 'failed',
-  //     asFailed: {
-  //       error: new Error(''),
-  //       txHash: u8aToHex(result.txHash),
-  //     },
-  //   }
-  // }
-  //
-  // // Check the expected number of events.
-  // if (result.events.length !== expectedMethods.length) {
-  //   return {
-  //     status: 'unknown',
-  //     asUnknown: {
-  //       error: new Error(''),
-  //       txHash: u8aToHex(result.txHash),
-  //     },
-  //   }
-  // }
-  //
-  // for (const event of result.events) {
-  //   if (!expectedMethods.includes(event.event.method)) {
-  //     return {
-  //       status: 'unknown',
-  //       asUnknown: {
-  //         error: new Error(''),
-  //         txHash: u8aToHex(result.txHash),
-  //       },
-  //     }
-  //   }
-  // }
-  return undefined
 }
