@@ -29,13 +29,13 @@ import {
   createSigner as es256kSigner,
   cryptosuite as es256kSuite,
 } from '@kiltprotocol/es256k-jcs-2023'
-import { decodeMultikeyVerificationMethod } from '@kiltprotocol/jcs-data-integrity-proofs-common'
+// import { decodeMultikeyVerificationMethod } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import {
   createSigner as sr25519Signer,
   cryptosuite as sr25519Suite,
 } from '@kiltprotocol/sr25519-jcs-2023'
 
-import { multibaseKeyToDidKey } from '@kiltprotocol/did'
+// import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
   DidUrl,
@@ -238,13 +238,14 @@ export async function getSignersForKeypair<Id extends string>({
 }): Promise<Array<SignerInterface<KnownAlgorithms, Id>>> {
   let pair: KeyringPair | (Keypair & { type: string })
   if ('publicKeyMultibase' in keypair) {
-    const { publicKey, keyType } = multibaseKeyToDidKey(
-      keypair.publicKeyMultibase
-    )
-    const { publicKey: secretKey } = decodeMultikeyVerificationMethod({
-      publicKeyMultibase: keypair.secretKeyMultibase,
-    })
-    pair = { publicKey, secretKey, type: keyType }
+    throw new Error('not implemented')
+    // const { publicKey, keyType } = multibaseKeyToDidKey(
+    //   keypair.publicKeyMultibase
+    // )
+    // const { publicKey: secretKey } = decodeMultikeyVerificationMethod({
+    //   publicKeyMultibase: keypair.secretKeyMultibase,
+    // })
+    // pair = { publicKey, secretKey, type: keyType }
   } else if ('type' in keypair) {
     pair = keypair
   } else if (type) {
