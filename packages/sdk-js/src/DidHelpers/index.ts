@@ -165,11 +165,10 @@ async function checkResult(
     })
     const isSuccess =
       !error &&
-      expectedEvents.every(
-        ({ section, method }) =>
-          typeof txEvents.some(
-            ({ event }) => event.section === section && event.method === method
-          )
+      expectedEvents.every(({ section, method }) =>
+        txEvents.some(
+          ({ event }) => event.section === section && event.method === method
+        )
       )
     status = isSuccess ? 'confirmed' : 'failed'
   }
@@ -305,7 +304,8 @@ export function transact(
     )
 
     let signedHex
-    if (submitOptions.signSubmittable) {
+    const { signSubmittable = true } = submitOptions
+    if (signSubmittable) {
       const signed =
         'address' in options.submitter
           ? await authorized.signAsync(options.submitter)
