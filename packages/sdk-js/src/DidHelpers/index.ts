@@ -95,6 +95,7 @@ async function checkResult(
     switch (result.status.type) {
       case 'Finalized':
       case 'InBlock':
+        status = "confirmed" 
         // this is the block hash for both
         blockHash = result.status.value.toHex()
         if ('blockNumber' in result) {
