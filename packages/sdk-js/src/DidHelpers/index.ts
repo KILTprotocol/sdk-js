@@ -14,10 +14,11 @@ import {
   FrameSystemEventRecord as EventRecord,
   SpRuntimeDispatchError,
 } from '@kiltprotocol/augment-api'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import {
   authorizeTx,
-  signersForDid,
   resolver as DidResolver,
+  signersForDid,
 } from '@kiltprotocol/did'
 import {
   KiltAddress,
@@ -28,7 +29,6 @@ import {
   type SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Signers } from '@kiltprotocol/utils'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 
 import type {
   SharedArguments,
@@ -97,7 +97,7 @@ async function checkResult(
     switch (result.status.type) {
       case 'Finalized':
       case 'InBlock':
-        // status = 'confirmed'
+        // status must not be set here; this condition triggers a branch below
         // this is the block hash for both
         blockHash = result.status.value.toHex()
         if ('blockNumber' in result) {
@@ -258,49 +258,6 @@ export function transact(
       : options.submitter.id
   ) as KiltAddress
 
-  const submit: TransactionHandlers['submit'] = async ({
-    awaitFinalized = true,
-    didNonce,
-  } = {}) => {
-    const didSigners = await signersForDid(
-      options.didDocument,
-      ...options.signers
-    )
-
-    let authorized: SubmittableExtrinsic
-
-    if (!('send' in options.call)) {
-      authorized = await authorizeTx(
-        options.didDocument,
-        options.call,
-        didSigners,
-        submitterAccount,
-        { txCounter: options.api.createType('u64', didNonce) }
-      )
-    } else {
-      authorized = options.call as SubmittableExtrinsic
-    }
-
-    const result = await Blockchain.signAndSubmitTx(
-      authorized,
-      options.submitter,
-      {
-        resolveOn: awaitFinalized
-          ? (res) => res.isFinalized || res.isError
-          : (res) => res.isInBlock || res.isError,
-        rejectOn: () => false,
-      }
-    )
-
-    return checkResult(
-      result,
-      options.api,
-      options.expectedEvents,
-      options.didDocument.id,
-      didSigners
-    )
-  }
-
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (
     submitOptions:
       | {
@@ -353,6 +310,25 @@ export function transact(
           didSigners
         ),
     }
+  }
+
+  const submit: TransactionHandlers['submit'] = async ({
+    awaitFinalized = true,
+    didNonce,
+  } = {}) => {
+    const submittable = await getSubmittable({ didNonce })
+
+    const result = await Blockchain.submitSignedTx(
+      options.api.tx(submittable.txHex),
+      {
+        resolveOn: awaitFinalized
+          ? (res) => res.isFinalized || res.isError
+          : (res) => res.isInBlock || res.isError,
+        rejectOn: () => false,
+      }
+    )
+
+    return submittable.checkResult(result)
   }
 
   return {
