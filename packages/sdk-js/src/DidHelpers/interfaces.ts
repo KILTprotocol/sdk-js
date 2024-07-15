@@ -58,12 +58,12 @@ export interface TransactionHandlers {
    *
    * @param options Options map to allow for named arguments.
    * @param options.awaitFinalized If set to true, this waits for finalization of the block of inclusion before returning.
-   * @param options.submitterAccount Sets or overrides the account which produces the outer signature on the transaction and thus covers submission fees.
+   * @param options.didNonce Allows explicitly setting the nonce to be used in DID authorization.
    * @returns A Promise resolving to the DID document and info on the success of the transaction.
    */
   submit(options?: {
     awaitFinalized?: boolean // default: false
-    timeout?: number // in seconds
+    didNonce?: number | BigInt
   }): Promise<TransactionResult>
   /**
    * Produces a transaction that can be submitted to a blockchain node for inclusion, or signed and submitted by an external service.
@@ -71,11 +71,12 @@ export interface TransactionHandlers {
    * @param options Options map to allow for named arguments.
    * @param options.signSubmittable If set to true, this signs the transaction with the submitterAccount, which covers transaction fees.
    * In this case, if no signer is available for this account, the function throws.
-   * @param options.submitterAccount Sets or overrides the account which produces the outer signature on the transaction and thus covers submission fees.
+   * @param options.didNonce Allows explicitly setting the nonce to be used in DID authorization.
    * @returns A Promise resolving to an Extrinsic object (encoded transaction).
    */
   getSubmittable(options?: {
     signSubmittable?: boolean // default: true
+    didNonce?: number | BigInt
   }): Promise<{
     txHex: HexString
     /**
