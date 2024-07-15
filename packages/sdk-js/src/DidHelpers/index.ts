@@ -260,7 +260,7 @@ export function transact(
 
   const submit: TransactionHandlers['submit'] = async ({
     awaitFinalized = true,
-    timeout = 0,
+    didNonce,
   } = {}) => {
     const didSigners = await signersForDid(
       options.didDocument,
@@ -274,7 +274,8 @@ export function transact(
         options.didDocument,
         options.call,
         didSigners,
-        submitterAccount
+        submitterAccount,
+        { txCounter: options.api.createType('u64', didNonce) }
       )
     } else {
       authorized = options.call as SubmittableExtrinsic
@@ -288,7 +289,6 @@ export function transact(
           ? (res) => res.isFinalized || res.isError
           : (res) => res.isInBlock || res.isError,
         rejectOn: () => false,
-        timeout,
       }
     )
 
@@ -305,6 +305,7 @@ export function transact(
     submitOptions:
       | {
           signSubmittable?: boolean // default: true
+          didNonce?: number | BigInt
         }
       | undefined = {}
   ) => {
@@ -320,7 +321,8 @@ export function transact(
         options.didDocument,
         options.call,
         didSigners,
-        submitterAccount
+        submitterAccount,
+        { txCounter: options.api.createType('u64', submitOptions.didNonce) }
       )
     } else {
       authorized = options.call
