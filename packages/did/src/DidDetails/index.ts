@@ -19,6 +19,7 @@ export type {
 export {
   isValidDidVerificationType,
   isValidEncryptionMethodType,
+  signingMethodTypes
 } from './DidDetails.js'
 export * from './LightDidDetails.js'
 export * from './FullDidDetails.js'

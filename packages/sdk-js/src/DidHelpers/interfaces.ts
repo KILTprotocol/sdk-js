@@ -96,7 +96,7 @@ export interface TransactionHandlers {
 /** Base58 encoded bytes, using the bitcoin alphabet. */
 type Base58Btc = string
 /** Multibase encoding of a public- or private key including multicodec variant flag. */
-type KeyMultibaseEncoded = `z${Base58Btc}`
+export type KeyMultibaseEncoded = `z${Base58Btc}`
 
 export type AcceptedSigners =
   | SignerInterface

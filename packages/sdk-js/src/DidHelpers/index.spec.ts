@@ -6,11 +6,9 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-
 import { authorizeTx, resolver } from '@kiltprotocol/did'
 import type { DidDocument, KiltKeyringPair } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-
 import { ConfigService } from '../index.js'
 import {
   ApiMocks,
@@ -18,6 +16,8 @@ import {
 } from '../../../../tests/testUtils/index.js'
 import { transact } from './index.js'
 import { TransactionResult } from './interfaces.js'
+import { createDid } from './createDid.js'
+import { makeAttestationCreatedEvents } from '../../../../tests/testUtils/testData.js'
 
 jest.mock('@kiltprotocol/did', () => {
   return {
@@ -34,9 +34,6 @@ describe('transact', () => {
   let keypair: KiltKeyringPair
   beforeAll(async () => {
     ConfigService.set({ api: mockedApi })
-    // jest
-    //   .mocked(mockedApi.derive.tx.events)
-    //   .mockResolvedValue(mockedApi.createType(''))
 
     keypair = Crypto.makeKeypairFromUri('//Alice')
     const { id, verificationMethod, authentication } =
@@ -72,7 +69,7 @@ describe('transact', () => {
       }
       throw new Error()
     })
-  })
+  }, 40000)
 
   it('creates a tx and checks status', async () => {
     const { txHex, checkResult } = await transact({
@@ -93,8 +90,8 @@ describe('transact', () => {
     expect(txHex).toContain('0x')
     const parsed = mockedApi.tx(txHex)
     expect(parsed.method).toMatchObject({
-      section: 'did',
-      method: 'submitDidCall',
+      section: 'attestation',
+      method: 'add',
     })
 
     await expect(
@@ -105,15 +102,55 @@ describe('transact', () => {
             inBlock: new Uint8Array(32).fill(2),
           }),
           txHash: parsed.hash,
-          events: [
-            mockedApi.createType('EventRecord', {
-              phase: { ApplyExtrinsic: 0 },
-              event: { section: 'attestation', method: 'AttestationCreated' },
-            }),
-          ],
+          events: makeAttestationCreatedEvents([[]]),
         })
       )
     ).resolves.toMatchObject<Partial<TransactionResult>>({
+      status: 'confirmed',
+      asConfirmed: expect.objectContaining({
+        txHash: parsed.hash.toHex(),
+        block: {
+          hash: mockedApi
+            .createType('Hash', new Uint8Array(32).fill(2))
+            .toHex(),
+          number: 1000n,
+        },
+      }),
+    })
+  })
+
+  it('create DID', async () => {
+    const { txHex, checkResult } = await (
+      await createDid({
+        api: mockedApi,
+        submitter: keypair,
+        signers: [keypair],
+        fromPublicKey: keypair,
+      })
+    ).getSubmittable({ signSubmittable: false })
+
+    expect(txHex).toContain('0x')
+    const parsed = mockedApi.tx(txHex)
+
+    const result = await checkResult(
+      new SubmittableResult({
+        blockNumber: mockedApi.createType('BlockNumber', 1000),
+        status: mockedApi.createType('ExtrinsicStatus', {
+          inBlock: new Uint8Array(32).fill(2),
+        }),
+        txHash: parsed.hash,
+        events: [
+          {
+            event: {
+              method: 'didCreated',
+              section: 'did',
+            },
+          } as any,
+        ],
+      })
+    )
+
+    expect(result).toMatchObject<Partial<TransactionResult>>({
       status: 'confirmed',
       asConfirmed: expect.objectContaining({
         txHash: parsed.hash.toHex(),

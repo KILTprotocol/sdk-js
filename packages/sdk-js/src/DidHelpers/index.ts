@@ -36,6 +36,8 @@ import type {
   TransactionResult,
 } from './interfaces.js'
 
+export { createDid } from './createDid.js'
+
 /**
  * Selects and returns a DID signer for a given purpose and algorithm.
  *
@@ -95,7 +97,7 @@ async function checkResult(
     switch (result.status.type) {
       case 'Finalized':
       case 'InBlock':
-        status = "confirmed" 
+        // status = 'confirmed'
         // this is the block hash for both
         blockHash = result.status.value.toHex()
         if ('blockNumber' in result) {
@@ -164,14 +166,20 @@ async function checkResult(
         error = mapError(event.data[1], api)
       }
     })
-    const isSuccess =
-      !error &&
-      expectedEvents.every(({ section, method }) =>
-        txEvents.some(
-          ({ event }) => event.section === section && event.method === method
-        )
+    const eventMatch = expectedEvents.every(({ section, method }) =>
+      txEvents.some(
+        ({ event }) =>
+          event.section.toLowerCase() === section.toLowerCase() &&
+          event.method.toLowerCase() === method.toLowerCase()
       )
+    )
+
+    const isSuccess = !error && eventMatch
+
     status = isSuccess ? 'confirmed' : 'failed'
+    if (!isSuccess && !error) {
+      error = new Error('did not find expected events')
+    }
   }
 
   const { didDocument } = await DidResolver.resolve(did)
@@ -240,7 +248,7 @@ async function checkResult(
  */
 export function transact(
   options: SharedArguments & {
-    call: Extrinsic
+    call: Extrinsic | SubmittableExtrinsic
     expectedEvents: Array<{ section: string; method: string }>
   }
 ): TransactionHandlers {
@@ -258,12 +266,19 @@ export function transact(
       options.didDocument,
       ...options.signers
     )
-    const authorized: SubmittableExtrinsic = await authorizeTx(
-      options.didDocument,
-      options.call,
-      didSigners,
-      submitterAccount
-    )
+
+    let authorized: SubmittableExtrinsic
+
+    if (!('send' in options.call)) {
+      authorized = await authorizeTx(
+        options.didDocument,
+        options.call,
+        didSigners,
+        submitterAccount
+      )
+    } else {
+      authorized = options.call as SubmittableExtrinsic
+    }
 
     const result = await Blockchain.signAndSubmitTx(
       authorized,
@@ -297,12 +312,19 @@ export function transact(
       options.didDocument,
       ...options.signers
     )
-    const authorized: SubmittableExtrinsic = await authorizeTx(
-      options.didDocument,
-      options.call,
-      didSigners,
-      submitterAccount
-    )
+
+    let authorized: SubmittableExtrinsic
+
+    if (!('send' in options.call)) {
+      authorized = await authorizeTx(
+        options.didDocument,
+        options.call,
+        didSigners,
+        submitterAccount
+      )
+    } else {
+      authorized = options.call
+    }
 
     let signedHex
     const { signSubmittable = true } = submitOptions
