@@ -28,3 +28,18 @@ export function claimWeb3Name(
     expectedEvents: [{ section: 'web3Names', method: 'Web3NameClaimed' }],
   })
 }
+
+/**
+ * Removes w3n nickname from the DID Document, allowing it to be claimed by others.
+ *
+ * @param options Any {@link SharedArguments} and additional parameters.
+ * @returns A set of {@link TransactionHandlers}.
+ */
+export function releaseWeb3Name(options: SharedArguments): TransactionHandlers {
+  const { api } = options
+  return transact({
+    ...options,
+    call: api.tx.web3Names.releaseByOwner(),
+    expectedEvents: [{ section: 'web3Names', method: 'Web3NameReleased' }],
+  })
+}

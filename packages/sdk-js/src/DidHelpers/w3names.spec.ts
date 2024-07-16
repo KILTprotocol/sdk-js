@@ -12,7 +12,7 @@ import {
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
-import { claimWeb3Name, transact } from './index.js'
+import { claimWeb3Name, releaseWeb3Name, transact } from './index.js'
 
 jest.mock('./transact.js')
 
@@ -66,6 +66,34 @@ describe('w3n', () => {
     )
     expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
       method: { args: { name: 'paul' }, method: 'claim', section: 'web3Names' },
+    })
+  })
+
+  it('creates a release w3n tx', async () => {
+    releaseWeb3Name({
+      didDocument,
+      api: mockedApi,
+      submitter: keypair,
+      signers: [keypair],
+    })
+
+    expect(mockedTransact).toHaveBeenLastCalledWith(
+      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
+        call: expect.any(Object),
+        expectedEvents: expect.arrayContaining([
+          {
+            section: 'web3Names',
+            method: 'Web3NameReleased',
+          },
+        ]),
+        didDocument,
+        api: mockedApi,
+        submitter: keypair,
+        signers: [keypair],
+      })
+    )
+    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+      method: { method: 'releaseByOwner', section: 'web3Names' },
     })
   })
 })
