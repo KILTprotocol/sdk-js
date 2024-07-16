@@ -14,7 +14,7 @@ import type { SharedArguments } from './interfaces.js'
 export { createDid } from './createDid.js'
 export { setVerificationMethod } from './setVerificationMethod.js'
 export { transact } from './transact.js'
-export { claimWeb3Name } from './w3names.js'
+export { claimWeb3Name, releaseWeb3Name } from './w3names.js'
 
 /**
  * Selects and returns a DID signer for a given purpose and algorithm.
