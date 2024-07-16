@@ -45,11 +45,10 @@ describe('createDid', () => {
     }
 
     // const did = await (await createDid(options)).submit()
-    const did = await SDK.DidHelpers.createDid(options)
-    const did2 = await did.submit()
+    const result = await SDK.DidHelpers.createDid(options).submit()
 
-    expect(did2.status).toBe('confirmed')
-    expect(did2.asConfirmed.didDocument).toMatchObject({
+    expect(result.status).toBe('confirmed')
+    expect(result.asConfirmed.didDocument).toMatchObject({
       id: `did:kilt:${kp.address}`,
     })
 
