@@ -35,7 +35,7 @@ import type {
 
 function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
   if (err.isModule) {
-    const { docs, method, section } = api.findError(err.asModule.index.toU8a())
+    const { docs, method, section } = api.registry.findMetaError(err.asModule)
     return new Error(`${section}.${method}: ${docs}`)
   }
   return new Error(`${err.type}: ${err.value.toHuman()}`)
