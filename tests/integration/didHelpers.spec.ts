@@ -29,13 +29,17 @@ beforeAll(async () => {
 }, 30_000)
 
 // Create did on chain
-describe('createDid', () => {
-  it('works', async () => {
-    const kp = Crypto.makeKeypairFromUri(
+describe('create and deactivate DID', () => {
+  let kp: KeyringPair
+  let didDocument: DidDocument
+  beforeAll(() => {
+    kp = Crypto.makeKeypairFromUri(
       'build hill second flame trigger simple rigid cabbage phrase evolve final eight',
       'sr25519'
     )
+  })
 
+  it('creates a DID', async () => {
     const result = await DidHelpers.createDid({
       api,
       signers: [kp],
@@ -44,10 +48,31 @@ describe('createDid', () => {
     }).submit()
 
     expect(result.status).toBe('confirmed')
-    expect(result.asConfirmed.didDocument).toMatchObject({
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).toMatchObject({
       id: `did:kilt:${kp.address}`,
+      verificationMethod: expect.any(Array),
+      authentication: expect.any(Array),
     })
-  }, 60000)
+    expect(didDocument.verificationMethod).toHaveProperty('length', 1)
+    expect(didDocument.authentication).toHaveProperty('length', 1)
+  }, 30_000)
+
+  it('deactivates the DID', async () => {
+    const result = await DidHelpers.deactivateDid({
+      api,
+      signers: [kp],
+      submitter: paymentAccount,
+      didDocument,
+    }).submit()
+
+    expect(result.status).toBe('confirmed')
+    const updatedDoc = result.asConfirmed.didDocument
+    expect(updatedDoc.id).toStrictEqual(didDocument.id)
+    expect(updatedDoc).not.toMatchObject(didDocument)
+    expect(updatedDoc).not.toHaveProperty('authentication')
+    expect(updatedDoc).not.toHaveProperty('verificationMethod')
+  }, 30_000)
 })
 
 describe('w3ns', () => {
