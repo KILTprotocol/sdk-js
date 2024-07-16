@@ -28,7 +28,7 @@ import type {
 } from './interfaces.js'
 import { transact } from './index.js'
 
-function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
+export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
   publicKey: Uint8Array
   keyType: string
 } {

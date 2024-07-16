@@ -18,7 +18,10 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import {
   authorizeTx,
   resolver as DidResolver,
+  getFullDid,
+  getStoreTx,
   signersForDid,
+  signingMethodTypes,
 } from '@kiltprotocol/did'
 import {
   KiltAddress,
@@ -28,15 +31,15 @@ import {
   type SignerInterface,
   type SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { Signers } from '@kiltprotocol/utils'
+import { Crypto, Signers } from '@kiltprotocol/utils'
 
+import { convertPublicKey } from './createDid.js'
 import type {
+  AcceptedPublicKeyEncodings,
   SharedArguments,
   TransactionHandlers,
   TransactionResult,
 } from './interfaces.js'
-
-export { createDid } from './createDid.js'
 
 /**
  * Selects and returns a DID signer for a given purpose and algorithm.
@@ -80,12 +83,12 @@ function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
   return new Error(`${err.type}: ${err.value.toHuman()}`)
 }
 
-async function checkResult(
+async function checkResultImpl(
   result: { blockHash: HexString; txHash: HexString } | SubmittableResultValue,
   api: ApiPromise,
   expectedEvents: Array<{ section: string; method: string }>,
   did: Did,
-  signers: SignerInterface[]
+  signersOrKeys: SharedArguments['signers']
 ): Promise<TransactionResult> {
   let txEvents: EventRecord[] = []
   let status: TransactionResult['status'] | undefined
@@ -188,7 +191,10 @@ async function checkResult(
       await (await api.at(blockHash)).query.system.number()
     ).toBigInt()
   }
-
+  let signers: Awaited<ReturnType<typeof signersForDid>>
+  if (didDocument) {
+    signers = await signersForDid(didDocument, ...signersOrKeys)
+  }
   return {
     status,
     get asFailed(): TransactionResult['asFailed'] {
@@ -239,6 +245,29 @@ async function checkResult(
   }
 }
 
+async function submitImpl(
+  getSubmittable: TransactionHandlers['getSubmittable'],
+  options: Pick<SharedArguments, 'api'> & {
+    didNonce?: number | BigInt
+    awaitFinalized?: boolean
+  }
+): ReturnType<TransactionHandlers['submit']> {
+  const submittable = await getSubmittable(options)
+
+  const { awaitFinalized = true } = options
+  const result = await Blockchain.submitSignedTx(
+    options.api.tx(submittable.txHex),
+    {
+      resolveOn: awaitFinalized
+        ? (res) => res.isFinalized || res.isError
+        : (res) => res.isInBlock || res.isError,
+      rejectOn: () => false,
+    }
+  )
+
+  return submittable.checkResult(result)
+}
+
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
  *
@@ -252,12 +281,6 @@ export function transact(
     expectedEvents: Array<{ section: string; method: string }>
   }
 ): TransactionHandlers {
-  const submitterAccount = (
-    'address' in options.submitter
-      ? options.submitter.address
-      : options.submitter.id
-  ) as KiltAddress
-
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (
     submitOptions:
       | {
@@ -266,33 +289,34 @@ export function transact(
         }
       | undefined = {}
   ) => {
-    const didSigners = await signersForDid(
-      options.didDocument,
-      ...options.signers
+    const { didDocument, signers, submitter, call, api, expectedEvents } =
+      options
+    const { didNonce, signSubmittable = true } = submitOptions
+    const didSigners = await signersForDid(didDocument, ...signers)
+
+    const submitterAccount = (
+      'address' in submitter ? submitter.address : submitter.id
+    ) as KiltAddress
+
+    const authorized: SubmittableExtrinsic = await authorizeTx(
+      didDocument,
+      call,
+      didSigners,
+      submitterAccount,
+      typeof didNonce !== 'undefined'
+        ? {
+            txCounter: api.createType('u64', didNonce),
+          }
+        : {}
     )
 
-    let authorized: SubmittableExtrinsic
-
-    if (!('send' in options.call)) {
-      authorized = await authorizeTx(
-        options.didDocument,
-        options.call,
-        didSigners,
-        submitterAccount,
-        { txCounter: options.api.createType('u64', submitOptions.didNonce) }
-      )
-    } else {
-      authorized = options.call
-    }
-
     let signedHex
-    const { signSubmittable = true } = submitOptions
     if (signSubmittable) {
       const signed =
-        'address' in options.submitter
-          ? await authorized.signAsync(options.submitter)
+        'address' in submitter
+          ? await authorized.signAsync(submitter)
           : await authorized.signAsync(submitterAccount, {
-              signer: Signers.getPolkadotSigner([options.submitter]),
+              signer: Signers.getPolkadotSigner([submitter]),
             })
       signedHex = signed.toHex()
     } else {
@@ -302,37 +326,97 @@ export function transact(
     return {
       txHex: signedHex,
       checkResult: (input) =>
-        checkResult(
-          input,
-          options.api,
-          options.expectedEvents,
-          options.didDocument.id,
-          didSigners
-        ),
+        checkResultImpl(input, api, expectedEvents, didDocument.id, signers),
     }
   }
 
-  const submit: TransactionHandlers['submit'] = async ({
-    awaitFinalized = true,
-    didNonce,
-  } = {}) => {
-    const submittable = await getSubmittable({ didNonce })
-
-    const result = await Blockchain.submitSignedTx(
-      options.api.tx(submittable.txHex),
-      {
-        resolveOn: awaitFinalized
-          ? (res) => res.isFinalized || res.isError
-          : (res) => res.isInBlock || res.isError,
-        rejectOn: () => false,
-      }
-    )
-
-    return submittable.checkResult(result)
-  }
+  const submit: TransactionHandlers['submit'] = (submitOptions) =>
+    submitImpl(getSubmittable, { ...options, ...submitOptions })
 
   return {
     submit,
     getSubmittable,
   }
+}
+
+/**
+ * Creates an on-chain DID based on an authentication key.
+ *
+ * @param options.fromPublicKey The public key that will feature as the DID's initial authentication method and will determine the DID identifier.
+ * @param options
+ */
+export function createDid(
+  options: Omit<SharedArguments, 'didDocument'> & {
+    fromPublicKey: AcceptedPublicKeyEncodings
+  }
+): TransactionHandlers {
+  function implementsSignerInterface(input: any): input is SignerInterface {
+    return 'algorithm' in input && 'id' in input && 'sign' in input
+  }
+
+  const getSubmittable: TransactionHandlers['getSubmittable'] = async (
+    submitOptions = {}
+  ) => {
+    const { fromPublicKey, submitter, signers, api } = options
+    const { signSubmittable = true } = submitOptions
+    const { publicKey, keyType } = convertPublicKey(fromPublicKey)
+
+    if (!signingMethodTypes.includes(keyType)) {
+      throw new Error('invalid public key')
+    }
+    const submitterAccount = (
+      'address' in submitter ? submitter.address : submitter.id
+    ) as KiltAddress
+
+    const accountSigners = (
+      await Promise.all(
+        signers.map(async (signer) => {
+          if (implementsSignerInterface(signer)) {
+            return [signer]
+          }
+          const res = await Signers.getSignersForKeypair({
+            keypair: signer,
+          })
+          return res
+        })
+      )
+    ).flat()
+    const didCreation = await getStoreTx(
+      {
+        authentication: [{ publicKey, type: keyType as 'sr25519' }],
+      },
+      submitterAccount,
+      accountSigners
+    )
+
+    let signedHex
+    if (signSubmittable) {
+      const signed =
+        'address' in submitter
+          ? await didCreation.signAsync(submitter)
+          : await didCreation.signAsync(submitterAccount, {
+              signer: Signers.getPolkadotSigner([submitter]),
+            })
+      signedHex = signed.toHex()
+    } else {
+      signedHex = didCreation.toHex()
+    }
+
+    return {
+      txHex: signedHex,
+      checkResult: (input) =>
+        checkResultImpl(
+          input,
+          api,
+          [{ section: 'did', method: 'DidCreated' }],
+          getFullDid(Crypto.encodeAddress(publicKey, 38)),
+          signers
+        ),
+    }
+  }
+
+  const submit: TransactionHandlers['submit'] = (submitOptions) =>
+    submitImpl(getSubmittable, { ...options, ...submitOptions })
+
+  return { getSubmittable, submit }
 }

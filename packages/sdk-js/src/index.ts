@@ -35,5 +35,5 @@ export {
   signerFromKeypair,
   signAndSubmitTx,
   ConfigService,
-  DidHelpers
+  DidHelpers,
 }

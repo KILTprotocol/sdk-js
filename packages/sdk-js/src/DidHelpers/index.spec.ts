@@ -89,10 +89,8 @@ describe('transact', () => {
 
     expect(txHex).toContain('0x')
     const parsed = mockedApi.tx(txHex)
-    expect(parsed.method).toMatchObject({
-      section: 'attestation',
-      method: 'add',
-    })
+    expect(parsed.method).toHaveProperty('section', 'did')
+    expect(parsed.method).toHaveProperty('method', 'submitDidCall')
 
     await expect(
       checkResult(
