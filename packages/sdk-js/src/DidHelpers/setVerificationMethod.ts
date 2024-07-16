@@ -74,7 +74,7 @@ export function setVerificationMethod(
         break
       }
       case 'assertionMethod': {
-        didKeyUpdateTx = options.api.tx.did.assertionMethod(
+        didKeyUpdateTx = options.api.tx.did.setAttestationKey(
           publicKeyToChain(didVerificationKey)
         )
         break
