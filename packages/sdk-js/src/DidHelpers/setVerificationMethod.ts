@@ -38,15 +38,15 @@ export function setVerificationMethod(
 
   if (options.relationship === 'keyAgreement') {
     // TODO:  check if types of keys are valid?
-    const didAuthKey: NewDidEncryptionKey = {
+    const didEncryptionKey: NewDidEncryptionKey = {
       publicKey: pk.publicKey,
       type: pk.keyType as any,
     }
     didKeyUpdateTx = options.api.tx.did.addKeyAgreementKey(
-      publicKeyToChain(didAuthKey)
+      publicKeyToChain(didEncryptionKey)
     )
   } else {
-    const didAuthKey: NewDidVerificationKey = {
+    const didVerificationKey: NewDidVerificationKey = {
       publicKey: pk.publicKey,
       type: pk.keyType as any,
     }
@@ -54,19 +54,19 @@ export function setVerificationMethod(
     switch (options.relationship) {
       case 'authentication': {
         didKeyUpdateTx = options.api.tx.did.setAuthenticationKey(
-          publicKeyToChain(didAuthKey)
+          publicKeyToChain(didVerificationKey)
         )
         break
       }
       case 'capabilityDelegation': {
         didKeyUpdateTx = options.api.tx.did.setDelegationKey(
-          publicKeyToChain(didAuthKey)
+          publicKeyToChain(didVerificationKey)
         )
         break
       }
       case 'assertionMethod': {
         didKeyUpdateTx = options.api.tx.did.assertionMethod(
-          publicKeyToChain(didAuthKey)
+          publicKeyToChain(didVerificationKey)
         )
         break
       }
