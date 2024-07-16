@@ -6,16 +6,17 @@
  */
 
 import { serviceToChain, urlFragmentToChain } from '@kiltprotocol/did'
-import { DidUrl, Service, UriFragment } from '@kiltprotocol/types'
+import  type { DidUrl, Service, UriFragment } from '@kiltprotocol/types'
 import { SharedArguments, TransactionHandlers } from './interfaces.js'
 import { transact } from './transact.js'
 
 /**
  * Adds a service to the DID Document.
  *
+ * @param options Any {@link SharedArguments} and additional parameters.
  * @param options.service The service entry to add to the document.
  * If the service id is relative (begins with #) it is automatically expanded with the DID taken from didDocument.id.
- * @param options
+ * @returns A set of {@link TransactionHandlers}.
  */
 export function addService(
   options: SharedArguments & {
@@ -35,9 +36,10 @@ export function addService(
 /**
  * Removes a service from the DID Document.
  *
+ * @param options Any {@link SharedArguments} and additional parameters.
  * @param options.id The id of the service to remove from the document.
  * If the service id is relative (begins with #) it is automatically expanded with the DID taken from didDocument.id.
- * @param options
+ * @returns A set of {@link TransactionHandlers}.
  */
 export function removeService(
   options: SharedArguments & {
