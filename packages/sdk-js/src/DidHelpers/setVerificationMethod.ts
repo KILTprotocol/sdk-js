@@ -91,7 +91,7 @@ export function setVerificationMethod(
  * Note: authentication verification method can not be removed.
  *
  * @param options Any {@link SharedArguments} and additional parameters.
- * @param options.relationship The relationship for which this verification method shall be useable.
+ * @param options.relationship The relationship for which this verification method shall be removed.
  * @param options.verificationMethodId The id of the verification method that should be removed.
  *
  * @returns A set of {@link TransactionHandlers}.
@@ -109,8 +109,7 @@ export function removeVerificationMethod(
     }
     case 'capabilityDelegation': {
       if (
-        options.didDocument.capabilityDelegation &&
-        options.didDocument.capabilityDelegation.includes(
+        options.didDocument.capabilityDelegation?.includes(
           options.verificationMethodId
         )
       ) {
@@ -124,8 +123,7 @@ export function removeVerificationMethod(
     }
     case 'keyAgreement': {
       if (
-        options.didDocument.keyAgreement &&
-        options.didDocument.keyAgreement.includes(options.verificationMethodId)
+        options.didDocument.keyAgreement?.includes(options.verificationMethodId)
       ) {
         didKeyUpdateTx = options.api.tx.did.removeKeyAgreementKey(
           urlFragmentToChain(options.verificationMethodId)
@@ -139,8 +137,7 @@ export function removeVerificationMethod(
     }
     case 'assertionMethod': {
       if (
-        options.didDocument.assertionMethod &&
-        options.didDocument.assertionMethod.includes(
+        options.didDocument.assertionMethod?.includes(
           options.verificationMethodId
         )
       ) {
