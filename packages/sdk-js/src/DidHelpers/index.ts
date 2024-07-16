@@ -12,6 +12,7 @@ import { Signers } from '@kiltprotocol/utils'
 import type { SharedArguments } from './interfaces.js'
 
 export { createDid } from './createDid.js'
+export { addService, removeService } from './service.js'
 export { setVerificationMethod } from './setVerificationMethod.js'
 export { transact } from './transact.js'
 export { claimWeb3Name, releaseWeb3Name } from './w3names.js'
