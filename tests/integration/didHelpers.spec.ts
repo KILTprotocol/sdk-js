@@ -12,6 +12,7 @@ import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
+  Service,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -106,6 +107,62 @@ describe('w3ns', () => {
     expect(result.status).toStrictEqual('confirmed')
     didDocument = result.asConfirmed.didDocument
     expect(didDocument).not.toHaveProperty('alsoKnownAs')
+  }, 30_000)
+})
+
+describe('services', () => {
+  let keypair: KeyringPair
+  let didDocument: DidDocument
+  beforeAll(async () => {
+    keypair = Crypto.makeKeypairFromUri('//Services')
+    const result = await DidHelpers.createDid({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      fromPublicKey: keypair,
+    }).submit()
+    didDocument = result.asConfirmed.didDocument
+  })
+
+  it('adds a service', async () => {
+    const result = await DidHelpers.addService({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      service: {
+        id: '#my_service',
+        type: ['http://schema.org/EmailService'],
+        serviceEndpoint: ['mailto:info@kilt.io'],
+      },
+    }).submit()
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).toHaveProperty(
+      'service',
+      expect.arrayContaining<Service>([
+        {
+          id: `${didDocument.id}#my_service`,
+          type: ['http://schema.org/EmailService'],
+          serviceEndpoint: ['mailto:info@kilt.io'],
+        },
+      ])
+    )
+    expect(didDocument.service).toHaveLength(1)
+  }, 30_000)
+
+  it('removes a service', async () => {
+    const result = await DidHelpers.removeService({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      id: '#my_service',
+    }).submit()
+
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).not.toHaveProperty('service')
   }, 30_000)
 })
 
