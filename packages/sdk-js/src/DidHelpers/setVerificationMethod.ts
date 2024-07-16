@@ -6,18 +6,19 @@
  */
 
 import {
-  NewDidEncryptionKey,
-  NewDidVerificationKey,
+  type NewDidEncryptionKey,
+  type NewDidVerificationKey,
   publicKeyToChain,
 } from '@kiltprotocol/did'
-import { VerificationRelationship } from '@kiltprotocol/types'
-import { convertPublicKey } from './createDid.js'
-import { transact } from './index.js'
+import type { VerificationRelationship } from '@kiltprotocol/types'
+
+import { convertPublicKey } from './common.js'
 import type {
   AcceptedPublicKeyEncodings,
   SharedArguments,
   TransactionHandlers,
-} from './interfaces'
+} from './interfaces.js'
+import { transact } from './transact.js'
 
 /**
  * Replaces all existing verification methods for the selected `relationship` with `publicKey`.
