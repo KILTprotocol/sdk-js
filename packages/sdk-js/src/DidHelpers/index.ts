@@ -12,6 +12,7 @@ import { Signers } from '@kiltprotocol/utils'
 import type { SharedArguments } from './interfaces.js'
 
 export { createDid } from './createDid.js'
+export { deactivateDid } from './deactivateDid.js'
 export { addService, removeService } from './service.js'
 export { transact } from './transact.js'
 export {
