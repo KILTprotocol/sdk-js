@@ -8,7 +8,7 @@
 import { serviceToChain, urlFragmentToChain } from '@kiltprotocol/did'
 import type { DidUrl, Service, UriFragment } from '@kiltprotocol/types'
 import { SharedArguments, TransactionHandlers } from './interfaces.js'
-import { transact } from './transact.js'
+import { transactInternal } from './transact.js'
 
 /**
  * Adds a service to the DID Document.
@@ -23,12 +23,10 @@ export function addService(
     service: Service<DidUrl | UriFragment>
   }
 ): TransactionHandlers {
-  const didServiceUpdateTx = options.api.tx.did.addServiceEndpoint(
-    serviceToChain(options.service)
-  )
-  return transact({
+  return transactInternal({
     ...options,
-    call: didServiceUpdateTx,
+    callFactory: async () =>
+      options.api.tx.did.addServiceEndpoint(serviceToChain(options.service)),
     expectedEvents: [{ section: 'did', method: 'DidUpdated' }],
   })
 }
@@ -46,12 +44,10 @@ export function removeService(
     id: DidUrl | UriFragment
   }
 ): TransactionHandlers {
-  const didServiceUpdateTx = options.api.tx.did.removeServiceEndpoint(
-    urlFragmentToChain(options.id)
-  )
-  return transact({
+  return transactInternal({
     ...options,
-    call: didServiceUpdateTx,
+    callFactory: async () =>
+      options.api.tx.did.removeServiceEndpoint(urlFragmentToChain(options.id)),
     expectedEvents: [{ section: 'did', method: 'DidUpdated' }],
   })
 }

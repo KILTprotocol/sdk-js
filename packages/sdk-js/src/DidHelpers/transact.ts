@@ -18,12 +18,12 @@ import type { SharedArguments, TransactionHandlers } from './interfaces.js'
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
  *
  * @param options Any {@link SharedArguments} and additional parameters.
- * @param options.call The transaction / call to execute.
+ * @param options.callFactory Async callback producing the transaction / call to execute.
  * @returns A set of {@link TransactionHandlers}.
  */
-export function transact(
+export function transactInternal(
   options: SharedArguments & {
-    call: Extrinsic | SubmittableExtrinsic
+    callFactory: () => Promise<Extrinsic | SubmittableExtrinsic>
     expectedEvents?: Array<{ section: string; method: string }>
   }
 ): TransactionHandlers {
@@ -35,9 +35,16 @@ export function transact(
         }
       | undefined = {}
   ) => {
-    const { didDocument, signers, submitter, call, api, expectedEvents } =
-      options
+    const {
+      didDocument,
+      signers,
+      submitter,
+      callFactory,
+      api,
+      expectedEvents,
+    } = options
     const { didNonce, signSubmittable = true } = submitOptions
+    const call = await callFactory()
     const didSigners = await signersForDid(didDocument, ...signers)
 
     const submitterAccount = (
@@ -74,4 +81,20 @@ export function transact(
     submit,
     getSubmittable,
   }
+}
+
+/**
+ * Instructs a transaction (state transition) as this DID (with this DID as the origin).
+ *
+ * @param options Any {@link SharedArguments} and additional parameters.
+ * @param options.call The transaction / call to execute.
+ * @returns A set of {@link TransactionHandlers}.
+ */
+export function transact(
+  options: SharedArguments & {
+    call: Extrinsic | SubmittableExtrinsic
+    expectedEvents?: Array<{ section: string; method: string }>
+  }
+): TransactionHandlers {
+  return transactInternal({ ...options, callFactory: async () => options.call })
 }

@@ -23,7 +23,7 @@ import type {
   SharedArguments,
   TransactionHandlers,
 } from './interfaces.js'
-import { transact } from './transact.js'
+import { transactInternal } from './transact.js'
 
 /**
  * Replaces all existing verification methods for the selected `relationship` with `publicKey`.
@@ -40,50 +40,47 @@ export function setVerificationMethod(
     relationship: VerificationRelationship
   }
 ): TransactionHandlers {
-  const { publicKey, relationship, didDocument, api } = options
-  const pk = convertPublicKey(publicKey)
+  const callFactory = async (): Promise<SubmittableExtrinsic> => {
+    const { publicKey, relationship, didDocument, api } = options
+    const pk = convertPublicKey(publicKey)
 
-  let didKeyUpdateTx
-  switch (relationship) {
-    case 'keyAgreement': {
-      const txs: SubmittableExtrinsic[] = []
-      didDocument.keyAgreement?.forEach((id) =>
-        txs.push(api.tx.did.removeKeyAgreementKey(urlFragmentToChain(id)))
-      )
-      txs.push(
-        api.tx.did.addKeyAgreementKey(
-          publicKeyToChain(pk as NewDidEncryptionKey)
+    switch (relationship) {
+      case 'keyAgreement': {
+        const txs: SubmittableExtrinsic[] = []
+        didDocument.keyAgreement?.forEach((id) =>
+          txs.push(api.tx.did.removeKeyAgreementKey(urlFragmentToChain(id)))
         )
-      )
-      didKeyUpdateTx = api.tx.utility.batchAll(txs)
-      break
-    }
-    case 'authentication': {
-      didKeyUpdateTx = api.tx.did.setAuthenticationKey(
-        publicKeyToChain(pk as NewDidVerificationKey)
-      )
-      break
-    }
-    case 'capabilityDelegation': {
-      didKeyUpdateTx = api.tx.did.setDelegationKey(
-        publicKeyToChain(pk as NewDidVerificationKey)
-      )
-      break
-    }
-    case 'assertionMethod': {
-      didKeyUpdateTx = api.tx.did.setAttestationKey(
-        publicKeyToChain(pk as NewDidVerificationKey)
-      )
-      break
-    }
-    default: {
-      throw new Error('unsupported relationship')
+        txs.push(
+          api.tx.did.addKeyAgreementKey(
+            publicKeyToChain(pk as NewDidEncryptionKey)
+          )
+        )
+        return api.tx.utility.batchAll(txs)
+      }
+      case 'authentication': {
+        return api.tx.did.setAuthenticationKey(
+          publicKeyToChain(pk as NewDidVerificationKey)
+        )
+      }
+      case 'capabilityDelegation': {
+        return api.tx.did.setDelegationKey(
+          publicKeyToChain(pk as NewDidVerificationKey)
+        )
+      }
+      case 'assertionMethod': {
+        return api.tx.did.setAttestationKey(
+          publicKeyToChain(pk as NewDidVerificationKey)
+        )
+      }
+      default: {
+        throw new Error('unsupported relationship')
+      }
     }
   }
 
-  return transact({
+  return transactInternal({
     ...options,
-    call: didKeyUpdateTx,
+    callFactory,
     expectedEvents: [{ section: 'did', method: 'DidUpdated' }],
   })
 }
@@ -105,52 +102,49 @@ export function removeVerificationMethod(
     relationship: Omit<VerificationRelationship, 'authentication'>
   }
 ): TransactionHandlers {
-  const { relationship, didDocument, api, verificationMethodId } = options
-  let didKeyUpdateTx
-  switch (relationship) {
-    case 'authentication': {
-      throw new Error('authentication verification methods can not be removed')
-    }
-    case 'capabilityDelegation': {
-      if (didDocument.capabilityDelegation?.includes(verificationMethodId)) {
-        didKeyUpdateTx = api.tx.did.removeDelegationKey()
-      } else {
+  const callFactory = async (): Promise<SubmittableExtrinsic> => {
+    const { relationship, didDocument, api, verificationMethodId } = options
+    switch (relationship) {
+      case 'authentication': {
+        throw new Error(
+          'authentication verification methods can not be removed'
+        )
+      }
+      case 'capabilityDelegation': {
+        if (didDocument.capabilityDelegation?.includes(verificationMethodId)) {
+          return api.tx.did.removeDelegationKey()
+        }
         throw new Error(
           'the specified capabilityDelegation method does not exist in the DID Document'
         )
       }
-      break
-    }
-    case 'keyAgreement': {
-      if (didDocument.keyAgreement?.includes(verificationMethodId)) {
-        didKeyUpdateTx = api.tx.did.removeKeyAgreementKey(
-          urlFragmentToChain(verificationMethodId)
-        )
-      } else {
+      case 'keyAgreement': {
+        if (didDocument.keyAgreement?.includes(verificationMethodId)) {
+          return api.tx.did.removeKeyAgreementKey(
+            urlFragmentToChain(verificationMethodId)
+          )
+        }
         throw new Error(
           'the specified keyAgreement key does not exist in the DID Document'
         )
       }
-      break
-    }
-    case 'assertionMethod': {
-      if (didDocument.assertionMethod?.includes(verificationMethodId)) {
-        didKeyUpdateTx = api.tx.did.removeAttestationKey()
-      } else {
+      case 'assertionMethod': {
+        if (didDocument.assertionMethod?.includes(verificationMethodId)) {
+          return api.tx.did.removeAttestationKey()
+        }
         throw new Error(
           'the specified assertionMethod does not exist in the DID Document'
         )
       }
-      break
-    }
-    default: {
-      throw new Error('the specified method relationship is not supported')
+      default: {
+        throw new Error('the specified method relationship is not supported')
+      }
     }
   }
 
-  return transact({
+  return transactInternal({
     ...options,
-    call: didKeyUpdateTx,
+    callFactory,
     expectedEvents: [{ section: 'did', method: 'DidUpdated' }],
   })
 }
