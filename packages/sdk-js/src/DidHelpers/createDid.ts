@@ -24,8 +24,9 @@ function implementsSignerInterface(input: any): input is SignerInterface {
 /**
  * Creates an on-chain DID based on an authentication key.
  *
+ * @param options Any {@link SharedArguments} (minus `didDocument`) and additional parameters.
  * @param options.fromPublicKey The public key that will feature as the DID's initial authentication method and will determine the DID identifier.
- * @param options
+ * @returns A set of {@link TransactionHandlers}.
  */
 export function createDid(
   options: Omit<SharedArguments, 'didDocument'> & {

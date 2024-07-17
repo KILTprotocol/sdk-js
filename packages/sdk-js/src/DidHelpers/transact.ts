@@ -17,9 +17,9 @@ import type { SharedArguments, TransactionHandlers } from './interfaces.js'
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
  *
- * @param options
+ * @param options Any {@link SharedArguments} and additional parameters.
  * @param options.call The transaction / call to execute.
- * @returns
+ * @returns A set of {@link TransactionHandlers}.
  */
 export function transact(
   options: SharedArguments & {
