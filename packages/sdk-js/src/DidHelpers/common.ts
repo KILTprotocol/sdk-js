@@ -41,6 +41,15 @@ function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
   return new Error(`${err.type}: ${err.value.toHuman()}`)
 }
 
+function assertStatus(expected: string, actual?: string): void {
+  if (actual !== expected) {
+    const getterName = `as${expected.slice(0, 1).toUpperCase()}${expected.slice(
+      1
+    )}`
+    throw new Error(`can't access '${getterName}' when status is '${actual}'`)
+  }
+}
+
 export async function checkResultImpl(
   result: { blockHash: HexString; txHash: HexString } | SubmittableResultValue,
   api: ApiPromise,
@@ -152,50 +161,49 @@ export async function checkResultImpl(
   let signers: Awaited<ReturnType<typeof signersForDid>>
   if (didDocument) {
     signers = await signersForDid(didDocument, ...signersOrKeys)
+  } else if (status === 'confirmed') {
+    status = 'unknown'
+    error = new Error('failed to fetch DID document')
   }
+
   return {
     status,
     get asFailed(): TransactionResult['asFailed'] {
-      if (status !== 'failed') {
-        throw new Error('')
-      }
+      assertStatus('failed', status)
       return {
-        error: error!,
+        error: error ?? new Error('unknown error'),
         txHash: u8aToHex(u8aToU8a(result.txHash)),
         signers,
         didDocument,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
       }
     },
     get asUnknown(): TransactionResult['asUnknown'] {
-      if (status !== 'unknown') {
-        throw new Error('')
-      }
+      assertStatus('unknown', status)
       return {
         error: error as Error,
         txHash: u8aToHex(u8aToU8a(result.txHash)),
       }
     },
     get asRejected(): TransactionResult['asRejected'] {
-      if (status !== 'rejected') {
-        throw new Error('')
-      }
+      assertStatus('rejected', status)
       return {
-        error: error as Error,
+        error: error ?? new Error('unknown error'),
         txHash: u8aToHex(u8aToU8a(result.txHash)),
         signers,
         didDocument,
       }
     },
     get asConfirmed(): TransactionResult['asConfirmed'] {
-      if (status !== 'confirmed') {
-        throw new Error('')
-      }
+      assertStatus('confirmed', status)
       return {
         txHash: u8aToHex(u8aToU8a(result.txHash)),
         signers,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         didDocument: didDocument!,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
       }
@@ -228,28 +236,24 @@ export async function submitImpl(
 
 export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
   publicKey: Uint8Array
-  keyType: string
+  type: string
 } {
-  let didPublicKey: {
-    publicKey: Uint8Array
-    keyType: string
-  }
+  let publicKey: Uint8Array
+  let type: string
+
   if (typeof pk === 'string') {
-    didPublicKey = multibaseKeyToDidKey(pk)
+    ;({ publicKey, keyType: type } = multibaseKeyToDidKey(pk))
   } else if ('publicKeyMultibase' in pk) {
-    didPublicKey = multibaseKeyToDidKey(
+    ;({ publicKey, keyType: type } = multibaseKeyToDidKey(
       (pk as { publicKeyMultibase: KeyMultibaseEncoded }).publicKeyMultibase
-    )
+    ))
   } else if (
     'publicKey' in pk &&
     pk.publicKey.constructor.name === 'Uint8Array'
   ) {
-    didPublicKey = {
-      publicKey: pk.publicKey,
-      keyType: pk.type,
-    }
+    ;({ publicKey, type } = pk)
   } else {
     throw new Error('invalid public key')
   }
-  return didPublicKey
+  return { publicKey, type }
 }

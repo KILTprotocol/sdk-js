@@ -5,7 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { getFullDid, getStoreTx, signingMethodTypes } from '@kiltprotocol/did'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import {
+  getFullDid,
+  getStoreTx,
+  type NewDidVerificationKey,
+  signingMethodTypes,
+} from '@kiltprotocol/did'
 import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
 
@@ -23,8 +29,9 @@ function implementsSignerInterface(input: any): input is SignerInterface {
 /**
  * Creates an on-chain DID based on an authentication key.
  *
+ * @param options Any {@link SharedArguments} (minus `didDocument`) and additional parameters.
  * @param options.fromPublicKey The public key that will feature as the DID's initial authentication method and will determine the DID identifier.
- * @param options
+ * @returns A set of {@link TransactionHandlers}.
  */
 export function createDid(
   options: Omit<SharedArguments, 'didDocument'> & {
@@ -36,10 +43,10 @@ export function createDid(
   ) => {
     const { fromPublicKey, submitter, signers, api } = options
     const { signSubmittable = true } = submitOptions
-    const { publicKey, keyType } = convertPublicKey(fromPublicKey)
+    const { publicKey, type } = convertPublicKey(fromPublicKey)
 
-    if (!signingMethodTypes.includes(keyType)) {
-      throw new Error('invalid public key')
+    if (!signingMethodTypes.includes(type)) {
+      throw new Error(`unknown key type ${type}`)
     }
     const submitterAccount = (
       'address' in submitter ? submitter.address : submitter.id
@@ -58,29 +65,21 @@ export function createDid(
         })
       )
     ).flat()
-    const didCreation = await getStoreTx(
+
+    let didCreation = await getStoreTx(
       {
-        authentication: [{ publicKey, type: keyType as 'sr25519' }],
+        authentication: [{ publicKey, type } as NewDidVerificationKey],
       },
       submitterAccount,
       accountSigners
     )
 
-    let signedHex
     if (signSubmittable) {
-      const signed =
-        'address' in submitter
-          ? await didCreation.signAsync(submitter)
-          : await didCreation.signAsync(submitterAccount, {
-              signer: Signers.getPolkadotSigner([submitter]),
-            })
-      signedHex = signed.toHex()
-    } else {
-      signedHex = didCreation.toHex()
+      didCreation = await Blockchain.signTx(didCreation, submitter)
     }
 
     return {
-      txHex: signedHex,
+      txHex: didCreation.toHex(),
       checkResult: (input) =>
         checkResultImpl(
           input,

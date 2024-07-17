@@ -40,50 +40,44 @@ export function setVerificationMethod(
     relationship: VerificationRelationship
   }
 ): TransactionHandlers {
-  const pk = convertPublicKey(options.publicKey)
+  const { publicKey, relationship, didDocument, api } = options
+  const pk = convertPublicKey(publicKey)
+
   let didKeyUpdateTx
-
-  if (options.relationship === 'keyAgreement') {
-    const didEncryptionKey: NewDidEncryptionKey = {
-      publicKey: pk.publicKey,
-      type: pk.keyType as any,
+  switch (relationship) {
+    case 'keyAgreement': {
+      const txs: SubmittableExtrinsic[] = []
+      didDocument.keyAgreement?.forEach((id) =>
+        txs.push(api.tx.did.removeKeyAgreementKey(urlFragmentToChain(id)))
+      )
+      txs.push(
+        api.tx.did.addKeyAgreementKey(
+          publicKeyToChain(pk as NewDidEncryptionKey)
+        )
+      )
+      didKeyUpdateTx = api.tx.utility.batchAll(txs)
+      break
     }
-    const txs: SubmittableExtrinsic[] = []
-    options.didDocument.keyAgreement?.forEach((id) =>
-      txs.push(options.api.tx.did.removeKeyAgreementKey(urlFragmentToChain(id)))
-    )
-    txs.push(
-      options.api.tx.did.addKeyAgreementKey(publicKeyToChain(didEncryptionKey))
-    )
-    didKeyUpdateTx = options.api.tx.utility.batchAll(txs)
-  } else {
-    const didVerificationKey: NewDidVerificationKey = {
-      publicKey: pk.publicKey,
-      type: pk.keyType as any,
+    case 'authentication': {
+      didKeyUpdateTx = api.tx.did.setAuthenticationKey(
+        publicKeyToChain(pk as NewDidVerificationKey)
+      )
+      break
     }
-
-    switch (options.relationship) {
-      case 'authentication': {
-        didKeyUpdateTx = options.api.tx.did.setAuthenticationKey(
-          publicKeyToChain(didVerificationKey)
-        )
-        break
-      }
-      case 'capabilityDelegation': {
-        didKeyUpdateTx = options.api.tx.did.setDelegationKey(
-          publicKeyToChain(didVerificationKey)
-        )
-        break
-      }
-      case 'assertionMethod': {
-        didKeyUpdateTx = options.api.tx.did.setAttestationKey(
-          publicKeyToChain(didVerificationKey)
-        )
-        break
-      }
-      default: {
-        throw new Error('unsupported relationship')
-      }
+    case 'capabilityDelegation': {
+      didKeyUpdateTx = api.tx.did.setDelegationKey(
+        publicKeyToChain(pk as NewDidVerificationKey)
+      )
+      break
+    }
+    case 'assertionMethod': {
+      didKeyUpdateTx = api.tx.did.setAttestationKey(
+        publicKeyToChain(pk as NewDidVerificationKey)
+      )
+      break
+    }
+    default: {
+      throw new Error('unsupported relationship')
     }
   }
 
@@ -111,18 +105,15 @@ export function removeVerificationMethod(
     relationship: Omit<VerificationRelationship, 'authentication'>
   }
 ): TransactionHandlers {
+  const { relationship, didDocument, api, verificationMethodId } = options
   let didKeyUpdateTx
-  switch (options.relationship) {
+  switch (relationship) {
     case 'authentication': {
       throw new Error('authentication verification methods can not be removed')
     }
     case 'capabilityDelegation': {
-      if (
-        options.didDocument.capabilityDelegation?.includes(
-          options.verificationMethodId
-        )
-      ) {
-        didKeyUpdateTx = options.api.tx.did.removeDelegationKey()
+      if (didDocument.capabilityDelegation?.includes(verificationMethodId)) {
+        didKeyUpdateTx = api.tx.did.removeDelegationKey()
       } else {
         throw new Error(
           'the specified capabilityDelegation method does not exist in the DID Document'
@@ -131,11 +122,9 @@ export function removeVerificationMethod(
       break
     }
     case 'keyAgreement': {
-      if (
-        options.didDocument.keyAgreement?.includes(options.verificationMethodId)
-      ) {
-        didKeyUpdateTx = options.api.tx.did.removeKeyAgreementKey(
-          urlFragmentToChain(options.verificationMethodId)
+      if (didDocument.keyAgreement?.includes(verificationMethodId)) {
+        didKeyUpdateTx = api.tx.did.removeKeyAgreementKey(
+          urlFragmentToChain(verificationMethodId)
         )
       } else {
         throw new Error(
@@ -145,12 +134,8 @@ export function removeVerificationMethod(
       break
     }
     case 'assertionMethod': {
-      if (
-        options.didDocument.assertionMethod?.includes(
-          options.verificationMethodId
-        )
-      ) {
-        didKeyUpdateTx = options.api.tx.did.removeAttestationKey()
+      if (didDocument.assertionMethod?.includes(verificationMethodId)) {
+        didKeyUpdateTx = api.tx.did.removeAttestationKey()
       } else {
         throw new Error(
           'the specified assertionMethod does not exist in the DID Document'

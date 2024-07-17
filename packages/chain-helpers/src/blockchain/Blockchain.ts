@@ -176,6 +176,30 @@ export type TransactionSigner = SignerInterface<
 >
 
 /**
+ * Signs a SubmittableExtrinsic.
+ *
+ * @param tx An unsigned SubmittableExtrinsic.
+ * @param signer The {@link KeyringPair} used to sign the tx.
+ * @param opts Additional options.
+ * @param opts.tip Optional amount of Femto-KILT to tip the validator.
+ * @returns A signed {@link SubmittableExtrinsic}.
+ */
+export async function signTx(
+  tx: SubmittableExtrinsic,
+  signer: KeyringPair | TransactionSigner,
+  { tip }: { tip?: AnyNumber } = {}
+): Promise<SubmittableExtrinsic> {
+  if ('address' in signer) {
+    return tx.signAsync(signer, { tip })
+  }
+
+  return tx.signAsync(signer.id, {
+    tip,
+    signer: Signers.getPolkadotSigner([signer]),
+  })
+}
+
+/**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.

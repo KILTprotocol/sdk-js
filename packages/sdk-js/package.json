@@ -46,7 +46,9 @@
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/type-definitions": "^0.35.0",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/api": "^12.0.0",
+    "@polkadot/util": "^13.0.0"
   },
   "peerDependencies": {
     "@kiltprotocol/augment-api": "^1.11210.0"
