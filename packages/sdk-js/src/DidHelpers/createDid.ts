@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { getFullDid, getStoreTx, signingMethodTypes } from '@kiltprotocol/did'
 import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
@@ -39,7 +40,7 @@ export function createDid(
     const { publicKey, keyType } = convertPublicKey(fromPublicKey)
 
     if (!signingMethodTypes.includes(keyType)) {
-      throw new Error('invalid public key')
+      throw new Error(`unknown key type ${keyType}`)
     }
     const submitterAccount = (
       'address' in submitter ? submitter.address : submitter.id
@@ -58,7 +59,8 @@ export function createDid(
         })
       )
     ).flat()
-    const didCreation = await getStoreTx(
+
+    let didCreation = await getStoreTx(
       {
         authentication: [{ publicKey, type: keyType as 'sr25519' }],
       },
@@ -66,21 +68,12 @@ export function createDid(
       accountSigners
     )
 
-    let signedHex
     if (signSubmittable) {
-      const signed =
-        'address' in submitter
-          ? await didCreation.signAsync(submitter)
-          : await didCreation.signAsync(submitterAccount, {
-              signer: Signers.getPolkadotSigner([submitter]),
-            })
-      signedHex = signed.toHex()
-    } else {
-      signedHex = didCreation.toHex()
+      didCreation = await Blockchain.signTx(didCreation, submitter)
     }
 
     return {
-      txHex: signedHex,
+      txHex: didCreation.toHex(),
       checkResult: (input) =>
         checkResultImpl(
           input,

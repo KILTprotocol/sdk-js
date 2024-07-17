@@ -7,9 +7,9 @@
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import type { KiltAddress, SubmittableExtrinsic } from '@kiltprotocol/types'
-import { Signers } from '@kiltprotocol/utils'
 
 import { checkResultImpl, submitImpl } from './common.js'
 import type { SharedArguments, TransactionHandlers } from './interfaces.js'
@@ -44,7 +44,7 @@ export function transact(
       'address' in submitter ? submitter.address : submitter.id
     ) as KiltAddress
 
-    const authorized: SubmittableExtrinsic = await authorizeTx(
+    let authorized: SubmittableExtrinsic = await authorizeTx(
       didDocument,
       call,
       didSigners,
@@ -56,21 +56,12 @@ export function transact(
         : {}
     )
 
-    let signedHex
     if (signSubmittable) {
-      const signed =
-        'address' in submitter
-          ? await authorized.signAsync(submitter)
-          : await authorized.signAsync(submitterAccount, {
-              signer: Signers.getPolkadotSigner([submitter]),
-            })
-      signedHex = signed.toHex()
-    } else {
-      signedHex = authorized.toHex()
+      authorized = await Blockchain.signTx(authorized, submitter)
     }
 
     return {
-      txHex: signedHex,
+      txHex: authorized.toHex(),
       checkResult: (input) =>
         checkResultImpl(input, api, expectedEvents, didDocument.id, signers),
     }
