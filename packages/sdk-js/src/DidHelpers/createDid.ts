@@ -6,7 +6,12 @@
  */
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { getFullDid, getStoreTx, signingMethodTypes } from '@kiltprotocol/did'
+import {
+  getFullDid,
+  getStoreTx,
+  type NewDidVerificationKey,
+  signingMethodTypes,
+} from '@kiltprotocol/did'
 import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
 
@@ -38,10 +43,10 @@ export function createDid(
   ) => {
     const { fromPublicKey, submitter, signers, api } = options
     const { signSubmittable = true } = submitOptions
-    const { publicKey, keyType } = convertPublicKey(fromPublicKey)
+    const { publicKey, type } = convertPublicKey(fromPublicKey)
 
-    if (!signingMethodTypes.includes(keyType)) {
-      throw new Error(`unknown key type ${keyType}`)
+    if (!signingMethodTypes.includes(type)) {
+      throw new Error(`unknown key type ${type}`)
     }
     const submitterAccount = (
       'address' in submitter ? submitter.address : submitter.id
@@ -63,7 +68,7 @@ export function createDid(
 
     let didCreation = await getStoreTx(
       {
-        authentication: [{ publicKey, type: keyType as 'sr25519' }],
+        authentication: [{ publicKey, type } as NewDidVerificationKey],
       },
       submitterAccount,
       accountSigners

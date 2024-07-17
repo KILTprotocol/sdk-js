@@ -236,28 +236,24 @@ export async function submitImpl(
 
 export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
   publicKey: Uint8Array
-  keyType: string
+  type: string
 } {
-  let didPublicKey: {
-    publicKey: Uint8Array
-    keyType: string
-  }
+  let publicKey: Uint8Array
+  let type: string
+
   if (typeof pk === 'string') {
-    didPublicKey = multibaseKeyToDidKey(pk)
+    ;({ publicKey, keyType: type } = multibaseKeyToDidKey(pk))
   } else if ('publicKeyMultibase' in pk) {
-    didPublicKey = multibaseKeyToDidKey(
+    ;({ publicKey, keyType: type } = multibaseKeyToDidKey(
       (pk as { publicKeyMultibase: KeyMultibaseEncoded }).publicKeyMultibase
-    )
+    ))
   } else if (
     'publicKey' in pk &&
     pk.publicKey.constructor.name === 'Uint8Array'
   ) {
-    didPublicKey = {
-      publicKey: pk.publicKey,
-      keyType: pk.type,
-    }
+    ;({ publicKey, type } = pk)
   } else {
     throw new Error('invalid public key')
   }
-  return didPublicKey
+  return { publicKey, type }
 }
