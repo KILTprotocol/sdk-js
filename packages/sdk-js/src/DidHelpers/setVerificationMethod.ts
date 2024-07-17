@@ -9,8 +9,12 @@ import {
   type NewDidEncryptionKey,
   type NewDidVerificationKey,
   publicKeyToChain,
+  urlFragmentToChain,
 } from '@kiltprotocol/did'
-import type { VerificationRelationship } from '@kiltprotocol/types'
+import type {
+  SubmittableExtrinsic,
+  VerificationRelationship,
+} from '@kiltprotocol/types'
 
 import { convertPublicKey } from './common.js'
 import type {
@@ -42,9 +46,14 @@ export function setVerificationMethod(
       publicKey: pk.publicKey,
       type: pk.keyType as any,
     }
-    didKeyUpdateTx = options.api.tx.did.addKeyAgreementKey(
-      publicKeyToChain(didEncryptionKey)
+    const txs: SubmittableExtrinsic[] = []
+    options.didDocument.keyAgreement?.forEach((id) =>
+      txs.push(options.api.tx.did.removeKeyAgreementKey(urlFragmentToChain(id)))
     )
+    txs.push(
+      options.api.tx.did.addKeyAgreementKey(publicKeyToChain(didEncryptionKey))
+    )
+    didKeyUpdateTx = options.api.tx.utility.batchAll(txs)
   } else {
     const didVerificationKey: NewDidVerificationKey = {
       publicKey: pk.publicKey,
@@ -65,7 +74,7 @@ export function setVerificationMethod(
         break
       }
       case 'assertionMethod': {
-        didKeyUpdateTx = options.api.tx.did.assertionMethod(
+        didKeyUpdateTx = options.api.tx.did.setAttestationKey(
           publicKeyToChain(didVerificationKey)
         )
         break
