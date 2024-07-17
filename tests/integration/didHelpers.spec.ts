@@ -166,6 +166,140 @@ describe('services', () => {
   }, 30_000)
 })
 
+describe('verification methods', () => {
+  let keypair: KeyringPair
+  let didDocument: DidDocument
+  beforeAll(async () => {
+    keypair = Crypto.makeKeypairFromUri('//Vms')
+    const result = await DidHelpers.createDid({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      fromPublicKey: keypair,
+    }).submit()
+    didDocument = result.asConfirmed.didDocument
+  })
+
+  it('sets an assertion method', async () => {
+    expect(didDocument).not.toHaveProperty('assertionMethod')
+    const result = await DidHelpers.setVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      publicKey: keypair,
+      relationship: 'assertionMethod',
+    }).submit()
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).toHaveProperty(
+      'assertionMethod',
+      didDocument.authentication
+    )
+
+    const result2 = await DidHelpers.setVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      publicKey: { publicKey: new Uint8Array(32).fill(1), type: 'ed25519' },
+      relationship: 'assertionMethod',
+    }).submit()
+
+    expect(result2.status).toStrictEqual('confirmed')
+    didDocument = result2.asConfirmed.didDocument
+    expect(didDocument.assertionMethod).toHaveLength(1)
+    expect(didDocument.assertionMethod![0]).not.toEqual(
+      didDocument.authentication![0]
+    )
+  }, 60_000)
+
+  it('sets a key agreement method', async () => {
+    expect(didDocument).not.toHaveProperty('keyAgreement')
+    const result = await DidHelpers.setVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      publicKey: { publicKey: new Uint8Array(32).fill(0), type: 'x25519' },
+      relationship: 'keyAgreement',
+    }).submit()
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).toHaveProperty('keyAgreement', expect.any(Array))
+    expect(didDocument.keyAgreement).toHaveLength(1)
+
+    const [oldKey] = didDocument.keyAgreement!
+
+    const result2 = await DidHelpers.setVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      publicKey: { publicKey: new Uint8Array(32).fill(1), type: 'x25519' },
+      relationship: 'keyAgreement',
+    }).submit()
+
+    expect(result2.status).toStrictEqual('confirmed')
+    didDocument = result2.asConfirmed.didDocument
+    expect(didDocument.keyAgreement).toHaveLength(1)
+    expect(didDocument.keyAgreement![0]).not.toEqual(oldKey)
+  }, 60_000)
+
+  it('removes an assertion method', async () => {
+    expect(didDocument.assertionMethod).toHaveLength(1)
+
+    const result = await DidHelpers.removeVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      verificationMethodId: didDocument.assertionMethod![0],
+      relationship: 'assertionMethod',
+    }).submit()
+
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).not.toHaveProperty('assertionMethod')
+  }, 30_000)
+
+  it('removes a key agreement method', async () => {
+    expect(didDocument.keyAgreement).toHaveLength(1)
+
+    const result = await DidHelpers.removeVerificationMethod({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      verificationMethodId: didDocument.keyAgreement![0],
+      relationship: 'keyAgreement',
+    }).submit()
+
+    expect(result.status).toStrictEqual('confirmed')
+    didDocument = result.asConfirmed.didDocument
+    expect(didDocument).not.toHaveProperty('keyAgreement')
+  }, 30_000)
+
+  it('fails to remove authentication method', async () => {
+    await expect(
+      Promise.resolve()
+        .then(() =>
+          DidHelpers.removeVerificationMethod({
+            api,
+            signers: [keypair],
+            submitter: paymentAccount,
+            didDocument,
+            verificationMethodId: didDocument.authentication![0],
+            relationship: 'authentication',
+          }).submit()
+        )
+        .then(({ asConfirmed }) => asConfirmed)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"authentication verification methods can not be removed"`
+    )
+  }, 30_000)
+})
+
 afterAll(async () => {
   await disconnect()
 })
