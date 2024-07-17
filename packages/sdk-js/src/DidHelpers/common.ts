@@ -41,7 +41,7 @@ function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
   return new Error(`${err.type}: ${err.value.toHuman()}`)
 }
 
-function assertStatus(expected: string, actual: string): void {
+function assertStatus(expected: string, actual?: string): void {
   if (actual !== expected) {
     const getterName = `as${expected.slice(0, 1).toUpperCase()}${expected.slice(
       1
