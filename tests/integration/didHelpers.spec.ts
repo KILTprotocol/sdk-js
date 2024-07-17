@@ -7,6 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
+import { CType } from '@kiltprotocol/credentials'
 import { DidHelpers, disconnect } from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
@@ -322,6 +323,52 @@ describe('verification methods', () => {
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"authentication verification methods can not be removed"`
     )
+  }, 30_000)
+})
+
+describe('transact', () => {
+  let keypair: KeyringPair
+  let didDocument: DidDocument
+  beforeAll(async () => {
+    keypair = Crypto.makeKeypairFromUri('//Transact')
+    didDocument = (
+      await DidHelpers.createDid({
+        api,
+        signers: [keypair],
+        submitter: paymentAccount,
+        fromPublicKey: keypair,
+      }).submit()
+    ).asConfirmed.didDocument
+
+    didDocument = (
+      await DidHelpers.setVerificationMethod({
+        api,
+        signers: [keypair],
+        submitter: paymentAccount,
+        didDocument,
+        publicKey: keypair,
+        relationship: 'assertionMethod',
+      }).submit()
+    ).asConfirmed.didDocument
+  })
+
+  it('creates a ctype', async () => {
+    const ctype = CType.fromProperties('thing', { thang: { type: 'string' } })
+    const serialized = CType.toChain(ctype)
+    const call = api.tx.ctype.add(serialized)
+
+    const result = await DidHelpers.transact({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      call,
+      expectedEvents: [{ section: 'ctype', method: 'CTypeCreated' }],
+    }).submit()
+
+    expect(result.status).toStrictEqual('confirmed')
+    expect(result.asConfirmed.didDocument).toMatchObject(didDocument)
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 30_000)
 })
 
