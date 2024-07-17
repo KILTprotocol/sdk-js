@@ -114,7 +114,12 @@ export type SharedArguments = {
   submitter: KeyringPair | Blockchain.TransactionSigner
 }
 
+type PublicKeyAndType = {
+  publicKey: Uint8Array
+  type: KeyringPair['type'] | 'x25519'
+}
+
 export type AcceptedPublicKeyEncodings =
   | KeyMultibaseEncoded
   | { publicKeyMultibase: KeyMultibaseEncoded }
-  | Pick<KeyringPair, 'publicKey' | 'type'> // interface allows KeyringPair too
+  | PublicKeyAndType // interface allows KeyringPair too
