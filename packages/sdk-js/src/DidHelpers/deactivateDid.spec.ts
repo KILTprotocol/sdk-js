@@ -13,11 +13,11 @@ import {
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
 import { deactivateDid } from './deactivateDid.js'
-import { transact } from './transact.js'
+import { transactInternal } from './transact.js'
 
 jest.mock('./transact.js')
 
-const mockedTransact = jest.mocked(transact)
+const mockedTransact = jest.mocked(transactInternal)
 const mockedApi = ApiMocks.createAugmentedApi()
 
 describe('deactivate', () => {
@@ -50,8 +50,8 @@ describe('deactivate', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -64,7 +64,11 @@ describe('deactivate', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: { method: 'delete', section: 'did' },
     })
   })

@@ -5,18 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { authorizeTx, resolver } from '@kiltprotocol/did'
 import type { DidDocument, KiltKeyringPair } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { ConfigService } from '../index.js'
+import { SubmittableResult } from '@polkadot/api'
+
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
-import { transact } from './index.js'
-import { TransactionResult } from './interfaces.js'
 import { makeAttestationCreatedEvents } from '../../../../tests/testUtils/testData.js'
+import { ConfigService } from '../index.js'
+import { TransactionResult } from './interfaces.js'
+import { transact } from './transact.js'
 
 jest.mock('@kiltprotocol/did', () => {
   return {

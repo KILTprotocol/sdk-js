@@ -6,7 +6,7 @@
  */
 
 import type { SharedArguments, TransactionHandlers } from './interfaces.js'
-import { transact } from './transact.js'
+import { transactInternal } from './transact.js'
 
 /**
  * _Permanently_ deactivates the DID, removing all verification methods and services from its document.
@@ -18,9 +18,10 @@ import { transact } from './transact.js'
  */
 export function deactivateDid(options: SharedArguments): TransactionHandlers {
   const { api, didDocument } = options
-  return transact({
+  return transactInternal({
     ...options,
-    call: api.tx.did.delete(didDocument.service?.length ?? 0),
+    callFactory: async () =>
+      api.tx.did.delete(didDocument.service?.length ?? 0),
     expectedEvents: [{ section: 'did', method: 'DidDeleted' }],
   })
 }

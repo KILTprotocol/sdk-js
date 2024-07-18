@@ -12,11 +12,12 @@ import {
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
-import { claimWeb3Name, releaseWeb3Name, transact } from './index.js'
+import { transactInternal } from './transact.js'
+import { claimWeb3Name, releaseWeb3Name } from './w3names.js'
 
 jest.mock('./transact.js')
 
-const mockedTransact = jest.mocked(transact)
+const mockedTransact = jest.mocked(transactInternal)
 const mockedApi = ApiMocks.createAugmentedApi()
 
 describe('w3n', () => {
@@ -50,8 +51,8 @@ describe('w3n', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'web3Names',
@@ -64,7 +65,11 @@ describe('w3n', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: { args: { name: 'paul' }, method: 'claim', section: 'web3Names' },
     })
   })
@@ -78,8 +83,8 @@ describe('w3n', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'web3Names',
@@ -92,7 +97,11 @@ describe('w3n', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: { method: 'releaseByOwner', section: 'web3Names' },
     })
   })

@@ -6,7 +6,7 @@
  */
 
 import type { SharedArguments, TransactionHandlers } from './interfaces.js'
-import { transact } from './transact.js'
+import { transactInternal } from './transact.js'
 
 /**
  * Adds a w3n nickname to the DID Document.
@@ -22,9 +22,9 @@ export function claimWeb3Name(
   }
 ): TransactionHandlers {
   const { api, name } = options
-  return transact({
+  return transactInternal({
     ...options,
-    call: api.tx.web3Names.claim(name),
+    callFactory: async () => api.tx.web3Names.claim(name),
     expectedEvents: [{ section: 'web3Names', method: 'Web3NameClaimed' }],
   })
 }
@@ -37,9 +37,9 @@ export function claimWeb3Name(
  */
 export function releaseWeb3Name(options: SharedArguments): TransactionHandlers {
   const { api } = options
-  return transact({
+  return transactInternal({
     ...options,
-    call: api.tx.web3Names.releaseByOwner(),
+    callFactory: async () => api.tx.web3Names.releaseByOwner(),
     expectedEvents: [{ section: 'web3Names', method: 'Web3NameReleased' }],
   })
 }
