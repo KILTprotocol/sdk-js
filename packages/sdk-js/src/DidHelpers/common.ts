@@ -27,7 +27,6 @@ import type { Did, HexString } from '@kiltprotocol/types'
 
 import type {
   AcceptedPublicKeyEncodings,
-  KeyMultibaseEncoded,
   SharedArguments,
   TransactionHandlers,
   TransactionResult,
@@ -245,7 +244,7 @@ export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
     ;({ publicKey, keyType: type } = multibaseKeyToDidKey(pk))
   } else if ('publicKeyMultibase' in pk) {
     ;({ publicKey, keyType: type } = multibaseKeyToDidKey(
-      (pk as { publicKeyMultibase: KeyMultibaseEncoded }).publicKeyMultibase
+      pk.publicKeyMultibase
     ))
   } else if (
     'publicKey' in pk &&
