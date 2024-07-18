@@ -12,15 +12,15 @@ import {
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
+import { transactInternal } from './transact.js'
 import {
   removeVerificationMethod,
   setVerificationMethod,
 } from './verificationMethod.js'
-import { transact } from './transact.js'
 
 jest.mock('./transact.js')
 
-const mockedTransact = jest.mocked(transact)
+const mockedTransact = jest.mocked(transactInternal)
 const mockedApi = ApiMocks.createAugmentedApi()
 
 let didDocument: DidDocument
@@ -55,8 +55,8 @@ describe('signing keys', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -69,7 +69,11 @@ describe('signing keys', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: {
         section: 'did',
         method: 'setAttestationKey',
@@ -90,8 +94,8 @@ describe('signing keys', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -104,7 +108,11 @@ describe('signing keys', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: {
         section: 'did',
         method: 'removeAttestationKey',
@@ -120,13 +128,13 @@ describe('key agreement keys', () => {
       api: mockedApi,
       submitter: keypair,
       signers: [keypair],
-      publicKey: { publicKey: keypair.publicKey, type: 'x25519' } as any,
+      publicKey: { publicKey: keypair.publicKey, type: 'x25519' },
       relationship: 'keyAgreement',
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -139,7 +147,11 @@ describe('key agreement keys', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: {
         section: 'utility',
         method: 'batchAll',
@@ -165,13 +177,13 @@ describe('key agreement keys', () => {
       api: mockedApi,
       submitter: keypair,
       signers: [keypair],
-      publicKey: { publicKey: keypair.publicKey, type: 'x25519' } as any,
+      publicKey: { publicKey: keypair.publicKey, type: 'x25519' },
       relationship: 'keyAgreement',
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -184,7 +196,11 @@ describe('key agreement keys', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: {
         section: 'utility',
         method: 'batchAll',
@@ -217,8 +233,8 @@ describe('key agreement keys', () => {
     })
 
     expect(mockedTransact).toHaveBeenLastCalledWith(
-      expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-        call: expect.any(Object),
+      expect.objectContaining<Partial<Parameters<typeof transactInternal>[0]>>({
+        callFactory: expect.any(Function),
         expectedEvents: expect.arrayContaining([
           {
             section: 'did',
@@ -231,7 +247,11 @@ describe('key agreement keys', () => {
         signers: [keypair],
       })
     )
-    expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+    expect(
+      await mockedTransact.mock.lastCall?.[0]
+        .callFactory()
+        .then((f) => f.toHuman())
+    ).toMatchObject({
       method: {
         section: 'did',
         method: 'removeKeyAgreementKey',

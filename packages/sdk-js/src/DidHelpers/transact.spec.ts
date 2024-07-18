@@ -16,8 +16,8 @@ import {
 } from '../../../../tests/testUtils/index.js'
 import { makeAttestationCreatedEvents } from '../../../../tests/testUtils/testData.js'
 import { ConfigService } from '../index.js'
-import { transact } from './index.js'
 import { TransactionResult } from './interfaces.js'
+import { transact } from './transact.js'
 
 jest.mock('@kiltprotocol/did', () => {
   return {

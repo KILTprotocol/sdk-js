@@ -12,12 +12,12 @@ import {
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
-import { transact } from './index.js'
 import { addService, removeService } from './service.js'
+import { transactInternal } from './transact.js'
 
 jest.mock('./transact.js')
 
-const mockedTransact = jest.mocked(transact)
+const mockedTransact = jest.mocked(transactInternal)
 const mockedApi = ApiMocks.createAugmentedApi()
 
 describe.each(['#my_service', 'did:kilt:4abctest#my_service'])(
@@ -57,8 +57,10 @@ describe.each(['#my_service', 'did:kilt:4abctest#my_service'])(
       })
 
       expect(mockedTransact).toHaveBeenLastCalledWith(
-        expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-          call: expect.any(Object),
+        expect.objectContaining<
+          Partial<Parameters<typeof transactInternal>[0]>
+        >({
+          callFactory: expect.any(Function),
           expectedEvents: expect.arrayContaining([
             {
               section: 'did',
@@ -71,7 +73,11 @@ describe.each(['#my_service', 'did:kilt:4abctest#my_service'])(
           signers: [keypair],
         })
       )
-      expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+      expect(
+        await mockedTransact.mock.lastCall?.[0]
+          .callFactory()
+          .then((f) => f.toHuman())
+      ).toMatchObject({
         method: {
           args: {
             service_endpoint: {
@@ -96,8 +102,10 @@ describe.each(['#my_service', 'did:kilt:4abctest#my_service'])(
       })
 
       expect(mockedTransact).toHaveBeenLastCalledWith(
-        expect.objectContaining<Partial<Parameters<typeof transact>[0]>>({
-          call: expect.any(Object),
+        expect.objectContaining<
+          Partial<Parameters<typeof transactInternal>[0]>
+        >({
+          callFactory: expect.any(Function),
           expectedEvents: expect.arrayContaining([
             {
               section: 'did',
@@ -110,7 +118,11 @@ describe.each(['#my_service', 'did:kilt:4abctest#my_service'])(
           signers: [keypair],
         })
       )
-      expect(mockedTransact.mock.lastCall?.[0].call.toHuman()).toMatchObject({
+      expect(
+        await mockedTransact.mock.lastCall?.[0]
+          .callFactory()
+          .then((f) => f.toHuman())
+      ).toMatchObject({
         method: {
           args: {
             service_id: 'my_service',
