@@ -11,8 +11,9 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import type { KiltAddress, SubmittableExtrinsic } from '@kiltprotocol/types'
 
-import { checkResultImpl, submitImpl } from './common.js'
+import { submitImpl } from './common.js'
 import type { SharedArguments, TransactionHandlers } from './interfaces.js'
+import { checkResultImpl } from './checkResult.js'
 
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
