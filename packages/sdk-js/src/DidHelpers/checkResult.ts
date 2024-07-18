@@ -144,6 +144,7 @@ export async function checkResultImpl(
 
   // Case where `SubmittableResultValue` is provided.
   if ('status' in result) {
+    txEvents = result.events ?? []
     ;({ status, blockHash, blockNumber, error } = checkStatus(result))
   }
   // Case where block hash and tx hash are provided.
