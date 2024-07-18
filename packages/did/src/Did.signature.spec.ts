@@ -292,7 +292,7 @@ describe('full DID', () => {
         {
           controller: `did:kilt:${keypair.address}`,
           id: `did:kilt:${keypair.address}#0x12345`,
-          publicKeyMultibase: keypairToMultibaseKey(keypair),
+          publicKeyMultibase: keypairToMultibaseKey(keypair).publicKeyMultibase,
           type: 'Multikey',
         },
       ],

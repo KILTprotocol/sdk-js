@@ -39,10 +39,13 @@ import type {
   DidDocument,
   DidUrl,
   KeyringPair,
+  KiltKeyringPair,
+  MultibaseKeyPair,
   SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
 import { makeKeypairFromUri } from './Crypto.js'
+import { type KnownTypeString, encodeMultibaseKeypair } from './Multikey.js'
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
@@ -459,7 +462,10 @@ export function getPolkadotSigner(
       }
       const signature = await signer.sign({ data: signData })
       // The signature is expected to be a SCALE enum, we must add a type prefix representing the signature algorithm
-      const prefixed = u8aConcat(TYPE_PREFIX[signer.algorithm], signature)
+      const prefixed = u8aConcat(
+        TYPE_PREFIX[signer.algorithm as keyof typeof TYPE_PREFIX],
+        signature
+      )
       id += 1
       return {
         id,
@@ -469,20 +475,26 @@ export function getPolkadotSigner(
   }
 }
 
-export function generateKeypair<T extends string = 'ed25519'>(args?: {
-  seed?: string
-  type?: T
-}): Keypair & { type: T }
+/**
+ * Generates a Multikey encoded keypair from a seed or mnemonic.
+ *
+ * @param args Optional generator arguments.
+ * @param args.seed A 32 byte hex-encoded and 0x-prefixed seed or 12-word mnemonic, optionally postfixed with a derivation path (e.g., `//authentication-key`).
+ * This is case-insensitive.
+ * @param args.type A string indicating desired key type.
+ * @returns A pair of `publicKeyMultibase` & `secretKeyMultibase`.
+ */
 export function generateKeypair({
   seed = randomAsHex(32),
   type = 'ed25519',
 }: {
   seed?: string
-  type?: string
-} = {}): Keypair & { type: string } {
-  let typeForKeyring = type as KeyringPair['type']
+  type?: KnownTypeString
+} = {}): MultibaseKeyPair {
+  let typeForKeyring = type as KiltKeyringPair['type']
   switch (type.toLowerCase()) {
     case 'secp256k1':
+    case 'ethereum':
       typeForKeyring = 'ecdsa'
       break
     case 'x25519':
@@ -491,10 +503,8 @@ export function generateKeypair({
     default:
   }
 
-  const keyRingPair = makeKeypairFromUri(
-    seed.toLowerCase(),
-    typeForKeyring as any
-  )
+  const keyRingPair = makeKeypairFromUri(seed.toLowerCase(), typeForKeyring)
+
   const { secretKey, publicKey } = extractPk(keyRingPair)
-  return { secretKey, publicKey, type }
+  return encodeMultibaseKeypair({ publicKey, secretKey, type })
 }

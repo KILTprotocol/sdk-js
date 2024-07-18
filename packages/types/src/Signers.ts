@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Base58BtcMultibaseString, VerificationMethod } from './Did.js'
+
 export type SignerInterface<
   Alg extends string = string,
   Id extends string = string
@@ -13,3 +15,9 @@ export type SignerInterface<
   id: Id
   sign: (input: { data: Uint8Array }) => Promise<Uint8Array>
 }
+
+export type MultibasePublicKey = Pick<VerificationMethod, 'publicKeyMultibase'>
+export type MultibaseSecretKey = {
+  secretKeyMultibase: Base58BtcMultibaseString
+}
+export type MultibaseKeyPair = MultibasePublicKey & MultibaseSecretKey
