@@ -17,6 +17,7 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
+  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
@@ -29,13 +30,11 @@ import {
   createSigner as es256kSigner,
   cryptosuite as es256kSuite,
 } from '@kiltprotocol/es256k-jcs-2023'
-// import { decodeMultikeyVerificationMethod } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import {
   createSigner as sr25519Signer,
   cryptosuite as sr25519Suite,
 } from '@kiltprotocol/sr25519-jcs-2023'
 
-// import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
   DidUrl,
@@ -43,7 +42,7 @@ import type {
   SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
-
+import { makeKeypairFromUri } from './Crypto.js'
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
@@ -468,4 +467,34 @@ export function getPolkadotSigner(
       }
     },
   }
+}
+
+export function generateKeypair<T extends string = 'ed25519'>(args?: {
+  seed?: string
+  type?: T
+}): Keypair & { type: T }
+export function generateKeypair({
+  seed = randomAsHex(32),
+  type = 'ed25519',
+}: {
+  seed?: string
+  type?: string
+} = {}): Keypair & { type: string } {
+  let typeForKeyring = type as KeyringPair['type']
+  switch (type.toLowerCase()) {
+    case 'secp256k1':
+      typeForKeyring = 'ecdsa'
+      break
+    case 'x25519':
+      typeForKeyring = 'ed25519'
+      break
+    default:
+  }
+
+  const keyRingPair = makeKeypairFromUri(
+    seed.toLowerCase(),
+    typeForKeyring as any
+  )
+  const { secretKey, publicKey } = extractPk(keyRingPair)
+  return { secretKey, publicKey, type }
 }
