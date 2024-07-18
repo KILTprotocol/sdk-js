@@ -40,7 +40,7 @@
     "@digitalbazaar/multikey-context": "^2.0.1",
     "@digitalbazaar/security-context": "^1.0.1",
     "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.3",
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.4",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^12.0.0",
