@@ -162,7 +162,7 @@ export async function checkResultImpl(
   // Case where `SubmittableResultValue` is provided.
   if ('status' in result) {
     txEvents = result.events ?? []
-      ; ({ status, blockHash, blockNumber, error } = checkStatus(result))
+    ;({ status, blockHash, blockNumber, error } = checkStatus(result))
   }
   // Case where block hash and tx hash are provided.
   else if (
@@ -172,7 +172,7 @@ export async function checkResultImpl(
     typeof result.txHash === 'string'
   ) {
     // Set blockNumber, blockHash, and the transactionEvents.
-    ; ({ blockNumber, blockHash, txEvents } = await resolveBlockAndEvents(
+    ;({ blockNumber, blockHash, txEvents } = await resolveBlockAndEvents(
       result,
       api
     ))
@@ -190,10 +190,9 @@ export async function checkResultImpl(
     }
 
     const eventMatch = checkIfEventsMatch(expectedEvents, txEvents)
-    const isSuccess = !error && eventMatch
 
-    status = isSuccess ? 'confirmed' : 'failed'
-    if (!isSuccess && !error) {
+    status = !error && eventMatch ? 'confirmed' : 'failed'
+    if (!error && !eventMatch) {
       error = new Error('did not find expected events')
     }
   }
