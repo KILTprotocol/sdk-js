@@ -47,50 +47,45 @@ function checkEventsForErrors(
 
 // Note: returns `undefined` in the case of `status === "inBlock`.
 function checkStatus(result: SubmittableResultValue): {
-  status: TransactionResult['status'] | undefined
-  error: Error | undefined
-  blockHash: HexString | undefined
-  blockNumber: BigInt | undefined
+  status?: TransactionResult['status']
+  error?: Error
+  blockHash?: HexString
+  blockNumber?: BigInt
 } {
-  let status: TransactionResult['status'] | undefined
-  let blockHash
-  let blockNumber
-  let error
+  let blockNumber: BigInt | undefined
   switch (result.status.type) {
     case 'Finalized':
     case 'InBlock':
       // status must not be set here; this condition triggers a branch below
       // this is the block hash for both
-      status = undefined
-      blockHash = result.status.value.toHex()
       if ('blockNumber' in result) {
         blockNumber = (result.blockNumber as BlockNumber).toBigInt()
       }
-      break
+      return {
+        blockNumber,
+        blockHash: result.status.value.toHex(),
+      }
     case 'Dropped':
     case 'FinalityTimeout':
     case 'Invalid':
     case 'Usurped':
-      status = 'rejected'
-      error = new Error(result.status.type)
-      break
+      return {
+        status: 'rejected',
+        error: new Error(result.status.type),
+      }
     case 'Broadcast':
     case 'Future':
     case 'Ready':
     case 'Retracted':
-      status = 'unknown'
-      error = new Error(result.status.type)
-      break
+      return {
+        status: 'unknown',
+        error: new Error(result.status.type),
+      }
     default:
-      status = 'unknown'
-      error = new Error(`unknown tx status variant ${result.status.type}`)
-  }
-
-  return {
-    status,
-    error,
-    blockHash,
-    blockNumber,
+      return {
+        status: 'unknown',
+        error: new Error(`unknown tx status variant ${result.status.type}`),
+      }
   }
 }
 
