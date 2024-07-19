@@ -12,11 +12,30 @@ import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { BlockNumber } from '@polkadot/types/interfaces'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
-import type { FrameSystemEventRecord as EventRecord } from '@kiltprotocol/augment-api'
+import type {
+  FrameSystemEventRecord as EventRecord,
+  SpRuntimeDispatchError,
+} from '@kiltprotocol/augment-api'
 import { resolver as DidResolver, signersForDid } from '@kiltprotocol/did'
 import type { Did, HexString } from '@kiltprotocol/types'
 import type { SharedArguments, TransactionResult } from './interfaces.js'
-import { assertStatus, mapError } from './common.js'
+
+function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
+  if (err.isModule) {
+    const { docs, method, section } = api.registry.findMetaError(err.asModule)
+    return new Error(`${section}.${method}: ${docs}`)
+  }
+  return new Error(`${err.type}: ${err.value.toHuman()}`)
+}
+
+function assertStatus(expected: string, actual?: string): void {
+  if (actual !== expected) {
+    const getterName = `as${expected.slice(0, 1).toUpperCase()}${expected.slice(
+      1
+    )}`
+    throw new Error(`can't access '${getterName}' when status is '${actual}'`)
+  }
+}
 
 function checkEventsForErrors(
   api: ApiPromise,
@@ -56,12 +75,11 @@ function checkStatus(result: SubmittableResultValue): {
   switch (result.status.type) {
     case 'Finalized':
     case 'InBlock':
-      // status must not be set here; this condition triggers a branch below
-      // this is the block hash for both
       if ('blockNumber' in result) {
         blockNumber = (result.blockNumber as BlockNumber).toBigInt()
       }
       return {
+        status: undefined,
         blockNumber,
         blockHash: result.status.value.toHex(),
       }

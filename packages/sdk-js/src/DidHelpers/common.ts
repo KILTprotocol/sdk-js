@@ -8,8 +8,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 // functions in this file are not meant to be public
 
-import type { ApiPromise } from '@polkadot/api'
-import type { SpRuntimeDispatchError } from '@kiltprotocol/augment-api'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 
@@ -18,23 +16,6 @@ import type {
   SharedArguments,
   TransactionHandlers,
 } from './interfaces.js'
-
-export function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
-  if (err.isModule) {
-    const { docs, method, section } = api.registry.findMetaError(err.asModule)
-    return new Error(`${section}.${method}: ${docs}`)
-  }
-  return new Error(`${err.type}: ${err.value.toHuman()}`)
-}
-
-export function assertStatus(expected: string, actual?: string): void {
-  if (actual !== expected) {
-    const getterName = `as${expected.slice(0, 1).toUpperCase()}${expected.slice(
-      1
-    )}`
-    throw new Error(`can't access '${getterName}' when status is '${actual}'`)
-  }
-}
 
 export async function submitImpl(
   getSubmittable: TransactionHandlers['getSubmittable'],

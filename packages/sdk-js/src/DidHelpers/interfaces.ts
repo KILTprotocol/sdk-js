@@ -45,11 +45,6 @@ export interface TransactionResult {
     error: Error
     txHash: HexString
   }
-  // we may or may not add these, given that you can also disambiguate based on the status
-  // isConfirmed: boolean
-  // isFailed: boolean
-  // isRejected: boolean
-  // isUnknown: boolean
 }
 
 export interface TransactionHandlers {
