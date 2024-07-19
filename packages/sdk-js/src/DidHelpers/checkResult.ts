@@ -41,8 +41,8 @@ function checkEventsForErrors(
   api: ApiPromise,
   txEvents: EventRecord[] = []
 ): Error | undefined {
-  let error
-  txEvents.forEach(({ event }) => {
+  let error: Error | undefined
+  txEvents.some(({ event }) => {
     if (api.events.system.ExtrinsicFailed.is(event)) {
       error = mapError(event.data[0], api)
     } else if (api.events.proxy.ProxyExecuted.is(event)) {
@@ -60,6 +60,10 @@ function checkEventsForErrors(
     } else if (api.events.utility.BatchInterrupted.is(event)) {
       error = mapError(event.data[1], api)
     }
+    if (typeof error !== 'undefined') {
+      return true
+    }
+    return false
   })
   return error
 }
@@ -158,7 +162,7 @@ export async function checkResultImpl(
   // Case where `SubmittableResultValue` is provided.
   if ('status' in result) {
     txEvents = result.events ?? []
-    ;({ status, blockHash, blockNumber, error } = checkStatus(result))
+      ; ({ status, blockHash, blockNumber, error } = checkStatus(result))
   }
   // Case where block hash and tx hash are provided.
   else if (
@@ -168,7 +172,7 @@ export async function checkResultImpl(
     typeof result.txHash === 'string'
   ) {
     // Set blockNumber, blockHash, and the transactionEvents.
-    ;({ blockNumber, blockHash, txEvents } = await resolveBlockAndEvents(
+    ; ({ blockNumber, blockHash, txEvents } = await resolveBlockAndEvents(
       result,
       api
     ))
