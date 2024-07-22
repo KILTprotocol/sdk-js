@@ -47,6 +47,7 @@ export interface TransactionResult {
     error: Error
     txHash: HexString
   }
+    toJSON: () => any
 }
 
 export interface TransactionHandlers {

@@ -110,5 +110,9 @@ describe('transact', () => {
     const resultRebuiltObj = JSON.parse(resultStringified)
     expect(BigInt(resultRebuiltObj.block.number)).toBe(BigInt(1000))
     expect(typeof confirmed.block.number).toBe('bigint')
+    expect(result.toJSON()).toStrictEqual({
+      status: 'confirmed',
+      value: confirmed.toJSON(),
+    })
   })
 })

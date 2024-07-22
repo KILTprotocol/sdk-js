@@ -231,6 +231,7 @@ export async function checkResultImpl(
             ...clone.block,
             number: clone.block.number.toString(),
           }
+          delete clone.toJSON
           return clone
         },
       }
@@ -267,8 +268,40 @@ export async function checkResultImpl(
             ...clone.block,
             number: clone.block.number.toString(),
           }
+          delete clone.toJSON
           return clone
         },
+      }
+    },
+    toJSON() {
+      switch (status) {
+        case 'confirmed': {
+          return {
+            status,
+            value: (this as TransactionResult).asConfirmed.toJSON(),
+          }
+        }
+        case 'failed': {
+          return {
+            status,
+            value: (this as TransactionResult).asFailed.toJSON(),
+          }
+        }
+        case 'rejected': {
+          return {
+            status,
+            value: (this as TransactionResult).asRejected,
+          }
+        }
+        case 'unknown': {
+          return {
+            status,
+            value: (this as TransactionResult).asUnknown,
+          }
+        }
+        default: {
+          throw new Error('invalid status')
+        }
       }
     },
   }
