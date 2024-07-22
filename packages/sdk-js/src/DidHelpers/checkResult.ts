@@ -227,7 +227,10 @@ export async function checkResultImpl(
         events: txEvents.map(({ event }) => event),
         toJSON() {
           const clone = { ...this } as any
-          clone.block.number = clone.block.number.toString()
+          clone.block = {
+            number: clone.block.number.toString(),
+            hash: this.block.hash,
+          }
           return clone
         },
       }

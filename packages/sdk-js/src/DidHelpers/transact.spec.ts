@@ -102,7 +102,7 @@ describe('transact', () => {
         },
       }),
     })
-    // TODO move serialzation test to `checkResult.spec.ts` once created and 
+    // TODO move serialzation test to `checkResult.spec.ts` once created and
     // test the `asFailed` case.
     const confirmed = result.asConfirmed
     expect(typeof confirmed.block.number).toBe('bigint')
