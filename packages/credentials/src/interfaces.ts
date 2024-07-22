@@ -5,17 +5,28 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SignerInterface } from '@kiltprotocol/jcs-data-integrity-proofs-common'
-import type { Did, DidDocument } from '@kiltprotocol/types'
-import type { Proof, VerifiableCredential } from './V1/types'
+import type {
+  Base58BtcMultibaseString,
+  DidDocument,
+  KeyringPair,
+  SignerInterface,
+} from '@kiltprotocol/types'
+
 import type { IssueOpts } from './V1/KiltAttestationProofV1'
+import type { Proof, VerifiableCredential } from './V1/types'
 
 export type SecuredDocument = { proof: Proof[] | Proof }
 
 export interface HolderOptions {
-  did: Did
-  didDocument?: DidDocument
-  signers: SignerInterface[]
+  didDocument: DidDocument
+  signers: Array<
+    | SignerInterface
+    | KeyringPair
+    | {
+        secretKeyMultibase: Base58BtcMultibaseString
+        publicKeyMultibase: Base58BtcMultibaseString
+      }
+  >
 }
 
 export type IssuerOptions = HolderOptions & IssueOpts

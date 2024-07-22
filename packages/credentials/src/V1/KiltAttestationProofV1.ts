@@ -5,7 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { QueryableStorageEntry } from '@polkadot/api/types'
+import type { Option, u64, Vec } from '@polkadot/types'
+import type {
+  AccountId,
+  Extrinsic,
+  Hash,
+} from '@polkadot/types/interfaces/types.js'
+import type { IEventData } from '@polkadot/types/types'
 import {
+  hexToU8a,
   stringToU8a,
   u8aCmp,
   u8aConcatStrict,
@@ -19,40 +29,35 @@ import {
   encodeAddress,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import type { ApiPromise } from '@polkadot/api'
-import type { QueryableStorageEntry } from '@polkadot/api/types'
-import type { Option, u64, Vec } from '@polkadot/types'
-import type {
-  AccountId,
-  EventRecord,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces/types.js'
-import type { IEventData } from '@polkadot/types/types'
 
-import {
-  authorizeTx,
-  getFullDid,
-  validateDid,
-  fromChain,
-} from '@kiltprotocol/did'
-import { JsonSchema, SDKErrors, Caip19, Signers } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import {
+  authorizeTx,
+  fromChain,
+  getFullDid,
+  signersForDid,
+  validateDid,
+} from '@kiltprotocol/did'
 import type {
-  DidDocument,
   Did,
+  DidDocument,
+  HexString,
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignerInterface,
+  SharedArguments,
+  TransactionResult,
 } from '@kiltprotocol/types'
-import * as CType from '../ctype/index.js'
+import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
 
+import { CTypeLoader } from '../ctype/CTypeLoader.js'
+import * as CType from '../ctype/index.js'
+import { HolderOptions } from '../interfaces.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   validateStructure as validateCredentialStructure,
@@ -60,26 +65,25 @@ import {
 } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
-  jsonLdExpandCredentialSubject,
-  ExpandedContents,
-  delegationIdFromAttesterDelegation,
-  getDelegationNodeIdForCredential,
   assertMatchingConnection,
   credentialIdFromRootHash,
   credentialIdToRootHash,
-  KILT_CREDENTIAL_IRI_PREFIX,
+  delegationIdFromAttesterDelegation,
+  ExpandedContents,
+  getDelegationNodeIdForCredential,
+  jsonLdExpandCredentialSubject,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+  KILT_CREDENTIAL_IRI_PREFIX,
   spiritnetGenesisHash,
 } from './common.js'
+import { KiltRevocationStatusV1 } from './index.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
-import { CTypeLoader } from '../ctype/CTypeLoader.js'
-import { KiltRevocationStatusV1 } from './index.js'
 
 export type Interface = KiltAttestationProofV1
 
@@ -659,42 +663,55 @@ export function finalizeProof(
   }
 }
 
-export interface TransactionResult {
-  status: 'InBlock' | 'Finalized'
-  includedAt: { blockHash: Uint8Array; blockHeight?: BigInt; blockTime?: Date }
-  events?: EventRecord[]
+interface SimplifiedTransactionResult {
+  block: { hash: HexString }
 }
 
-type CustomHandlers = {
-  authorizeTx: (tx: Extrinsic) => Promise<Extrinsic>
-  submitTx: (tx: Extrinsic) => Promise<TransactionResult>
-}
-type SignersAndSubmitter = {
-  submitterAccount: KiltAddress
-  signers: readonly SignerInterface[]
-}
-export type IssueOpts =
-  | (CustomHandlers & Partial<SignersAndSubmitter>)
-  | (Partial<CustomHandlers> & SignersAndSubmitter)
+export type IssueOpts = {
+  submitter:
+    | KiltAddress
+    | ((
+        args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+          call: Extrinsic
+        }
+      ) => Promise<SimplifiedTransactionResult | TransactionResult>)
+} & Pick<HolderOptions, 'signers'>
 
-async function defaultTxSubmit(
-  tx: Extrinsic,
-  submitterAccount: KiltAddress,
-  signers: readonly SignerInterface[],
-  api: ApiPromise
-): Promise<TransactionResult> {
-  const extrinsic = api.tx(tx)
-  const signed = extrinsic.isSigned
-    ? extrinsic
-    : await extrinsic.signAsync(submitterAccount, {
-        signer: Signers.getPolkadotSigner(signers),
-      })
-  const result = await Blockchain.submitSignedTx(signed, {
+async function defaultTxSubmit({
+  didDocument,
+  call,
+  signers,
+  submitter,
+}: Omit<SharedArguments, 'submitter'> & {
+  call: Extrinsic
+  submitter: KiltAddress
+}): Promise<SimplifiedTransactionResult> {
+  let extrinsic = await authorizeTx(
+    didDocument,
+    call,
+    await signersForDid(didDocument, ...signers),
+    submitter
+  )
+
+  if (!extrinsic.isSigned) {
+    const accountSigners = (
+      await Promise.all(
+        signers.map((keypair) =>
+          'algorithm' in keypair
+            ? [keypair]
+            : Signers.getSignersForKeypair({ keypair })
+        )
+      )
+    ).flat()
+    extrinsic = await extrinsic.signAsync(submitter, {
+      signer: Signers.getPolkadotSigner(accountSigners),
+    })
+  }
+  const result = await Blockchain.submitSignedTx(extrinsic, {
     resolveOn: Blockchain.IS_FINALIZED,
   })
   const blockHash = result.status.asFinalized
-  const { events } = result
-  return { status: 'Finalized', includedAt: { blockHash }, events }
+  return { block: { hash: blockHash.toHex() } }
 }
 
 /**
@@ -715,7 +732,7 @@ async function defaultTxSubmit(
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
-  issuer: Did | DidDocument,
+  issuer: DidDocument,
   options: IssueOpts
 ): Promise<KiltCredentialV1> {
   const updatedCredential = {
@@ -726,47 +743,39 @@ export async function issue(
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
 
-  const {
+  const { signers, submitter } = options
+
+  const args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+    call: Extrinsic
+  } = {
+    didDocument: issuer,
     signers,
-    submitterAccount,
-    authorizeTx: customAuthorizeTx,
-    submitTx: customSubmitTx,
-    ...otherParams
-  } = options
+    api,
+    call,
+  }
+  const transactionPromise =
+    typeof submitter === 'function'
+      ? submitter(args)
+      : defaultTxSubmit({
+          ...args,
+          submitter,
+        })
 
-  if (
-    !(customAuthorizeTx && customSubmitTx) &&
-    !(signers && submitterAccount)
-  ) {
-    throw new Error(
-      '`signers` and `submitterAccount` are required options if authorizeTx or submitTx are not given'
-    )
+  let result = await transactionPromise
+  if ('status' in result) {
+    if (result.status !== 'confirmed') {
+      throw new SDKErrors.SDKError(
+        `Unexpected transaction status ${result.status}; the transaction should be "confirmed" for issuance to continue`
+      )
+    }
+    result = result.asConfirmed
   }
 
-  /* eslint-disable @typescript-eslint/no-non-null-assertion -- we've checked the appropriate combination of parameters above, but typescript does not follow */
-  const didSigned = customAuthorizeTx
-    ? await customAuthorizeTx(call)
-    : await authorizeTx(issuer, call, signers!, submitterAccount!, otherParams)
+  const blockHash = hexToU8a(result.block.hash)
 
-  const transactionPromise = customSubmitTx
-    ? customSubmitTx(didSigned)
-    : defaultTxSubmit(didSigned, submitterAccount!, signers!, api)
-  /* eslint-enable @typescript-eslint/no-non-null-assertion */
-
-  const {
-    status,
-    includedAt: { blockHash, blockTime },
-  } = await transactionPromise
-
-  if (status !== 'Finalized' && status !== 'InBlock') {
-    throw new SDKErrors.SDKError(
-      `Unexpected transaction status ${status}; the transaction should be "InBlock" or "Finalized" for issuance to continue`
-    )
-  }
-
-  const timestamp =
-    blockTime ??
-    new Date((await api.query.timestamp.now.at(blockHash)).toNumber())
+  const timestamp = new Date(
+    (await (await api.at(blockHash)).query.timestamp.now()).toNumber()
+  )
   return finalizeProof(updatedCredential, proof, {
     blockHash,
     timestamp,

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aEq } from '@polkadot/util'
+import { u8aEq, u8aToHex } from '@polkadot/util'
 import { base58Decode } from '@polkadot/util-crypto'
 import {
   Ed25519Signature2020,
@@ -132,6 +132,10 @@ jest.mocked(mockedApi.query.system.events).mockResolvedValue(
 jest
   .mocked(mockedApi.query.timestamp.now)
   .mockResolvedValue(mockedApi.createType('u64', timestamp.getTime()) as any)
+
+// jest
+//   .mocked(mockedApi.query.timestamp.now.at)
+//   .mockResolvedValue(mockedApi.createType('u64', timestamp.getTime()) as any)
 
 const emailCType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -455,19 +459,13 @@ describe('issuance', () => {
   }
   const transactionHandler: KiltAttestationProofV1.IssueOpts = {
     signers: [signer],
-    submitterAccount: attester,
-    submitTx: async () => {
+    submitter: async ({ call }) => {
+      txArgs = call.args
       return {
-        status: 'Finalized',
-        includedAt: {
-          blockHash,
-          blockTime: timestamp,
+        block: {
+          hash: u8aToHex(blockHash),
         },
       }
-    },
-    authorizeTx: async (tx) => {
-      txArgs = tx.args
-      return tx
     },
   }
   beforeEach(() => {
@@ -481,7 +479,7 @@ describe('issuance', () => {
     let newCred: Partial<KiltCredentialV1.Interface> =
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
-        issuer,
+        { id: issuer },
         transactionHandler
       )
     newCred = await vcjs.issue({
@@ -540,7 +538,7 @@ describe('issuance', () => {
       {
         ...toBeSigned,
       },
-      issuer,
+      { id: issuer },
       transactionHandler
     )
     newCred = (await vcjs.issue({

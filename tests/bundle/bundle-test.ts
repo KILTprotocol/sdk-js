@@ -281,9 +281,9 @@ async function runAll() {
   }
 
   const issued = await Issuer.issue(credential, {
-    did: alice.id,
-    signers: [...(await aliceSign(alice)), payerSigner],
-    submitterAccount: payerSigner.id,
+    didDocument: alice,
+    signers: [...aliceSign(alice), payerSigner],
+    submitter: payerSigner.id,
   })
   console.info('Credential issued')
 
@@ -312,8 +312,8 @@ async function runAll() {
   const presentation = await Holder.createPresentation(
     [derived],
     {
-      did: bob.id,
-      signers: await bobSign(bob),
+      didDocument: bob,
+      signers: bobSign(bob),
     },
     {},
     {

@@ -15,11 +15,11 @@ import { ConfigService } from '@kiltprotocol/config'
 import {
   CType,
   KiltAttestationProofV1,
+  KiltCredentialV1,
   KiltRevocationStatusV1,
   Types,
-  KiltCredentialV1,
 } from '@kiltprotocol/credentials'
-import type { DidDocument, Did, ICType } from '@kiltprotocol/types'
+import type { DidDocument, ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
@@ -208,7 +208,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    */
   public async anchorCredential(
     input: CredentialStub,
-    issuer: DidDocument | Did,
+    issuer: DidDocument,
     submissionOptions: Parameters<typeof KiltAttestationProofV1.issue>['2']
   ): Promise<Omit<KiltCredentialV1.Interface, 'proof'>> {
     const { credentialSubject, type } = input
