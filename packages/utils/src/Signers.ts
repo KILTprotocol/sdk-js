@@ -45,7 +45,11 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 import { makeKeypairFromUri } from './Crypto.js'
-import { type KnownTypeString, encodeMultibaseKeypair } from './Multikey.js'
+import {
+  type KnownTypeString,
+  decodeMultibaseKeypair,
+  encodeMultibaseKeypair,
+} from './Multikey.js'
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
@@ -229,25 +233,12 @@ export async function getSignersForKeypair<Id extends string>({
   type,
 }: {
   id?: Id
-  keypair:
-    | Keypair
-    | KeyringPair
-    | {
-        secretKeyMultibase: `z${string}`
-        publicKeyMultibase: `z${string}`
-      }
+  keypair: Keypair | KeyringPair | MultibaseKeyPair
   type?: string
 }): Promise<Array<SignerInterface<KnownAlgorithms, Id>>> {
   let pair: KeyringPair | (Keypair & { type: string })
   if ('publicKeyMultibase' in keypair) {
-    throw new Error('not implemented')
-    // const { publicKey, keyType } = multibaseKeyToDidKey(
-    //   keypair.publicKeyMultibase
-    // )
-    // const { publicKey: secretKey } = decodeMultikeyVerificationMethod({
-    //   publicKeyMultibase: keypair.secretKeyMultibase,
-    // })
-    // pair = { publicKey, secretKey, type: keyType }
+    pair = decodeMultibaseKeypair(keypair)
   } else if ('type' in keypair) {
     pair = keypair
   } else if (type) {

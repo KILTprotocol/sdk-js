@@ -60,14 +60,14 @@ function multibase58BtcKeyBytesEncoding(
 export function encodeMultibaseKeypair(
   args: Pick<KeyringPair, 'publicKey'> & {
     type: KnownTypeString
-  }
-): MultibasePublicKey
-export function encodeMultibaseKeypair(
-  args: Pick<KeyringPair, 'publicKey'> & {
-    type: KnownTypeString
     secretKey: Uint8Array
   }
 ): MultibaseKeyPair
+export function encodeMultibaseKeypair(
+  args: Pick<KeyringPair, 'publicKey'> & {
+    type: KnownTypeString
+  }
+): MultibasePublicKey
 /**
  * Calculate the Multikey representation of a keypair given its type and public/secret keys.
  *
@@ -118,6 +118,16 @@ const secretKeyPrefixes: Record<number, KeyTypeString> = {
   [MULTICODEC_SR25519_PREFIXES[1]]: 'sr25519',
 }
 
+export function decodeMultibaseKeypair(keypair: MultibaseKeyPair): Pick<
+  KeyringPair,
+  'publicKey'
+> & {
+  secretKey: Uint8Array
+  type: KeyTypeString
+}
+export function decodeMultibaseKeypair(
+  keyPairPublicKey: MultibasePublicKey
+): Pick<KeyringPair, 'publicKey'> & { type: KeyTypeString }
 /**
  * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
  *
