@@ -5,25 +5,22 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
 import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, IMethod } from '@polkadot/types/types'
 import type { BN } from '@polkadot/util'
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
 import type * as _ from '@kiltprotocol/augment-api'
 import type {
   ISubmittableResult,
   KeyringPair,
-  KiltAddress,
-  SignerInterface,
   SubmittableExtrinsic,
   SubscriptionPromise,
+  TransactionSigner,
 } from '@kiltprotocol/types'
-
-import { SubmittableResult } from '@polkadot/api'
-
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
 
@@ -169,11 +166,6 @@ export async function submitSignedTx(
 }
 
 export const dispatchTx = submitSignedTx
-
-export type TransactionSigner = SignerInterface<
-  'Ecrecover-Secp256k1-Blake2b' | 'Sr25519' | 'Ed25519',
-  KiltAddress
->
 
 /**
  * Signs a SubmittableExtrinsic.

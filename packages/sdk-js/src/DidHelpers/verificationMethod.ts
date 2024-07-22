@@ -15,14 +15,12 @@ import type {
   DidUrl,
   SubmittableExtrinsic,
   VerificationRelationship,
+  DidHelpersAcceptedPublicKeyEncodings,
+  SharedArguments,
+  TransactionHandlers,
 } from '@kiltprotocol/types'
 
 import { convertPublicKey } from './common.js'
-import type {
-  AcceptedPublicKeyEncodings,
-  SharedArguments,
-  TransactionHandlers,
-} from './interfaces.js'
 import { transactInternal } from './transact.js'
 
 /**
@@ -36,7 +34,7 @@ import { transactInternal } from './transact.js'
  */
 export function setVerificationMethod(
   options: SharedArguments & {
-    publicKey: AcceptedPublicKeyEncodings
+    publicKey: DidHelpersAcceptedPublicKeyEncodings
     relationship: VerificationRelationship
   }
 ): TransactionHandlers {

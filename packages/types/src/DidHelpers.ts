@@ -5,17 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
-import type { SubmittableResultValue } from '@polkadot/api/types'
-import type { GenericEvent } from '@polkadot/types'
-
-import type { Blockchain } from '@kiltprotocol/chain-helpers'
+import type { DidDocument } from './Did'
 import type {
-  DidDocument,
+  ApiPromise,
+  GenericEvent,
   HexString,
   KeyringPair,
-  SignerInterface,
-} from '@kiltprotocol/types'
+  SubmittableResultValue,
+} from './Imported'
+import type { SignerInterface, TransactionSigner } from './Signers'
 
 export interface TransactionResult {
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
@@ -94,7 +92,7 @@ type Base58Btc = string
 /** Multibase encoding of a public- or private key including multicodec variant flag. */
 export type KeyMultibaseEncoded = `z${Base58Btc}`
 
-export type AcceptedSigners =
+export type DidHelpersAcceptedSigners =
   | SignerInterface
   | KeyringPair
   | {
@@ -105,8 +103,8 @@ export type AcceptedSigners =
 export type SharedArguments = {
   didDocument: DidDocument
   api: ApiPromise
-  signers: AcceptedSigners[]
-  submitter: KeyringPair | Blockchain.TransactionSigner
+  signers: DidHelpersAcceptedSigners[]
+  submitter: KeyringPair | TransactionSigner
 }
 
 type PublicKeyAndType = {
@@ -114,7 +112,7 @@ type PublicKeyAndType = {
   type: KeyringPair['type'] | 'x25519'
 }
 
-export type AcceptedPublicKeyEncodings =
+export type DidHelpersAcceptedPublicKeyEncodings =
   | KeyMultibaseEncoded
   | { publicKeyMultibase: KeyMultibaseEncoded }
   | PublicKeyAndType // interface allows KeyringPair too

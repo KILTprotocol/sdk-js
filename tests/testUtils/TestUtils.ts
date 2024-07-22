@@ -16,6 +16,7 @@ import type {
   KiltKeyringPair,
   SignerInterface,
   SubmittableExtrinsic,
+  TransactionSigner,
   UriFragment,
   VerificationMethod,
   VerificationRelationship,
@@ -422,7 +423,7 @@ export async function getStoreTxFromDidDocument(
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
-  payer: KiltKeyringPair | Blockchain.TransactionSigner,
+  payer: KiltKeyringPair | TransactionSigner,
   lightDidForId: DidDocument,
   signer: StoreDidCallback
 ): Promise<DidDocument> {

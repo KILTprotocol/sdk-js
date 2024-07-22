@@ -5,17 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { KiltKeyringPair } from '@kiltprotocol/types'
+import { resolver } from '@kiltprotocol/did'
+import type { KiltKeyringPair, TransactionResult } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { SubmittableResult } from '@polkadot/api'
-import { resolver } from '@kiltprotocol/did'
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
 } from '../../../../tests/testUtils/index.js'
 import { ConfigService } from '../index.js'
 import { createDid } from './createDid.js'
-import { TransactionResult } from './interfaces.js'
 
 const mockedApi = ApiMocks.createAugmentedApi()
 jest.mock('@kiltprotocol/did', () => {

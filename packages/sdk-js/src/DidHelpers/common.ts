@@ -12,10 +12,10 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 
 import type {
-  AcceptedPublicKeyEncodings,
+  DidHelpersAcceptedPublicKeyEncodings,
   SharedArguments,
   TransactionHandlers,
-} from './interfaces.js'
+} from '@kiltprotocol/types'
 
 export async function submitImpl(
   getSubmittable: TransactionHandlers['getSubmittable'],
@@ -40,7 +40,7 @@ export async function submitImpl(
   return submittable.checkResult(result)
 }
 
-export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
+export function convertPublicKey(pk: DidHelpersAcceptedPublicKeyEncodings): {
   publicKey: Uint8Array
   type: string
 } {

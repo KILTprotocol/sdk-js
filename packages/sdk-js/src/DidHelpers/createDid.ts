@@ -12,16 +12,17 @@ import {
   type NewDidVerificationKey,
   signingMethodTypes,
 } from '@kiltprotocol/did'
-import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
+import type {
+  DidHelpersAcceptedPublicKeyEncodings,
+  KiltAddress,
+  SharedArguments,
+  SignerInterface,
+  TransactionHandlers,
+} from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
 import { checkResultImpl } from './checkResult.js'
 
 import { convertPublicKey, submitImpl } from './common.js'
-import type {
-  AcceptedPublicKeyEncodings,
-  SharedArguments,
-  TransactionHandlers,
-} from './interfaces.js'
 
 function implementsSignerInterface(input: any): input is SignerInterface {
   return 'algorithm' in input && 'id' in input && 'sign' in input
@@ -36,7 +37,7 @@ function implementsSignerInterface(input: any): input is SignerInterface {
  */
 export function createDid(
   options: Omit<SharedArguments, 'didDocument'> & {
-    fromPublicKey: AcceptedPublicKeyEncodings
+    fromPublicKey: DidHelpersAcceptedPublicKeyEncodings
   }
 ): TransactionHandlers {
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (

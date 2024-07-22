@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SharedArguments, TransactionHandlers } from './interfaces.js'
+import type { SharedArguments, TransactionHandlers } from '@kiltprotocol/types'
 import { transactInternal } from './transact.js'
 
 /**
