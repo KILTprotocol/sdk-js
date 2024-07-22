@@ -216,13 +216,7 @@ export async function signAndSubmitTx(
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
 ): Promise<ISubmittableResult> {
-  const signedTx =
-    'address' in signer
-      ? await tx.signAsync(signer, { tip })
-      : await tx.signAsync(signer.id, {
-          tip,
-          signer: Signers.getPolkadotSigner([signer]),
-        })
+  const signedTx = await signTx(tx, signer, { tip })
   return submitSignedTx(signedTx, opts)
 }
 
