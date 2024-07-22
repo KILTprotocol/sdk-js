@@ -14,8 +14,9 @@ import {
 } from '@kiltprotocol/did'
 import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
+import { checkResultImpl } from './checkResult.js'
 
-import { checkResultImpl, convertPublicKey, submitImpl } from './common.js'
+import { convertPublicKey, submitImpl } from './common.js'
 import type {
   AcceptedPublicKeyEncodings,
   SharedArguments,
