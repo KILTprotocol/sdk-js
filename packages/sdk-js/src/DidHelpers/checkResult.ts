@@ -228,8 +228,8 @@ export async function checkResultImpl(
         toJSON() {
           const clone = { ...this } as any
           clone.block = {
+            ...clone.block,
             number: clone.block.number.toString(),
-            hash: this.block.hash,
           }
           return clone
         },
