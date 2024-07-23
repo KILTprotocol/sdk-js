@@ -127,6 +127,9 @@ type DecodedVerificationMethod = {
   keyType: DidVerificationMethodType
 }
 
+const KEY_LENGTH_ECDSA = 33
+const KEY_LENGTH_OTHER = 32
+
 /**
  * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
  *
@@ -139,7 +142,8 @@ export function multibaseKeyToDidKey(
   const { publicKey, type } = Multikey.decodeMultibaseKeypair({
     publicKeyMultibase,
   })
-  const expectedPublicKeyLength = type === 'secp256k1' ? 33 : 32
+  const expectedPublicKeyLength =
+    type === 'secp256k1' ? KEY_LENGTH_ECDSA : KEY_LENGTH_OTHER
   if (publicKey.length !== expectedPublicKeyLength) {
     throw new SDKErrors.DidError(
       `Key of type "${type}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${publicKey.length} bytes long instead.`
@@ -254,7 +258,8 @@ export function getAddressFromVerificationMethod({
 
   // Otherwise it’s ecdsa.
   // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
-  const address = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+  const address =
+    publicKey.length > KEY_LENGTH_OTHER ? blake2AsU8a(publicKey) : publicKey
   return encodeAddress(address, ss58Format)
 }
 
