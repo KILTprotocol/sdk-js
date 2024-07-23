@@ -73,7 +73,7 @@ describe('transact', () => {
       expectedEvents: [
         { section: 'attestation', method: 'AttestationCreated' },
       ],
-    }).getSubmittable({ signSubmittable: false })
+    }).getSubmittable()
 
     expect(txHex).toContain('0x')
     const parsed = mockedApi.tx(txHex)
@@ -114,5 +114,50 @@ describe('transact', () => {
       status: 'confirmed',
       value: confirmed.toJSON(),
     })
+  })
+
+  it('creates a signed submittable', async () => {
+    const { txHex } = await transact({
+      didDocument,
+      api: mockedApi,
+      submitter: keypair,
+      signers: [keypair],
+      call: mockedApi.tx.attestation.add(
+        new Uint8Array(32).fill(1),
+        new Uint8Array(32).fill(1),
+        null
+      ),
+      expectedEvents: [
+        { section: 'attestation', method: 'AttestationCreated' },
+      ],
+    }).getSubmittable({ signSubmittable: true })
+
+    expect(txHex).toContain('0x')
+    const parsed = mockedApi.tx(txHex)
+    expect(parsed.method).toHaveProperty('section', 'did')
+    expect(parsed.method).toHaveProperty('method', 'submitDidCall')
+    // todo check signature?
+  })
+
+  it('creates an unsigned submittable', async () => {
+    const { txHex } = await transact({
+      didDocument,
+      api: mockedApi,
+      submitter: keypair.address,
+      signers: [keypair],
+      call: mockedApi.tx.attestation.add(
+        new Uint8Array(32).fill(1),
+        new Uint8Array(32).fill(1),
+        null
+      ),
+      expectedEvents: [
+        { section: 'attestation', method: 'AttestationCreated' },
+      ],
+    }).getSubmittable({ signSubmittable: false })
+
+    expect(txHex).toContain('0x')
+    const parsed = mockedApi.tx(txHex)
+    expect(parsed.method).toHaveProperty('section', 'did')
+    expect(parsed.method).toHaveProperty('method', 'submitDidCall')
   })
 })

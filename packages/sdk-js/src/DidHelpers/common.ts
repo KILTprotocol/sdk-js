@@ -10,6 +10,9 @@
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { multibaseKeyToDidKey } from '@kiltprotocol/did'
+import { KeyringPair, KiltAddress, MultibaseKeyPair } from '@kiltprotocol/types'
+import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
+import { TransactionSigner } from 'chain-helpers/src/blockchain/Blockchain.js'
 
 import type {
   AcceptedPublicKeyEncodings,
@@ -24,7 +27,10 @@ export async function submitImpl(
     awaitFinalized?: boolean
   }
 ): ReturnType<TransactionHandlers['submit']> {
-  const submittable = await getSubmittable(options)
+  const submittable = await getSubmittable({
+    ...options,
+    signSubmittable: true,
+  })
 
   const { awaitFinalized = true } = options
   const result = await Blockchain.submitSignedTx(
@@ -62,4 +68,53 @@ export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
     throw new Error('invalid public key')
   }
   return { publicKey, type }
+}
+
+export function extractSubmitterSignerAndAccount(
+  submitter:
+    | KeyringPair
+    | Blockchain.TransactionSigner
+    | MultibaseKeyPair
+    | KiltAddress
+): {
+  submitterSigner: TransactionSigner | KeyringPair | undefined
+  submitterAccount: KiltAddress
+} {
+  let submitterSigner: TransactionSigner | KeyringPair | undefined
+  let submitterAccount: KiltAddress
+
+  // KiltAddress
+  if (typeof submitter === 'string') {
+    submitterAccount = submitter
+  }
+  // KeyringPair
+  else if ('address' in submitter) {
+    submitterAccount = submitter.address as KiltAddress
+    submitterSigner = submitter
+  }
+  // Blockchain.TransactionSigner
+  else if ('id' in submitter) {
+    submitterAccount = submitter.id as KiltAddress
+    submitterSigner = submitter
+  }
+  // MultibaseKeyPair
+  else if ('publicKeyMultibase' in submitter) {
+    submitterAccount = Crypto.encodeAddress(
+      Multikey.decodeMultibaseKeypair(submitter).publicKey,
+      38
+    )
+    const keypair = Multikey.decodeMultibaseKeypair(submitter)
+    if (keypair.type === 'x25519') {
+      throw new Error('x25519 keys are not supported')
+    }
+    const keyring = new Keyring().createFromPair(
+      keypair,
+      undefined,
+      keypair.type === 'secp256k1' ? 'ecdsa' : keypair.type
+    )
+    submitterSigner = keyring
+  } else {
+    throw new Error('type of submitter is invalid')
+  }
+  return { submitterSigner, submitterAccount }
 }

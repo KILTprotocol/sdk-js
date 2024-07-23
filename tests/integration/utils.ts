@@ -110,7 +110,7 @@ export const devBob = Crypto.makeKeypairFromUri('//Bob')
 export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
-  return encodeAddress(randomAsU8a())
+  return encodeAddress(randomAsU8a()) as KiltAddress
 }
 
 export async function isCtypeOnChain(cType: ICType): Promise<boolean> {

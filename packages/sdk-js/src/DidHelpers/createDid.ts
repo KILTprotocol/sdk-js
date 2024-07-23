@@ -12,11 +12,15 @@ import {
   type NewDidVerificationKey,
   signingMethodTypes,
 } from '@kiltprotocol/did'
-import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
+import type { SignerInterface } from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
 import { checkResultImpl } from './checkResult.js'
 
-import { convertPublicKey, submitImpl } from './common.js'
+import {
+  convertPublicKey,
+  extractSubmitterSignerAndAccount,
+  submitImpl,
+} from './common.js'
 import type {
   AcceptedPublicKeyEncodings,
   SharedArguments,
@@ -43,15 +47,14 @@ export function createDid(
     submitOptions = {}
   ) => {
     const { fromPublicKey, submitter, signers, api } = options
-    const { signSubmittable = true } = submitOptions
+    const { signSubmittable = false } = submitOptions
     const { publicKey, type } = convertPublicKey(fromPublicKey)
 
     if (!signingMethodTypes.includes(type)) {
       throw new Error(`unknown key type ${type}`)
     }
-    const submitterAccount = (
-      'address' in submitter ? submitter.address : submitter.id
-    ) as KiltAddress
+    const { submitterSigner, submitterAccount } =
+      extractSubmitterSignerAndAccount(submitter)
 
     const accountSigners = (
       await Promise.all(
@@ -76,7 +79,10 @@ export function createDid(
     )
 
     if (signSubmittable) {
-      didCreation = await Blockchain.signTx(didCreation, submitter)
+      if (typeof submitterSigner === 'undefined') {
+        throw new Error('submitter does not include a secret key')
+      }
+      didCreation = await Blockchain.signTx(didCreation, submitterSigner)
     }
 
     return {

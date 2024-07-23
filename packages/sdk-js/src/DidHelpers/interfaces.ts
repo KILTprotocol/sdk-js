@@ -8,12 +8,12 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { GenericEvent } from '@polkadot/types'
-
 import type { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   DidDocument,
   HexString,
   KeyringPair,
+  KiltAddress,
   MultibaseKeyPair,
   MultibasePublicKey,
   SignerInterface,
@@ -101,7 +101,11 @@ export type SharedArguments = {
   didDocument: DidDocument
   api: ApiPromise
   signers: AcceptedSigners[]
-  submitter: KeyringPair | Blockchain.TransactionSigner
+  submitter:
+    | KeyringPair
+    | Blockchain.TransactionSigner
+    | MultibaseKeyPair
+    | KiltAddress
 }
 
 type PublicKeyAndType = {
