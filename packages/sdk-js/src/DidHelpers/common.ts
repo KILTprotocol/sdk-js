@@ -10,7 +10,11 @@
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { multibaseKeyToDidKey } from '@kiltprotocol/did'
-import { KeyringPair, KiltAddress, MultibaseKeyPair } from '@kiltprotocol/types'
+import type {
+  KeyringPair,
+  KiltAddress,
+  MultibaseKeyPair,
+} from '@kiltprotocol/types'
 import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
 import { TransactionSigner } from 'chain-helpers/src/blockchain/Blockchain.js'
 
