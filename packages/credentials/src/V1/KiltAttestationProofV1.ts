@@ -45,19 +45,21 @@ import {
 } from '@kiltprotocol/did'
 import type {
   Did,
-  DidDocument,
-  HexString,
   ICType,
   IDelegationNode,
   KiltAddress,
   SharedArguments,
-  TransactionResult,
 } from '@kiltprotocol/types'
 import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import { CTypeLoader } from '../ctype/CTypeLoader.js'
 import * as CType from '../ctype/index.js'
-import { HolderOptions } from '../interfaces.js'
+import {
+  IssuerOptions,
+  SimplifiedTransactionResult,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  SubmitOverride,
+} from '../interfaces.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   validateStructure as validateCredentialStructure,
@@ -663,20 +665,6 @@ export function finalizeProof(
   }
 }
 
-interface SimplifiedTransactionResult {
-  block: { hash: HexString }
-}
-
-export type IssueOpts = {
-  submitter:
-    | KiltAddress
-    | ((
-        args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
-          call: Extrinsic
-        }
-      ) => Promise<SimplifiedTransactionResult | TransactionResult>)
-} & Pick<HolderOptions, 'signers'>
-
 async function defaultTxSubmit({
   didDocument,
   call,
@@ -719,36 +707,30 @@ async function defaultTxSubmit({
  * Creates a complete {@link KiltAttestationProofV1} for issuing a new credential.
  *
  * @param credential A {@link KiltCredentialV1} for which a proof shall be created.
- * @param issuer The DID or DID Document of the DID acting as the issuer.
- * @param options Additional parameters.
- * @param options.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).
- * This can be omitted if both a custom authorizeTx & submitTx are given.
- * @param options.submitterAccount The account which counter-signs the transaction to cover the transaction fees.
- * Can be omitted if both a custom authorizeTx & submitTx are given.
- * @param options.authorizeTx Allows overriding the function that takes a transaction and adds authorization by signing it with keys associated with the issuer DID.
- * @param options.submitTx Allows overriding the function that takes the DID-signed transaction and submits it to a blockchain node, tracking its inclusion in a block.
- * It is expected to at least return the hash of the block at which the transaction was processed.
+ * @param issuer Parameters describing the credential issuer.
+ * @param issuer.didDocument The DID Document of the DID acting as the issuer.
+ * @param issuer.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).
+ * @param issuer.submitter Either the account which counter-signs the transaction to cover the transaction fees,
+ * _OR_ a user-provided implementation did-authorization and submitting logic following the {@link SubmitOverride} interface.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
-  issuer: DidDocument,
-  options: IssueOpts
+  issuer: IssuerOptions
 ): Promise<KiltCredentialV1> {
+  const { didDocument, signers, submitter } = issuer
   const updatedCredential = {
     ...credential,
-    issuer: typeof issuer === 'string' ? issuer : issuer.id,
+    issuer: didDocument.id,
   }
   const [proof, callArgs] = initializeProof(updatedCredential)
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
 
-  const { signers, submitter } = options
-
   const args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
     call: Extrinsic
   } = {
-    didDocument: issuer,
+    didDocument,
     signers,
     api,
     call,

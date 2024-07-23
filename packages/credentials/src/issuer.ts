@@ -13,6 +13,8 @@ import type { UnsignedVc, VerifiableCredential } from './V1/types.js'
 import type { CTypeLoader } from './ctype/index.js'
 import type { IssuerOptions } from './interfaces.js'
 
+export type { IssuerOptions }
+
 /**
  * Creates a new credential document as a basis for issuing a credential.
  * This document can be shown to users as a preview or be extended with additional properties before moving on to the second step of credential issuance:
@@ -120,11 +122,8 @@ export async function issue(
   switch (proofType) {
     case undefined:
     case KiltAttestationProofV1.PROOF_TYPE: {
-      const { didDocument } = issuer
-
       const cred = await KiltAttestationProofV1.issue(
         credential as KiltCredentialV1.Interface,
-        didDocument,
         issuer
       )
 

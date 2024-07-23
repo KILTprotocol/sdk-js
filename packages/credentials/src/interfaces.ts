@@ -5,31 +5,41 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Extrinsic } from '@polkadot/types/interfaces'
+
 import type {
-  Base58BtcMultibaseString,
   DidDocument,
-  KeyringPair,
-  SignerInterface,
+  DidHelpersAcceptedSigners,
+  HexString,
+  KiltAddress,
+  SharedArguments,
+  TransactionResult,
 } from '@kiltprotocol/types'
 
-import type { IssueOpts } from './V1/KiltAttestationProofV1'
 import type { Proof, VerifiableCredential } from './V1/types'
 
 export type SecuredDocument = { proof: Proof[] | Proof }
 
 export interface HolderOptions {
   didDocument: DidDocument
-  signers: Array<
-    | SignerInterface
-    | KeyringPair
-    | {
-        secretKeyMultibase: Base58BtcMultibaseString
-        publicKeyMultibase: Base58BtcMultibaseString
-      }
-  >
+  signers: DidHelpersAcceptedSigners[]
 }
 
-export type IssuerOptions = HolderOptions & IssueOpts
+export interface SimplifiedTransactionResult {
+  block: { hash: HexString }
+}
+
+export type SubmitOverride = (
+  args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+    call: Extrinsic
+  }
+) => Promise<SimplifiedTransactionResult | TransactionResult>
+
+interface SubmitterAddressOrOverride {
+  submitter: KiltAddress | SubmitOverride
+}
+
+export type IssuerOptions = HolderOptions & SubmitterAddressOrOverride
 
 export interface VerificationResult {
   verified: boolean

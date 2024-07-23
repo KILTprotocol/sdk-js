@@ -36,6 +36,7 @@ import {
   KiltCredentialV1,
   Types,
   W3C_CREDENTIAL_CONTEXT_URL,
+  type Issuer,
 } from '@kiltprotocol/credentials'
 
 import {
@@ -453,7 +454,8 @@ describe('issuance', () => {
     algorithm: 'Sr25519',
     id: `${issuer}#1`,
   }
-  const transactionHandler: KiltAttestationProofV1.IssueOpts = {
+  const issuerOptions: Issuer.IssuerOptions = {
+    didDocument,
     signers: [signer],
     submitter: async ({ call }) => {
       txArgs = call.args
@@ -473,11 +475,7 @@ describe('issuance', () => {
 
   it('issues a credential via vc-js', async () => {
     let newCred: Partial<KiltCredentialV1.Interface> =
-      await issuanceSuite.anchorCredential(
-        { ...toBeSigned },
-        { id: issuer },
-        transactionHandler
-      )
+      await issuanceSuite.anchorCredential({ ...toBeSigned }, issuerOptions)
     newCred = await vcjs.issue({
       credential: newCred,
       suite: issuanceSuite,
@@ -534,8 +532,7 @@ describe('issuance', () => {
       {
         ...toBeSigned,
       },
-      { id: issuer },
-      transactionHandler
+      issuerOptions
     )
     newCred = (await vcjs.issue({
       credential: {

@@ -19,7 +19,7 @@ import {
   KiltRevocationStatusV1,
   Types,
 } from '@kiltprotocol/credentials'
-import type { DidDocument, ICType } from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
 
 import { Caip2 } from '@kiltprotocol/utils'
 import type { DocumentLoader, JsonLdObj } from '../documentLoader.js'
@@ -201,15 +201,13 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
    * You can then add a proof about the successful attestation to the credential using `createProof`.
    *
    * @param input A partial {@link KiltCredentialV1} `credentialSubject` is required.
-   * @param issuer The DID Document or, alternatively, the DID of the issuer.
-   * @param submissionOptions Authorization and submission handlers, or alternatively signers, to be passed to {@link KiltAttestationProofV1.issue | issue} for authorizing the on-chain anchoring of the credential with the issuer's signature.
+   * @param issuer Parameters describing the credential issuer, such as the issuer's `didDocument` and `signers`, to be passed to {@link KiltAttestationProofV1.issue | issue}.
    *
    * @returns A copy of the input updated to fit the {@link KiltCredentialV1} and to align with the attestation record (concerns, e.g., the `issuanceDate` which is set to the block time at which the credential was anchored).
    */
   public async anchorCredential(
     input: CredentialStub,
-    issuer: DidDocument,
-    submissionOptions: Parameters<typeof KiltAttestationProofV1.issue>['2']
+    issuer: Parameters<typeof KiltAttestationProofV1.issue>['1']
   ): Promise<Omit<KiltCredentialV1.Interface, 'proof'>> {
     const { credentialSubject, type } = input
 
@@ -239,8 +237,7 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
 
     const { proof, ...credential } = await KiltAttestationProofV1.issue(
       credentialStub,
-      issuer,
-      submissionOptions
+      issuer
     )
 
     this.attestationInfo.set(credential.id, proof)
