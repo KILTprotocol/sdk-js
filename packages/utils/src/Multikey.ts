@@ -57,34 +57,46 @@ function multibase58BtcKeyBytesEncoding(
   return `z${base58BtcEncodedKey}`
 }
 
-export function encodeMultibaseKeypair(
-  args: Pick<KeyringPair, 'publicKey'> & {
-    type: KnownTypeString
-    secretKey: Uint8Array
-  }
-): MultibaseKeyPair
-export function encodeMultibaseKeypair(
-  args: Pick<KeyringPair, 'publicKey'> & {
-    type: KnownTypeString
-  }
-): MultibasePublicKey
+type TypedKeypairWithOptionalSecretKey<KeyTypes extends string> = {
+  publicKey: Uint8Array
+  secretKey?: Uint8Array
+  type: KeyTypes
+}
+
+type TypedKeypair<KeyTypes extends string> = Required<
+  TypedKeypairWithOptionalSecretKey<KeyTypes>
+>
+
 /**
  * Create a Multikey representation of a keypair, encoded in multibase-base58-btc, given its type and public/secret keys.
  *
  * @param keypair The input keypair to encode as Multikey.
  * @param keypair.type The keypair type indicated by a type string.
- * @param keypair.publicKey The keypair public key.
- * @param keypair.secretKey Optionally, the keypair's secret key.
+ * @param keypair.publicKey The keypair's public key bytes.
+ * @param keypair.secretKey The keypair's secret key bytes.
  * @returns The Multikey representation (i.e., multicodec-prefixed, then base58-btc multibase encoded) of the provided keypair.
  */
+export function encodeMultibaseKeypair(
+  args: TypedKeypair<KnownTypeString>
+): MultibaseKeyPair
+/**
+ * Create a Multikey representation of a keypair's public key, encoded in multibase-base58-btc, given its type and public key bytes.
+ *
+ * @param keypair The input keypair to encode as Multikey.
+ * @param keypair.type The keypair type indicated by a type string.
+ * @param keypair.publicKey The keypair's public key bytes.
+ * @returns The Multikey representation (i.e., multicodec-prefixed, then base58-btc multibase encoded) of the public key.
+ */
+export function encodeMultibaseKeypair(
+  args: Pick<TypedKeypair<KnownTypeString>, 'publicKey' | 'type'>
+): MultibasePublicKey
+// eslint-disable-next-line jsdoc/require-jsdoc -- Docs are provided to overloads.
 export function encodeMultibaseKeypair({
   type,
   publicKey,
   secretKey,
-}: Pick<KeyringPair, 'publicKey'> & {
-  type: KnownTypeString
-  secretKey?: Uint8Array
-}): MultibasePublicKey & Partial<MultibaseSecretKey> {
+}: TypedKeypairWithOptionalSecretKey<KnownTypeString>): MultibasePublicKey &
+  Partial<MultibaseSecretKey> {
   const [multiCodecPublicKeyPrefix, multiCodedSecretKeyPrefix] =
     mapTypeStringToPrefixes(type)
 
@@ -118,32 +130,35 @@ const secretKeyPrefixes: Record<number, KeyTypeString> = {
   [MULTICODEC_SR25519_PREFIXES[1]]: 'sr25519',
 }
 
-export function decodeMultibaseKeypair(keypair: MultibaseKeyPair): Pick<
-  KeyringPair,
-  'publicKey'
-> & {
-  secretKey: Uint8Array
-  type: KeyTypeString
-}
-export function decodeMultibaseKeypair(
-  keyPairPublicKey: MultibasePublicKey
-): Pick<KeyringPair, 'publicKey'> & { type: KeyTypeString }
 /**
- * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
+ * Decodes a Multikey representation of a key pair, returning the public- and secret key bytes and the key type.
  * Note that only base58-btc multibase encoding is currently supported.
  *
- * @param keyPairMultibase The verification method's public/private keys in Multikey format (i.e., multicodec-prefixed, then multibase encoded).
+ * @param keyPairMultibase A key pair represented in Multikey format (i.e., multicodec-prefixed, then multibase encoded).
  * @param keyPairMultibase.publicKeyMultibase The keypair's public key, encoded in Multikey format.
- * @param keyPairMultibase.secretKeyMultibase Optionally, the keypair's secret key, encoded in Multikey format.
- * @returns The decoded `publicKey` (and possibly `secretKey`) plus a key `type`.
+ * @param keyPairMultibase.secretKeyMultibase The keypair's secret key, encoded in Multikey format.
+ * @returns The decoded `publicKey` and `secretKey` bytes plus a key `type`.
  */
+export function decodeMultibaseKeypair(
+  keypair: MultibaseKeyPair
+): TypedKeypair<KeyTypeString>
+/**
+ * Decodes a Multikey representation of a public key/verification method, returning the publics key bytes and the key type.
+ * Note that only base58-btc multibase encoding is currently supported.
+ *
+ * @param keyPairMultibase A verification method or comparable public key representation.
+ * @param keyPairMultibase.publicKeyMultibase The keypair's public key, multicodec-prefixed, then multibase encoded.
+ * @returns The decoded `publicKey` bytes plus a key `type`.
+ */
+export function decodeMultibaseKeypair(
+  keyPairPublicKey: MultibasePublicKey
+): Pick<TypedKeypair<KeyTypeString>, 'publicKey' | 'type'>
+// eslint-disable-next-line jsdoc/require-jsdoc -- Docs are provided to overloads.
 export function decodeMultibaseKeypair({
   publicKeyMultibase,
   secretKeyMultibase,
-}: MultibasePublicKey & Partial<MultibaseSecretKey>): Pick<
-  KeyringPair,
-  'publicKey'
-> & { type: KeyTypeString; secretKey?: Uint8Array } {
+}: MultibasePublicKey &
+  Partial<MultibaseSecretKey>): TypedKeypairWithOptionalSecretKey<KeyTypeString> {
   const { keyBytes, prefix } = decodeBase58BtcMultikey(publicKeyMultibase)
 
   const keyType = publicKeyPrefixes[prefix]
@@ -153,7 +168,7 @@ export function decodeMultibaseKeypair({
     )
   }
 
-  const result: ReturnType<typeof decodeMultibaseKeypair> = {
+  const result: TypedKeypairWithOptionalSecretKey<KeyTypeString> = {
     type: keyType,
     publicKey: keyBytes,
   }
