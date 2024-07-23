@@ -17,6 +17,7 @@ import {
 import {
   blake2AsU8a,
   encodeAddress,
+  randomAsHex,
   secp256k1Sign,
 } from '@polkadot/util-crypto'
 import type { Keypair } from '@polkadot/util-crypto/types'
@@ -29,21 +30,26 @@ import {
   createSigner as es256kSigner,
   cryptosuite as es256kSuite,
 } from '@kiltprotocol/es256k-jcs-2023'
-// import { decodeMultikeyVerificationMethod } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import {
   createSigner as sr25519Signer,
   cryptosuite as sr25519Suite,
 } from '@kiltprotocol/sr25519-jcs-2023'
 
-// import { multibaseKeyToDidKey } from '@kiltprotocol/did'
 import type {
   DidDocument,
   DidUrl,
   KeyringPair,
+  KiltKeyringPair,
+  MultibaseKeyPair,
   SignerInterface,
   UriFragment,
 } from '@kiltprotocol/types'
-
+import { makeKeypairFromUri } from './Crypto.js'
+import {
+  type KnownTypeString,
+  decodeMultibaseKeypair,
+  encodeMultibaseKeypair,
+} from './Multikey.js'
 import { DidError, NoSuitableSignerError } from './SDKErrors.js'
 
 export const ALGORITHMS = Object.freeze({
@@ -227,25 +233,12 @@ export async function getSignersForKeypair<Id extends string>({
   type,
 }: {
   id?: Id
-  keypair:
-    | Keypair
-    | KeyringPair
-    | {
-        secretKeyMultibase: `z${string}`
-        publicKeyMultibase: `z${string}`
-      }
+  keypair: Keypair | KeyringPair | MultibaseKeyPair
   type?: string
 }): Promise<Array<SignerInterface<KnownAlgorithms, Id>>> {
   let pair: KeyringPair | (Keypair & { type: string })
   if ('publicKeyMultibase' in keypair) {
-    throw new Error('not implemented')
-    // const { publicKey, keyType } = multibaseKeyToDidKey(
-    //   keypair.publicKeyMultibase
-    // )
-    // const { publicKey: secretKey } = decodeMultikeyVerificationMethod({
-    //   publicKeyMultibase: keypair.secretKeyMultibase,
-    // })
-    // pair = { publicKey, secretKey, type: keyType }
+    pair = decodeMultibaseKeypair(keypair)
   } else if ('type' in keypair) {
     pair = keypair
   } else if (type) {
@@ -460,7 +453,10 @@ export function getPolkadotSigner(
       }
       const signature = await signer.sign({ data: signData })
       // The signature is expected to be a SCALE enum, we must add a type prefix representing the signature algorithm
-      const prefixed = u8aConcat(TYPE_PREFIX[signer.algorithm], signature)
+      const prefixed = u8aConcat(
+        TYPE_PREFIX[signer.algorithm as keyof typeof TYPE_PREFIX],
+        signature
+      )
       id += 1
       return {
         id,
@@ -468,4 +464,38 @@ export function getPolkadotSigner(
       }
     },
   }
+}
+
+/**
+ * Generates a Multikey encoded keypair from a seed or mnemonic.
+ *
+ * @param args Optional generator arguments.
+ * @param args.seed A 32 byte hex-encoded and 0x-prefixed seed or 12-word mnemonic, optionally postfixed with a derivation path (e.g., `//authentication-key`).
+ * This is case-insensitive.
+ * @param args.type A string indicating desired key type.
+ * @returns A pair of `publicKeyMultibase` & `secretKeyMultibase`.
+ */
+export function generateKeypair({
+  seed = randomAsHex(32),
+  type = 'ed25519',
+}: {
+  seed?: string
+  type?: KnownTypeString
+} = {}): MultibaseKeyPair {
+  let typeForKeyring = type as KiltKeyringPair['type']
+  switch (type.toLowerCase()) {
+    case 'secp256k1':
+    case 'ethereum':
+      typeForKeyring = 'ecdsa'
+      break
+    case 'x25519':
+      typeForKeyring = 'ed25519'
+      break
+    default:
+  }
+
+  const keyRingPair = makeKeypairFromUri(seed.toLowerCase(), typeForKeyring)
+
+  const { secretKey, publicKey } = extractPk(keyRingPair)
+  return encodeMultibaseKeypair({ publicKey, secretKey, type })
 }

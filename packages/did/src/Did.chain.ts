@@ -8,6 +8,7 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
+
 import type {
   DidDidDetails,
   DidDidDetailsDidAuthorizedCallOperation,
@@ -15,6 +16,7 @@ import type {
   DidServiceEndpointsDidEndpoint,
   KiltSupportDeposit,
 } from '@kiltprotocol/augment-api'
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   BN,
   Deposit,
@@ -26,23 +28,27 @@ import type {
   SubmittableExtrinsic,
   UriFragment,
 } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
-import { Crypto, SDKErrors, Signers, ss58Format } from '@kiltprotocol/utils'
-
-import type {
-  DidEncryptionMethodType,
-  NewService,
-  DidSigningMethodType,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
-} from './DidDetails/DidDetails.js'
-import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
 import {
-  keypairToMultibaseKey,
+  Crypto,
+  Multikey,
+  SDKErrors,
+  Signers,
+  ss58Format,
+} from '@kiltprotocol/utils'
+
+import {
   getAddressFromVerificationMethod,
   getFullDid,
   parse,
 } from './Did.utils.js'
+import type {
+  DidEncryptionMethodType,
+  DidSigningMethodType,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+} from './DidDetails/DidDetails.js'
+import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
 import {
   type NewLightDidVerificationKey,
   createLightDidDocument,
@@ -395,9 +401,9 @@ export async function getStoreTx(
   }
 
   const [authenticationKey] = authentication
-  const did = getAddressFromVerificationMethod({
-    publicKeyMultibase: keypairToMultibaseKey(authenticationKey),
-  })
+  const did = getAddressFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair(authenticationKey)
+  )
 
   const newAttestationKey =
     assertionMethod &&

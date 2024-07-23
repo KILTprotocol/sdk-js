@@ -14,8 +14,11 @@ import type {
   DidDocument,
   HexString,
   KeyringPair,
+  MultibaseKeyPair,
+  MultibasePublicKey,
   SignerInterface,
 } from '@kiltprotocol/types'
+import type { Multikey } from '@kiltprotocol/utils'
 
 export interface TransactionResult {
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
@@ -92,18 +95,7 @@ export interface TransactionHandlers {
   }>
 }
 
-/** Base58 encoded bytes, using the bitcoin alphabet. */
-type Base58Btc = string
-/** Multibase encoding of a public- or private key including multicodec variant flag. */
-export type KeyMultibaseEncoded = `z${Base58Btc}`
-
-export type AcceptedSigners =
-  | SignerInterface
-  | KeyringPair
-  | {
-      secretKeyMultibase: KeyMultibaseEncoded
-      publicKeyMultibase: KeyMultibaseEncoded
-    }
+export type AcceptedSigners = SignerInterface | KeyringPair | MultibaseKeyPair
 
 export type SharedArguments = {
   didDocument: DidDocument
@@ -114,10 +106,10 @@ export type SharedArguments = {
 
 type PublicKeyAndType = {
   publicKey: Uint8Array
-  type: KeyringPair['type'] | 'x25519'
+  type: Multikey.KnownTypeString
 }
 
 export type AcceptedPublicKeyEncodings =
-  | KeyMultibaseEncoded
-  | { publicKeyMultibase: KeyMultibaseEncoded }
+  | MultibasePublicKey['publicKeyMultibase']
+  | MultibasePublicKey
   | PublicKeyAndType // interface allows KeyringPair too
