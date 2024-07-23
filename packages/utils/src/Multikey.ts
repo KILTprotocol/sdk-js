@@ -69,13 +69,13 @@ export function encodeMultibaseKeypair(
   }
 ): MultibasePublicKey
 /**
- * Calculate the Multikey representation of a keypair given its type and public/secret keys.
+ * Create a Multikey representation of a keypair, encoded in multibase-base58-btc, given its type and public/secret keys.
  *
  * @param keypair The input keypair to encode as Multikey.
  * @param keypair.type The keypair type indicated by a type string.
  * @param keypair.publicKey The keypair public key.
  * @param keypair.secretKey Optionally, the keypair's secret key.
- * @returns The Multikey representation (i.e., multicodec-prefixed, then multibase encoded) of the provided keypair.
+ * @returns The Multikey representation (i.e., multicodec-prefixed, then base58-btc multibase encoded) of the provided keypair.
  */
 export function encodeMultibaseKeypair({
   type,
@@ -130,6 +130,7 @@ export function decodeMultibaseKeypair(
 ): Pick<KeyringPair, 'publicKey'> & { type: KeyTypeString }
 /**
  * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
+ * Note that only base58-btc multibase encoding is currently supported.
  *
  * @param keyPairMultibase The verification method's public/private keys in Multikey format (i.e., multicodec-prefixed, then multibase encoded).
  * @param keyPairMultibase.publicKeyMultibase The keypair's public key, encoded in Multikey format.
