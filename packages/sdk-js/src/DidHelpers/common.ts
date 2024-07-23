@@ -16,7 +16,6 @@ import type {
   MultibaseKeyPair,
 } from '@kiltprotocol/types'
 import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
-import { TransactionSigner } from 'chain-helpers/src/blockchain/Blockchain.js'
 
 import type {
   AcceptedPublicKeyEncodings,
@@ -81,10 +80,10 @@ export function extractSubmitterSignerAndAccount(
     | MultibaseKeyPair
     | KiltAddress
 ): {
-  submitterSigner: TransactionSigner | KeyringPair | undefined
+  submitterSigner: Blockchain.TransactionSigner | KeyringPair | undefined
   submitterAccount: KiltAddress
 } {
-  let submitterSigner: TransactionSigner | KeyringPair | undefined
+  let submitterSigner: Blockchain.TransactionSigner | KeyringPair | undefined
   let submitterAccount: KiltAddress
 
   // KiltAddress
