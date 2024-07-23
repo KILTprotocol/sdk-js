@@ -112,21 +112,23 @@ function checkStatus(result: SubmittableResultValue): {
 }
 
 async function resolveBlockAndEvents(
-  result: { blockHash: HexString; txHash: HexString },
+  blockInfo: { blockHash: HexString; txHash: HexString },
   api: ApiPromise
 ): Promise<{
   blockNumber: BigInt
   blockHash: HexString
   txEvents: EventRecord[]
 }> {
-  const txHashHash = api.createType('Hash', result.blockHash)
+  const txHashHash = api.createType('Hash', blockInfo.blockHash)
   const {
     block: { block },
     events,
   } = await api.derive.tx.events(txHashHash)
   const blockNumber = block.header.number.toBigInt()
-  const { blockHash } = result
-  const txIndex = block.extrinsics.findIndex((tx) => tx.hash.eq(result.txHash))
+  const { blockHash } = blockInfo
+  const txIndex = block.extrinsics.findIndex((tx) =>
+    tx.hash.eq(blockInfo.txHash)
+  )
   const txEvents = events.filter(
     ({ phase }) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eqn(txIndex)
   )
@@ -223,6 +225,15 @@ export async function checkResultImpl(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
+        toJSON() {
+          const clone = { ...this } as any
+          clone.block = {
+            ...clone.block,
+            number: clone.block.number.toString(),
+          }
+          delete clone.toJSON
+          return clone
+        },
       }
     },
     get asUnknown(): TransactionResult['asUnknown'] {
@@ -251,6 +262,46 @@ export async function checkResultImpl(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         block: { hash: blockHash!, number: blockNumber! },
         events: txEvents.map(({ event }) => event),
+        toJSON() {
+          const clone = { ...this } as any
+          clone.block = {
+            ...clone.block,
+            number: clone.block.number.toString(),
+          }
+          delete clone.toJSON
+          return clone
+        },
+      }
+    },
+    toJSON() {
+      switch (status) {
+        case 'confirmed': {
+          return {
+            status,
+            value: (this as TransactionResult).asConfirmed.toJSON(),
+          }
+        }
+        case 'failed': {
+          return {
+            status,
+            value: (this as TransactionResult).asFailed.toJSON(),
+          }
+        }
+        case 'rejected': {
+          return {
+            status,
+            value: (this as TransactionResult).asRejected,
+          }
+        }
+        case 'unknown': {
+          return {
+            status,
+            value: (this as TransactionResult).asUnknown,
+          }
+        }
+        default: {
+          throw new Error('invalid status')
+        }
       }
     },
   }

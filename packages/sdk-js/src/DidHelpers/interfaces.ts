@@ -26,6 +26,7 @@ export interface TransactionResult {
     didDocument: DidDocument
     block: { hash: HexString; number: BigInt }
     events: GenericEvent[]
+    toJSON: () => any
   }
   asFailed: {
     error: Error
@@ -34,6 +35,7 @@ export interface TransactionResult {
     didDocument?: DidDocument
     block: { hash: HexString; number: BigInt }
     events: GenericEvent[]
+    toJSON: () => any
   }
   asRejected: {
     error: Error
@@ -45,6 +47,7 @@ export interface TransactionResult {
     error: Error
     txHash: HexString
   }
+  toJSON: () => any
 }
 
 export interface TransactionHandlers {
