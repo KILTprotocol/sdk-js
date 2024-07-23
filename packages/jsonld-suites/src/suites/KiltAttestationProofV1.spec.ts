@@ -449,23 +449,23 @@ describe('issuance', () => {
   let toBeSigned: CredentialStub
 
   const { issuer } = attestedVc
-  const signer: SignerInterface<'Sr25519', DidUrl> = {
-    sign: async () => new Uint8Array(32),
-    algorithm: 'Sr25519',
-    id: `${issuer}#1`,
-  }
-  const issuerOptions: Issuer.IssuerOptions = {
-    didDocument,
-    signers: [signer],
-    submitter: async ({ call }) => {
-      txArgs = call.args
-      return {
-        block: {
-          hash: u8aToHex(blockHash),
-        },
-      }
+  const signers: Array<SignerInterface<'Sr25519', DidUrl>> = [
+    {
+      sign: async () => new Uint8Array(32),
+      algorithm: 'Sr25519',
+      id: `${issuer}#1`,
     },
+  ]
+
+  const submitter: Issuer.IssuerOptions['submitter'] = async ({ call }) => {
+    txArgs = call.args
+    return {
+      block: {
+        hash: u8aToHex(blockHash),
+      },
+    }
   }
+
   beforeEach(() => {
     toBeSigned = {
       credentialSubject: attestedVc.credentialSubject,
@@ -475,7 +475,10 @@ describe('issuance', () => {
 
   it('issues a credential via vc-js', async () => {
     let newCred: Partial<KiltCredentialV1.Interface> =
-      await issuanceSuite.anchorCredential({ ...toBeSigned }, issuerOptions)
+      await issuanceSuite.anchorCredential(
+        { ...toBeSigned },
+        { didDocument, signers, submitter }
+      )
     newCred = await vcjs.issue({
       credential: newCred,
       suite: issuanceSuite,
@@ -532,7 +535,7 @@ describe('issuance', () => {
       {
         ...toBeSigned,
       },
-      issuerOptions
+      { didDocument, signers, submitter }
     )
     newCred = (await vcjs.issue({
       credential: {
