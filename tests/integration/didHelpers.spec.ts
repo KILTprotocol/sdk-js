@@ -7,12 +7,20 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { CType, Issuer, Verifier } from '@kiltprotocol/credentials'
-import { DidHelpers, disconnect } from '@kiltprotocol/sdk-js'
+import { CType } from '@kiltprotocol/credentials'
+import { getFullDidFromVerificationMethod } from '@kiltprotocol/did'
+import {
+  DidHelpers,
+  disconnect,
+  generateKeypair,
+  Issuer,
+  Verifier,
+} from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   KeyringPair,
   KiltKeyringPair,
+  MultibaseKeyPair,
   Service,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
@@ -31,13 +39,13 @@ beforeAll(async () => {
 
 // Create did on chain
 describe('create and deactivate DID', () => {
-  let kp: KeyringPair
+  let kp: MultibaseKeyPair
   let didDocument: DidDocument
   beforeAll(() => {
-    kp = Crypto.makeKeypairFromUri(
-      'build hill second flame trigger simple rigid cabbage phrase evolve final eight',
-      'sr25519'
-    )
+    kp = generateKeypair({
+      seed: 'build hill second flame trigger simple rigid cabbage phrase evolve final eight',
+      type: 'sr25519',
+    })
   })
 
   it('creates a DID', async () => {
@@ -50,8 +58,9 @@ describe('create and deactivate DID', () => {
 
     expect(result.status).toBe('confirmed')
     didDocument = result.asConfirmed.didDocument
+    const did = getFullDidFromVerificationMethod(kp)
     expect(didDocument).toMatchObject({
-      id: `did:kilt:${kp.address}`,
+      id: did,
       verificationMethod: expect.any(Array),
       authentication: expect.any(Array),
     })
@@ -77,10 +86,10 @@ describe('create and deactivate DID', () => {
 })
 
 describe('w3ns', () => {
-  let keypair: KeyringPair
+  let keypair: MultibaseKeyPair
   let didDocument: DidDocument
   beforeAll(async () => {
-    keypair = Crypto.makeKeypairFromUri('//Blob')
+    keypair = generateKeypair({ seed: '//Blob' })
     const result = await DidHelpers.createDid({
       api,
       signers: [keypair],
@@ -137,10 +146,10 @@ describe('w3ns', () => {
 })
 
 describe('services', () => {
-  let keypair: KeyringPair
+  let keypair: MultibaseKeyPair
   let didDocument: DidDocument
   beforeAll(async () => {
-    keypair = Crypto.makeKeypairFromUri('//Services')
+    keypair = generateKeypair({ seed: '//Services' })
     const result = await DidHelpers.createDid({
       api,
       signers: [keypair],
@@ -327,10 +336,10 @@ describe('verification methods', () => {
 })
 
 describe('transact', () => {
-  let keypair: KeyringPair
+  let keypair: MultibaseKeyPair
   let didDocument: DidDocument
   beforeAll(async () => {
-    keypair = Crypto.makeKeypairFromUri('//Transact')
+    keypair = generateKeypair({ seed: '//Transact' })
     didDocument = (
       await DidHelpers.createDid({
         api,

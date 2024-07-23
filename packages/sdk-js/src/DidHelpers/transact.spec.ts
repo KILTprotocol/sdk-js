@@ -83,18 +83,17 @@ describe('transact', () => {
     expect(parsed.method).toHaveProperty('section', 'did')
     expect(parsed.method).toHaveProperty('method', 'submitDidCall')
 
-    await expect(
-      checkResult(
-        new SubmittableResult({
-          blockNumber: mockedApi.createType('BlockNumber', 1000),
-          status: mockedApi.createType('ExtrinsicStatus', {
-            inBlock: new Uint8Array(32).fill(2),
-          }),
-          txHash: parsed.hash,
-          events: makeAttestationCreatedEvents([[]]),
-        })
-      )
-    ).resolves.toMatchObject<Partial<TransactionResult>>({
+    const result = await checkResult(
+      new SubmittableResult({
+        blockNumber: mockedApi.createType('BlockNumber', 1000),
+        status: mockedApi.createType('ExtrinsicStatus', {
+          inBlock: new Uint8Array(32).fill(2),
+        }),
+        txHash: parsed.hash,
+        events: makeAttestationCreatedEvents([[]]),
+      })
+    )
+    expect(result).toMatchObject<Partial<TransactionResult>>({
       status: 'confirmed',
       asConfirmed: expect.objectContaining({
         txHash: parsed.hash.toHex(),
@@ -105,6 +104,18 @@ describe('transact', () => {
           number: 1000n,
         },
       }),
+    })
+    // TODO move serialzation test to `checkResult.spec.ts` once created and
+    // test the `asFailed` case.
+    const confirmed = result.asConfirmed
+    expect(typeof confirmed.block.number).toBe('bigint')
+    const resultStringified = JSON.stringify(confirmed)
+    const resultRebuiltObj = JSON.parse(resultStringified)
+    expect(BigInt(resultRebuiltObj.block.number)).toBe(BigInt(1000))
+    expect(typeof confirmed.block.number).toBe('bigint')
+    expect(result.toJSON()).toStrictEqual({
+      status: 'confirmed',
+      value: confirmed.toJSON(),
     })
   })
 })

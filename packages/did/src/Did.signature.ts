@@ -14,6 +14,7 @@ import type {
   DidSignature,
   DidUrl,
   KeyringPair,
+  MultibaseKeyPair,
   SignatureVerificationRelationship,
   SignerInterface,
 } from '@kiltprotocol/types'
@@ -190,15 +191,7 @@ export function signatureFromJson(input: DidSignature | LegacyDidSignature): {
  */
 export async function signersForDid(
   didDocument: DidDocument,
-  ...keypairs: Array<
-    | SignerInterface
-    | KeyringPair
-    | Keypair
-    | {
-        secretKeyMultibase: `z${string}`
-        publicKeyMultibase: `z${string}`
-      }
-  >
+  ...keypairs: Array<SignerInterface | KeyringPair | Keypair | MultibaseKeyPair>
 ): Promise<Array<SignerInterface<string, DidUrl>>> {
   const didKeys = didDocument.verificationMethod?.map(
     ({ publicKeyMultibase, id }) => ({

@@ -6,6 +6,7 @@
  */
 
 import type { KiltAddress } from './Address'
+import type { Base58BtcMultibaseString, VerificationMethod } from './Did.js'
 
 export type SignerInterface<
   Alg extends string = string,
@@ -20,3 +21,9 @@ export type TransactionSigner = SignerInterface<
   'Ecrecover-Secp256k1-Blake2b' | 'Sr25519' | 'Ed25519',
   KiltAddress
 >
+
+export type MultibasePublicKey = Pick<VerificationMethod, 'publicKeyMultibase'>
+export type MultibaseSecretKey = {
+  secretKeyMultibase: Base58BtcMultibaseString
+}
+export type MultibaseKeyPair = MultibasePublicKey & MultibaseSecretKey

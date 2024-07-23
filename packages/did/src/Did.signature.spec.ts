@@ -14,7 +14,7 @@ import type {
   SignerInterface,
 } from '@kiltprotocol/types'
 
-import { Crypto, SDKErrors, Signers } from '@kiltprotocol/utils'
+import { Crypto, Multikey, SDKErrors, Signers } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 
 import type { NewLightDidVerificationKey } from './DidDetails'
@@ -26,7 +26,7 @@ import {
   verifyDidSignature,
 } from './Did.signature'
 import { resolve } from './DidResolver/DidResolver'
-import { keypairToMultibaseKey, multibaseKeyToDidKey, parse } from './Did.utils'
+import { multibaseKeyToDidKey, parse } from './Did.utils'
 import { createLightDidDocument } from './DidDetails'
 
 jest.mock('./DidResolver/DidResolver')
@@ -292,7 +292,8 @@ describe('full DID', () => {
         {
           controller: `did:kilt:${keypair.address}`,
           id: `did:kilt:${keypair.address}#0x12345`,
-          publicKeyMultibase: keypairToMultibaseKey(keypair),
+          publicKeyMultibase:
+            Multikey.encodeMultibaseKeypair(keypair).publicKeyMultibase,
           type: 'Multikey',
         },
       ],

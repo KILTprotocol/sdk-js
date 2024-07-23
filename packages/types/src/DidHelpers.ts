@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Multikey } from '@kiltprotocol/utils'
 import type { DidDocument } from './Did'
 import type {
   ApiPromise,
@@ -13,7 +14,12 @@ import type {
   KeyringPair,
   SubmittableResultValue,
 } from './Imported'
-import type { SignerInterface, TransactionSigner } from './Signers'
+import type {
+  MultibaseKeyPair,
+  MultibasePublicKey,
+  SignerInterface,
+  TransactionSigner,
+} from './Signers'
 
 export interface TransactionResult {
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
@@ -24,6 +30,7 @@ export interface TransactionResult {
     didDocument: DidDocument
     block: { hash: HexString; number: BigInt }
     events: GenericEvent[]
+    toJSON: () => any
   }
   asFailed: {
     error: Error
@@ -32,6 +39,7 @@ export interface TransactionResult {
     didDocument?: DidDocument
     block: { hash: HexString; number: BigInt }
     events: GenericEvent[]
+    toJSON: () => any
   }
   asRejected: {
     error: Error
@@ -43,6 +51,7 @@ export interface TransactionResult {
     error: Error
     txHash: HexString
   }
+  toJSON: () => any
 }
 
 export interface TransactionHandlers {
@@ -87,18 +96,10 @@ export interface TransactionHandlers {
   }>
 }
 
-/** Base58 encoded bytes, using the bitcoin alphabet. */
-type Base58Btc = string
-/** Multibase encoding of a public- or private key including multicodec variant flag. */
-export type KeyMultibaseEncoded = `z${Base58Btc}`
-
 export type DidHelpersAcceptedSigners =
   | SignerInterface
   | KeyringPair
-  | {
-      secretKeyMultibase: KeyMultibaseEncoded
-      publicKeyMultibase: KeyMultibaseEncoded
-    }
+  | MultibaseKeyPair
 
 export type SharedArguments = {
   didDocument: DidDocument
@@ -109,10 +110,10 @@ export type SharedArguments = {
 
 type PublicKeyAndType = {
   publicKey: Uint8Array
-  type: KeyringPair['type'] | 'x25519'
+  type: Multikey.KnownTypeString
 }
 
 export type DidHelpersAcceptedPublicKeyEncodings =
-  | KeyMultibaseEncoded
-  | { publicKeyMultibase: KeyMultibaseEncoded }
+  | MultibasePublicKey['publicKeyMultibase']
+  | MultibasePublicKey
   | PublicKeyAndType // interface allows KeyringPair too

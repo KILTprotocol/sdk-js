@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, Signers, SDKErrors, Multikey } from '@kiltprotocol/utils'
 import {
   type BaseNewDidKey,
   type ChainDidKey,
@@ -36,7 +36,6 @@ import {
   getStoreTx,
   didKeyToVerificationMethod,
   createLightDidDocument,
-  keypairToMultibaseKey,
   getFullDidFromVerificationMethod,
   multibaseKeyToDidKey,
   isValidDidVerificationType,
@@ -249,12 +248,12 @@ export async function createLocalDemoFullDidFromKeypair(
     publicKey,
     id: authKeyFragment,
   } = makeDidKeyFromKeypair(keypair)
-  const id = getFullDidFromVerificationMethod({
-    publicKeyMultibase: keypairToMultibaseKey({
+  const id = getFullDidFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair({
       type: keyType,
       publicKey,
-    }),
-  })
+    })
+  )
 
   const authKeyId = `${id}${authKeyFragment}` as const
   const result: DidDocument = {

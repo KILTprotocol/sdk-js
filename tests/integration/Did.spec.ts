@@ -21,7 +21,7 @@ import { CType, DelegationNode } from '@kiltprotocol/credentials'
 import * as Did from '@kiltprotocol/did'
 import { disconnect } from '@kiltprotocol/sdk-js'
 import { Permission } from '@kiltprotocol/types'
-import { UUID } from '@kiltprotocol/utils'
+import { Multikey, UUID } from '@kiltprotocol/utils'
 
 import type { KeyTool } from '../testUtils/index.js'
 
@@ -137,10 +137,10 @@ describe('write and didDeleteTx', () => {
           controller: fullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             type: 'sr25519',
             publicKey: authPublicKey,
-          }),
+          }).publicKeyMultibase,
         }),
       ],
     })
@@ -370,13 +370,15 @@ describe('DID migration', () => {
           controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair(authentication[0])
+            .publicKeyMultibase,
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair(keyAgreement[0])
+            .publicKeyMultibase,
         }),
       ]),
     })
@@ -427,7 +429,8 @@ describe('DID migration', () => {
           controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair(authentication[0])
+            .publicKeyMultibase,
         }),
       ],
     })
@@ -492,13 +495,15 @@ describe('DID migration', () => {
           controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair(authentication[0])
+            .publicKeyMultibase,
         }),
         expect.objectContaining(<Partial<VerificationMethod>>{
           controller: migratedFullDid,
           type: 'Multikey',
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKeyMultibase: Did.keypairToMultibaseKey(keyAgreement[0]),
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair(keyAgreement[0])
+            .publicKeyMultibase,
         }),
       ]),
       service: [
@@ -563,9 +568,9 @@ describe('DID authorization', () => {
     await submitTx(createTx, paymentAccount)
     const didLinkedInfo = await api.call.did.query(
       Did.toChain(
-        Did.getFullDidFromVerificationMethod({
-          publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-        })
+        Did.getFullDidFromVerificationMethod(
+          Multikey.encodeMultibaseKeypair(authentication[0])
+        )
       )
     )
     did = Did.linkedInfoFromChain(didLinkedInfo).document
@@ -674,9 +679,9 @@ describe('DID management batching', () => {
       await submitTx(extrinsic, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(authentication[0])
+          )
         )
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -688,52 +693,54 @@ describe('DID management batching', () => {
             // Authentication
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair(
+              authentication[0]
+            ).publicKeyMultibase,
           }),
           // Assertion method
           expect.objectContaining({
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               type: 'sr25519',
               publicKey: new Uint8Array(32).fill(1),
-            }),
+            }).publicKeyMultibase,
           }),
           // Capability delegation
           expect.objectContaining({
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               type: 'ecdsa',
               publicKey: new Uint8Array(33).fill(1),
-            }),
+            }).publicKeyMultibase,
           }),
           // Key agreement 1
           expect.objectContaining({
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(1),
-            }),
+            }).publicKeyMultibase,
           }),
           // Key agreement 2
           expect.objectContaining({
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(2),
-            }),
+            }).publicKeyMultibase,
           }),
           // Key agreement 3
           expect.objectContaining({
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               type: 'x25519',
               publicKey: new Uint8Array(32).fill(3),
-            }),
+            }).publicKeyMultibase,
           }),
         ])
       )
@@ -778,9 +785,9 @@ describe('DID management batching', () => {
 
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(didAuthKey),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(didAuthKey)
+          )
         )
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -792,7 +799,8 @@ describe('DID management batching', () => {
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey(didAuthKey),
+            publicKeyMultibase:
+              Multikey.encodeMultibaseKeypair(didAuthKey).publicKeyMultibase,
           }),
         ],
       })
@@ -853,9 +861,9 @@ describe('DID management batching', () => {
 
       const initialFullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(authentication[0])
+          )
         )
       )
       const { document: initialFullDid } = Did.linkedInfoFromChain(
@@ -908,10 +916,10 @@ describe('DID management batching', () => {
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: finalFullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               publicKey: keypair.publicKey,
               type: 'sr25519',
-            }),
+            }).publicKeyMultibase,
           }),
         ],
       })
@@ -937,9 +945,9 @@ describe('DID management batching', () => {
 
       const initialFullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(authentication[0])
+          )
         )
       )
       const { document: initialFullDid } = Did.linkedInfoFromChain(
@@ -986,10 +994,10 @@ describe('DID management batching', () => {
           expect.objectContaining(<Partial<VerificationMethod>>{
             controller: finalFullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey({
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair({
               publicKey: newAuthKey.publicKey,
               type: 'ed25519',
-            }),
+            }).publicKeyMultibase,
           }),
         ],
         service: [
@@ -1033,9 +1041,9 @@ describe('DID management batching', () => {
       await submitTx(tx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(authentication[0])
+          )
         )
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -1075,7 +1083,9 @@ describe('DID management batching', () => {
             // Authentication and assertionMethod
             controller: fullDid.id,
             type: 'Multikey',
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
+            publicKeyMultibase: Multikey.encodeMultibaseKeypair(
+              authentication[0]
+            ).publicKeyMultibase,
           }),
         ],
         // Old service maintained
@@ -1117,9 +1127,9 @@ describe('DID management batching', () => {
       await submitTx(createTx, paymentAccount)
       const fullDidLinkedInfo = await api.call.did.query(
         Did.toChain(
-          Did.getFullDidFromVerificationMethod({
-            publicKeyMultibase: Did.keypairToMultibaseKey(authentication[0]),
-          })
+          Did.getFullDidFromVerificationMethod(
+            Multikey.encodeMultibaseKeypair(authentication[0])
+          )
         )
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)

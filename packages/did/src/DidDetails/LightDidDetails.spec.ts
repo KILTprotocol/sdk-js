@@ -6,13 +6,12 @@
  */
 
 import type { DidDocument, Did, DidUrl } from '@kiltprotocol/types'
-
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, Multikey } from '@kiltprotocol/utils'
 
 import type { NewService } from './DidDetails.js'
 import type { CreateDocumentInput } from './LightDidDetails.js'
 
-import { keypairToMultibaseKey, parse } from '../Did.utils.js'
+import { parse } from '../Did.utils.js'
 import {
   createLightDidDocument,
   parseDocumentFromLightDid,
@@ -62,19 +61,19 @@ describe('When creating an instance from the details', () => {
         {
           controller: did,
           id: `${did}#authentication`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: authKey.publicKey,
             type: 'sr25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
         {
           controller: did,
           id: `${did}#encryption`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: encKey.publicKey,
             type: 'x25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
       ],
@@ -115,19 +114,19 @@ describe('When creating an instance from the details', () => {
         {
           controller: did,
           id: `${did}#authentication`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: authKey.publicKey,
             type: 'ed25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
         {
           controller: did,
           id: `${did}#encryption`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: encKey.publicKey,
             type: 'x25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
       ],
@@ -197,19 +196,19 @@ describe('When creating an instance from a light DID', () => {
         {
           controller: did,
           id: `${did}#authentication`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: authKey.publicKey,
             type: 'sr25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
         {
           controller: did,
           id: `${did}#encryption`,
-          publicKeyMultibase: keypairToMultibaseKey({
+          publicKeyMultibase: Multikey.encodeMultibaseKeypair({
             publicKey: encKey.publicKey,
             type: 'x25519',
-          }),
+          }).publicKeyMultibase,
           type: 'Multikey',
         },
       ],

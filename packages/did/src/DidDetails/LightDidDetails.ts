@@ -5,29 +5,27 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidDocument, Did } from '@kiltprotocol/types'
-
 import {
   base58Decode,
   base58Encode,
   decodeAddress,
 } from '@polkadot/util-crypto'
-import { cbor, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import type {
-  NewDidEncryptionKey,
-  NewDidVerificationKey,
-  NewService,
-  DidSigningMethodType,
-} from './DidDetails.js'
+import type { Did, DidDocument } from '@kiltprotocol/types'
+import { cbor, Multikey, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
+import { urlFragmentToChain, validateNewService } from '../Did.chain.js'
 import {
-  keypairToMultibaseKey,
   didKeyToVerificationMethod,
   getAddressFromVerificationMethod,
   parse,
 } from '../Did.utils.js'
-import { urlFragmentToChain, validateNewService } from '../Did.chain.js'
+import type {
+  DidSigningMethodType,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+} from './DidDetails.js'
 import {
   addKeypairAsVerificationMethod,
   encryptionMethodTypes,
@@ -231,9 +229,9 @@ export function createLightDidDocument({
   // Validity is checked in validateCreateDocumentInput
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
-  const address = getAddressFromVerificationMethod({
-    publicKeyMultibase: keypairToMultibaseKey(authentication[0]),
-  })
+  const address = getAddressFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair(authentication[0])
+  )
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const did =
