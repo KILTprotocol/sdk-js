@@ -361,7 +361,9 @@ describe('transact', () => {
     ).asConfirmed.didDocument
   })
 
-  const cType = CType.fromProperties('thing', { thang: { type: 'string' } })
+  const cType = CType.fromProperties('thing', {
+    someProperty: { type: 'string' },
+  })
 
   it('creates a ctype', async () => {
     const serialized = CType.toChain(cType)
@@ -384,7 +386,7 @@ describe('transact', () => {
   it('integrates with issue', async () => {
     const unsigned = await Issuer.createCredential({
       issuer: didDocument.id,
-      credentialSubject: { id: didDocument.id, thang: 'thong' },
+      credentialSubject: { id: didDocument.id, someProperty: 'someValue' },
       cType,
     })
 
