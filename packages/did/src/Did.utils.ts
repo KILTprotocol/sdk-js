@@ -5,21 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { blake2AsU8a, encodeAddress, base58Encode } from '@polkadot/util-crypto'
-import { u8aConcat } from '@polkadot/util'
 import type {
-  Base58BtcMultibaseString,
   Did,
   DidUrl,
-  KeyringPair,
   KiltAddress,
   UriFragment,
   VerificationMethod,
 } from '@kiltprotocol/types'
-import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-// @ts-expect-error Not a typescript module
-import * as varint from 'varint'
-import { decodeBase58BtcMultikey } from '@kiltprotocol/jcs-data-integrity-proofs-common'
+import { DataUtils, Multikey, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
 import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
@@ -133,24 +127,8 @@ type DecodedVerificationMethod = {
   keyType: DidVerificationMethodType
 }
 
-const MULTICODEC_ECDSA_PREFIX = 0xe7
-const MULTICODEC_X25519_PREFIX = 0xec
-const MULTICODEC_ED25519_PREFIX = 0xed
-const MULTICODEC_SR25519_PREFIX = 0xef
-
-const multicodecPrefixes: Record<number, [DidVerificationMethodType, number]> =
-  {
-    [MULTICODEC_ECDSA_PREFIX]: ['ecdsa', 33],
-    [MULTICODEC_X25519_PREFIX]: ['x25519', 32],
-    [MULTICODEC_ED25519_PREFIX]: ['ed25519', 32],
-    [MULTICODEC_SR25519_PREFIX]: ['sr25519', 32],
-  }
-const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
-  ecdsa: MULTICODEC_ECDSA_PREFIX,
-  x25519: MULTICODEC_X25519_PREFIX,
-  ed25519: MULTICODEC_ED25519_PREFIX,
-  sr25519: MULTICODEC_SR25519_PREFIX,
-}
+const KEY_LENGTH_ECDSA = 33
+const KEY_LENGTH_OTHER = 32
 
 /**
  * Decode a Multikey representation of a verification method into its fundamental components: the public key and the key type.
@@ -161,68 +139,20 @@ const multicodecReversePrefixes: Record<DidVerificationMethodType, number> = {
 export function multibaseKeyToDidKey(
   publicKeyMultibase: VerificationMethod['publicKeyMultibase']
 ): DecodedVerificationMethod {
-  const { keyBytes, prefix } = decodeBase58BtcMultikey(publicKeyMultibase)
-
-  const [keyType, expectedPublicKeyLength] = multicodecPrefixes[prefix]
-  if (keyType === undefined) {
+  const { publicKey, type } = Multikey.decodeMultibaseKeypair({
+    publicKeyMultibase,
+  })
+  const expectedPublicKeyLength =
+    type === 'secp256k1' ? KEY_LENGTH_ECDSA : KEY_LENGTH_OTHER
+  if (publicKey.length !== expectedPublicKeyLength) {
     throw new SDKErrors.DidError(
-      `Cannot decode key type for multibase key "${publicKeyMultibase}".`
-    )
-  }
-  if (keyBytes.length !== expectedPublicKeyLength) {
-    throw new SDKErrors.DidError(
-      `Key of type "${keyType}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${keyBytes.length} bytes long instead.`
+      `Key of type "${type}" is expected to be ${expectedPublicKeyLength} bytes long. Provided key is ${publicKey.length} bytes long instead.`
     )
   }
   return {
-    keyType,
-    publicKey: keyBytes,
-  }
-}
-
-// TODO: This could also be exposed in a new release candidate of the `@kiltprotocol/jcs-data-integrity-proofs-common` package.
-function multibase58BtcKeyBytesEncoding(
-  key: Uint8Array,
-  keyPrefix: number
-): Base58BtcMultibaseString {
-  const varintEncodedPrefix = varint.encode(keyPrefix)
-  const prefixedKey = u8aConcat(varintEncodedPrefix, key)
-  const base58BtcEncodedKey = base58Encode(prefixedKey)
-  return `z${base58BtcEncodedKey}`
-}
-
-/**
- * Calculate the Multikey representation of a keypair given its type and public key.
- *
- * @param keypair The input keypair to encode as Multikey.
- * @param keypair.type The keypair {@link DidVerificationMethodType}.
- * @param keypair.publicKey The keypair public key.
- * @returns The Multikey representation (i.e., multicodec-prefixed, then multibase encoded) of the provided keypair.
- */
-export function keypairToMultibaseKey({
-  type,
-  publicKey,
-}: Pick<KeyringPair, 'publicKey'> & {
-  type: DidVerificationMethodType
-}): VerificationMethod['publicKeyMultibase'] {
-  const multiCodecPublicKeyPrefix = multicodecReversePrefixes[type]
-  if (multiCodecPublicKeyPrefix === undefined) {
-    throw new SDKErrors.DidError(
-      `The provided key type "${type}" is not supported.`
-    )
-  }
-  const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
-  if (publicKey.length !== expectedPublicKeySize) {
-    throw new SDKErrors.DidError(
-      `Key of type "${type}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
-    )
-  }
-  const prefixedEncodedPublicKey = multibase58BtcKeyBytesEncoding(
+    keyType: type === 'secp256k1' ? 'ecdsa' : type,
     publicKey,
-    multiCodecPublicKeyPrefix
-  )
-
-  return prefixedEncodedPublicKey
+  }
 }
 
 /**
@@ -240,28 +170,16 @@ export function didKeyToVerificationMethod<IdType extends DidUrl | UriFragment>(
   id: IdType,
   { keyType, publicKey }: DecodedVerificationMethod
 ): VerificationMethod<IdType> {
-  const multiCodecPublicKeyPrefix = multicodecReversePrefixes[keyType]
-  if (multiCodecPublicKeyPrefix === undefined) {
-    throw new SDKErrors.DidError(
-      `Provided key type "${keyType}" not supported.`
-    )
-  }
-  const expectedPublicKeySize = multicodecPrefixes[multiCodecPublicKeyPrefix][1]
-  if (publicKey.length !== expectedPublicKeySize) {
-    throw new SDKErrors.DidError(
-      `Key of type "${keyType}" is expected to be ${expectedPublicKeySize} bytes long. Provided key is ${publicKey.length} bytes long instead.`
-    )
-  }
-  const prefixedEncodedPublicKey = multibase58BtcKeyBytesEncoding(
+  const { publicKeyMultibase } = Multikey.encodeMultibaseKeypair({
     publicKey,
-    multiCodecPublicKeyPrefix
-  )
+    type: keyType,
+  })
 
   return {
     controller,
     id,
     type: 'Multikey',
-    publicKeyMultibase: prefixedEncodedPublicKey,
+    publicKeyMultibase,
   }
 }
 
@@ -340,7 +258,8 @@ export function getAddressFromVerificationMethod({
 
   // Otherwise it’s ecdsa.
   // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
-  const address = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+  const address =
+    publicKey.length > KEY_LENGTH_OTHER ? blake2AsU8a(publicKey) : publicKey
   return encodeAddress(address, ss58Format)
 }
 

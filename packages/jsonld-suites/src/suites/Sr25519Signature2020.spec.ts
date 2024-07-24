@@ -43,7 +43,7 @@ const documentLoader = combineDocumentLoaders([
 
 export async function makeFakeDid() {
   const keypair = Crypto.makeKeypairFromUri('//Ingo', 'sr25519')
-  const id = ingosCredential.credentialSubject.id as KiltDid
+  const id = ingosCredential.issuer as KiltDid
   const didDocument: DidDocument = {
     id,
     authentication: [`${id}#authentication`],
@@ -101,7 +101,7 @@ it('issues and verifies a signed credential', async () => {
     '@context': [W3C_CREDENTIAL_CONTEXT_URL] as any,
     type: ['VerifiableCredential'],
     credentialSubject: ingosCredential.credentialSubject,
-    issuer: ingosCredential.credentialSubject.id,
+    issuer: ingosCredential.issuer,
   } as Partial<Types.VerifiableCredential>
 
   const verifiableCredential = await vcjs.issue({

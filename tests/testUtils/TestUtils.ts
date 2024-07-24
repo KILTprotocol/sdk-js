@@ -16,13 +16,14 @@ import type {
   KiltKeyringPair,
   SignerInterface,
   SubmittableExtrinsic,
+  TransactionSigner,
   UriFragment,
   VerificationMethod,
   VerificationRelationship,
 } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/sdk-js'
+import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { Crypto, Signers, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, Signers, SDKErrors, Multikey } from '@kiltprotocol/utils'
 import {
   type BaseNewDidKey,
   type ChainDidKey,
@@ -35,7 +36,6 @@ import {
   getStoreTx,
   didKeyToVerificationMethod,
   createLightDidDocument,
-  keypairToMultibaseKey,
   getFullDidFromVerificationMethod,
   multibaseKeyToDidKey,
   isValidDidVerificationType,
@@ -248,12 +248,12 @@ export async function createLocalDemoFullDidFromKeypair(
     publicKey,
     id: authKeyFragment,
   } = makeDidKeyFromKeypair(keypair)
-  const id = getFullDidFromVerificationMethod({
-    publicKeyMultibase: keypairToMultibaseKey({
+  const id = getFullDidFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair({
       type: keyType,
       publicKey,
-    }),
-  })
+    })
+  )
 
   const authKeyId = `${id}${authKeyFragment}` as const
   const result: DidDocument = {
@@ -422,7 +422,7 @@ export async function getStoreTxFromDidDocument(
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
-  payer: KiltKeyringPair | Blockchain.TransactionSigner,
+  payer: KiltKeyringPair | TransactionSigner,
   lightDidForId: DidDocument,
   signer: StoreDidCallback
 ): Promise<DidDocument> {

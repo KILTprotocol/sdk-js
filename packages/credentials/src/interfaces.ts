@@ -5,20 +5,41 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SignerInterface } from '@kiltprotocol/jcs-data-integrity-proofs-common'
-import type { Did, DidDocument } from '@kiltprotocol/types'
+import type { Extrinsic } from '@polkadot/types/interfaces'
+
+import type {
+  DidDocument,
+  DidHelpersAcceptedSigners,
+  HexString,
+  KiltAddress,
+  SharedArguments,
+  TransactionResult,
+} from '@kiltprotocol/types'
+
 import type { Proof, VerifiableCredential } from './V1/types'
-import type { IssueOpts } from './V1/KiltAttestationProofV1'
 
 export type SecuredDocument = { proof: Proof[] | Proof }
 
 export interface HolderOptions {
-  did: Did
-  didDocument?: DidDocument
-  signers: SignerInterface[]
+  didDocument: DidDocument
+  signers: DidHelpersAcceptedSigners[]
 }
 
-export type IssuerOptions = HolderOptions & IssueOpts
+export interface SimplifiedTransactionResult {
+  block: { hash: HexString }
+}
+
+export type SubmitOverride = (
+  args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+    call: Extrinsic
+  }
+) => Promise<SimplifiedTransactionResult | TransactionResult>
+
+interface SubmitterAddressOrOverride {
+  submitter: KiltAddress | SubmitOverride
+}
+
+export type IssuerOptions = HolderOptions & SubmitterAddressOrOverride
 
 export interface VerificationResult {
   verified: boolean

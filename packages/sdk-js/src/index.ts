@@ -19,9 +19,10 @@ import {
   Blockchain,
 } from '@kiltprotocol/chain-helpers'
 import { resolver as DidResolver } from '@kiltprotocol/did'
+import * as DidHelpers from './DidHelpers/index.js'
 
 const { signAndSubmitTx } = Blockchain // TODO: maybe we don't even need that if we have the identity class
-const { signerFromKeypair } = Signers
+const { getSignersForKeypair, generateKeypair } = Signers
 
 export {
   init,
@@ -31,7 +32,9 @@ export {
   Holder,
   Verifier,
   Issuer,
-  signerFromKeypair,
+  getSignersForKeypair,
+  generateKeypair,
   signAndSubmitTx,
   ConfigService,
+  DidHelpers,
 }

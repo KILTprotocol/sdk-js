@@ -5,17 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { isHex } from '@polkadot/util'
+import { isHex, u8aEq } from '@polkadot/util'
+import type { Keypair } from '@polkadot/util-crypto/types'
 
 import type {
-  DidSignature,
   Did,
+  DidDocument,
+  DidSignature,
   DidUrl,
+  KeyringPair,
+  MultibaseKeyPair,
   SignatureVerificationRelationship,
+  SignerInterface,
 } from '@kiltprotocol/types'
 
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, Signers } from '@kiltprotocol/utils'
 
+import { decodeAddress, isAddress } from '@polkadot/util-crypto'
 import { multibaseKeyToDidKey, parse, validateDid } from './Did.utils.js'
 import { resolve } from './DidResolver/DidResolver.js'
 
@@ -174,4 +180,72 @@ export function signatureFromJson(input: DidSignature | LegacyDidSignature): {
   })()
   const signature = Crypto.coToUInt8(input.signature)
   return { signature, signerUrl }
+}
+
+/**
+ * Creates signers for {@link Did} based on a {@link DidDocument} and one or more {@link Keypair} / {@link KeyringPair}.
+ *
+ * @param didDocument The Did's DidDocument.
+ * @param keypairs One or more signing key pairs.
+ * @returns An array of signers based on the key pair.
+ */
+export async function signersForDid(
+  didDocument: DidDocument,
+  ...keypairs: Array<SignerInterface | KeyringPair | Keypair | MultibaseKeyPair>
+): Promise<Array<SignerInterface<string, DidUrl>>> {
+  const didKeys = didDocument.verificationMethod?.map(
+    ({ publicKeyMultibase, id }) => ({
+      ...multibaseKeyToDidKey(publicKeyMultibase),
+      id,
+      publicKeyMultibase,
+    })
+  )
+  if (didKeys && didKeys.length !== 0) {
+    return (
+      await Promise.all(
+        keypairs.map((keypair) => {
+          // TODO: fix typing
+          let keyMatches: (key: any) => boolean
+          if ('publicKeyMultibase' in keypair) {
+            keyMatches = ({ publicKeyMultibase }) =>
+              publicKeyMultibase === keypair.publicKeyMultibase
+          } else if ('type' in keypair) {
+            keyMatches = ({ keyType, publicKey }) =>
+              keyType === keypair.type && u8aEq(publicKey, keypair.publicKey)
+          } else if ('publicKey' in keypair) {
+            keyMatches = ({ publicKey }) => u8aEq(publicKey, keypair.publicKey)
+          } else if (keypair.id?.startsWith(didDocument.id)) {
+            keyMatches = ({ id }) => keypair.id === id
+          } else if (keypair.id?.startsWith('z')) {
+            keyMatches = ({ publicKeyMultibase }) =>
+              publicKeyMultibase === keypair.id
+          } else if (isAddress(keypair.id)) {
+            const thisPubKey = decodeAddress(keypair.id)
+            keyMatches = ({ publicKey }) => u8aEq(publicKey, thisPubKey)
+          } else {
+            return []
+          }
+          const matchingKey = didKeys.find(keyMatches)
+          if (matchingKey) {
+            const id: DidUrl = matchingKey.id.startsWith('#')
+              ? `${didDocument.id}${matchingKey.id}`
+              : (matchingKey.id as DidUrl)
+            if ('algorithm' in keypair) {
+              return {
+                ...keypair,
+                id,
+              }
+            }
+            return Signers.getSignersForKeypair({
+              keypair,
+              id,
+              type: matchingKey.keyType,
+            })
+          }
+          return []
+        })
+      )
+    ).flat()
+  }
+  return []
 }

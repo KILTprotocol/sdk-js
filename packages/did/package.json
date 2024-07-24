@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/did",
-  "version": "0.100.0-alpha.1",
+  "version": "0.100.0-alpha.2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -40,15 +40,13 @@
     "@digitalbazaar/multikey-context": "^2.0.1",
     "@digitalbazaar/security-context": "^1.0.1",
     "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.3",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^12.0.0",
     "@polkadot/keyring": "^13.0.0",
     "@polkadot/types": "^12.0.0",
     "@polkadot/util": "^13.0.0",
-    "@polkadot/util-crypto": "^13.0.0",
-    "varint": "^6.0.0"
+    "@polkadot/util-crypto": "^13.0.0"
   },
   "peerDependenciesMeta": {
     "@kiltprotocol/augment-api": {

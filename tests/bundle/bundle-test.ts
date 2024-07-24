@@ -26,7 +26,7 @@ const {
   Holder,
   DidResolver,
   signAndSubmitTx,
-  signerFromKeypair,
+  getSignersForKeypair,
 } = kilt
 
 async function authorizeTx(
@@ -63,9 +63,9 @@ async function createFullDid(
 ) {
   const api = ConfigService.get('api')
 
-  const signer: SignerInterface = await signerFromKeypair({
+  const [signer] = await getSignersForKeypair({
     keypair,
-    algorithm: 'Ed25519',
+    type: 'Ed25519',
   })
   const address = signer.id
   const getSigners: (
@@ -129,10 +129,10 @@ async function runAll() {
       3,
     ]),
   }
-  const payerSigner = await signerFromKeypair<'Ed25519', KiltAddress>({
+  const [payerSigner] = (await getSignersForKeypair({
     keypair: faucet,
-    algorithm: 'Ed25519',
-  })
+    type: 'Ed25519',
+  })) as Array<SignerInterface<'Ed25519', KiltAddress>>
 
   console.log('faucet signer created')
 
@@ -281,9 +281,9 @@ async function runAll() {
   }
 
   const issued = await Issuer.issue(credential, {
-    did: alice.id,
-    signers: [...(await aliceSign(alice)), payerSigner],
-    submitterAccount: payerSigner.id,
+    didDocument: alice,
+    signers: [...aliceSign(alice), payerSigner],
+    submitter: payerSigner.id,
   })
   console.info('Credential issued')
 
@@ -312,8 +312,8 @@ async function runAll() {
   const presentation = await Holder.createPresentation(
     [derived],
     {
-      did: bob.id,
-      signers: await bobSign(bob),
+      didDocument: bob,
+      signers: bobSign(bob),
     },
     {},
     {
