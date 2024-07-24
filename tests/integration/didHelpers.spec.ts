@@ -409,6 +409,25 @@ describe('transact', () => {
       Verifier.verifyCredential({ credential: issued })
     ).resolves.toMatchObject({ verified: true })
   }, 30_000)
+
+  it('creates signed submittable', async () => {
+    const serialized = CType.toChain(cType)
+    const call = api.tx.ctype.add(serialized)
+
+    const { txHex } = await DidHelpers.transact({
+      api,
+      signers: [keypair],
+      submitter: paymentAccount,
+      didDocument,
+      call,
+      expectedEvents: [{ section: 'ctype', method: 'CTypeCreated' }],
+    }).getSubmittable({ signSubmittable: true })
+    expect(txHex).toContain('0x')
+    const parsed = api.tx(txHex)
+    expect(parsed.method).toHaveProperty('section', 'did')
+    expect(parsed.method).toHaveProperty('method', 'submitDidCall')
+    expect(parsed.isSigned).toBe(true)
+  }, 30_000)
 })
 
 afterAll(async () => {
