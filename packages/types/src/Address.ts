@@ -26,10 +26,10 @@ export type KiltAddress = KiltKeyringPair['address']
 declare module '@polkadot/keyring' {
   function encodeAddress(
     key: HexString | Uint8Array | string,
-    ss58Format?: Prefix
-  ): string
+    ss58Format: 38
+  ): KiltAddress
   function encodeAddress(
     key: HexString | Uint8Array | string,
-    ss58Format?: 38
-  ): KiltAddress
+    ss58Format?: Prefix
+  ): string
 }

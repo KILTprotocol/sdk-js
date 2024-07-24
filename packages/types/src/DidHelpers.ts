@@ -5,21 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { SubmittableResultValue } from '@polkadot/api/types'
+import type { GenericEvent } from '@polkadot/types'
 import type { Multikey } from '@kiltprotocol/utils'
-import type { DidDocument } from './Did'
-import type {
-  ApiPromise,
-  GenericEvent,
-  HexString,
-  KeyringPair,
-  SubmittableResultValue,
-} from './Imported'
 import type {
   MultibaseKeyPair,
   MultibasePublicKey,
   SignerInterface,
   TransactionSigner,
 } from './Signers'
+import { HexString, KeyringPair } from './Imported.js'
+import { DidDocument } from './Did.js'
+import { KiltAddress } from './Address.js'
 
 export interface TransactionResult {
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
@@ -105,7 +103,7 @@ export type SharedArguments = {
   didDocument: DidDocument
   api: ApiPromise
   signers: DidHelpersAcceptedSigners[]
-  submitter: KeyringPair | TransactionSigner
+  submitter: KeyringPair | TransactionSigner | MultibaseKeyPair | KiltAddress
 }
 
 type PublicKeyAndType = {

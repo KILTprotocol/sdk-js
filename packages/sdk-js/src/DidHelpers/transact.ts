@@ -6,18 +6,15 @@
  */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
-
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import type {
-  KiltAddress,
-  SharedArguments,
   SubmittableExtrinsic,
+  SharedArguments,
   TransactionHandlers,
 } from '@kiltprotocol/types'
-
+import { extractSubmitterSignerAndAccount, submitImpl } from './common.js'
 import { checkResultImpl } from './checkResult.js'
-import { submitImpl } from './common.js'
 
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).
@@ -35,7 +32,7 @@ export function transactInternal(
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (
     submitOptions:
       | {
-          signSubmittable?: boolean // default: true
+          signSubmittable?: boolean // default: false
           didNonce?: number | BigInt
         }
       | undefined = {}
@@ -48,13 +45,12 @@ export function transactInternal(
       api,
       expectedEvents,
     } = options
-    const { didNonce, signSubmittable = true } = submitOptions
+    const { didNonce, signSubmittable = false } = submitOptions
     const call = await callFactory()
     const didSigners = await signersForDid(didDocument, ...signers)
 
-    const submitterAccount = (
-      'address' in submitter ? submitter.address : submitter.id
-    ) as KiltAddress
+    const { submitterSigner, submitterAccount } =
+      extractSubmitterSignerAndAccount(submitter)
 
     let authorized: SubmittableExtrinsic = await authorizeTx(
       didDocument,
@@ -69,7 +65,10 @@ export function transactInternal(
     )
 
     if (signSubmittable) {
-      authorized = await Blockchain.signTx(authorized, submitter)
+      if (typeof submitterSigner === 'undefined') {
+        throw new Error('submitter does not include a secret key')
+      }
+      authorized = await Blockchain.signTx(authorized, submitterSigner)
     }
 
     return {
