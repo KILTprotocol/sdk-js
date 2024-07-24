@@ -74,29 +74,32 @@ export function convertPublicKey(pk: DidHelpersAcceptedPublicKeyEncodings): {
 export function extractSubmitterSignerAndAccount(
   submitter: KeyringPair | TransactionSigner | MultibaseKeyPair | KiltAddress
 ): {
-  submitterSigner: TransactionSigner | KeyringPair | undefined
+  submitterSigner?: TransactionSigner | KeyringPair | undefined
   submitterAccount: KiltAddress
 } {
-  let submitterSigner: TransactionSigner | KeyringPair | undefined
-  let submitterAccount: KiltAddress
-
   // KiltAddress
   if (typeof submitter === 'string') {
-    submitterAccount = submitter
+    return {
+      submitterAccount: submitter,
+    }
   }
   // KeyringPair
-  else if ('address' in submitter) {
-    submitterAccount = submitter.address as KiltAddress
-    submitterSigner = submitter
+  if ('address' in submitter) {
+    return {
+      submitterAccount: submitter.address as KiltAddress,
+      submitterSigner: submitter,
+    }
   }
   // Blockchain.TransactionSigner
-  else if ('id' in submitter) {
-    submitterAccount = submitter.id as KiltAddress
-    submitterSigner = submitter
+  if ('id' in submitter) {
+    return {
+      submitterAccount: submitter.id as KiltAddress,
+      submitterSigner: submitter,
+    }
   }
   // MultibaseKeyPair
-  else if ('publicKeyMultibase' in submitter) {
-    submitterAccount = Crypto.encodeAddress(
+  if ('publicKeyMultibase' in submitter) {
+    const submitterAccount = Crypto.encodeAddress(
       Multikey.decodeMultibaseKeypair(submitter).publicKey,
       38
     )
@@ -109,9 +112,10 @@ export function extractSubmitterSignerAndAccount(
       undefined,
       keypair.type === 'secp256k1' ? 'ecdsa' : keypair.type
     )
-    submitterSigner = keyring
-  } else {
-    throw new Error('type of submitter is invalid')
+    return {
+      submitterAccount,
+      submitterSigner: keyring,
+    }
   }
-  return { submitterSigner, submitterAccount }
+  throw new Error('type of submitter is invalid')
 }
