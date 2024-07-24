@@ -27,3 +27,9 @@ export type MultibaseSecretKey = {
   secretKeyMultibase: Base58BtcMultibaseString
 }
 export type MultibaseKeyPair = MultibasePublicKey & MultibaseSecretKey
+
+export type TypedKeypair<KeyTypes extends string> = {
+  publicKey: Uint8Array
+  secretKey: Uint8Array
+  type: KeyTypes
+}

@@ -18,7 +18,7 @@ import type {
   SignerInterface,
   TransactionHandlers,
 } from '@kiltprotocol/types'
-import { Crypto, Signers } from '@kiltprotocol/utils'
+import { Crypto, type Multikey, Signers } from '@kiltprotocol/utils'
 import { checkResultImpl } from './checkResult.js'
 
 import {
@@ -40,7 +40,7 @@ function implementsSignerInterface(input: any): input is SignerInterface {
  */
 export function createDid(
   options: Omit<SharedArguments, 'didDocument'> & {
-    fromPublicKey: DidHelpersAcceptedPublicKeyEncodings
+    fromPublicKey: DidHelpersAcceptedPublicKeyEncodings<Multikey.KnownTypeString>
   }
 ): TransactionHandlers {
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (

@@ -12,13 +12,14 @@ import {
   urlFragmentToChain,
 } from '@kiltprotocol/did'
 import type {
-  DidUrl,
-  SubmittableExtrinsic,
-  VerificationRelationship,
   DidHelpersAcceptedPublicKeyEncodings,
+  DidUrl,
   SharedArguments,
+  SubmittableExtrinsic,
   TransactionHandlers,
+  VerificationRelationship,
 } from '@kiltprotocol/types'
+import type { Multikey } from '@kiltprotocol/utils'
 
 import { convertPublicKey } from './common.js'
 import { transactInternal } from './transact.js'
@@ -34,7 +35,7 @@ import { transactInternal } from './transact.js'
  */
 export function setVerificationMethod(
   options: SharedArguments & {
-    publicKey: DidHelpersAcceptedPublicKeyEncodings
+    publicKey: DidHelpersAcceptedPublicKeyEncodings<Multikey.KnownTypeString>
     relationship: VerificationRelationship
   }
 ): TransactionHandlers {

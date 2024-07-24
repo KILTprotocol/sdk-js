@@ -15,6 +15,7 @@ import {
   MultibaseKeyPair,
   MultibasePublicKey,
   MultibaseSecretKey,
+  TypedKeypair,
 } from '@kiltprotocol/types'
 import { u8aConcat } from '@polkadot/util'
 import { base58Encode } from '@polkadot/util-crypto'
@@ -57,15 +58,10 @@ function multibase58BtcKeyBytesEncoding(
   return `z${base58BtcEncodedKey}`
 }
 
-type TypedKeypairWithOptionalSecretKey<KeyTypes extends string> = {
-  publicKey: Uint8Array
-  secretKey?: Uint8Array
-  type: KeyTypes
-}
-
-type TypedKeypair<KeyTypes extends string> = Required<
-  TypedKeypairWithOptionalSecretKey<KeyTypes>
->
+type TypedKeypairWithOptionalSecretKey<KeyTypes extends string> = Partial<
+  Pick<TypedKeypair<KeyTypes>, 'secretKey'>
+> &
+  Pick<TypedKeypair<KeyTypes>, 'publicKey' | 'type'>
 
 /**
  * Create a Multikey representation of a keypair, encoded in multibase-base58-btc, given its type and public/secret keys.

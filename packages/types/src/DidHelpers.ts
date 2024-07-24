@@ -8,12 +8,12 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { GenericEvent } from '@polkadot/types'
-import type { Multikey } from '@kiltprotocol/utils'
 import type {
   MultibaseKeyPair,
   MultibasePublicKey,
   SignerInterface,
   TransactionSigner,
+  TypedKeypair,
 } from './Signers'
 import { HexString, KeyringPair } from './Imported.js'
 import { DidDocument } from './Did.js'
@@ -106,12 +106,12 @@ export type SharedArguments = {
   submitter: KeyringPair | TransactionSigner | MultibaseKeyPair | KiltAddress
 }
 
-type PublicKeyAndType = {
-  publicKey: Uint8Array
-  type: Multikey.KnownTypeString
-}
+type PublicKeyAndType<KeyTypes extends string> = Pick<
+  TypedKeypair<KeyTypes>,
+  'publicKey' | 'type'
+>
 
-export type DidHelpersAcceptedPublicKeyEncodings =
+export type DidHelpersAcceptedPublicKeyEncodings<KeyTypes extends string> =
   | MultibasePublicKey['publicKeyMultibase']
   | MultibasePublicKey
-  | PublicKeyAndType // interface allows KeyringPair too
+  | PublicKeyAndType<KeyTypes> // interface allows KeyringPair too

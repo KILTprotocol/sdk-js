@@ -47,7 +47,9 @@ export async function submitImpl(
   return submittable.checkResult(result)
 }
 
-export function convertPublicKey(pk: DidHelpersAcceptedPublicKeyEncodings): {
+export function convertPublicKey(
+  pk: DidHelpersAcceptedPublicKeyEncodings<Multikey.KnownTypeString>
+): {
   publicKey: Uint8Array
   type: string
 } {
