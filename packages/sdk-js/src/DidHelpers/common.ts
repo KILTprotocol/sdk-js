@@ -77,8 +77,7 @@ export function extractSubmitterSignerAndAccount(
   submitterSigner: TransactionSigner | KeyringPair | undefined
   submitterAccount: KiltAddress
 } {
-  let submitterSigner: 
-  TransactionSigner | KeyringPair | undefined
+  let submitterSigner: TransactionSigner | KeyringPair | undefined
   let submitterAccount: KiltAddress
 
   // KiltAddress
