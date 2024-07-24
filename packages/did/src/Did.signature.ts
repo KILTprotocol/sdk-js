@@ -214,7 +214,9 @@ export async function signersForDid(
               keyType === keypair.type && u8aEq(publicKey, keypair.publicKey)
           } else if ('publicKey' in keypair) {
             keyMatches = ({ publicKey }) => u8aEq(publicKey, keypair.publicKey)
-          } else if (keypair.id.startsWith('z')) {
+          } else if (keypair.id?.startsWith(didDocument.id)) {
+            keyMatches = ({ id }) => keypair.id === id
+          } else if (keypair.id?.startsWith('z')) {
             keyMatches = ({ publicKeyMultibase }) =>
               publicKeyMultibase === keypair.id
           } else if (isAddress(keypair.id)) {

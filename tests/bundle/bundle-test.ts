@@ -26,7 +26,7 @@ const {
   Holder,
   DidResolver,
   signAndSubmitTx,
-  signerFromKeypair,
+  getSignersForKeypair,
 } = kilt
 
 async function authorizeTx(
@@ -63,9 +63,9 @@ async function createFullDid(
 ) {
   const api = ConfigService.get('api')
 
-  const signer: SignerInterface = await signerFromKeypair({
+  const [signer] = await getSignersForKeypair({
     keypair,
-    algorithm: 'Ed25519',
+    type: 'Ed25519',
   })
   const address = signer.id
   const getSigners: (
@@ -129,10 +129,10 @@ async function runAll() {
       3,
     ]),
   }
-  const payerSigner = await signerFromKeypair<'Ed25519', KiltAddress>({
+  const [payerSigner] = (await getSignersForKeypair({
     keypair: faucet,
-    algorithm: 'Ed25519',
-  })
+    type: 'Ed25519',
+  })) as Array<SignerInterface<'Ed25519', KiltAddress>>
 
   console.log('faucet signer created')
 
