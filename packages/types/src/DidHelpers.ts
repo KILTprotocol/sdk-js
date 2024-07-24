@@ -10,15 +10,16 @@ import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { GenericEvent } from '@polkadot/types'
 import type { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
-  DidDocument,
+  ApiPromise,
+  GenericEvent,
   HexString,
   KeyringPair,
   KiltAddress,
   MultibaseKeyPair,
   MultibasePublicKey,
   SignerInterface,
-} from '@kiltprotocol/types'
-import type { Multikey } from '@kiltprotocol/utils'
+  TransactionSigner,
+} from './Signers'
 
 export interface TransactionResult {
   status: 'confirmed' | 'failed' | 'rejected' | 'unknown'
@@ -95,7 +96,10 @@ export interface TransactionHandlers {
   }>
 }
 
-export type AcceptedSigners = SignerInterface | KeyringPair | MultibaseKeyPair
+export type DidHelpersAcceptedSigners =
+  | SignerInterface
+  | KeyringPair
+  | MultibaseKeyPair
 
 export type SharedArguments = {
   didDocument: DidDocument
@@ -113,7 +117,7 @@ type PublicKeyAndType = {
   type: Multikey.KnownTypeString
 }
 
-export type AcceptedPublicKeyEncodings =
+export type DidHelpersAcceptedPublicKeyEncodings =
   | MultibasePublicKey['publicKeyMultibase']
   | MultibasePublicKey
   | PublicKeyAndType // interface allows KeyringPair too

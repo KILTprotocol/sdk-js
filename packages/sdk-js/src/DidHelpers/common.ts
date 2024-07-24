@@ -18,10 +18,10 @@ import type {
 import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
 
 import type {
-  AcceptedPublicKeyEncodings,
+  DidHelpersAcceptedPublicKeyEncodings,
   SharedArguments,
   TransactionHandlers,
-} from './interfaces.js'
+} from '@kiltprotocol/types'
 
 export async function submitImpl(
   getSubmittable: TransactionHandlers['getSubmittable'],
@@ -49,7 +49,7 @@ export async function submitImpl(
   return submittable.checkResult(result)
 }
 
-export function convertPublicKey(pk: AcceptedPublicKeyEncodings): {
+export function convertPublicKey(pk: DidHelpersAcceptedPublicKeyEncodings): {
   publicKey: Uint8Array
   type: string
 } {

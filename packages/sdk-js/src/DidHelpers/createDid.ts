@@ -40,7 +40,7 @@ function implementsSignerInterface(input: any): input is SignerInterface {
  */
 export function createDid(
   options: Omit<SharedArguments, 'didDocument'> & {
-    fromPublicKey: AcceptedPublicKeyEncodings
+    fromPublicKey: DidHelpersAcceptedPublicKeyEncodings
   }
 ): TransactionHandlers {
   const getSubmittable: TransactionHandlers['getSubmittable'] = async (

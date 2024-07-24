@@ -12,13 +12,18 @@ import type { ApiPromise } from '@polkadot/api'
 import type { SubmittableResultValue } from '@polkadot/api/types'
 import type { BlockNumber } from '@polkadot/types/interfaces'
 import { u8aToHex, u8aToU8a } from '@polkadot/util'
+
 import type {
   FrameSystemEventRecord as EventRecord,
   SpRuntimeDispatchError,
 } from '@kiltprotocol/augment-api'
 import { resolver as DidResolver, signersForDid } from '@kiltprotocol/did'
-import type { Did, HexString } from '@kiltprotocol/types'
-import type { SharedArguments, TransactionResult } from './interfaces.js'
+import type {
+  Did,
+  HexString,
+  SharedArguments,
+  TransactionResult,
+} from '@kiltprotocol/types'
 
 function mapError(err: SpRuntimeDispatchError, api: ApiPromise): Error {
   if (err.isModule) {

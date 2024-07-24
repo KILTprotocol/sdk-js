@@ -6,10 +6,12 @@
  */
 
 import { signersForDid } from '@kiltprotocol/did'
-import type { DidUrl, SignerInterface } from '@kiltprotocol/types'
+import type {
+  DidUrl,
+  SignerInterface,
+  SharedArguments,
+} from '@kiltprotocol/types'
 import { Signers } from '@kiltprotocol/utils'
-
-import type { SharedArguments } from './interfaces.js'
 
 /**
  * Selects and returns a DID signer for a given purpose and algorithm.

@@ -9,7 +9,13 @@ import type { ApiPromise } from '@polkadot/api'
 
 import { CType } from '@kiltprotocol/credentials'
 import { getFullDidFromVerificationMethod } from '@kiltprotocol/did'
-import { DidHelpers, disconnect, generateKeypair } from '@kiltprotocol/sdk-js'
+import {
+  DidHelpers,
+  disconnect,
+  generateKeypair,
+  Issuer,
+  Verifier,
+} from '@kiltprotocol/sdk-js'
 import type {
   DidDocument,
   KeyringPair,
@@ -355,9 +361,12 @@ describe('transact', () => {
     ).asConfirmed.didDocument
   })
 
+  const cType = CType.fromProperties('thing', {
+    someProperty: { type: 'string' },
+  })
+
   it('creates a ctype', async () => {
-    const ctype = CType.fromProperties('thing', { thang: { type: 'string' } })
-    const serialized = CType.toChain(ctype)
+    const serialized = CType.toChain(cType)
     const call = api.tx.ctype.add(serialized)
 
     const result = await DidHelpers.transact({
@@ -371,7 +380,34 @@ describe('transact', () => {
 
     expect(result.status).toStrictEqual('confirmed')
     expect(result.asConfirmed.didDocument).toMatchObject(didDocument)
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+    await expect(CType.verifyStored(cType)).resolves.not.toThrow()
+  }, 30_000)
+
+  it('integrates with issue', async () => {
+    const unsigned = await Issuer.createCredential({
+      issuer: didDocument.id,
+      credentialSubject: { id: didDocument.id, someProperty: 'someValue' },
+      cType,
+    })
+
+    const issued = await Issuer.issue(unsigned, {
+      didDocument,
+      signers: [keypair],
+      submitter: async (args) =>
+        DidHelpers.transact({
+          ...args,
+          submitter: paymentAccount,
+          expectedEvents: [
+            { section: 'attestation', method: 'AttestationCreated' },
+          ],
+        }).submit(),
+    })
+
+    expect(issued).toHaveProperty('proof', expect.any(Object))
+
+    await expect(
+      Verifier.verifyCredential({ credential: issued })
+    ).resolves.toMatchObject({ verified: true })
   }, 30_000)
 })
 

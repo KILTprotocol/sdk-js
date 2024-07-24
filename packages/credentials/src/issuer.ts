@@ -13,15 +13,14 @@ import type { UnsignedVc, VerifiableCredential } from './V1/types.js'
 import type { CTypeLoader } from './ctype/index.js'
 import type { IssuerOptions } from './interfaces.js'
 
+export type { IssuerOptions }
+
 /**
  * Creates a new credential document as a basis for issuing a credential.
  * This document can be shown to users as a preview or be extended with additional properties before moving on to the second step of credential issuance:
  * Adding a `proof` to the document using the {@link issue} function to make the credential verifiable.
  *
  * @param arguments Object holding all arguments for credential creation.
- * @param arguments.type A type string identifying the (sub-)type of Verifiable Credential to be created.
- * This is added to the `type` field on the credential and determines the `credentialSchema` as well.
- * Defaults to the type {@link KiltCredentialV1.CREDENTIAL_TYPE KiltCredentialV1} which, for the time being, is also the only type supported.
  * @param arguments.issuer The Decentralized Identifier (DID) of the identity acting as the authority issuing this credential.
  * @param arguments.credentialSubject An object containing key-value pairs that represent claims made about the subject of the credential.
  * @param arguments.credentialSubject.id The DID identifying the subject of the credential, about which claims are made (the remaining key-value pairs).
@@ -29,20 +28,23 @@ import type { IssuerOptions } from './interfaces.js'
  * Each Kilt credential is based on exactly one of these subtypes. This argument is therefore mandatory and expects the schema definition of a CType.
  * @param arguments.cTypeDefinitions Some CTypes are themselves composed of definitions taken from other CTypes; in that case, these definitions need to be supplied here.
  * Alternatively, you can set a {@link CTypeLoader} function that takes care of fetching all required definitions.
+ * @param arguments.type A type string identifying the (sub-)type of Verifiable Credential to be created.
+ * This is added to the `type` field on the credential and determines the `credentialSchema` as well.
+ * Defaults to the type {@link KiltCredentialV1.CREDENTIAL_TYPE KiltCredentialV1} which, for the time being, is also the only type supported.
  * @returns A (potentially only partial) credential that is yet to be finalized and made verifiable with a proof.
  */
 export async function createCredential({
-  type,
   issuer,
   credentialSubject,
   cType,
   cTypeDefinitions,
+  type,
 }: {
-  type?: string
   issuer: Did
   credentialSubject: Record<string, unknown> & { id: Did }
   cType: ICType
   cTypeDefinitions?: ICType[] | CTypeLoader
+  type?: string
 }): Promise<UnsignedVc> {
   switch (type) {
     case undefined:
@@ -120,11 +122,8 @@ export async function issue(
   switch (proofType) {
     case undefined:
     case KiltAttestationProofV1.PROOF_TYPE: {
-      const { didDocument, did } = issuer
-
       const cred = await KiltAttestationProofV1.issue(
         credential as KiltCredentialV1.Interface,
-        didDocument ?? did,
         issuer
       )
 

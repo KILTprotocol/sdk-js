@@ -12,6 +12,7 @@ import type { SubmittableExtrinsic } from '@kiltprotocol/types'
 import { extractSubmitterSignerAndAccount, submitImpl } from './common.js'
 import type { SharedArguments, TransactionHandlers } from './interfaces.js'
 import { checkResultImpl } from './checkResult.js'
+import { submitImpl } from './common.js'
 
 /**
  * Instructs a transaction (state transition) as this DID (with this DID as the origin).

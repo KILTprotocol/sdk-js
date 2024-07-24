@@ -24,6 +24,7 @@ import type {
   KiltKeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
+  TransactionSigner,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -155,7 +156,7 @@ export const nftNameCType = CType.fromProperties('NFT collection name', {
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(
   extrinsic: SubmittableExtrinsic,
-  submitter: KeyringPair | Blockchain.TransactionSigner,
+  submitter: KeyringPair | TransactionSigner,
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
@@ -164,7 +165,7 @@ export async function submitTx(
 }
 
 export async function endowAccounts(
-  faucet: KeyringPair | Blockchain.TransactionSigner,
+  faucet: KeyringPair | TransactionSigner,
   addresses: string[],
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
