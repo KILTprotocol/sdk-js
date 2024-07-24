@@ -14,14 +14,12 @@ import type {
   KeyringPair,
   KiltAddress,
   MultibaseKeyPair,
-} from '@kiltprotocol/types'
-import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
-
-import type {
   DidHelpersAcceptedPublicKeyEncodings,
   SharedArguments,
   TransactionHandlers,
+  TransactionSigner,
 } from '@kiltprotocol/types'
+import { Keyring, Multikey, Crypto } from '@kiltprotocol/utils'
 
 export async function submitImpl(
   getSubmittable: TransactionHandlers['getSubmittable'],
@@ -74,16 +72,13 @@ export function convertPublicKey(pk: DidHelpersAcceptedPublicKeyEncodings): {
 }
 
 export function extractSubmitterSignerAndAccount(
-  submitter:
-    | KeyringPair
-    | Blockchain.TransactionSigner
-    | MultibaseKeyPair
-    | KiltAddress
+  submitter: KeyringPair | TransactionSigner | MultibaseKeyPair | KiltAddress
 ): {
-  submitterSigner: Blockchain.TransactionSigner | KeyringPair | undefined
+  submitterSigner: TransactionSigner | KeyringPair | undefined
   submitterAccount: KiltAddress
 } {
-  let submitterSigner: Blockchain.TransactionSigner | KeyringPair | undefined
+  let submitterSigner: 
+  TransactionSigner | KeyringPair | undefined
   let submitterAccount: KiltAddress
 
   // KiltAddress

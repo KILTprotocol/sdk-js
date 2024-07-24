@@ -12,7 +12,12 @@ import {
   type NewDidVerificationKey,
   signingMethodTypes,
 } from '@kiltprotocol/did'
-import type { SignerInterface } from '@kiltprotocol/types'
+import type {
+  DidHelpersAcceptedPublicKeyEncodings,
+  SharedArguments,
+  SignerInterface,
+  TransactionHandlers,
+} from '@kiltprotocol/types'
 import { Crypto, Signers } from '@kiltprotocol/utils'
 import { checkResultImpl } from './checkResult.js'
 
@@ -21,11 +26,6 @@ import {
   extractSubmitterSignerAndAccount,
   submitImpl,
 } from './common.js'
-import type {
-  AcceptedPublicKeyEncodings,
-  SharedArguments,
-  TransactionHandlers,
-} from './interfaces.js'
 
 function implementsSignerInterface(input: any): input is SignerInterface {
   return 'algorithm' in input && 'id' in input && 'sign' in input
