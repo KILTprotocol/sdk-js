@@ -6,8 +6,13 @@
  */
 
 import { serviceToChain, urlFragmentToChain } from '@kiltprotocol/did'
-import type { DidUrl, Service, UriFragment } from '@kiltprotocol/types'
-import { SharedArguments, TransactionHandlers } from './interfaces.js'
+import type {
+  DidUrl,
+  Service,
+  SharedArguments,
+  TransactionHandlers,
+  UriFragment,
+} from '@kiltprotocol/types'
 import { transactInternal } from './transact.js'
 
 /**

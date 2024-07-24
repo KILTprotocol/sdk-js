@@ -10,6 +10,7 @@ import type { CryptoSuite } from '@kiltprotocol/jcs-data-integrity-proofs-common
 
 import { Did } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { signersForDid } from '@kiltprotocol/did'
 
 import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
 import { VerifiableCredential, VerifiablePresentation } from './V1/types.js'
@@ -159,13 +160,13 @@ export async function createPresentation(
     now?: Date
   } = {}
 ): Promise<VerifiablePresentation> {
-  const { did, didDocument, signers } = holder
+  const { didDocument, signers } = holder
   const { validFrom, validUntil, verifier } = presentationOptions
   const { proofPurpose, proofType, challenge, domain, now } = proofOptions
 
   let presentation = await Presentation.create({
     credentials,
-    holder: did,
+    holder: didDocument.id,
     validFrom: validFrom ?? now,
     validUntil,
     verifier,
@@ -184,8 +185,8 @@ export async function createPresentation(
 
   presentation = await DataIntegrity.signWithDid({
     document: presentation,
-    signerDid: didDocument ?? did,
-    signers,
+    signerDid: didDocument,
+    signers: await signersForDid(didDocument, ...signers),
     proofPurpose,
     challenge,
     domain,

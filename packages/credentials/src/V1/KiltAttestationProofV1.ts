@@ -5,7 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { QueryableStorageEntry } from '@polkadot/api/types'
+import type { Option, u64, Vec } from '@polkadot/types'
+import type {
+  AccountId,
+  Extrinsic,
+  Hash,
+} from '@polkadot/types/interfaces/types.js'
+import type { IEventData } from '@polkadot/types/types'
 import {
+  hexToU8a,
   stringToU8a,
   u8aCmp,
   u8aConcatStrict,
@@ -19,40 +29,37 @@ import {
   encodeAddress,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import type { ApiPromise } from '@polkadot/api'
-import type { QueryableStorageEntry } from '@polkadot/api/types'
-import type { Option, u64, Vec } from '@polkadot/types'
-import type {
-  AccountId,
-  EventRecord,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces/types.js'
-import type { IEventData } from '@polkadot/types/types'
 
-import {
-  authorizeTx,
-  getFullDid,
-  validateDid,
-  fromChain,
-} from '@kiltprotocol/did'
-import { JsonSchema, SDKErrors, Caip19, Signers } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import {
+  authorizeTx,
+  fromChain,
+  getFullDid,
+  signersForDid,
+  validateDid,
+} from '@kiltprotocol/did'
 import type {
-  DidDocument,
   Did,
   ICType,
   IDelegationNode,
   KiltAddress,
-  SignerInterface,
+  SharedArguments,
 } from '@kiltprotocol/types'
-import * as CType from '../ctype/index.js'
+import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
 
+import { CTypeLoader } from '../ctype/CTypeLoader.js'
+import * as CType from '../ctype/index.js'
+import {
+  IssuerOptions,
+  SimplifiedTransactionResult,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  SubmitOverride,
+} from '../interfaces.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   validateStructure as validateCredentialStructure,
@@ -60,26 +67,25 @@ import {
 } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
-  jsonLdExpandCredentialSubject,
-  ExpandedContents,
-  delegationIdFromAttesterDelegation,
-  getDelegationNodeIdForCredential,
   assertMatchingConnection,
   credentialIdFromRootHash,
   credentialIdToRootHash,
-  KILT_CREDENTIAL_IRI_PREFIX,
+  delegationIdFromAttesterDelegation,
+  ExpandedContents,
+  getDelegationNodeIdForCredential,
+  jsonLdExpandCredentialSubject,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+  KILT_CREDENTIAL_IRI_PREFIX,
   spiritnetGenesisHash,
 } from './common.js'
+import { KiltRevocationStatusV1 } from './index.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
   KiltAttesterLegitimationV1,
   KiltCredentialV1,
 } from './types.js'
-import { CTypeLoader } from '../ctype/CTypeLoader.js'
-import { KiltRevocationStatusV1 } from './index.js'
 
 export type Interface = KiltAttestationProofV1
 
@@ -659,42 +665,41 @@ export function finalizeProof(
   }
 }
 
-export interface TransactionResult {
-  status: 'InBlock' | 'Finalized'
-  includedAt: { blockHash: Uint8Array; blockHeight?: BigInt; blockTime?: Date }
-  events?: EventRecord[]
-}
+async function defaultTxSubmit({
+  didDocument,
+  call,
+  signers,
+  submitter,
+}: Omit<SharedArguments, 'submitter'> & {
+  call: Extrinsic
+  submitter: KiltAddress
+}): Promise<SimplifiedTransactionResult> {
+  let extrinsic = await authorizeTx(
+    didDocument,
+    call,
+    await signersForDid(didDocument, ...signers),
+    submitter
+  )
 
-type CustomHandlers = {
-  authorizeTx: (tx: Extrinsic) => Promise<Extrinsic>
-  submitTx: (tx: Extrinsic) => Promise<TransactionResult>
-}
-type SignersAndSubmitter = {
-  submitterAccount: KiltAddress
-  signers: readonly SignerInterface[]
-}
-export type IssueOpts =
-  | (CustomHandlers & Partial<SignersAndSubmitter>)
-  | (Partial<CustomHandlers> & SignersAndSubmitter)
-
-async function defaultTxSubmit(
-  tx: Extrinsic,
-  submitterAccount: KiltAddress,
-  signers: readonly SignerInterface[],
-  api: ApiPromise
-): Promise<TransactionResult> {
-  const extrinsic = api.tx(tx)
-  const signed = extrinsic.isSigned
-    ? extrinsic
-    : await extrinsic.signAsync(submitterAccount, {
-        signer: Signers.getPolkadotSigner(signers),
-      })
-  const result = await Blockchain.submitSignedTx(signed, {
+  if (!extrinsic.isSigned) {
+    const accountSigners = (
+      await Promise.all(
+        signers.map((keypair) =>
+          'algorithm' in keypair
+            ? [keypair]
+            : Signers.getSignersForKeypair({ keypair })
+        )
+      )
+    ).flat()
+    extrinsic = await extrinsic.signAsync(submitter, {
+      signer: Signers.getPolkadotSigner(accountSigners),
+    })
+  }
+  const result = await Blockchain.submitSignedTx(extrinsic, {
     resolveOn: Blockchain.IS_FINALIZED,
   })
   const blockHash = result.status.asFinalized
-  const { events } = result
-  return { status: 'Finalized', includedAt: { blockHash }, events }
+  return { block: { hash: blockHash.toHex() } }
 }
 
 /**
@@ -702,71 +707,57 @@ async function defaultTxSubmit(
  * Creates a complete {@link KiltAttestationProofV1} for issuing a new credential.
  *
  * @param credential A {@link KiltCredentialV1} for which a proof shall be created.
- * @param issuer The DID or DID Document of the DID acting as the issuer.
- * @param options Additional parameters.
- * @param options.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).
- * This can be omitted if both a custom authorizeTx & submitTx are given.
- * @param options.submitterAccount The account which counter-signs the transaction to cover the transaction fees.
- * Can be omitted if both a custom authorizeTx & submitTx are given.
- * @param options.authorizeTx Allows overriding the function that takes a transaction and adds authorization by signing it with keys associated with the issuer DID.
- * @param options.submitTx Allows overriding the function that takes the DID-signed transaction and submits it to a blockchain node, tracking its inclusion in a block.
- * It is expected to at least return the hash of the block at which the transaction was processed.
+ * @param issuer Parameters describing the credential issuer.
+ * @param issuer.didDocument The DID Document of the DID acting as the issuer.
+ * @param issuer.signers An array of signer interfaces related to the issuer's keys. The function selects the appropriate handlers for all signatures required for issuance (e.g., authorizing the on-chain anchoring of the credential).
+ * @param issuer.submitter Either the account which counter-signs the transaction to cover the transaction fees,
+ * _OR_ a user-provided implementation did-authorization and submitting logic following the {@link SubmitOverride} interface.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function issue(
   credential: Omit<UnissuedCredential, 'issuer'>,
-  issuer: Did | DidDocument,
-  options: IssueOpts
+  issuer: IssuerOptions
 ): Promise<KiltCredentialV1> {
+  const { didDocument, signers, submitter } = issuer
   const updatedCredential = {
     ...credential,
-    issuer: typeof issuer === 'string' ? issuer : issuer.id,
+    issuer: didDocument.id,
   }
   const [proof, callArgs] = initializeProof(updatedCredential)
   const api = ConfigService.get('api')
   const call = api.tx.attestation.add(...callArgs)
 
-  const {
+  const args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+    call: Extrinsic
+  } = {
+    didDocument,
     signers,
-    submitterAccount,
-    authorizeTx: customAuthorizeTx,
-    submitTx: customSubmitTx,
-    ...otherParams
-  } = options
+    api,
+    call,
+  }
+  const transactionPromise =
+    typeof submitter === 'function'
+      ? submitter(args)
+      : defaultTxSubmit({
+          ...args,
+          submitter,
+        })
 
-  if (
-    !(customAuthorizeTx && customSubmitTx) &&
-    !(signers && submitterAccount)
-  ) {
-    throw new Error(
-      '`signers` and `submitterAccount` are required options if authorizeTx or submitTx are not given'
-    )
+  let result = await transactionPromise
+  if ('status' in result) {
+    if (result.status !== 'confirmed') {
+      throw new SDKErrors.SDKError(
+        `Unexpected transaction status ${result.status}; the transaction should be "confirmed" for issuance to continue`
+      )
+    }
+    result = result.asConfirmed
   }
 
-  /* eslint-disable @typescript-eslint/no-non-null-assertion -- we've checked the appropriate combination of parameters above, but typescript does not follow */
-  const didSigned = customAuthorizeTx
-    ? await customAuthorizeTx(call)
-    : await authorizeTx(issuer, call, signers!, submitterAccount!, otherParams)
+  const blockHash = hexToU8a(result.block.hash)
 
-  const transactionPromise = customSubmitTx
-    ? customSubmitTx(didSigned)
-    : defaultTxSubmit(didSigned, submitterAccount!, signers!, api)
-  /* eslint-enable @typescript-eslint/no-non-null-assertion */
-
-  const {
-    status,
-    includedAt: { blockHash, blockTime },
-  } = await transactionPromise
-
-  if (status !== 'Finalized' && status !== 'InBlock') {
-    throw new SDKErrors.SDKError(
-      `Unexpected transaction status ${status}; the transaction should be "InBlock" or "Finalized" for issuance to continue`
-    )
-  }
-
-  const timestamp =
-    blockTime ??
-    new Date((await api.query.timestamp.now.at(blockHash)).toNumber())
+  const timestamp = new Date(
+    (await (await api.at(blockHash)).query.timestamp.now()).toNumber()
+  )
   return finalizeProof(updatedCredential, proof, {
     blockHash,
     timestamp,

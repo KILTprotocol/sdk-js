@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aEq } from '@polkadot/util'
+import { u8aEq, u8aToHex } from '@polkadot/util'
 import { base58Decode } from '@polkadot/util-crypto'
 import {
   Ed25519Signature2020,
@@ -36,6 +36,7 @@ import {
   KiltCredentialV1,
   Types,
   W3C_CREDENTIAL_CONTEXT_URL,
+  type Issuer,
 } from '@kiltprotocol/credentials'
 
 import {
@@ -448,28 +449,23 @@ describe('issuance', () => {
   let toBeSigned: CredentialStub
 
   const { issuer } = attestedVc
-  const signer: SignerInterface<'Sr25519', DidUrl> = {
-    sign: async () => new Uint8Array(32),
-    algorithm: 'Sr25519',
-    id: `${issuer}#1`,
-  }
-  const transactionHandler: KiltAttestationProofV1.IssueOpts = {
-    signers: [signer],
-    submitterAccount: attester,
-    submitTx: async () => {
-      return {
-        status: 'Finalized',
-        includedAt: {
-          blockHash,
-          blockTime: timestamp,
-        },
-      }
+  const signers: Array<SignerInterface<'Sr25519', DidUrl>> = [
+    {
+      sign: async () => new Uint8Array(32),
+      algorithm: 'Sr25519',
+      id: `${issuer}#1`,
     },
-    authorizeTx: async (tx) => {
-      txArgs = tx.args
-      return tx
-    },
+  ]
+
+  const submitter: Issuer.IssuerOptions['submitter'] = async ({ call }) => {
+    txArgs = call.args
+    return {
+      block: {
+        hash: u8aToHex(blockHash),
+      },
+    }
   }
+
   beforeEach(() => {
     toBeSigned = {
       credentialSubject: attestedVc.credentialSubject,
@@ -481,8 +477,7 @@ describe('issuance', () => {
     let newCred: Partial<KiltCredentialV1.Interface> =
       await issuanceSuite.anchorCredential(
         { ...toBeSigned },
-        issuer,
-        transactionHandler
+        { didDocument, signers, submitter }
       )
     newCred = await vcjs.issue({
       credential: newCred,
@@ -540,8 +535,7 @@ describe('issuance', () => {
       {
         ...toBeSigned,
       },
-      issuer,
-      transactionHandler
+      { didDocument, signers, submitter }
     )
     newCred = (await vcjs.issue({
       credential: {

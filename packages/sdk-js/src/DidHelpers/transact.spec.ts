@@ -6,7 +6,11 @@
  */
 
 import { authorizeTx, resolver } from '@kiltprotocol/did'
-import type { DidDocument, KiltKeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDocument,
+  KiltKeyringPair,
+  TransactionResult,
+} from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { SubmittableResult } from '@polkadot/api'
 
@@ -16,7 +20,6 @@ import {
 } from '../../../../tests/testUtils/index.js'
 import { makeAttestationCreatedEvents } from '../../../../tests/testUtils/testData.js'
 import { ConfigService } from '../index.js'
-import { TransactionResult } from './interfaces.js'
 import { transact } from './transact.js'
 
 jest.mock('@kiltprotocol/did', () => {
