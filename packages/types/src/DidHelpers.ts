@@ -62,7 +62,7 @@ export interface TransactionHandlers {
    * @returns A Promise resolving to the DID document and info on the success of the transaction.
    */
   submit(options?: {
-    awaitFinalized?: boolean // default: false
+    awaitFinalized?: boolean // default: true
     didNonce?: number | BigInt
   }): Promise<TransactionResult>
   /**
