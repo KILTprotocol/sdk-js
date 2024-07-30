@@ -55,10 +55,10 @@ function pointerToAttributeName(
  * @param credential A Verifiable Credential containing a proof.
  * @param proofOptions Options for creating the derived proof.
  * @param proofOptions.disclose Allows selecting which claims/attributes in the credential should be disclosed, hiding others.
- * @param proofOptions.disclose.only An array of credentialPath expressions selecting attributes to be disclosed.
+ * @param proofOptions.disclose.only An array of JSON-path (IETF RFC 6901) expressions selecting attributes to be disclosed.
  * All other (non-mandatory) attributes that can be hidden will be hidden.
  * Takes precedence over `allBut`.
- * @param proofOptions.disclose.allBut An array of credentialPath expressions selecting attributes to be hidden.
+ * @param proofOptions.disclose.allBut An array of JSON-path (IETF RFC 6901) expressions selecting attributes to be hidden.
  * This means that all other properties are being revealed.
  * Selecting mandatory properties will result in an error.
  * It is ignored if `only` is set.
@@ -121,7 +121,7 @@ export async function deriveProof(
  * @param credentials Array of one or more Verifiable Credentials to be included in the presentation.
  * @param holder Interfaces for interacting with the holder identity for the purpose of generating a presentation proof.
  * @param holder.did The Decentralized Identifier (DID) of the holder.
- * @param holder.didDocument The DID Document of the holder. If omitted, the holder DID will be resolved internally to retrieve the document.
+ * @param holder.didDocument The DID Document of the holder.
  * @param holder.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the holder DID Document.
  * The function will select the first signer that matches requirements around signature algorithm and relationship of the key to the DID as given by the DID Document.
  * @param presentationOptions Object holding optional arguments for scoping the presentation.

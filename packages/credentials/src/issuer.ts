@@ -11,7 +11,8 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { KiltAttestationProofV1, KiltCredentialV1 } from './V1/index.js'
 import type { UnsignedVc, VerifiableCredential } from './V1/types.js'
 import type { CTypeLoader } from './ctype/index.js'
-import type { IssuerOptions } from './interfaces.js'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { IssuerOptions, SubmitOverride } from './interfaces.js'
 
 export type { IssuerOptions }
 
@@ -91,15 +92,14 @@ export async function createCredential({
  *
  * @param credential A credential document as returned by {@link createCredential}.
  * @param issuer Interfaces for interacting with the issuer identity for the purpose of generating a proof.
- * @param issuer.did The Decentralized Identifier (DID) of the issuer.
- * @param issuer.didDocument The DID Document of the issuer. If omitted, the issuer DID will be resolved internally to retrieve the document.
+ * @param issuer.didDocument The DID Document of the issuer.
  * @param issuer.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
  * The function will select the first signer that matches requirements around signature algorithm and relationship of the key to the DID as given by the DID Document.
- * @param issuer.submitterAccount Some proof types require making transactions to effect state changes on the KILT blockchain.
+ * @param issuer.submitter Some proof types require making transactions to effect state changes on the KILT blockchain.
  * The blockchain account whose address is specified here will be used to cover all transaction fees and deposits due for this operation.
  * As transactions to the blockchain need to be signed, `signers` is expected to contain a signer interface where the `id` matches this address.
- * @param issuer.authorizeTx Optional. Allows customizing the way state changes on the KILT blockchain are authorized with a signature made with one of the issuer's DID keys.
- * @param issuer.submitTx Optional. Allows customizing the way transactions are signed by the submitter account and submitted to the KILT blockchain.
+ *
+ * Alternatively, you can pass a {@link SubmitOverride} callback that takes care of Did-authorizing and submitting the transaction.
  * If you are using a service that helps you submit and pay for transactions, this is your point of integration to it.
  * @param proofOptions Options that control proof generation.
  * @param proofOptions.proofType The type of proof to be created.
