@@ -9,13 +9,12 @@
 
 import { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 
-const { kilt } = window
-const Kilt = kilt
+const { kilt: Kilt } = window
 
 async function runAll() {
-  const api = await kilt.connect('ws://127.0.0.1:9944')
+  const api = await Kilt.connect('ws://127.0.0.1:9944')
 
-  const authenticationKeyPair = kilt.generateKeypair({ type: 'ed25519' })
+  const authenticationKeyPair = Kilt.generateKeypair({ type: 'ed25519' })
 
   const faucet = {
     publicKey: new Uint8Array([
@@ -29,7 +28,7 @@ async function runAll() {
     ]),
   }
 
-  const [submitter] = (await kilt.getSignersForKeypair({
+  const [submitter] = (await Kilt.getSignersForKeypair({
     keypair: faucet,
     type: 'Ed25519',
   })) as Array<SignerInterface<'Ed25519', KiltAddress>>
@@ -191,7 +190,7 @@ async function runAll() {
   // Create and issue a credential using our Did.
   // The holder is also our Did, so we are issuing to ourselves here.
   //
-  const unsigned = await kilt.Issuer.createCredential({
+  const unsigned = await Kilt.Issuer.createCredential({
     issuer: didDocument.id,
     credentialSubject: {
       id: didDocument.id,
@@ -201,7 +200,7 @@ async function runAll() {
     cType: DriversLicense,
   })
 
-  const credential = await kilt.Issuer.issue(unsigned, {
+  const credential = await Kilt.Issuer.issue(unsigned, {
     didDocument,
     signers: [...signers, submitter],
     submitter: submitter.id,
@@ -214,11 +213,11 @@ async function runAll() {
   // Create a derived credential that only contains selected properties (selective disclosure), then create a credential presentation for it.
   // The presentation includes a proof of ownership and is scoped to a verified and time frame to prevent unauthorized re-use.
   //
-  const derived = await kilt.Holder.deriveProof(credential, {
+  const derived = await Kilt.Holder.deriveProof(credential, {
     disclose: { only: ['/credentialSubject/age'] },
   })
 
-  const presentation = await kilt.Holder.createPresentation(
+  const presentation = await Kilt.Holder.createPresentation(
     [derived],
     {
       didDocument,
@@ -238,7 +237,7 @@ async function runAll() {
   // - The current time is outside of the validity time frame of the presentation.
   // - The verifier in the presentation does not match the one specified.
   //
-  const { verified, error } = await kilt.Verifier.verifyPresentation({
+  const { verified, error } = await Kilt.Verifier.verifyPresentation({
     presentation,
     verificationCriteria: {
       verifier: didDocument.id,
