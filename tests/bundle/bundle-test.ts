@@ -15,21 +15,8 @@ const Kilt = kilt
 async function runAll() {
   const api = await kilt.connect('ws://127.0.0.1:9944')
 
-  const didPublicKey = new Uint8Array([
-    136, 220, 52, 23, 213, 5, 142, 196, 180, 80, 62, 12, 18, 234, 26, 10, 137,
-    190, 32, 15, 233, 137, 34, 66, 61, 67, 52, 1, 79, 166, 176, 238,
-  ])
-  const [didKeypair] = await kilt.getSignersForKeypair({
-    keypair: {
-      publicKey: didPublicKey,
-      secretKey: new Uint8Array([
-        171, 248, 229, 189, 190, 48, 198, 86, 86, 192, 163, 203, 209, 129, 255,
-        138, 86, 41, 74, 105, 223, 237, 210, 121, 130, 170, 206, 74, 118, 144,
-        145, 21,
-      ]),
-    },
-    type: 'Ed25519',
-  })
+  const authenticationKeyPair = kilt.generateKeypair({ type: 'ed25519' })
+
   const faucet = {
     publicKey: new Uint8Array([
       238, 93, 102, 137, 215, 142, 38, 187, 91, 53, 176, 68, 23, 64, 160, 101,
@@ -64,9 +51,9 @@ async function runAll() {
 
   const transactionHandler = Kilt.DidHelpers.createDid({
     api,
-    signers: [didKeypair],
+    signers: [authenticationKeyPair],
     submitter,
-    fromPublicKey: { publicKey: didPublicKey, type: 'ed25519' },
+    fromPublicKey: authenticationKeyPair.publicKeyMultibase,
   })
 
   // The `createDid` function returns a transaction handler, which includes two methods:
@@ -85,7 +72,7 @@ async function runAll() {
   }
 
   // Get the DID Document from the transaction result.
-  let { didDocument } = didDocumentTransactionResult.asConfirmed
+  let { didDocument, signers } = didDocumentTransactionResult.asConfirmed
 
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Create Verification Method ┃
@@ -103,24 +90,22 @@ async function runAll() {
   // Note: setting a verification method will remove any existing method for the specified relationship.
 
   // TODO: use mnemonic here.
-  // const seed = randomAsU8a(32)
-  // const keyAgreementKeypair = Crypto.makeEncryptionKeypairFromSeed(seed)
-  const keyAgreementKeypair = Kilt.generateKeypair({
-    type: 'x25519',
+  const assertionKeyPair = Kilt.generateKeypair({
+    type: 'sr25519',
   })
   const vmTransactionResult = await Kilt.DidHelpers.setVerificationMethod({
     api,
     didDocument,
-    signers: [didKeypair],
+    signers: [...signers, assertionKeyPair],
     submitter,
-    publicKey: keyAgreementKeypair,
-    relationship: 'keyAgreement',
+    publicKey: assertionKeyPair.publicKeyMultibase,
+    relationship: 'assertionMethod',
   }).submit()
 
   if (vmTransactionResult.status !== 'confirmed') {
     throw new Error('add verification method failed')
   }
-  ;({ didDocument } = vmTransactionResult.asConfirmed)
+  ;({ didDocument, signers } = vmTransactionResult.asConfirmed)
 
   // ┏━━━━━━━━━━━━━━━━━┓
   // ┃ Claim web3name  ┃
@@ -129,7 +114,7 @@ async function runAll() {
     api,
     didDocument,
     submitter,
-    signers: [didKeypair],
+    signers,
     name: 'example123',
   }).submit()
 
@@ -137,7 +122,7 @@ async function runAll() {
     throw new Error('claim web3name failed')
   }
 
-  // TODO: does the DID Document change after adding a w3n?
+  // The didDocument now contains an `alsoKnownAs` entry.
   ;({ didDocument } = claimW3nTransactionResult.asConfirmed)
 
   // ┏━━━━━━━━━━━━━━━━┓
@@ -146,7 +131,7 @@ async function runAll() {
   const addServiceTransactionResult = await Kilt.DidHelpers.addService({
     api,
     submitter,
-    signers: [didKeypair],
+    signers,
     didDocument,
     // TODO:  change service endpoint.
     service: {
@@ -162,6 +147,110 @@ async function runAll() {
   ;({ didDocument } = addServiceTransactionResult.asConfirmed)
 
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Register a CType             ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Register a credential type on chain so we can issue credentials against it.
+  //
+  // Note:
+  // We are registering a CType that has been created previously using functionality from the @kiltprotocol/credentials package.
+  // The @kiltprotocol/sdk-js package and bundle do not currently offer support for this.
+  //
+  // TODO: Decide if CType definitions are expected to be hardcoded in application logic, at least for credential issuance.
+  // Verifying credentials / presentations is already possible even if the CType definition is not known.
+  //
+  const DriversLicenseDef =
+    '{"$schema":"ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq/","additionalProperties":false,"properties":{"age":{"type":"integer"},"name":{"type":"string"}},"title":"Drivers License","type":"object"}'
+
+  const createCTypeResult = await Kilt.DidHelpers.transact({
+    api,
+    didDocument,
+    signers,
+    submitter,
+    call: api.tx.ctype.add(DriversLicenseDef),
+    expectedEvents: [{ section: 'CType', method: 'CTypeCreated' }],
+  }).submit()
+
+  if (createCTypeResult.status !== 'confirmed') {
+    throw new Error('CType creation failed')
+  }
+
+  // TODO: We don't have the CType id in the definition, so we need to get it from the events.
+  const ctypeHash = createCTypeResult.asConfirmed.events
+    .find((event) => api.events.ctype.CTypeCreated.is(event))
+    ?.data[1].toHex()
+
+  // TODO: Should we at least be able to load an existing CType from the chain?
+  const DriversLicense = JSON.parse(DriversLicenseDef)
+  DriversLicense.$id = `kilt:ctype:${ctypeHash}`
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Issue a Credential           ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Create and issue a credential using our Did.
+  // The holder is also our Did, so we are issuing to ourselves here.
+  //
+  const unsigned = await kilt.Issuer.createCredential({
+    issuer: didDocument.id,
+    credentialSubject: {
+      id: didDocument.id,
+      age: 22,
+      name: 'Gustav',
+    },
+    cType: DriversLicense,
+  })
+
+  const credential = await kilt.Issuer.issue(unsigned, {
+    didDocument,
+    signers: [...signers, submitter],
+    submitter: submitter.id,
+  })
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Create a Presentation        ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Create a derived credential that only contains selected properties (selective disclosure), then create a credential presentation for it.
+  // The presentation includes a proof of ownership and is scoped to a verified and time frame to prevent unauthorized re-use.
+  //
+  const derived = await kilt.Holder.deriveProof(credential, {
+    disclose: { only: ['/credentialSubject/age'] },
+  })
+
+  const presentation = await kilt.Holder.createPresentation(
+    [derived],
+    {
+      didDocument,
+      signers,
+    },
+    { verifier: didDocument.id, validUntil: new Date(Date.now() + 100_000) }
+  )
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Verify a Presentation        ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Verify a presentation.
+  //
+  // Verification would fail if:
+  // - The presentation is not signed by the holder's Did.
+  // - The current time is outside of the validity time frame of the presentation.
+  // - The verifier in the presentation does not match the one specified.
+  //
+  const { verified, error } = await kilt.Verifier.verifyPresentation({
+    presentation,
+    verificationCriteria: {
+      verifier: didDocument.id,
+      proofPurpose: 'authentication',
+    },
+  })
+
+  if (verified !== true) {
+    throw new Error(`failed to verify credential: ${JSON.stringify(error)}`)
+  }
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Remove a Verification Method ┃
   // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
   //
@@ -174,11 +263,11 @@ async function runAll() {
     await Kilt.DidHelpers.removeVerificationMethod({
       api,
       didDocument,
-      signers: [didKeypair],
+      signers,
       submitter,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      verificationMethodId: didDocument.keyAgreement![0],
-      relationship: 'keyAgreement',
+      verificationMethodId: didDocument.assertionMethod![0],
+      relationship: 'assertionMethod',
     }).submit()
 
   if (removeVmTransactionResult.status !== 'confirmed') {
@@ -195,7 +284,7 @@ async function runAll() {
     api,
     didDocument,
     submitter,
-    signers: [didKeypair],
+    signers,
   }).submit()
 
   if (releaseW3nTransactionResult.status !== 'confirmed') {
@@ -211,7 +300,7 @@ async function runAll() {
   const removeServiceTransactionResult = await Kilt.DidHelpers.removeService({
     api,
     submitter,
-    signers: [didKeypair],
+    signers,
     didDocument,
     id: '#my_service',
   }).submit()
@@ -230,7 +319,7 @@ async function runAll() {
   const deactivateDidTransactionResult = await Kilt.DidHelpers.deactivateDid({
     api,
     submitter,
-    signers: [didKeypair],
+    signers,
     didDocument,
   }).submit()
 
