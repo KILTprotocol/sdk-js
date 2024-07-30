@@ -191,6 +191,10 @@ async function runAll() {
     .find((event) => api.events.ctype.CTypeCreated.is(event))
     ?.data[1].toHex()
 
+  if ((await api.query.ctype.ctypes(ctypeHash)).isEmpty) {
+    throw new Error('CType not registered')
+  }
+
   // TODO: Should we at least be able to load an existing CType from the chain?
   const DriversLicense = JSON.parse(DriversLicenseDef)
   DriversLicense.$id = `kilt:ctype:${ctypeHash}`
