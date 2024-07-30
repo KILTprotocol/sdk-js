@@ -7,12 +7,14 @@
 
 /// <reference lib="dom" />
 
-import { KiltAddress, SignerInterface } from '@kiltprotocol/types'
+import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 
 const { kilt: Kilt } = window
 
 async function runAll() {
   const api = await Kilt.connect('ws://127.0.0.1:9944')
+
+  console.log('connected')
 
   const authenticationKeyPair = Kilt.generateKeypair({ type: 'ed25519' })
 
@@ -32,6 +34,8 @@ async function runAll() {
     keypair: faucet,
     type: 'Ed25519',
   })) as Array<SignerInterface<'Ed25519', KiltAddress>>
+
+  console.log('keypair generation complete')
 
   // ┏━━━━━━━━━━━━┓
   // ┃ create DID ┃
@@ -73,6 +77,8 @@ async function runAll() {
   // Get the DID Document from the transaction result.
   let { didDocument, signers } = didDocumentTransactionResult.asConfirmed
 
+  console.log('Did created')
+
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Create Verification Method ┃
   // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -106,6 +112,8 @@ async function runAll() {
   }
   ;({ didDocument, signers } = vmTransactionResult.asConfirmed)
 
+  console.log('assertion method added')
+
   // ┏━━━━━━━━━━━━━━━━━┓
   // ┃ Claim web3name  ┃
   // ┗━━━━━━━━━━━━━━━━━┛
@@ -123,6 +131,8 @@ async function runAll() {
 
   // The didDocument now contains an `alsoKnownAs` entry.
   ;({ didDocument } = claimW3nTransactionResult.asConfirmed)
+
+  console.log('w3n claimed')
 
   // ┏━━━━━━━━━━━━━━━━┓
   // ┃ Add a service  ┃
@@ -144,6 +154,8 @@ async function runAll() {
     throw new Error('add service failed')
   }
   ;({ didDocument } = addServiceTransactionResult.asConfirmed)
+
+  console.log('service added')
 
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Register a CType             ┃
@@ -183,6 +195,8 @@ async function runAll() {
   const DriversLicense = JSON.parse(DriversLicenseDef)
   DriversLicense.$id = `kilt:ctype:${ctypeHash}`
 
+  console.log('CType registered')
+
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Issue a Credential           ┃
   // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -206,6 +220,8 @@ async function runAll() {
     submitter: submitter.id,
   })
 
+  console.log('credential issued')
+
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Create a Presentation        ┃
   // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -225,6 +241,8 @@ async function runAll() {
     },
     { verifier: didDocument.id, validUntil: new Date(Date.now() + 100_000) }
   )
+
+  console.log('presentation created')
 
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Verify a Presentation        ┃
@@ -248,6 +266,8 @@ async function runAll() {
   if (verified !== true) {
     throw new Error(`failed to verify credential: ${JSON.stringify(error)}`)
   }
+
+  console.log('presentation verified')
 
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Remove a Verification Method ┃
@@ -274,6 +294,8 @@ async function runAll() {
   }
   ;({ didDocument } = removeVmTransactionResult.asConfirmed)
 
+  console.log('assertion method removed')
+
   // ┏━━━━━━━━━━━━━━━━━━┓
   // ┃ Release web3name ┃
   // ┗━━━━━━━━━━━━━━━━━━┛
@@ -290,6 +312,8 @@ async function runAll() {
     throw new Error('release web3name failed')
   }
   ;({ didDocument } = releaseW3nTransactionResult.asConfirmed)
+
+  console.log('w3n released')
 
   // ┏━━━━━━━━━━━━━━━━━━┓
   // ┃ Remove a service ┃
@@ -309,6 +333,8 @@ async function runAll() {
   }
   ;({ didDocument } = removeServiceTransactionResult.asConfirmed)
 
+  console.log('service removed')
+
   // ┏━━━━━━━━━━━━━━━━━━┓
   // ┃ Deactivate a DID ┃
   // ┗━━━━━━━━━━━━━━━━━━┛
@@ -327,8 +353,16 @@ async function runAll() {
   }
   ;({ didDocument } = deactivateDidTransactionResult.asConfirmed)
 
+  if (Array.isArray(didDocument.verificationMethod)) {
+    throw new Error('Did not deactivated')
+  }
+
+  console.log('Did deactivated')
+
   // Release the connection to the blockchain.
   await api.disconnect()
+
+  console.log('disconnected')
 }
 
 window.runAll = runAll
