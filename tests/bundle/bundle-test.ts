@@ -47,7 +47,7 @@ async function runAll() {
   // Note the following parameters:
   // - `api`: The connected blockchain api.
   // - `signers`: The keys for verification materials inside the DID Document. For creating a DID,
-  // only the key for the verification method is required.
+  // only the key for the authentication verification method is required.
   // - `submitter`: The account used to submit the transaction to the blockchain. Note: the submitter account must have
   // enough funds to cover the required storage deposit.
   // - `fromPublicKey`: The public key that will feature as the DID's initial authentication method and will determine the DID identifier.
