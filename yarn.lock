@@ -2003,6 +2003,7 @@ __metadata:
     typescript: "npm:^4.8.3"
   peerDependencies:
     "@kiltprotocol/augment-api": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2108,6 +2109,7 @@ __metadata:
     typescript: "npm:^4.8.3"
   peerDependencies:
     "@kiltprotocol/augment-api": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2182,6 +2184,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/type-definitions": "npm:^1.0.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/util": "npm:^13.0.0"
@@ -2208,6 +2211,8 @@ __metadata:
     "@polkadot/util-crypto": "npm:^13.0.0"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
+  peerDependencies:
+    "@kiltprotocol/type-definitions": ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -2224,6 +2229,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^12.0.0"
     "@polkadot/typegen": "npm:^12.0.0"
+    "@polkadot/types": "npm:^12.0.0"
     "@polkadot/util": "npm:^13.0.0"
     rimraf: "npm:^3.0.2"
     terser-webpack-plugin: "npm:^5.1.1"
@@ -2243,6 +2249,13 @@ __metadata:
     "@polkadot/util-crypto": "npm:^13.0.2"
     "@scure/base": "npm:^1.1.1"
   checksum: 10c0/07a6749813f9e45d14c19c2bfa1af7be8dc1bcff82c7b2d3b6c7e9d67ed3862be69372e51b6d1cbabcdb2ac2906b07c14cf8b492fad944aa1dec7cba2e3b0635
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/type-definitions@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "@kiltprotocol/type-definitions@npm:1.1.0"
+  checksum: 10c0/974c703128be6494056610e47556b2551e1c8e307f772e3ac27eb081edee98636a51578029acd1dc2298fe8ffe5f14897ea7919e23e739c7c26de6c3c983b92f
   languageName: node
   linkType: hard
 

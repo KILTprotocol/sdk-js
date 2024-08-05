@@ -48,6 +48,7 @@
     "@kiltprotocol/type-definitions": "rc",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^12.0.0",
+    "@polkadot/types": "^12.0.0",
     "@polkadot/util": "^13.0.0"
   },
   "peerDependencies": {
