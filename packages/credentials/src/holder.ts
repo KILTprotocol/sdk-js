@@ -55,10 +55,10 @@ function pointerToAttributeName(
  * @param credential A Verifiable Credential containing a proof.
  * @param proofOptions Options for creating the derived proof.
  * @param proofOptions.disclose Allows selecting which claims/attributes in the credential should be disclosed, hiding others.
- * @param proofOptions.disclose.only An array of JSON-path (IETF RFC 6901) expressions selecting attributes to be disclosed.
+ * @param proofOptions.disclose.only An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be disclosed.
  * All other (non-mandatory) attributes that can be hidden will be hidden.
  * Takes precedence over `allBut`.
- * @param proofOptions.disclose.allBut An array of JSON-path (IETF RFC 6901) expressions selecting attributes to be hidden.
+ * @param proofOptions.disclose.allBut An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be hidden.
  * This means that all other properties are being revealed.
  * Selecting mandatory properties will result in an error.
  * It is ignored if `only` is set.
