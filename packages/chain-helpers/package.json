@@ -34,8 +34,8 @@
     "typescript": "^4.8.3"
   },
   "peerDependencies": {
-    "@kiltprotocol/augment-api": "*",
-    "@kiltprotocol/type-definitions": "^0.35.0"
+    "@kiltprotocol/augment-api": "^1.0.0",
+    "@kiltprotocol/type-definitions": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@kiltprotocol/augment-api": {
