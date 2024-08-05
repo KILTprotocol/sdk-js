@@ -2103,6 +2103,7 @@ __metadata:
     "@polkadot/types": "npm:^12.0.0"
     "@polkadot/util": "npm:^13.0.0"
     "@polkadot/util-crypto": "npm:^13.0.0"
+    "@scure/base": "npm:^1.1.0"
     "@types/json-pointer": "npm:^1.0.34"
     json-pointer: "npm:^0.6.2"
     rimraf: "npm:^3.0.2"
@@ -2295,6 +2296,7 @@ __metadata:
     "@polkadot/keyring": "npm:^13.0.0"
     "@polkadot/util": "npm:^13.0.0"
     "@polkadot/util-crypto": "npm:^13.0.0"
+    "@scure/base": "npm:^1.1.0"
     "@types/uuid": "npm:^8.0.0"
     cbor-web: "npm:^9.0.0"
     rimraf: "npm:^3.0.2"
@@ -2890,10 +2892,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5":
-  version: 1.1.6
-  resolution: "@scure/base@npm:1.1.6"
-  checksum: 10c0/237a46a1f45391fc57719154f14295db936a0b1562ea3e182dd42d7aca082dbb7062a28d6c49af16a7e478b12dae8a0fe678d921ea5056bcc30238d29eb05c55
+"@scure/base@npm:^1.1.0, @scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5":
+  version: 1.1.7
+  resolution: "@scure/base@npm:1.1.7"
+  checksum: 10c0/2d06aaf39e6de4b9640eb40d2e5419176ebfe911597856dcbf3bc6209277ddb83f4b4b02cb1fd1208f819654268ec083da68111d3530bbde07bae913e2fc2e5d
   languageName: node
   linkType: hard
 
