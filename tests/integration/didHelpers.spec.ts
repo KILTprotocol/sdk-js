@@ -390,17 +390,20 @@ describe('transact', () => {
       cType,
     })
 
-    const issued = await Issuer.issue(unsigned, {
-      didDocument,
-      signers: [keypair],
-      submitter: async (args) =>
-        DidHelpers.transact({
-          ...args,
-          submitter: paymentAccount,
-          expectedEvents: [
-            { section: 'attestation', method: 'AttestationCreated' },
-          ],
-        }).submit(),
+    const issued = await Issuer.issue({
+      credential: unsigned,
+      issuer: {
+        didDocument,
+        signers: [keypair],
+        submitter: async (args) =>
+          DidHelpers.transact({
+            ...args,
+            submitter: paymentAccount,
+            expectedEvents: [
+              { section: 'attestation', method: 'AttestationCreated' },
+            ],
+          }).submit(),
+      },
     })
 
     expect(issued).toHaveProperty('proof', expect.any(Object))

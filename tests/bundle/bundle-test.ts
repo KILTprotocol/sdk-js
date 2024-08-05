@@ -218,10 +218,13 @@ async function runAll() {
     cType: DriversLicense,
   })
 
-  const credential = await Kilt.Issuer.issue(unsigned, {
-    didDocument,
-    signers: [...signers, submitter],
-    submitter: submitter.id,
+  const credential = await Kilt.Issuer.issue({
+    credential: unsigned,
+    issuer: {
+      didDocument,
+      signers: [...signers, submitter],
+      submitter: submitter.id,
+    },
   })
 
   console.log('credential issued')
@@ -233,18 +236,22 @@ async function runAll() {
   // Create a derived credential that only contains selected properties (selective disclosure), then create a credential presentation for it.
   // The presentation includes a proof of ownership and is scoped to a verified and time frame to prevent unauthorized re-use.
   //
-  const derived = await Kilt.Holder.deriveProof(credential, {
-    includeClaims: ['/credentialSubject/age'],
+  const derived = await Kilt.Holder.deriveProof({
+    credential,
+    proofOptions: { includeClaims: ['/credentialSubject/age'] },
   })
 
-  const presentation = await Kilt.Holder.createPresentation(
-    [derived],
-    {
+  const presentation = await Kilt.Holder.createPresentation({
+    credentials: [derived],
+    holder: {
       didDocument,
       signers,
     },
-    { verifier: didDocument.id, validUntil: new Date(Date.now() + 100_000) }
-  )
+    presentationOptions: {
+      verifier: didDocument.id,
+      validUntil: new Date(Date.now() + 100_000),
+    },
+  })
 
   console.log('presentation created')
 

@@ -90,34 +90,33 @@ export async function createCredential({
 /**
  * Issues a Verifiable Credential from on the input document by attaching a proof. Edits to the document may be made depending on the proof type.
  *
- * @param credential A credential document as returned by {@link createCredential}.
- * @param issuer Interfaces for interacting with the issuer identity for the purpose of generating a proof.
- * @param issuer.didDocument The DID Document of the issuer.
- * @param issuer.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
+ * @param params Holds all named parameters.
+ * @param params.credential A credential document as returned by {@link createCredential}.
+ * @param params.issuer Interfaces for interacting with the issuer identity for the purpose of generating a proof.
+ * @param params.issuer.didDocument The DID Document of the issuer.
+ * @param params.issuer.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
  * The function will select the first signer that matches requirements around signature algorithm and relationship of the key to the DID as given by the DID Document.
- * @param issuer.submitter Some proof types require making transactions to effect state changes on the KILT blockchain.
+ * @param params.issuer.submitter Some proof types require making transactions to effect state changes on the KILT blockchain.
  * The blockchain account whose address is specified here will be used to cover all transaction fees and deposits due for this operation.
  * As transactions to the blockchain need to be signed, `signers` is expected to contain a signer interface where the `id` matches this address.
  *
  * Alternatively, you can pass a {@link SubmitOverride} callback that takes care of Did-authorizing and submitting the transaction.
  * If you are using a service that helps you submit and pay for transactions, this is your point of integration to it.
- * @param proofOptions Options that control proof generation.
- * @param proofOptions.proofType The type of proof to be created.
+ * @param params.proofOptions Options that control proof generation.
+ * @param params.proofOptions.proofType The type of proof to be created.
  * Defaults to {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1} which, as of now, is the only type suppported.
- * @param proofOptions.proofPurpose Controls which relationship to the DID is expected of the key selected for creating the proof.
- * Defaults to `assertionMethod`, which is also the only value supported for {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1} proofs.
- * @param proofOptions.now Allows manipulating the current date and time for the purpose of proof generation.
- * As of now, this has no effect though.
  */
-export async function issue(
-  credential: UnsignedVc,
-  issuer: IssuerOptions,
-  proofOptions: {
+export async function issue({
+  credential,
+  issuer,
+  proofOptions = {},
+}: {
+  credential: UnsignedVc
+  issuer: IssuerOptions
+  proofOptions?: {
     proofType?: string
-    proofPurpose?: string
-    now?: Date // given that this has no effect, should I remove it for now?
-  } = {}
-): Promise<VerifiableCredential> {
+  }
+}): Promise<VerifiableCredential> {
   const { proofType } = proofOptions
   switch (proofType) {
     case undefined:
