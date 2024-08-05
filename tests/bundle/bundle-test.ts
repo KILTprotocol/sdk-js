@@ -234,7 +234,7 @@ async function runAll() {
   // The presentation includes a proof of ownership and is scoped to a verified and time frame to prevent unauthorized re-use.
   //
   const derived = await Kilt.Holder.deriveProof(credential, {
-    disclose: { only: ['/credentialSubject/age'] },
+    includeClaims: ['/credentialSubject/age'],
   })
 
   const presentation = await Kilt.Holder.createPresentation(

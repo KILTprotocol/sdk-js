@@ -54,25 +54,21 @@ function pointerToAttributeName(
  *
  * @param credential A Verifiable Credential containing a proof.
  * @param proofOptions Options for creating the derived proof.
- * @param proofOptions.disclose Allows selecting which claims/attributes in the credential should be disclosed, hiding others.
- * @param proofOptions.disclose.only An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be disclosed.
- * All other (non-mandatory) attributes that can be hidden will be hidden.
- * Takes precedence over `allBut`.
- * @param proofOptions.disclose.allBut An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be hidden.
+ * @param proofOptions.includeClaims An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions.
+ * Allows selecting which claims/attributes in the credential should be disclosed, hiding all other (non-mandatory) attributes.
+ * @param proofOptions.excludeClaims An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be hidden.
  * This means that all other properties are being revealed.
  * Selecting mandatory properties will result in an error.
- * It is ignored if `only` is set.
+ * _Ignored if `includeClaims` is set_.
  * @returns A copy of the original credential and proof, altered according to the derivation rules and `proofOptions`.
  */
 export async function deriveProof(
   credential: VerifiableCredential,
   // TODO: do we need a holder interface here at some point? Would be required if some holder secret would become necessary to create a derived proof, e.g., a link secret.
-  proofOptions?: {
-    disclose?: {
-      allBut?: string[]
-      only?: string[]
-    }
-  }
+  proofOptions: {
+    includeClaims?: string[]
+    excludeClaims?: string[]
+  } = {}
 ): Promise<VerifiableCredential> {
   const proof = getProof(credential)
   switch (proof.type) {
@@ -81,19 +77,19 @@ export async function deriveProof(
         credential as KiltCredentialV1.Interface
       )
 
-      const { allBut, only } = proofOptions?.disclose ?? {}
+      const { includeClaims, excludeClaims } = proofOptions
       let discloseProps: string[] = []
-      if (only) {
+      if (includeClaims) {
         const attributes = new Set<string>()
-        only.forEach((path) => {
+        includeClaims.forEach((path) => {
           attributes.add(pointerToAttributeName(credential, path, false))
         })
         discloseProps = Array.from(attributes)
-      } else if (allBut) {
+      } else if (excludeClaims) {
         const attributes = new Set<string>(
           Object.keys(credential.credentialSubject)
         )
-        allBut.forEach((path) => {
+        excludeClaims.forEach((path) => {
           attributes.delete(pointerToAttributeName(credential, path, true))
         })
         discloseProps = Array.from(attributes)
