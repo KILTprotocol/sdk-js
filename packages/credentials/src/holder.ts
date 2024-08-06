@@ -126,7 +126,7 @@ export async function deriveProof({
  * @param params.presentationOptions Object holding optional arguments for scoping the presentation.
  * @param params.presentationOptions.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
  * Represented as `issuanceDate` on the presentation.
- * Defaults to `proofOptions.now`.
+ * Defaults to `params.now`.
  * @param params.presentationOptions.validUntil A Date or date-time string indicating when the presentation is no longer valid.
  * Represented as `expirationDate` on the presentation.
  * @param params.presentationOptions.verifier Identifier (DID) of the verifier to prevent unauthorized re-use of the presentation.
@@ -139,7 +139,7 @@ export async function deriveProof({
  * @param params.proofOptions.domain A domain string to be included in the proof.
  * This plays a role similar to the `verifier` option, but is not restricted to DIDs.
  * This could, for example, be the domain of a web-application requesting credential presentation.
- * @param params.proofOptions.now Allows manipulating the current date and time for the purpose of presentation & proof generation.
+ * @param params.now Allows manipulating the current date and time for the purpose of presentation & proof generation.
  * Defaults to the current date and time.
  * @returns A holder-signed presentation.
  */
@@ -148,6 +148,7 @@ export async function createPresentation({
   holder,
   presentationOptions = {},
   proofOptions = {},
+  now,
 }: {
   credentials: VerifiableCredential[]
   holder: HolderOptions
@@ -161,12 +162,12 @@ export async function createPresentation({
     proofType?: string
     challenge?: string
     domain?: string
-    now?: Date
   }
+  now?: Date
 }): Promise<VerifiablePresentation> {
   const { didDocument, signers } = holder
   const { validFrom, validUntil, verifier } = presentationOptions
-  const { proofPurpose, proofType, challenge, domain, now } = proofOptions
+  const { proofPurpose, proofType, challenge, domain } = proofOptions
 
   let presentation = await Presentation.create({
     credentials,
