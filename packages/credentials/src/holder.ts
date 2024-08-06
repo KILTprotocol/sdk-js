@@ -52,28 +52,27 @@ function pointerToAttributeName(
 /**
  * Allows creating derivative proofs from a Verifiable Credential, for the purpose of disclosing only a subset of the credential's claims to a verifier.
  *
- * @param credential A Verifiable Credential containing a proof.
- * @param proofOptions Options for creating the derived proof.
- * @param proofOptions.disclose Allows selecting which claims/attributes in the credential should be disclosed, hiding others.
- * @param proofOptions.disclose.only An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be disclosed.
- * All other (non-mandatory) attributes that can be hidden will be hidden.
- * Takes precedence over `allBut`.
- * @param proofOptions.disclose.allBut An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be hidden.
+ * @param params Holds all named parameters.
+ * @param params.credential A Verifiable Credential containing a proof.
+ * @param params.proofOptions Options for creating the derived proof.
+ * @param params.proofOptions.includeClaims An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions.
+ * Allows selecting which claims/attributes in the credential should be disclosed, hiding all other (non-mandatory) attributes.
+ * @param params.proofOptions.excludeClaims An array of {@link https://www.rfc-editor.org/info/rfc6901 JSON Pointer} expressions selecting attributes to be hidden.
  * This means that all other properties are being revealed.
  * Selecting mandatory properties will result in an error.
- * It is ignored if `only` is set.
+ * _Ignored if `includeClaims` is set_.
  * @returns A copy of the original credential and proof, altered according to the derivation rules and `proofOptions`.
  */
-export async function deriveProof(
-  credential: VerifiableCredential,
-  // TODO: do we need a holder interface here at some point? Would be required if some holder secret would become necessary to create a derived proof, e.g., a link secret.
+export async function deriveProof({
+  credential,
+  proofOptions = {},
+}: {
+  credential: VerifiableCredential
   proofOptions?: {
-    disclose?: {
-      allBut?: string[]
-      only?: string[]
-    }
+    includeClaims?: string[]
+    excludeClaims?: string[]
   }
-): Promise<VerifiableCredential> {
+}): Promise<VerifiableCredential> {
   const proof = getProof(credential)
   switch (proof.type) {
     case KiltAttestationProofV1.PROOF_TYPE: {
@@ -81,19 +80,19 @@ export async function deriveProof(
         credential as KiltCredentialV1.Interface
       )
 
-      const { allBut, only } = proofOptions?.disclose ?? {}
+      const { includeClaims, excludeClaims } = proofOptions
       let discloseProps: string[] = []
-      if (only) {
+      if (includeClaims) {
         const attributes = new Set<string>()
-        only.forEach((path) => {
+        includeClaims.forEach((path) => {
           attributes.add(pointerToAttributeName(credential, path, false))
         })
         discloseProps = Array.from(attributes)
-      } else if (allBut) {
+      } else if (excludeClaims) {
         const attributes = new Set<string>(
           Object.keys(credential.credentialSubject)
         )
-        allBut.forEach((path) => {
+        excludeClaims.forEach((path) => {
           attributes.delete(pointerToAttributeName(credential, path, true))
         })
         discloseProps = Array.from(attributes)
@@ -118,51 +117,57 @@ export async function deriveProof(
  * Creates a Verifiable Presentation from one or more credentials and adds a proof for the purpose of holder authentication.
  * To that end, the presentation can be scoped to a specific transaction, timeframe, purpose, or verifier, by means of multiple mechanisms.
  *
- * @param credentials Array of one or more Verifiable Credentials to be included in the presentation.
- * @param holder Interfaces for interacting with the holder identity for the purpose of generating a presentation proof.
- * @param holder.did The Decentralized Identifier (DID) of the holder.
- * @param holder.didDocument The DID Document of the holder.
- * @param holder.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the holder DID Document.
+ * @param params Holds all named parameters.
+ * @param params.credentials Array of one or more Verifiable Credentials to be included in the presentation.
+ * @param params.holder Interfaces for interacting with the holder identity for the purpose of generating a presentation proof.
+ * @param params.holder.didDocument The DID Document of the holder.
+ * @param params.holder.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the holder DID Document.
  * The function will select the first signer that matches requirements around signature algorithm and relationship of the key to the DID as given by the DID Document.
- * @param presentationOptions Object holding optional arguments for scoping the presentation.
- * @param presentationOptions.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
+ * @param params.presentationOptions Object holding optional arguments for scoping the presentation.
+ * @param params.presentationOptions.validFrom A Date or date-time string indicating the earliest point in time where the presentation becomes valid.
  * Represented as `issuanceDate` on the presentation.
- * Defaults to `proofOptions.now`.
- * @param presentationOptions.validUntil A Date or date-time string indicating when the presentation is no longer valid.
+ * Defaults to `params.now`.
+ * @param params.presentationOptions.validUntil A Date or date-time string indicating when the presentation is no longer valid.
  * Represented as `expirationDate` on the presentation.
- * @param presentationOptions.verifier Identifier (DID) of the verifier to prevent unauthorized re-use of the presentation.
- * @param proofOptions Object holding optional arguments for creating and scoping the presentation proof.
- * @param proofOptions.proofPurpose Controls the `proofPurpose` property and consequently which verificationMethods can be used for signing.
- * @param proofOptions.proofType Controls the type of proof to be created for the presentation.
+ * @param params.presentationOptions.verifier Identifier (DID) of the verifier to prevent unauthorized re-use of the presentation.
+ * @param params.proofOptions Object holding optional arguments for creating and scoping the presentation proof.
+ * @param params.proofOptions.proofPurpose Controls the `proofPurpose` property and consequently which verificationMethods can be used for signing.
+ * @param params.proofOptions.proofType Controls the type of proof to be created for the presentation.
  * Currently, this function only produces {@link DataIntegrity.PROOF_TYPE DataIntegrityProof} type proofs;
  * Any other values will be mapped to a known algorithm or cryptosuite for use with this proof type, thus allowing to control the signature algorithm to be used.
- * @param proofOptions.challenge A challenge supplied by a verifier in a challenge-response protocol, which allows verifiers to assure signature freshness, preventing unauthorized re-use.
- * @param proofOptions.domain A domain string to be included in the proof.
+ * @param params.proofOptions.challenge A challenge supplied by a verifier in a challenge-response protocol, which allows verifiers to assure signature freshness, preventing unauthorized re-use.
+ * @param params.proofOptions.domain A domain string to be included in the proof.
  * This plays a role similar to the `verifier` option, but is not restricted to DIDs.
  * This could, for example, be the domain of a web-application requesting credential presentation.
- * @param proofOptions.now Allows manipulating the current date and time for the purpose of presentation & proof generation.
+ * @param params.now Allows manipulating the current date and time for the purpose of presentation & proof generation.
  * Defaults to the current date and time.
  * @returns A holder-signed presentation.
  */
-export async function createPresentation(
-  credentials: VerifiableCredential[],
-  holder: HolderOptions,
-  presentationOptions: {
+export async function createPresentation({
+  credentials,
+  holder,
+  presentationOptions = {},
+  proofOptions = {},
+  now,
+}: {
+  credentials: VerifiableCredential[]
+  holder: HolderOptions
+  presentationOptions?: {
     validFrom?: Date
     validUntil?: Date
     verifier?: Did
-  } = {},
-  proofOptions: {
+  }
+  proofOptions?: {
     proofPurpose?: string
     proofType?: string
     challenge?: string
     domain?: string
-    now?: Date
-  } = {}
-): Promise<VerifiablePresentation> {
+  }
+  now?: Date
+}): Promise<VerifiablePresentation> {
   const { didDocument, signers } = holder
   const { validFrom, validUntil, verifier } = presentationOptions
-  const { proofPurpose, proofType, challenge, domain, now } = proofOptions
+  const { proofPurpose, proofType, challenge, domain } = proofOptions
 
   let presentation = await Presentation.create({
     credentials,

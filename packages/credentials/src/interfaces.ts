@@ -11,7 +11,6 @@ import type {
   DidDocument,
   DidHelpersAcceptedSigners,
   HexString,
-  KiltAddress,
   SharedArguments,
   TransactionResult,
 } from '@kiltprotocol/types'
@@ -36,7 +35,7 @@ export type SubmitOverride = (
 ) => Promise<SimplifiedTransactionResult | TransactionResult>
 
 interface SubmitterAddressOrOverride {
-  submitter: KiltAddress | SubmitOverride
+  submitter: SharedArguments['submitter'] | SubmitOverride
 }
 
 export type IssuerOptions = HolderOptions & SubmitterAddressOrOverride
