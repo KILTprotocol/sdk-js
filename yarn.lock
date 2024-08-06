@@ -2002,16 +2002,17 @@ __metadata:
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
-    "@kiltprotocol/augment-api": "*"
+    "@kiltprotocol/augment-api": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@npm:1.11210.0-rc":
-  version: 1.11210.0-rc
-  resolution: "@kiltprotocol/augment-api@npm:1.11210.0-rc"
+"@kiltprotocol/augment-api@npm:rc":
+  version: 1.11300.0-rc.1
+  resolution: "@kiltprotocol/augment-api@npm:1.11300.0-rc.1"
   dependencies:
     "@typescript-eslint/eslint-plugin": "npm:^7.0.2"
     "@typescript-eslint/parser": "npm:^7.0.2"
@@ -2019,14 +2020,33 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-unused-imports: "npm:^3.1.0"
   peerDependencies:
-    "@kiltprotocol/type-definitions": ^0.35.0
-    "@polkadot/api": ~10.12.0
-    "@polkadot/typegen": ~10.12.0
+    "@kiltprotocol/type-definitions": ^1.11300.0-rc.1
+    "@polkadot/api": ~12.2.0
+    "@polkadot/typegen": ~12.2.0
+    "@polkadot/types": ^12.2.0
     typescript: "*"
+  dependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+    "@typescript-eslint/parser":
+      optional: true
+    dotenv:
+      optional: true
+    eslint:
+      optional: true
+    eslint-plugin-unused-imports:
+      optional: true
+  peerDependenciesMeta:
+    "@kiltprotocol/type-definitions":
+      optional: true
+    "@polkadot/typegen":
+      optional: true
+    "@polkadot/types":
+      optional: true
   bin:
     kilt_reaugment: augmentFromFile.mjs
     kilt_updateMetadata: updateMetadata.mjs
-  checksum: 10c0/4f8d02d692261cb3eff75b887734a1867d122b1eee001132c2143ab46abf5d30e569251cb9b069a9955366cb0d6d8793b7b08b53e84e41eada2a4b7ddbc6f182
+  checksum: 10c0/813897d1b9466b4749e7f657ca7c7a04086092e8052d7473723b01b3afb2cf948a0d71f2e8bf05af13de4ea15340ca1f8e261a3fabe546fe83fd824b5be5515e
   languageName: node
   linkType: hard
 
@@ -2045,8 +2065,8 @@ __metadata:
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
-    "@kiltprotocol/augment-api": "*"
-    "@kiltprotocol/type-definitions": ^0.35.0
+    "@kiltprotocol/augment-api": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2083,12 +2103,14 @@ __metadata:
     "@polkadot/types": "npm:^12.0.0"
     "@polkadot/util": "npm:^13.0.0"
     "@polkadot/util-crypto": "npm:^13.0.0"
+    "@scure/base": "npm:^1.1.0"
     "@types/json-pointer": "npm:^1.0.34"
     json-pointer: "npm:^0.6.2"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
-    "@kiltprotocol/augment-api": "*"
+    "@kiltprotocol/augment-api": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2112,7 +2134,7 @@ __metadata:
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
-    "@kiltprotocol/augment-api": "*"
+    "@kiltprotocol/augment-api": ^1.0.0
   peerDependenciesMeta:
     "@kiltprotocol/augment-api":
       optional: true
@@ -2163,6 +2185,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/type-definitions": "npm:^1.0.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/util": "npm:^13.0.0"
@@ -2189,6 +2212,8 @@ __metadata:
     "@polkadot/util-crypto": "npm:^13.0.0"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
+  peerDependencies:
+    "@kiltprotocol/type-definitions": ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -2196,15 +2221,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "npm:1.11210.0-rc"
+    "@kiltprotocol/augment-api": "npm:rc"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": "npm:^0.35.0"
+    "@kiltprotocol/type-definitions": "npm:rc"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^12.0.0"
     "@polkadot/typegen": "npm:^12.0.0"
+    "@polkadot/types": "npm:^12.0.0"
     "@polkadot/util": "npm:^13.0.0"
     rimraf: "npm:^3.0.2"
     terser-webpack-plugin: "npm:^5.1.1"
@@ -2227,10 +2253,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/type-definitions@npm:^0.35.0":
-  version: 0.35.0
-  resolution: "@kiltprotocol/type-definitions@npm:0.35.0"
-  checksum: 10c0/810865fdf51d6441a394c35972a8f91fbf7cf99d1efceed34f9d9262e8b36762b30a36cd56985430c698f33c9f1c1d9d0dc51d15c68bffd8807cb6985a6cd78c
+"@kiltprotocol/type-definitions@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "@kiltprotocol/type-definitions@npm:1.1.0"
+  checksum: 10c0/974c703128be6494056610e47556b2551e1c8e307f772e3ac27eb081edee98636a51578029acd1dc2298fe8ffe5f14897ea7919e23e739c7c26de6c3c983b92f
+  languageName: node
+  linkType: hard
+
+"@kiltprotocol/type-definitions@npm:rc":
+  version: 1.11300.0-rc.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11300.0-rc.1"
+  peerDependencies:
+    "@polkadot/types": ^12.2.0
+  checksum: 10c0/4b4ab3e26abfdb2a94adf30be96996fbcbae5ddfb9165ff1dff9b14f2123ac63edfe8e2e1cf6cf5bfc7d8ff1847cf922c511600ca0b82afd677fb4cbc9bb983a
   languageName: node
   linkType: hard
 
@@ -2261,6 +2296,7 @@ __metadata:
     "@polkadot/keyring": "npm:^13.0.0"
     "@polkadot/util": "npm:^13.0.0"
     "@polkadot/util-crypto": "npm:^13.0.0"
+    "@scure/base": "npm:^1.1.0"
     "@types/uuid": "npm:^8.0.0"
     cbor-web: "npm:^9.0.0"
     rimraf: "npm:^3.0.2"
@@ -2856,10 +2892,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5":
-  version: 1.1.6
-  resolution: "@scure/base@npm:1.1.6"
-  checksum: 10c0/237a46a1f45391fc57719154f14295db936a0b1562ea3e182dd42d7aca082dbb7062a28d6c49af16a7e478b12dae8a0fe678d921ea5056bcc30238d29eb05c55
+"@scure/base@npm:^1.1.0, @scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5":
+  version: 1.1.7
+  resolution: "@scure/base@npm:1.1.7"
+  checksum: 10c0/2d06aaf39e6de4b9640eb40d2e5419176ebfe911597856dcbf3bc6209277ddb83f4b4b02cb1fd1208f819654268ec083da68111d3530bbde07bae913e2fc2e5d
   languageName: node
   linkType: hard
 

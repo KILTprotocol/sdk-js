@@ -10,20 +10,20 @@
 import { u8aConcat } from '@polkadot/util'
 import { base58Decode, base58Encode, sha256AsU8a } from '@polkadot/util-crypto'
 
-import type {
-  CryptoSuite,
-  SignerInterface,
-} from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as eddsaSuite } from '@kiltprotocol/eddsa-jcs-2022'
 import { cryptosuite as ecdsaSuite } from '@kiltprotocol/es256k-jcs-2023'
+import {
+  createVerifyData as createVerifyDataJcs,
+  type CryptoSuite,
+} from '@kiltprotocol/jcs-data-integrity-proofs-common'
 import { cryptosuite as sr25519Suite } from '@kiltprotocol/sr25519-jcs-2023'
-import { createVerifyData as createVerifyDataJcs } from '@kiltprotocol/jcs-data-integrity-proofs-common'
 
 import { parse, resolve } from '@kiltprotocol/did'
 import type {
   Did,
   DidDocument,
   DidUrl,
+  SignerInterface,
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
