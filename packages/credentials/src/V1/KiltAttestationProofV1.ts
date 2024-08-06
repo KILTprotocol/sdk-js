@@ -49,6 +49,7 @@ import type {
   IDelegationNode,
   KiltAddress,
   SharedArguments,
+  SignerInterface,
 } from '@kiltprotocol/types'
 import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
 
@@ -670,19 +671,14 @@ async function defaultTxSubmit({
   call,
   signers,
   submitter,
-}: Omit<SharedArguments, 'submitter'> & {
+}: SharedArguments & {
   call: Extrinsic
-  submitter: KiltAddress
 }): Promise<SimplifiedTransactionResult> {
-  let extrinsic = await authorizeTx(
-    didDocument,
-    call,
-    await signersForDid(didDocument, ...signers),
-    submitter
-  )
-
-  if (!extrinsic.isSigned) {
-    const accountSigners = (
+  let submitterAddress: KiltAddress
+  let accountSigners: SignerInterface[] = []
+  if (typeof submitter === 'string') {
+    submitterAddress = submitter
+    accountSigners = (
       await Promise.all(
         signers.map((keypair) =>
           'algorithm' in keypair
@@ -691,7 +687,25 @@ async function defaultTxSubmit({
         )
       )
     ).flat()
-    extrinsic = await extrinsic.signAsync(submitter, {
+  } else if ('algorithm' in submitter) {
+    submitterAddress = submitter.id
+    accountSigners = [submitter]
+  } else {
+    accountSigners = await Signers.getSignersForKeypair({
+      keypair: submitter,
+    })
+    submitterAddress = accountSigners[0].id as KiltAddress
+  }
+
+  let extrinsic = await authorizeTx(
+    didDocument,
+    call,
+    await signersForDid(didDocument, ...signers),
+    submitterAddress
+  )
+
+  if (!extrinsic.isSigned) {
+    extrinsic = await extrinsic.signAsync(submitterAddress, {
       signer: Signers.getPolkadotSigner(accountSigners),
     })
   }

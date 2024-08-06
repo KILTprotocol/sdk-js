@@ -34,13 +34,16 @@ import { appendErrors, getProof, toError } from './proofs/utils.js'
  * Retrieves status information on a credential, indicating for example whether or not the credential has been revoked.
  * After a credential has been verified using {@link verifyCredential} or {@link verifyPresentation}, this function could be called periodically to ensure it continues to be valid.
  *
- * @param credential The Verifiable Credential whose status is to be checked.
+ * @param params Holds all named parameters.
+ * @param params.credential The Verifiable Credential whose status is to be checked.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside any potential errors.
  * A `status` string may convey additional information on the credential's status.
  */
-export async function checkStatus(
+export async function checkStatus({
+  credential,
+}: {
   credential: VerifiableCredential
-): Promise<CredentialStatusResult> {
+}): Promise<CredentialStatusResult> {
   try {
     switch (credential.credentialStatus?.type) {
       case KiltRevocationStatusV1.STATUS_TYPE:
@@ -67,9 +70,7 @@ type VerificationCriteria = {
 type VerificationConfig = {
   didResolver?: typeof resolve | DidDocument[]
   cTypes?: CTypeLoader | ICType[]
-  credentialStatusLoader?: (
-    credential: VerifiableCredential
-  ) => Promise<CredentialStatusResult>
+  credentialStatusLoader?: typeof checkStatus
 }
 
 /**
@@ -80,24 +81,24 @@ type VerificationConfig = {
  * - Checks the revocation status of a verified credential.
  * - Returns a verification result containing proof and status verification results.
  *
- * @param args - An object holding named arguments.
- * @param args.credential - The Verifiable Credential to be verified.
- * @param args.verificationCriteria - Verification options.
- * @param args.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
+ * @param params - Holds all named parameters.
+ * @param params.credential - The Verifiable Credential to be verified.
+ * @param params.verificationCriteria - Verification options.
+ * @param params.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
  * Defaults to {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1 } which, as of now, is the only type suppported.
  * @param verificationCriteria.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
  * As {@link KiltAttestationProofV1.PROOF_TYPE KiltAttestationProofV1} proofs default to `assertionMethod`, any other value will currently fail verification.
- * @param args.verificationCriteria.now - The reference time for verification as Date (default is current time).
- * @param args.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- * @param args.config - Additional configuration (optional).
- * @param args.config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
+ * @param params.verificationCriteria.now - The reference time for verification as Date (default is current time).
+ * @param params.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ * @param params.config - Additional configuration (optional).
+ * @param params.config.didResolver - An alterative DID resolver to resolve issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.cTypes -  To ensure that the credential structure agrees with a known CType (credential schema), with this parameter it is possible to pass:
+ * @param params.config.cTypes -  To ensure that the credential structure agrees with a known CType (credential schema), with this parameter it is possible to pass:
  *  - either an array of CType definitions
  *  - or a CType-Loader that retrieves the definition of the CType linked to the credential.
  *
  * By default, this retrieves CType definitions from the KILT blockchain, using a loader with an internal definitions cache.
- * @param config.credentialStatusLoader - An alternative credential status resolver.
+ * @param params.config.credentialStatusLoader - An alternative credential status resolver.
  * This function takes the credential as input and is expected to return a promise of an {@link CredentialStatusResult}.
  * Defaults to {@link checkStatus}.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside any potential errors and detailed information on proof verification results and credential status.
@@ -171,7 +172,7 @@ export async function verifyCredential({
     if (result.proofResults?.some(({ verified }) => verified === true)) {
       const { credentialStatusLoader = checkStatus } = config
       // TODO: shouldn't the 'now' parameter also apply to the status check?
-      result.statusResult = await credentialStatusLoader(credential).catch(
+      result.statusResult = await credentialStatusLoader({ credential }).catch(
         (e) => ({ verified: false, error: [toError(e)] })
       )
 
@@ -206,29 +207,29 @@ export async function verifyCredential({
  * - Checks the status of each verified credential.
  * - Returns a composite verification result for the presentation and each credential.
  *
- * @param args - An object holding named arguments.
- * @param args.presentation - The Verifiable Presentation to be verified.
- * @param args.verificationCriteria - Verification options.
- * @param args.verificationCriteria.now - The reference time for verification as Date (default is current time).
- * @param args.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
- * @param args.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
+ * @param params - An object holding named arguments.
+ * @param params.presentation - The Verifiable Presentation to be verified.
+ * @param params.verificationCriteria - Verification options.
+ * @param params.verificationCriteria.now - The reference time for verification as Date (default is current time).
+ * @param params.verificationCriteria.tolerance - The allowed time drift in milliseconds for time-sensitive checks (default is 0).
+ * @param params.verificationCriteria.proofTypes - The types of acceptable proofs on the presentation.
  * Defaults to {@link DataIntegrity.PROOF_TYPE DataIntegrityProof } which, as of now, is the only type suppported.
  * Any other values will be mapped to a known algorithm or cryptosuite for use with this proof type, thus allowing to control the signature algorithm to be used.
- * @param args.verificationCriteria.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
+ * @param params.verificationCriteria.proofPurpose - Controls which value is expected for the proof's `proofPurpose` property.
  * If specified, verification fails if the proof is issued for a different purpose.
- * @param args.verificationCriteria.challenge - The expected challenge value for the presentation, if any.
+ * @param params.verificationCriteria.challenge - The expected challenge value for the presentation, if any.
  * If given, verification fails if the proof does not contain the challenge value.
- * @param args.verificationCriteria.domain - Expected domain for the proof. Verification fails if mismatched.
- * @param args.verificationCriteria.verifier - The expected verifier for the presentation, if any.
- * @param args.verificationCriteria.credentials - Verification criteria to be passed on to {@link verifyCredential}.
- * @param args.verificationCriteria.credentials.proofTypes See {@link verifyCredential}.
- * @param args.verificationCriteria.credentials.proofPurpose See {@link verifyCredential}.
- * @param args.config - Additional configuration (optional).
- * @param args.config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
+ * @param params.verificationCriteria.domain - Expected domain for the proof. Verification fails if mismatched.
+ * @param params.verificationCriteria.verifier - The expected verifier for the presentation, if any.
+ * @param params.verificationCriteria.credentials - Verification criteria to be passed on to {@link verifyCredential}.
+ * @param params.verificationCriteria.credentials.proofTypes See {@link verifyCredential}.
+ * @param params.verificationCriteria.credentials.proofPurpose See {@link verifyCredential}.
+ * @param params.config - Additional configuration (optional).
+ * @param params.config.didResolver - An alterative DID resolver to resolve the holder- and issuer DIDs (defaults to {@link resolve}).
  * An array of static DID documents can be provided instead, in which case the function will not try to retrieve any DID documents from a remote source.
- * @param config.cTypes - Alternative input for the credential structural verification. It can either be an array of CTypes or a CType loader.
+ * @param params.config.cTypes - Alternative input for the credential structural verification. It can either be an array of CTypes or a CType loader.
  * See {@link verifyCredential} for details.
- * @param args.config.credentialStatusLoader - An alternative credential status resolver.
+ * @param params.config.credentialStatusLoader - An alternative credential status resolver.
  * See {@link verifyCredential} for details.
  * @returns An object containing a summary of the result (`verified`) as a boolean alongside detailed information on presentation and credential verification results.
  */
