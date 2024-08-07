@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -55,5 +55,6 @@
   },
   "peerDependencies": {
     "@kiltprotocol/augment-api": "^1.11210.0"
-  }
+  },
+  "stableVersion": "0.35.2"
 }

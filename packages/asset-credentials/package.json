@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/asset-credentials",
-  "version": "0.100.0-beta.1",
+  "version": "0.100.0-beta.2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -60,5 +60,6 @@
     "@polkadot/util": {
       "optional": true
     }
-  }
+  },
+  "stableVersion": "0.35.2"
 }
