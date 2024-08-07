@@ -2016,8 +2016,8 @@ __metadata:
   linkType: soft
 
 "@kiltprotocol/augment-api@npm:rc":
-  version: 1.11300.0-rc.1
-  resolution: "@kiltprotocol/augment-api@npm:1.11300.0-rc.1"
+  version: 1.11300.0-rc.2
+  resolution: "@kiltprotocol/augment-api@npm:1.11300.0-rc.2"
   dependencies:
     "@typescript-eslint/eslint-plugin": "npm:^7.0.2"
     "@typescript-eslint/parser": "npm:^7.0.2"
@@ -2025,7 +2025,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-unused-imports: "npm:^3.1.0"
   peerDependencies:
-    "@kiltprotocol/type-definitions": ^1.11300.0-rc.1
+    "@kiltprotocol/type-definitions": ^1.11200.0-rc.1
     "@polkadot/api": ~12.2.0
     "@polkadot/typegen": ~12.2.0
     "@polkadot/types": ^12.2.0
@@ -2051,7 +2051,7 @@ __metadata:
   bin:
     kilt_reaugment: augmentFromFile.mjs
     kilt_updateMetadata: updateMetadata.mjs
-  checksum: 10c0/813897d1b9466b4749e7f657ca7c7a04086092e8052d7473723b01b3afb2cf948a0d71f2e8bf05af13de4ea15340ca1f8e261a3fabe546fe83fd824b5be5515e
+  checksum: 10c0/86f038f393840f60b3593ada167e204fb0d6eac671192ef7047887e7aea2f74f1e609049a4a57a790789d97e40b621565b7f695df0b68048903b867761253942
   languageName: node
   linkType: hard
 
@@ -2205,7 +2205,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": "npm:^1.0.0"
+    "@kiltprotocol/type-definitions": "npm:rc"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": "npm:^13.0.0"
@@ -2279,19 +2279,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/type-definitions@npm:^1.0.0":
-  version: 1.1.0
-  resolution: "@kiltprotocol/type-definitions@npm:1.1.0"
-  checksum: 10c0/974c703128be6494056610e47556b2551e1c8e307f772e3ac27eb081edee98636a51578029acd1dc2298fe8ffe5f14897ea7919e23e739c7c26de6c3c983b92f
-  languageName: node
-  linkType: hard
-
 "@kiltprotocol/type-definitions@npm:rc":
-  version: 1.11300.0-rc.1
-  resolution: "@kiltprotocol/type-definitions@npm:1.11300.0-rc.1"
+  version: 1.11200.0-rc.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11200.0-rc.1"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: 10c0/4b4ab3e26abfdb2a94adf30be96996fbcbae5ddfb9165ff1dff9b14f2123ac63edfe8e2e1cf6cf5bfc7d8ff1847cf922c511600ca0b82afd677fb4cbc9bb983a
+  checksum: 10c0/adeb14ba8aea38074432b0326cff80c03e4c2b40b35e2705fdbc74305d3231841eb63955c4af4d8a8d712901be3bb1cabcab3be65b8cb8fc2f58f2ff1e6d107a
   languageName: node
   linkType: hard
 
