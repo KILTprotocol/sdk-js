@@ -8,11 +8,7 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { QueryableStorageEntry } from '@polkadot/api/types'
 import type { Option, u64, Vec } from '@polkadot/types'
-import type {
-  AccountId,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces/types.js'
+import type { AccountId, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { IEventData } from '@polkadot/types/types'
 import {
   hexToU8a,

@@ -23,7 +23,7 @@ export interface KiltKeyringPair extends KeyringPair {
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
 export type KiltAddress = KiltKeyringPair['address']
 
-declare module '@polkadot/keyring' {
+declare module '@polkadot/util-crypto' {
   function encodeAddress(
     key: HexString | Uint8Array | string,
     ss58Format: 38

@@ -48,8 +48,10 @@
     "@kiltprotocol/type-definitions": "rc",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^12.0.0",
+    "@polkadot/keyring": "^13.0.0",
     "@polkadot/types": "^12.0.0",
-    "@polkadot/util": "^13.0.0"
+    "@polkadot/util": "^13.0.0",
+    "@polkadot/util-crypto": "^13.0.0"
   },
   "peerDependencies": {
     "@kiltprotocol/augment-api": "^1.11210.0"

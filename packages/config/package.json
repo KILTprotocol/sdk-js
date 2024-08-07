@@ -35,9 +35,16 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
+  "peerDependencies": {
+    "@polkadot/api": "^12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@polkadot/api": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^12.0.0",
     "typescript-logging": "^1.0.0"
   }
 }
