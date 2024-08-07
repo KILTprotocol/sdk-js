@@ -5,10 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { encodeAddress } from '@polkadot/keyring'
+import { encodeAddress, ethereumEncode } from '@polkadot/util-crypto'
 import type { Option, Vec } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
-import { ethereumEncode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpointsDidEndpoint,

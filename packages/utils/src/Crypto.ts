@@ -13,7 +13,7 @@
  * @packageDocumentation
  */
 
-import { decodeAddress, encodeAddress } from '@polkadot/keyring'
+import Keyring, { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
   HexString,
   KeyringPair,
@@ -34,7 +34,6 @@ import {
   randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import { Keyring } from '@polkadot/api'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import jsonabc from './jsonabc.js'

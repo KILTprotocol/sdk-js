@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Signer } from '@polkadot/api/types/index.js'
+import type { Signer } from '@polkadot/types/types'
 import { decodePair } from '@polkadot/keyring/pair/decode'
 import {
   hexToU8a,
