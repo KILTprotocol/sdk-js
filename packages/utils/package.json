@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.100.0-alpha.3",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -35,10 +35,10 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@kiltprotocol/eddsa-jcs-2022": "0.1.0-rc.4",
-    "@kiltprotocol/es256k-jcs-2023": "0.1.0-rc.4",
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "0.1.0-rc.4",
-    "@kiltprotocol/sr25519-jcs-2023": "0.1.0-rc.4",
+    "@kiltprotocol/eddsa-jcs-2022": "^0.1.0",
+    "@kiltprotocol/es256k-jcs-2023": "^0.1.0",
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "^0.1.0",
+    "@kiltprotocol/sr25519-jcs-2023": "^0.1.0",
     "@kiltprotocol/types": "workspace:*",
     "@scure/base": "^1.1.0",
     "cbor-web": "^9.0.0",

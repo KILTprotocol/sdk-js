@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/jsonld-suites",
-  "version": "0.100.0-alpha.3",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -39,7 +39,7 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/type-definitions": "^1.0.0",
+    "@kiltprotocol/type-definitions": "^1.11200.0",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/keyring": "^13.0.0",
