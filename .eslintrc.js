@@ -153,19 +153,14 @@ module.exports = {
       },
     },
     {
-      files: ['**/augment-api/src/interfaces/**/*.ts'],
-      rules: {
-        'license-header/header': 'off',
-      },
-    },
-    {
       files: ['tests/**/*'],
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',
         'no-console': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
-        'import/no-extraneous-dependencies': 'off'
+        'import/no-extraneous-dependencies': 'off',
+        'no-underscore-dangle': 'off'
       },
     },
   ],

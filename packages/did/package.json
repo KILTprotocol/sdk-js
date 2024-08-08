@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/did",
-  "version": "0.35.2",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -23,7 +23,7 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=16.0"
+    "node": ">=18.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -33,16 +33,30 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
+  "peerDependencies": {
+    "@kiltprotocol/augment-api": "^1.0.0",
+    "@polkadot/api": "^12.0.0",
+    "@polkadot/keyring": "^13.0.0",
+    "@polkadot/types": "^12.0.0",
+    "@polkadot/util": "^13.0.0",
+    "@polkadot/util-crypto": "^13.0.0"
+  },
   "dependencies": {
-    "@kiltprotocol/augment-api": "workspace:*",
+    "@digitalbazaar/multikey-context": "^2.0.1",
+    "@digitalbazaar/security-context": "^1.0.1",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^10.7.3",
-    "@polkadot/keyring": "^12.0.0",
-    "@polkadot/types": "^10.7.3",
-    "@polkadot/types-codec": "^10.7.3",
-    "@polkadot/util": "^12.0.0",
-    "@polkadot/util-crypto": "^12.0.0"
+    "@kiltprotocol/utils": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@kiltprotocol/augment-api": {
+      "optional": true
+    },
+    "@polkadot/api": {
+      "optional": true
+    },
+    "@polkadot/types": {
+      "optional": true
+    }
   }
 }

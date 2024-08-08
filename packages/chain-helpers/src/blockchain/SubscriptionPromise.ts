@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -54,7 +54,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
 }
 
 /**
- * A wrapper around [[makeSubscriptionPromise]] that helps to build multiple promises which listen to the same subscription.
+ * A wrapper around {@link makeSubscriptionPromise} that helps to build multiple promises which listen to the same subscription.
  *
  * @param args An array of objects each of which provides the arguments for creation of one promise.
  * @returns An object containing both a subscription callback

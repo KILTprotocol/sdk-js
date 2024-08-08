@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -13,7 +13,7 @@
  * @packageDocumentation
  */
 
-import { decodeAddress, encodeAddress } from '@polkadot/keyring'
+import Keyring, { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
   HexString,
   KeyringPair,
@@ -34,7 +34,6 @@ import {
   randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import { Keyring } from '@polkadot/api'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import jsonabc from './jsonabc.js'
@@ -265,7 +264,7 @@ export function decryptAsymmetricAsStr(
 }
 
 /**
- * Signature of hashing function accepted by [[hashStatements]].
+ * Signature of hashing function accepted by {@link hashStatements}.
  *
  * @param value String to be hashed.
  * @param nonce Optional nonce (as string) used to obscure hashed contents.
@@ -276,7 +275,7 @@ export interface Hasher {
 }
 
 /**
- * Additional options for [[hashStatements]].
+ * Additional options for {@link hashStatements}.
  */
 export interface HashingOptions {
   nonces?: Record<string, string>
@@ -285,7 +284,7 @@ export interface HashingOptions {
 }
 
 /**
- * Default hasher for [[hashStatements]].
+ * Default hasher for {@link hashStatements}.
  *
  * @param value String to be hashed.
  * @param nonce Optional nonce (as string) used to obscure hashed contents.
@@ -348,7 +347,7 @@ export function hashStatements(
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
@@ -362,7 +361,7 @@ export function makeKeypairFromSeed<
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
-  const keyring = new Keyring({ ss58Format, type })
+  const keyring = new Keyring({ ss58Format, type: type ?? 'ed25519' })
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -7,347 +7,373 @@
 
 /// <reference lib="dom" />
 
-import type {
-  DecryptCallback,
-  DidDocument,
-  EncryptCallback,
-  KeyringPair,
-  KiltEncryptionKeypair,
-  KiltKeyringPair,
-  NewDidEncryptionKey,
-  SignCallback,
-} from '@kiltprotocol/types'
+import type { KiltAddress, SignerInterface } from '@kiltprotocol/types'
 
-const { kilt } = window
-
-const {
-  Claim,
-  Attestation,
-  ConfigService,
-  Credential,
-  CType,
-  Did,
-  Blockchain,
-  Utils: { Crypto, ss58Format },
-  Message,
-  BalanceUtils,
-} = kilt
-
-ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
-
-function makeSignCallback(
-  keypair: KeyringPair
-): (didDocument: DidDocument) => SignCallback {
-  return (didDocument) => {
-    return async function sign({ data, keyRelationship }) {
-      const keyId = didDocument[keyRelationship]?.[0].id
-      const keyType = didDocument[keyRelationship]?.[0].type
-      if (keyId === undefined || keyType === undefined) {
-        throw new Error(
-          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
-        )
-      }
-      const signature = keypair.sign(data, { withType: false })
-      return { signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
-    }
-  }
-}
-
-type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
-
-function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
-  return async function sign({ data }) {
-    const signature = keypair.sign(data, { withType: false })
-    return {
-      signature,
-      keyType: keypair.type,
-    }
-  }
-}
-
-function makeSigningKeypair(
-  seed: string,
-  type: KiltKeyringPair['type'] = 'sr25519'
-): {
-  keypair: KiltKeyringPair
-  getSignCallback: (didDocument: DidDocument) => SignCallback
-  storeDidCallback: StoreDidCallback
-} {
-  const keypair = Crypto.makeKeypairFromUri(seed, type)
-  const getSignCallback = makeSignCallback(keypair)
-  const storeDidCallback = makeStoreDidCallback(keypair)
-
-  return {
-    keypair,
-    getSignCallback,
-    storeDidCallback,
-  }
-}
-
-function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
-  const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
-    Crypto.hash(seed, 256)
-  )
-  return {
-    secretKey,
-    publicKey,
-    type: 'x25519',
-  }
-}
-
-function makeEncryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
-  return (didDocument) => {
-    return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0].id
-      if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
-      }
-      const { box, nonce } = Crypto.encryptAsymmetric(
-        data,
-        peerPublicKey,
-        secretKey
-      )
-      return { nonce, data: box, keyUri: `${didDocument.uri}${keyId}` }
-    }
-  }
-}
-
-function makeDecryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey }) {
-    const decrypted = Crypto.decryptAsymmetric(
-      { box: data, nonce },
-      peerPublicKey,
-      secretKey
-    )
-    if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted }
-  }
-}
-
-async function createFullDidFromKeypair(
-  payer: KiltKeyringPair,
-  keypair: KiltKeyringPair,
-  encryptionKey: NewDidEncryptionKey
-) {
-  const api = ConfigService.get('api')
-  const sign = makeStoreDidCallback(keypair)
-
-  const storeTx = await Did.getStoreTx(
-    {
-      authentication: [keypair],
-      assertionMethod: [keypair],
-      capabilityDelegation: [keypair],
-      keyAgreement: [encryptionKey],
-    },
-    payer.address,
-    sign
-  )
-  await Blockchain.signAndSubmitTx(storeTx, payer)
-
-  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
-  const encodedDidDetails = await queryFunction(
-    Did.toChain(Did.getFullDidUriFromKey(keypair))
-  )
-  return Did.linkedInfoFromChain(encodedDidDetails).document
-}
+const { kilt: Kilt } = window
 
 async function runAll() {
-  // init sdk kilt config and connect to chain
-  const api = await kilt.connect('ws://127.0.0.1:9944')
+  const api = await Kilt.connect('ws://127.0.0.1:9944')
 
-  // Accounts
-  console.log('Account setup started')
-  const FaucetSeed =
-    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const payer = Crypto.makeKeypairFromUri(FaucetSeed)
+  console.log('connected')
 
-  const { keypair: aliceKeypair, getSignCallback: aliceSign } =
-    makeSigningKeypair('//Alice')
-  const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
-  const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
-  const alice = await createFullDidFromKeypair(
-    payer,
-    aliceKeypair,
-    aliceEncryptionKey
-  )
-  if (!alice.keyAgreement?.[0])
-    throw new Error('Impossible: alice has no encryptionKey')
-  console.log('alice setup done')
+  const authenticationKeyPair = Kilt.generateKeypair({ type: 'ed25519' })
 
-  const { keypair: bobKeypair, getSignCallback: bobSign } =
-    makeSigningKeypair('//Bob')
-  const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
-  const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
-  const bob = await createFullDidFromKeypair(
-    payer,
-    bobKeypair,
-    bobEncryptionKey
-  )
-  if (!bob.keyAgreement?.[0])
-    throw new Error('Impossible: bob has no encryptionKey')
-  console.log('bob setup done')
-
-  // Light DID Account creation workflow
-  const authPublicKey = Crypto.coToUInt8(
-    '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-  )
-  const encPublicKey = Crypto.coToUInt8(
-    '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-  )
-  const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const testDid = Did.createLightDidDocument({
-    authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
-    keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
-  })
-  if (
-    testDid.uri !==
-    `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
-  ) {
-    throw new Error('DID Test Unsuccessful')
-  } else console.info(`light DID successfully created`)
-
-  // Chain DID workflow -> creation & deletion
-  console.log('DID workflow started')
-  const { keypair, getSignCallback, storeDidCallback } = makeSigningKeypair(
-    '//Foo',
-    'ed25519'
-  )
-
-  const didStoreTx = await Did.getStoreTx(
-    { authentication: [keypair] },
-    payer.address,
-    storeDidCallback
-  )
-  await Blockchain.signAndSubmitTx(didStoreTx, payer)
-
-  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
-  const encodedDidDetails = await queryFunction(
-    Did.toChain(Did.getFullDidUriFromKey(keypair))
-  )
-  const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
-  const resolved = await Did.resolve(fullDid.uri)
-
-  if (
-    resolved &&
-    !resolved.metadata.deactivated &&
-    resolved.document?.uri === fullDid.uri
-  ) {
-    console.info('DID matches')
-  } else {
-    throw new Error('DIDs do not match')
+  const faucet = {
+    publicKey: new Uint8Array([
+      238, 93, 102, 137, 215, 142, 38, 187, 91, 53, 176, 68, 23, 64, 160, 101,
+      199, 189, 142, 253, 209, 193, 84, 34, 7, 92, 63, 43, 32, 33, 181, 210,
+    ]),
+    secretKey: new Uint8Array([
+      205, 253, 96, 36, 210, 176, 235, 162, 125, 84, 204, 146, 164, 76, 217,
+      166, 39, 198, 155, 45, 189, 161, 94, 215, 229, 128, 133, 66, 81, 25, 174,
+      3,
+    ]),
   }
 
-  const deleteTx = await Did.authorizeTx(
-    fullDid.uri,
-    api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
-    getSignCallback(fullDid),
-    payer.address
-  )
-  await Blockchain.signAndSubmitTx(deleteTx, payer)
+  const [submitter] = (await Kilt.getSignersForKeypair({
+    keypair: faucet,
+    type: 'Ed25519',
+  })) as Array<SignerInterface<'Ed25519', KiltAddress>>
 
-  const resolvedAgain = await Did.resolve(fullDid.uri)
-  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
-    console.info('DID successfully deleted')
-  } else {
-    throw new Error('DID was not deleted')
+  console.log('keypair generation complete')
+
+  // ┏━━━━━━━━━━━━┓
+  // ┃ create DID ┃
+  // ┗━━━━━━━━━━━━┛
+  //
+  // Generate the DID-signed creation tx and submit it to the blockchain with the specified account.
+  // The DID Document will have one Verification Key with an authentication relationship.
+  //
+  // Note the following parameters:
+  // - `api`: The connected blockchain api.
+  // - `signers`: The keys for verification materials inside the DID Document. For creating a DID,
+  // only the key for the authentication verification method is required.
+  // - `submitter`: The account used to submit the transaction to the blockchain. Note: the submitter account must have
+  // enough funds to cover the required storage deposit.
+  // - `fromPublicKey`: The public key that will feature as the DID's initial authentication method and will determine the DID identifier.
+
+  const transactionHandler = Kilt.DidHelpers.createDid({
+    api,
+    signers: [authenticationKeyPair],
+    submitter,
+    fromPublicKey: authenticationKeyPair.publicKeyMultibase,
+  })
+
+  // The `createDid` function returns a transaction handler, which includes two methods:
+  // - `submit`: Submits a transaction for inclusion in a block, resulting in its execution in the blockchain runtime.
+  // - `getSubmittable`: Produces transaction that can be submitted to a blockchain node for inclusion, or signed and submitted by an external service.
+
+  // Submit transaction.
+  // Note: `submit()` by default, waits for the block to be finalized. This behaviour can be overwritten
+  // in the function's optional parameters.
+  const didDocumentTransactionResult = await transactionHandler.submit()
+
+  // Once the transaction is submitted, the result should be checked.
+  // For the sake of this example, we will only check if the transaction went through.
+  if (didDocumentTransactionResult.status !== 'confirmed') {
+    throw new Error('create DID failed')
   }
 
-  // CType workflow
-  console.log('CType workflow started')
-  const DriversLicense = CType.fromProperties('Drivers License', {
-    name: {
-      type: 'string',
+  // Get the DID Document from the transaction result.
+  let { didDocument, signers } = didDocumentTransactionResult.asConfirmed
+
+  console.log('Did created')
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Create Verification Method ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // - `DidHelpers` include a function to add a verification methods.
+  // Similar to `createDid`, setting a verification method requires some parameters.
+  //
+  // - `didDocument` is the latest state of the DID Document that shall be updated.
+  // - `signers` includes all the keypairs included in the DID documents and necessary for the
+  // specified operation, in this case, the keypair of the authentication key, which is necessary to
+  // allow updates to the DID Document.
+  // - `publicKey` is the key used for the verification method.
+  //
+  // Note: setting a verification method will remove any existing method for the specified relationship.
+
+  // TODO: use mnemonic here.
+  const assertionKeyPair = Kilt.generateKeypair({
+    type: 'sr25519',
+  })
+  const vmTransactionResult = await Kilt.DidHelpers.setVerificationMethod({
+    api,
+    didDocument,
+    signers: [...signers, assertionKeyPair],
+    submitter,
+    publicKey: assertionKeyPair.publicKeyMultibase,
+    relationship: 'assertionMethod',
+  }).submit()
+
+  if (vmTransactionResult.status !== 'confirmed') {
+    throw new Error('add verification method failed')
+  }
+  ;({ didDocument, signers } = vmTransactionResult.asConfirmed)
+
+  console.log('assertion method added')
+
+  // ┏━━━━━━━━━━━━━━━━━┓
+  // ┃ Claim web3name  ┃
+  // ┗━━━━━━━━━━━━━━━━━┛
+  const claimW3nTransactionResult = await Kilt.DidHelpers.claimWeb3Name({
+    api,
+    didDocument,
+    submitter,
+    signers,
+    name: 'example123',
+  }).submit()
+
+  if (claimW3nTransactionResult.status !== 'confirmed') {
+    throw new Error('claim web3name failed')
+  }
+
+  // The didDocument now contains an `alsoKnownAs` entry.
+  ;({ didDocument } = claimW3nTransactionResult.asConfirmed)
+
+  console.log('w3n claimed')
+
+  // ┏━━━━━━━━━━━━━━━━┓
+  // ┃ Add a service  ┃
+  // ┗━━━━━━━━━━━━━━━━┛
+  const addServiceTransactionResult = await Kilt.DidHelpers.addService({
+    api,
+    submitter,
+    signers,
+    didDocument,
+    // TODO:  change service endpoint.
+    service: {
+      id: '#my_service',
+      type: ['http://schema.org/EmailService'],
+      serviceEndpoint: ['mailto:info@kilt.io'],
     },
-    age: {
-      type: 'integer',
+  }).submit()
+
+  if (addServiceTransactionResult.status !== 'confirmed') {
+    throw new Error('add service failed')
+  }
+  ;({ didDocument } = addServiceTransactionResult.asConfirmed)
+
+  console.log('service added')
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Register a CType             ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Register a credential type on chain so we can issue credentials against it.
+  //
+  // Note:
+  // We are registering a CType that has been created previously using functionality from the @kiltprotocol/credentials package.
+  // The @kiltprotocol/sdk-js package and bundle do not currently offer support for this.
+  //
+  // TODO: Decide if CType definitions are expected to be hardcoded in application logic, at least for credential issuance.
+  // Verifying credentials / presentations is already possible even if the CType definition is not known.
+  //
+  const DriversLicenseDef =
+    '{"$schema":"ipfs://bafybeiah66wbkhqbqn7idkostj2iqyan2tstc4tpqt65udlhimd7hcxjyq/","additionalProperties":false,"properties":{"age":{"type":"integer"},"name":{"type":"string"}},"title":"Drivers License","type":"object"}'
+
+  const createCTypeResult = await Kilt.DidHelpers.transact({
+    api,
+    didDocument,
+    signers,
+    submitter,
+    call: api.tx.ctype.add(DriversLicenseDef),
+    expectedEvents: [{ section: 'CType', method: 'CTypeCreated' }],
+  }).submit()
+
+  if (createCTypeResult.status !== 'confirmed') {
+    throw new Error('CType creation failed')
+  }
+
+  // TODO: We don't have the CType id in the definition, so we need to get it from the events.
+  const ctypeHash = createCTypeResult.asConfirmed.events
+    .find((event) => api.events.ctype.CTypeCreated.is(event))
+    ?.data[1].toHex()
+
+  if ((await api.query.ctype.ctypes(ctypeHash)).isEmpty) {
+    throw new Error('CType not registered')
+  }
+
+  // TODO: Should we at least be able to load an existing CType from the chain?
+  const DriversLicense = JSON.parse(DriversLicenseDef)
+  DriversLicense.$id = `kilt:ctype:${ctypeHash}`
+
+  console.log('CType registered')
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Issue a Credential           ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Create and issue a credential using our Did.
+  // The holder is also our Did, so we are issuing to ourselves here.
+  //
+  const unsigned = await Kilt.Issuer.createCredential({
+    issuer: didDocument.id,
+    credentialSubject: {
+      id: didDocument.id,
+      age: 22,
+      name: 'Gustav',
+    },
+    cType: DriversLicense,
+  })
+
+  const credential = await Kilt.Issuer.issue({
+    credential: unsigned,
+    issuer: {
+      didDocument,
+      signers: [...signers, submitter],
+      submitter: submitter.id,
     },
   })
 
-  const cTypeStoreTx = await Did.authorizeTx(
-    alice.uri,
-    api.tx.ctype.add(CType.toChain(DriversLicense)),
-    aliceSign(alice),
-    payer.address
-  )
-  await Blockchain.signAndSubmitTx(cTypeStoreTx, payer)
+  console.log('credential issued')
 
-  await CType.verifyStored(DriversLicense)
-  console.info('CType successfully stored on chain')
-
-  // Attestation workflow
-  console.log('Attestation workflow started')
-  const content = { name: 'Bob', age: 21 }
-  const claim = Claim.fromCTypeAndClaimContents(
-    DriversLicense,
-    content,
-    bob.uri
-  )
-  const credential = Credential.fromClaim(claim)
-  if (!Credential.isICredential(credential))
-    throw new Error('Not a valid Credential')
-  Credential.verifyDataIntegrity(credential)
-  console.info('Credential data verified')
-  if (credential.claim.contents !== content)
-    throw new Error('Claim content inside Credential mismatching')
-
-  const presentation = await Credential.createPresentation({
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Create a Presentation        ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Create a derived credential that only contains selected properties (selective disclosure), then create a credential presentation for it.
+  // The presentation includes a proof of ownership and is scoped to a verified and time frame to prevent unauthorized re-use.
+  //
+  const derived = await Kilt.Holder.deriveProof({
     credential,
-    signCallback: bobSign(bob),
+    proofOptions: { includeClaims: ['/credentialSubject/age'] },
   })
-  if (!Credential.isPresentation(presentation))
-    throw new Error('Not a valid Presentation')
-  await Credential.verifySignature(presentation)
-  console.info('Presentation signature verified')
 
-  console.log('Test Messaging with encryption + decryption')
-  const message = Message.fromBody(
-    {
-      content: {
-        credential,
-      },
-      type: 'request-attestation',
+  const presentation = await Kilt.Holder.createPresentation({
+    credentials: [derived],
+    holder: {
+      didDocument,
+      signers,
     },
-    bob.uri,
-    alice.uri
-  )
-  const encryptedMessage = await Message.encrypt(
-    message,
-    bobEncryptCallback(bob),
-    `${alice.uri}${alice.keyAgreement[0].id}`
-  )
+    presentationOptions: {
+      verifier: didDocument.id,
+      validUntil: new Date(Date.now() + 100_000),
+    },
+  })
 
-  const decryptedMessage = await Message.decrypt(
-    encryptedMessage,
-    aliceDecryptCallback
-  )
-  if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
-    throw new Error('Original and decrypted message are not the same')
+  console.log('presentation created')
+
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Verify a Presentation        ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Verify a presentation.
+  //
+  // Verification would fail if:
+  // - The presentation is not signed by the holder's Did.
+  // - The current time is outside of the validity time frame of the presentation.
+  // - The verifier in the presentation does not match the one specified.
+  //
+  const { verified, error } = await Kilt.Verifier.verifyPresentation({
+    presentation,
+    verificationCriteria: {
+      verifier: didDocument.id,
+      proofPurpose: 'authentication',
+    },
+  })
+
+  if (verified !== true) {
+    throw new Error(`failed to verify credential: ${JSON.stringify(error)}`)
   }
 
-  const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
-  Attestation.verifyAgainstCredential(attestation, credential)
-  console.info('Attestation Data verified')
+  console.log('presentation verified')
 
-  const attestationStoreTx = await Did.authorizeTx(
-    alice.uri,
-    api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
-    aliceSign(alice),
-    payer.address
-  )
-  await Blockchain.signAndSubmitTx(attestationStoreTx, payer)
-  const storedAttestation = Attestation.fromChain(
-    await api.query.attestation.attestations(credential.rootHash),
-    credential.rootHash
-  )
-  if (storedAttestation?.revoked === false) {
-    console.info('Attestation verified with chain')
-  } else {
-    throw new Error('Attestation not verifiable with chain')
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Remove a Verification Method ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  //
+  // Removing a verification method can be done by specifying its id.
+  //
+  // Note:
+  // - The provided `didDocument` must include the specified verification method.
+  // - The authentication verification method can not be removed.
+  const removeVmTransactionResult =
+    await Kilt.DidHelpers.removeVerificationMethod({
+      api,
+      didDocument,
+      signers,
+      submitter,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      verificationMethodId: didDocument.assertionMethod![0],
+      relationship: 'assertionMethod',
+    }).submit()
+
+  if (removeVmTransactionResult.status !== 'confirmed') {
+    throw new Error('remove verification method failed')
   }
+  ;({ didDocument } = removeVmTransactionResult.asConfirmed)
+
+  console.log('assertion method removed')
+
+  // ┏━━━━━━━━━━━━━━━━━━┓
+  // ┃ Release web3name ┃
+  // ┗━━━━━━━━━━━━━━━━━━┛
+  //
+  // A web3name can be released from a DID and potentially claimed by another DID.
+  const releaseW3nTransactionResult = await Kilt.DidHelpers.releaseWeb3Name({
+    api,
+    didDocument,
+    submitter,
+    signers,
+  }).submit()
+
+  if (releaseW3nTransactionResult.status !== 'confirmed') {
+    throw new Error('release web3name failed')
+  }
+  ;({ didDocument } = releaseW3nTransactionResult.asConfirmed)
+
+  console.log('w3n released')
+
+  // ┏━━━━━━━━━━━━━━━━━━┓
+  // ┃ Remove a service ┃
+  // ┗━━━━━━━━━━━━━━━━━━┛
+  //
+  // Services can be removed by specifying the service `id`
+  const removeServiceTransactionResult = await Kilt.DidHelpers.removeService({
+    api,
+    submitter,
+    signers,
+    didDocument,
+    id: '#my_service',
+  }).submit()
+
+  if (removeServiceTransactionResult.status !== 'confirmed') {
+    throw new Error('remove service failed')
+  }
+  ;({ didDocument } = removeServiceTransactionResult.asConfirmed)
+
+  console.log('service removed')
+
+  // ┏━━━━━━━━━━━━━━━━━━┓
+  // ┃ Deactivate a DID ┃
+  // ┗━━━━━━━━━━━━━━━━━━┛
+  //
+  // _Permanently_ deactivate the DID, removing all verification methods and services from its document.
+  // Deactivating a DID cannot be undone, once a DID has been deactivated, all operations on it (including attempts at re-creation) are permanently disabled.
+  const deactivateDidTransactionResult = await Kilt.DidHelpers.deactivateDid({
+    api,
+    submitter,
+    signers,
+    didDocument,
+  }).submit()
+
+  if (deactivateDidTransactionResult.status !== 'confirmed') {
+    throw new Error('deactivate DID failed')
+  }
+  ;({ didDocument } = deactivateDidTransactionResult.asConfirmed)
+
+  if (Array.isArray(didDocument.verificationMethod)) {
+    throw new Error('Did not deactivated')
+  }
+
+  console.log('Did deactivated')
+
+  // Release the connection to the blockchain.
+  await api.disconnect()
+
+  console.log('disconnected')
 }
 
 window.runAll = runAll

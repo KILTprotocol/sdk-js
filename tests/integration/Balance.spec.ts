@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,7 @@ import { jest } from '@jest/globals'
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
-import { disconnect } from '@kiltprotocol/core'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'
@@ -88,10 +88,10 @@ describe('When there are haves and have-nots', () => {
   let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = makeSigningKeyTool().keypair
+    bobbyBroke = (await makeSigningKeyTool()).keypair
     richieRich = devAlice
     faucet = devFaucet
-    stormyD = makeSigningKeyTool().keypair
+    stormyD = (await makeSigningKeyTool()).keypair
   })
 
   it('can transfer tokens from the rich to the poor', async () => {

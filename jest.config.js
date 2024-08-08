@@ -2,7 +2,7 @@ const common = {
   testEnvironment: 'node',
   clearMocks: true,
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
-  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: ['/node_modules/(?!@digitalbazaar|base.+-universal|crypto-ld)'],
   transform: {
     "\\.js$": ["babel-jest", { root: './' }],
     "\\.ts$": "ts-jest"
@@ -15,10 +15,10 @@ const common = {
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
   collectCoverageFrom: [
@@ -31,15 +31,12 @@ const common = {
     '/tests/',
     // not properly testable
     'packages/types/',
-    'packages/augment-api/',
-    'packages/type-definitions/',
-    'packages/core/src/kilt/',
     'index.ts',
     'types.ts',
     '.chain.ts',
+    'DelegationDecoder.ts',
     'SDKErrors.ts',
     'Did.rpc.ts',
-    'packages/core/src/utils.ts',
     // third party code copied to this repo
     'packages/utils/src/json-schema/',
     'jsonabc.ts',

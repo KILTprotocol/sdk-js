@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import { disconnect } from '@kiltprotocol/core'
+import { disconnect } from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
 import type {
   DidDocument,
@@ -39,7 +39,7 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  key = makeSigningKeyTool()
+  key = await makeSigningKeyTool()
   someDid = await createFullDidFromSeed(paymentAccount, key.keypair)
 }, 60_000)
 
@@ -76,7 +76,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: someDid.uri,
+    owner: someDid.id,
     revoked: false,
   }
   const storeTx = api.tx.attestation.add(
@@ -85,9 +85,9 @@ it('records an extrinsic error when ctype does not exist', async () => {
     null
   )
   const tx = await Did.authorizeTx(
-    someDid.uri,
+    someDid.id,
     storeTx,
-    key.getSignCallback(someDid),
+    await key.getSigners(someDid),
     paymentAccount.address
   )
   await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({

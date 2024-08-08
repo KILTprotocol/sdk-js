@@ -1,21 +1,28 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SubmittableResult } from '@polkadot/api'
-import { AnyNumber } from '@polkadot/types/types'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
+import type { TxWithEvent } from '@polkadot/api-derive/types'
+import type { Vec } from '@polkadot/types'
+import type { Call, Extrinsic } from '@polkadot/types/interfaces'
+import type { AnyNumber, IMethod } from '@polkadot/types/types'
+import type { BN } from '@polkadot/util'
 
-import { ConfigService } from '@kiltprotocol/config'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
+import type * as _ from '@kiltprotocol/augment-api'
 import type {
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
+  TransactionSigner,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
@@ -97,7 +104,7 @@ function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
 /**
  * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
- * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the [[ConfigService]].
+ * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the {@link ConfigService}.
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
@@ -161,22 +168,132 @@ export async function submitSignedTx(
 export const dispatchTx = submitSignedTx
 
 /**
+ * Signs a SubmittableExtrinsic.
+ *
+ * @param tx An unsigned SubmittableExtrinsic.
+ * @param signer The {@link KeyringPair} used to sign the tx.
+ * @param opts Additional options.
+ * @param opts.tip Optional amount of Femto-KILT to tip the validator.
+ * @returns A signed {@link SubmittableExtrinsic}.
+ */
+export async function signTx(
+  tx: SubmittableExtrinsic,
+  signer: KeyringPair | TransactionSigner,
+  { tip }: { tip?: AnyNumber } = {}
+): Promise<SubmittableExtrinsic> {
+  if ('address' in signer) {
+    return tx.signAsync(signer, { tip })
+  }
+
+  return tx.signAsync(signer.id, {
+    tip,
+    signer: Signers.getPolkadotSigner([signer]),
+  })
+}
+
+/**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param signer The [[KiltKeyringPair]] used to sign the tx.
+ * @param signer The {@link KeyringPair} used to sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
  */
 export async function signAndSubmitTx(
   tx: SubmittableExtrinsic,
-  signer: KeyringPair,
+  signer: KeyringPair | TransactionSigner,
   {
     tip,
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
 ): Promise<ISubmittableResult> {
-  const signedTx = await tx.signAsync(signer, { tip })
+  const signedTx = await signTx(tx, signer, { tip })
   return submitSignedTx(signedTx, opts)
+}
+
+/**
+ * Checks wheather the provided extrinsic or call represents a batch.
+ *
+ * @param extrinsic The input {@link Extrinsic} or {@link Call}.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns True if it's a batch, false otherwise.
+ */
+export function isBatch(
+  extrinsic: IMethod,
+  api?: ApiPromise
+): extrinsic is IMethod<[Vec<Call>]> {
+  const apiPromise = api ?? ConfigService.get('api')
+  return (
+    apiPromise.tx.utility?.batch?.is(extrinsic) ||
+    apiPromise.tx.utility?.batchAll?.is(extrinsic) ||
+    apiPromise.tx.utility?.forceBatch?.is(extrinsic)
+  )
+}
+
+/**
+ * Flatten all nested calls into a single array following a DFS approach.
+ *
+ * For example, given the calls [[N1, N2], [N3, [N4, N5], N6]], the final list will look like [N1, N2, N3, N4, N5, N6].
+ *
+ * The following extrinsics are recognized as containing nested calls and will be unpacked:
+ *
+ * - pallet `utility`: `batch`, `batchAll`, `forceBatch`.
+ * - pallet `did`: `submitDidCall`, `dispatchAs`.
+ * - pallet `proxy`: `proxy`, `proxyAnnounced`.
+ *
+ * @param call The {@link Call} which can potentially contain nested calls.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns A list of {@link Call} nested according to the rules above.
+ */
+export function flattenCalls(call: IMethod, api?: ApiPromise): IMethod[] {
+  const apiObject = api ?? ConfigService.get('api')
+  if (isBatch(call, apiObject)) {
+    // Inductive case
+    return call.args[0].flatMap((c) => flattenCalls(c, apiObject))
+  }
+  if (apiObject.tx.did?.submitDidCall?.is(call)) {
+    return flattenCalls(call.args[0].call, apiObject)
+  }
+  if (apiObject.tx.did?.dispatchAs?.is(call)) {
+    return flattenCalls(call.args[1], apiObject)
+  }
+  if (apiObject.tx.proxy?.proxy?.is(call)) {
+    return flattenCalls(call.args[2], apiObject)
+  }
+  if (apiObject.tx.proxy?.proxyAnnounced?.is(call)) {
+    return flattenCalls(call.args[3], apiObject)
+  }
+  // Base case
+  return [call]
+}
+
+/**
+ * Retrieve the last extrinsic from a block that matches the provided filter.
+ *
+ * The function ignores failed extrinsics and, if multiple extrinsics from the block match the provided filter, it only takes the last one.
+ *
+ * @param blockNumber The number of the block to parse.
+ * @param filter The filter to apply to the transactions in the block.
+ * @param api The optional {@link ApiPromise}. If not provided, the one returned by the `ConfigService` is used.
+ *
+ * @returns The last extrinsic in the block matching the filter, or null if no extrinsic is found.
+ */
+export async function retrieveExtrinsicFromBlock(
+  blockNumber: BN,
+  filter: (tx: TxWithEvent) => boolean,
+  api?: ApiPromise
+): Promise<Extrinsic | null> {
+  const apiPromise = api ?? ConfigService.get('api')
+  const { extrinsics } = await apiPromise.derive.chain.getBlockByNumber(
+    blockNumber
+  )
+  const successfulExtrinsics = extrinsics.filter(
+    ({ dispatchError }) => !dispatchError
+  )
+  const extrinsicLastOccurrence = successfulExtrinsics.reverse().find(filter)
+
+  return extrinsicLastOccurrence?.extrinsic ?? null
 }

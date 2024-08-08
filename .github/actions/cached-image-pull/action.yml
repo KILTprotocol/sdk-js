@@ -27,7 +27,7 @@ runs:
 
     - name: check image cache
       id: image-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.image-file.outputs.path }}
         key: image-cache-${{ inputs.image }}

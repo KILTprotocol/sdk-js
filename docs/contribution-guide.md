@@ -47,7 +47,7 @@ On top of the linting rules mentioned above (must document all parameters, must 
   * Start with a capitalized verb in the 3rd person;
 * `@param` and `@returns` fields: don't add types, since this is automatically added into the API doc;
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
-* When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
+* When referring to SDK Classes and methods, make sure you link them using `{@link xxx}`;
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolons. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
@@ -57,8 +57,8 @@ Example of a method docBlock that follows these guidelines:
 /**
   * Builds an identity object from a mnemonic string.
   *
-  * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
-  * @returns An [[Identity]].
+  * @param phraseArg - {@link https://www.npmjs.com/package/bip39 | BIP39} Mnemonic word phrase (Secret phrase).
+  * @returns An {@link Identity}.
   */
 ```
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,26 +8,26 @@
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { TypeDef } from '@polkadot/types/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
+import type { ApiPromise } from '@polkadot/api'
+import type { BN } from '@polkadot/util'
+import type {
+  Did,
+  HexString,
+  KeyringPair,
+  KiltAddress,
+} from '@kiltprotocol/types'
+
 import {
   stringToU8a,
   U8A_WRAP_ETHEREUM,
   u8aConcatStrict,
   u8aToHex,
   u8aWrapBytes,
-  BN,
 } from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type {
-  DidUri,
-  HexString,
-  KeyringPair,
-  KiltAddress,
-} from '@kiltprotocol/types'
 
-import { EncodedSignature } from '../Did.utils.js'
+import type { EncodedSignature } from '../Did.chain.js'
 import { toChain } from '../Did.chain.js'
 
 /**
@@ -134,7 +134,7 @@ function getUnprefixedSignature(
 }
 
 async function getLinkingChallengeV1(
-  did: DidUri,
+  did: Did,
   validUntil: BN
 ): Promise<Uint8Array> {
   const api = ConfigService.get('api')
@@ -156,7 +156,7 @@ async function getLinkingChallengeV1(
     .toU8a()
 }
 
-function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
+function getLinkingChallengeV2(did: Did, validUntil: BN): Uint8Array {
   return stringToU8a(
     `Publicly link the signing address to ${did} before block number ${validUntil}`
   )
@@ -167,12 +167,12 @@ function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
  * The account has to sign the challenge, while the DID will sign the extrinsic that contains the challenge and will
  * link the account to the DID.
  *
- * @param did The URI of the DID that that should be linked to an account.
+ * @param did The DID that should be linked to an account.
  * @param validUntil Last blocknumber that this challenge is valid for.
  * @returns The encoded challenge.
  */
 export async function getLinkingChallenge(
-  did: DidUri,
+  did: Did,
   validUntil: BN
 ): Promise<Uint8Array> {
   const api = ConfigService.get('api')
@@ -261,7 +261,7 @@ export function getWrappedChallenge(
  */
 export async function associateAccountToChainArgs(
   accountAddress: Address,
-  did: DidUri,
+  did: Did,
   sign: (encodedLinkingDetails: HexString) => Promise<Uint8Array>,
   nBlocksValid = 10
 ): Promise<AssociateAccountToChainResult> {

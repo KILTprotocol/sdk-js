@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,86 +8,44 @@
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
 import type {
-  DecryptCallback,
   DidDocument,
-  DidKey,
-  DidServiceEndpoint,
-  DidVerificationKey,
-  EncryptCallback,
-  KeyRelationship,
+  DidUrl,
   KeyringPair,
+  KiltAddress,
   KiltEncryptionKeypair,
   KiltKeyringPair,
-  LightDidSupportedVerificationKeyType,
-  NewLightDidVerificationKey,
-  SignCallback,
+  SignerInterface,
+  SubmittableExtrinsic,
+  TransactionSigner,
+  UriFragment,
+  VerificationMethod,
+  VerificationRelationship,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
-
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
-
-export type EncryptionKeyToolCallback = (
-  didDocument: DidDocument
-) => EncryptCallback
-
-/**
- * Generates a callback that can be used for encryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for encryption.
- * @returns The callback.
- */
-export function makeEncryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
-  return (didDocument) => {
-    return async function encryptCallback({ data, peerPublicKey }) {
-      const keyId = didDocument.keyAgreement?.[0].id
-      if (!keyId) {
-        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
-      }
-      const { box, nonce } = Crypto.encryptAsymmetric(
-        data,
-        peerPublicKey,
-        secretKey
-      )
-      return {
-        nonce,
-        data: box,
-        keyUri: `${didDocument.uri}${keyId}`,
-      }
-    }
-  }
-}
-
-/**
- * Generates a callback that can be used for decryption.
- *
- * @param secretKey The options parameter.
- * @param secretKey.secretKey The key to use for decryption.
- * @returns The callback.
- */
-export function makeDecryptCallback({
-  secretKey,
-}: KiltEncryptionKeypair): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey }) {
-    const decrypted = Crypto.decryptAsymmetric(
-      { box: data, nonce },
-      peerPublicKey,
-      secretKey
-    )
-    if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted }
-  }
-}
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Crypto, Signers, SDKErrors, Multikey } from '@kiltprotocol/utils'
+import {
+  type BaseNewDidKey,
+  type ChainDidKey,
+  type DidVerificationMethodType,
+  type LightDidSupportedVerificationKeyType,
+  type NewLightDidVerificationKey,
+  type NewDidVerificationKey,
+  type NewDidEncryptionKey,
+  type NewService,
+  getStoreTx,
+  didKeyToVerificationMethod,
+  createLightDidDocument,
+  getFullDidFromVerificationMethod,
+  multibaseKeyToDidKey,
+  isValidDidVerificationType,
+  isValidEncryptionMethodType,
+  toChain,
+  linkedInfoFromChain,
+} from '@kiltprotocol/did'
 
 export interface EncryptionKeyTool {
   keyAgreement: [KiltEncryptionKeypair]
-  encrypt: EncryptionKeyToolCallback
-  decrypt: DecryptCallback
 }
 
 /**
@@ -96,20 +54,15 @@ export interface EncryptionKeyTool {
  * @param seed {string} Input to generate the keypair from.
  * @returns Object with secret and public key and the key type.
  */
-export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
+export function makeEncryptionKey(seed: string): EncryptionKeyTool {
   const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
-
-  const encrypt = makeEncryptCallback(keypair)
-  const decrypt = makeDecryptCallback(keypair)
 
   return {
     keyAgreement: [keypair],
-    encrypt,
-    decrypt,
   }
 }
 
-export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
+type StoreDidCallback = Parameters<typeof getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -117,50 +70,39 @@ export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
  * @param keypair The keypair to use for signing.
  * @returns The callback.
  */
-export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
-  return (didDocument) =>
-    async function sign({ data, keyRelationship }) {
-      const keyId = didDocument[keyRelationship]?.[0].id
-      const keyType = didDocument[keyRelationship]?.[0].type
-      if (keyId === undefined || keyType === undefined) {
-        throw new Error(
-          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
-        )
-      }
-      const signature = keypair.sign(data, { withType: false })
-
-      return {
-        signature,
-        keyUri: `${didDocument.uri}${keyId}`,
-        keyType,
-      }
-    }
-}
-
-type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
-
-/**
- * Generates a callback that can be used for signing.
- *
- * @param keypair The keypair to use for signing.
- * @returns The callback.
- */
-export function makeStoreDidCallback(
+export async function makeStoreDidSigner(
   keypair: KiltKeyringPair
-): StoreDidCallback {
-  return async function sign({ data }) {
-    const signature = keypair.sign(data, { withType: false })
-    return {
-      signature,
-      keyType: keypair.type,
-    }
+): Promise<SignerInterface<string, KiltAddress>> {
+  const signers = await Signers.getSignersForKeypair({
+    keypair,
+    id: keypair.address,
+  })
+  const signer = Signers.selectSigner(
+    signers,
+    Signers.select.verifiableOnChain()
+  )
+  if (!signer) {
+    throw new SDKErrors.NoSuitableSignerError(
+      `Failed to derive DID creation signer from keypair ${JSON.stringify(
+        keypair
+      )}`,
+      {
+        availableSigners: signers,
+        signerRequirements: {
+          algorithm: Signers.DID_PALLET_SUPPORTED_ALGORITHMS,
+        },
+      }
+    )
   }
+  return signer
 }
 
 export interface KeyTool {
   keypair: KiltKeyringPair
-  getSignCallback: KeyToolSignCallback
-  storeDidCallback: StoreDidCallback
+  getSigners: (
+    doc: DidDocument
+  ) => Promise<Array<SignerInterface<string, DidUrl>>>
+  storeDidSigner: SignerInterface
   authentication: [NewLightDidVerificationKey]
 }
 
@@ -170,19 +112,77 @@ export interface KeyTool {
  * @param type The type to use for the keypair.
  * @returns The keypair, matching sign callback, a key usable as DID authentication key.
  */
-export function makeSigningKeyTool(
+export async function makeSigningKeyTool(
   type: KiltKeyringPair['type'] = 'sr25519'
-): KeyTool {
+): Promise<KeyTool> {
   const keypair = Crypto.makeKeypairFromSeed(undefined, type)
-  const getSignCallback = makeSignCallback(keypair)
-  const storeDidCallback = makeStoreDidCallback(keypair)
+  const getSigners: (
+    didDocument: DidDocument
+  ) => Promise<Array<SignerInterface<string, DidUrl>>> = async (
+    didDocument
+  ) => {
+    return (
+      await Promise.all(
+        didDocument.verificationMethod?.map(({ id }) =>
+          Signers.getSignersForKeypair({
+            keypair,
+            id: `${id.startsWith('#') ? didDocument.id : ''}${id}`,
+          })
+        ) ?? []
+      )
+    ).flat()
+  }
+
+  const storeDidSigner = await makeStoreDidSigner(keypair)
 
   return {
     keypair,
-    getSignCallback,
-    storeDidCallback,
+    getSigners,
+    storeDidSigner,
     authentication: [keypair as NewLightDidVerificationKey],
   }
+}
+
+function doesVerificationMethodExist(
+  didDocument: DidDocument,
+  { id }: Pick<VerificationMethod, 'id'>
+): boolean {
+  return (
+    didDocument.verificationMethod?.find((vm) => vm.id === id) !== undefined
+  )
+}
+
+function addVerificationMethod(
+  didDocument: DidDocument,
+  verificationMethod: VerificationMethod,
+  relationship: VerificationRelationship
+): void {
+  const existingRelationship = didDocument[relationship] ?? []
+  existingRelationship.push(verificationMethod.id)
+  // eslint-disable-next-line no-param-reassign
+  didDocument[relationship] = existingRelationship
+  if (!doesVerificationMethodExist(didDocument, verificationMethod)) {
+    const existingVerificationMethod = didDocument.verificationMethod ?? []
+    existingVerificationMethod.push(verificationMethod)
+    // eslint-disable-next-line no-param-reassign
+    didDocument.verificationMethod = existingVerificationMethod
+  }
+}
+
+function addKeypairAsVerificationMethod(
+  didDocument: DidDocument,
+  { id, publicKey, type: keyType }: BaseNewDidKey & { id: UriFragment },
+  relationship: VerificationRelationship
+): void {
+  const verificationMethod = didKeyToVerificationMethod(
+    didDocument.id,
+    `${didDocument.id}${id}`,
+    {
+      keyType: keyType as DidVerificationMethodType,
+      publicKey,
+    }
+  )
+  addVerificationMethod(didDocument, verificationMethod, relationship)
 }
 
 /**
@@ -195,22 +195,21 @@ export async function createMinimalLightDidFromKeypair(
   keypair: KeyringPair
 ): Promise<DidDocument> {
   const type = keypair.type as LightDidSupportedVerificationKeyType
-  return Did.createLightDidDocument({
+  return createLightDidDocument({
     authentication: [{ publicKey: keypair.publicKey, type }],
-    keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement,
+    keyAgreement: makeEncryptionKey(`${keypair.publicKey}//enc`).keyAgreement,
   })
 }
 
 // Mock function to generate a key ID without having to rely on a real chain metadata.
-export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
+export function computeKeyId(key: ChainDidKey['publicKey']): ChainDidKey['id'] {
   return `#${blake2AsHex(key, 256)}`
 }
 
 function makeDidKeyFromKeypair({
   publicKey,
   type,
-}: KiltKeyringPair): DidVerificationKey {
+}: KiltKeyringPair): ChainDidKey {
   return {
     id: computeKeyId(publicKey),
     publicKey,
@@ -219,58 +218,97 @@ function makeDidKeyFromKeypair({
 }
 
 /**
- * Creates [[DidDocument]] for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
+ * Creates {@link DidDocument} for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
- * @param generationOptions.keyRelationships The set of key relationships to indicate which keys must be added to the DID.
- * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
+ * @param generationOptions.verificationRelationships The set of verification relationships to indicate which keys must be added to the DID.
+ * @param generationOptions.endpoints The set of services that must be added to the DID.
  *
- * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
+ * @returns A promise resolving to a {@link DidDocument} object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
   keypair: KiltKeyringPair,
   {
-    keyRelationships = new Set([
+    verificationRelationships = new Set([
       'assertionMethod',
       'capabilityDelegation',
       'keyAgreement',
     ]),
     endpoints = [],
   }: {
-    keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
-    endpoints?: DidServiceEndpoint[]
+    verificationRelationships?: Set<
+      Omit<VerificationRelationship, 'authentication'>
+    >
+    endpoints?: NewService[]
   } = {}
 ): Promise<DidDocument> {
-  const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.getFullDidUriFromKey(authKey)
+  const {
+    type: keyType,
+    publicKey,
+    id: authKeyFragment,
+  } = makeDidKeyFromKeypair(keypair)
+  const id = getFullDidFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair({
+      type: keyType,
+      publicKey,
+    })
+  )
 
+  const authKeyId = `${id}${authKeyFragment}` as const
   const result: DidDocument = {
-    uri,
-    authentication: [authKey],
-    service: endpoints,
+    id,
+    authentication: [authKeyId],
+    verificationMethod: [
+      didKeyToVerificationMethod(id, authKeyId, {
+        keyType,
+        publicKey,
+      }),
+    ],
+    service: endpoints.map((i) => ({ ...i, id: `${id}${i.id}` })),
   }
 
-  if (keyRelationships.has('keyAgreement')) {
-    const encryptionKeypair = makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
-      .keyAgreement[0]
-    const encKey = {
-      ...encryptionKeypair,
-      id: computeKeyId(encryptionKeypair.publicKey),
-    }
-    result.keyAgreement = [encKey]
+  if (verificationRelationships.has('keyAgreement')) {
+    const { publicKey: encPublicKey, type } = makeEncryptionKey(
+      `${keypair.publicKey}//enc`
+    ).keyAgreement[0]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'keyAgreement'
+    )
   }
-  if (keyRelationships.has('assertionMethod')) {
-    const attKey = makeDidKeyFromKeypair(
+  if (verificationRelationships.has('assertionMethod')) {
+    const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//att') as KiltKeyringPair
     )
-    result.assertionMethod = [attKey]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'assertionMethod'
+    )
   }
-  if (keyRelationships.has('capabilityDelegation')) {
-    const delKey = makeDidKeyFromKeypair(
+  if (verificationRelationships.has('capabilityDelegation')) {
+    const { publicKey: encPublicKey, type } = makeDidKeyFromKeypair(
       keypair.derive('//del') as KiltKeyringPair
     )
-    result.capabilityDelegation = [delKey]
+    addKeypairAsVerificationMethod(
+      result,
+      {
+        id: computeKeyId(encPublicKey),
+        publicKey: encPublicKey,
+        type,
+      },
+      'capabilityDelegation'
+    )
   }
 
   return result
@@ -286,10 +324,10 @@ export async function createLocalDemoFullDidFromKeypair(
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: DidDocument
 ): Promise<DidDocument> {
-  const { uri, authentication } = lightDid
+  const { id, authentication } = lightDid
 
   return {
-    uri: Did.getFullDidUri(uri),
+    id,
     authentication,
     assertionMethod: authentication,
     capabilityDelegation: authentication,
@@ -297,29 +335,119 @@ export async function createLocalDemoFullDidFromLightDid(
   }
 }
 
+/**
+ * Create a DID creation operation which would write to chain the DID Document provided as input.
+ * Only the first authentication, assertion, and capability delegation verification methods are considered from the input DID Document.
+ * All the input DID Document key agreement verification methods are considered.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided verification methods and services.
+ *
+ * A DID creation operation can contain at most 25 new services.
+ * Additionally, each service must respect the following conditions:
+ * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ *
+ * @param input The DID Document to store.
+ * @param submitter The KILT address authorized to submit the creation operation.
+ * @param signers An array of signer interfaces. A suitable signer will be selected if available.
+ * The signer has to use the authentication public key encoded as a Kilt Address or as a hex string as its id.
+ *
+ * @returns The SubmittableExtrinsic for the DID creation operation.
+ */
+export async function getStoreTxFromDidDocument(
+  input: DidDocument,
+  submitter: KiltAddress,
+  signers: readonly SignerInterface[]
+): Promise<SubmittableExtrinsic> {
+  const {
+    authentication,
+    assertionMethod,
+    keyAgreement,
+    capabilityDelegation,
+    service,
+    verificationMethod,
+  } = input
+
+  const [authKey, assertKey, delKey, ...encKeys] = [
+    authentication?.[0],
+    assertionMethod?.[0],
+    capabilityDelegation?.[0],
+    ...(keyAgreement ?? []),
+  ].map((keyId): BaseNewDidKey | undefined => {
+    if (!keyId) {
+      return undefined
+    }
+    const key = verificationMethod?.find((vm) => vm.id === keyId)
+    if (key === undefined) {
+      throw new SDKErrors.DidError(
+        `A verification method with ID "${keyId}" was not found in the \`verificationMethod\` property of the provided DID Document.`
+      )
+    }
+    const { keyType, publicKey } = multibaseKeyToDidKey(key.publicKeyMultibase)
+    if (
+      !isValidDidVerificationType(keyType) &&
+      !isValidEncryptionMethodType(keyType)
+    ) {
+      throw new SDKErrors.DidError(
+        `Verification method with ID "${keyId}" has an unsupported type "${keyType}".`
+      )
+    }
+    return {
+      type: keyType,
+      publicKey,
+    }
+  })
+
+  if (authKey === undefined) {
+    throw new SDKErrors.DidError(
+      'Cannot create a DID without an authentication method.'
+    )
+  }
+
+  const storeTxInput: Parameters<typeof getStoreTx>[0] = {
+    authentication: [authKey as NewDidVerificationKey],
+    assertionMethod: assertKey
+      ? [assertKey as NewDidVerificationKey]
+      : undefined,
+    capabilityDelegation: delKey
+      ? [delKey as NewDidVerificationKey]
+      : undefined,
+    keyAgreement: encKeys as NewDidEncryptionKey[],
+    service,
+  }
+
+  return getStoreTx(storeTxInput, submitter, signers)
+}
+
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
-  payer: KiltKeyringPair,
+  payer: KiltKeyringPair | TransactionSigner,
   lightDidForId: DidDocument,
-  sign: StoreDidCallback
+  signer: StoreDidCallback
 ): Promise<DidDocument> {
   const api = ConfigService.get('api')
-  const { authentication, uri } = lightDidForId
-  const tx = await Did.getStoreTx(
-    {
-      authentication,
-      assertionMethod: authentication,
-      capabilityDelegation: authentication,
-      keyAgreement: lightDidForId.keyAgreement,
-      service: lightDidForId.service,
-    },
-    payer.address,
-    sign
+  const fullDidDocumentToBeCreated = lightDidForId
+  fullDidDocumentToBeCreated.assertionMethod = [
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    fullDidDocumentToBeCreated.authentication![0],
+  ]
+  fullDidDocumentToBeCreated.capabilityDelegation = [
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    fullDidDocumentToBeCreated.authentication![0],
+  ]
+  const tx = await getStoreTxFromDidDocument(
+    fullDidDocumentToBeCreated,
+    'address' in payer ? payer.address : payer.id,
+    signer
   )
   await Blockchain.signAndSubmitTx(tx, payer)
   const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
-  const encodedDidDetails = await queryFunction(toChain(Did.getFullDidUri(uri)))
-  return linkedInfoFromChain(encodedDidDetails).document
+  const encodedDidDetails = await queryFunction(
+    toChain(fullDidDocumentToBeCreated.id)
+  )
+  const { document } = linkedInfoFromChain(encodedDidDetails)
+  return document
 }
 
 export async function createFullDidFromSeed(
@@ -327,6 +455,6 @@ export async function createFullDidFromSeed(
   keypair: KiltKeyringPair
 ): Promise<DidDocument> {
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
-  const sign = makeStoreDidCallback(keypair)
-  return createFullDidFromLightDid(payer, lightDid, sign)
+  const signer = await makeStoreDidSigner(keypair)
+  return createFullDidFromLightDid(payer, lightDid, [signer])
 }

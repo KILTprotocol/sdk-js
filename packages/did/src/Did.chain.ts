@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,52 +10,59 @@ import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 
 import type {
-  Deposit,
-  DidDocument,
-  DidEncryptionKey,
-  DidKey,
-  DidServiceEndpoint,
-  DidUri,
-  DidVerificationKey,
-  KiltAddress,
-  NewDidEncryptionKey,
-  NewDidVerificationKey,
-  SignExtrinsicCallback,
-  SignRequestData,
-  SignResponseData,
-  SubmittableExtrinsic,
-  UriFragment,
-  VerificationKeyRelationship,
-  BN,
-} from '@kiltprotocol/types'
-import { verificationKeyTypes } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import type {
   DidDidDetails,
   DidDidDetailsDidAuthorizedCallOperation,
-  DidDidDetailsDidPublicKey,
   DidDidDetailsDidPublicKeyDetails,
   DidServiceEndpointsDidEndpoint,
   KiltSupportDeposit,
 } from '@kiltprotocol/augment-api'
+import { ConfigService } from '@kiltprotocol/config'
+import type {
+  BN,
+  Deposit,
+  Did,
+  DidUrl,
+  KiltAddress,
+  Service,
+  SignerInterface,
+  SubmittableExtrinsic,
+  UriFragment,
+} from '@kiltprotocol/types'
+import {
+  Crypto,
+  Multikey,
+  SDKErrors,
+  Signers,
+  ss58Format,
+} from '@kiltprotocol/utils'
 
 import {
-  EncodedEncryptionKey,
-  EncodedKey,
-  EncodedSignature,
-  EncodedVerificationKey,
-  getAddressByKey,
-  getFullDidUri,
+  getAddressFromVerificationMethod,
+  getFullDid,
   parse,
 } from './Did.utils.js'
+import type {
+  DidEncryptionMethodType,
+  DidSigningMethodType,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  NewService,
+} from './DidDetails/DidDetails.js'
+import { isValidVerificationMethodType } from './DidDetails/DidDetails.js'
+import {
+  type NewLightDidVerificationKey,
+  createLightDidDocument,
+} from './DidDetails/LightDidDetails.js'
 
-// ### Chain type definitions
+export type ChainDidIdentifier = KiltAddress
 
-export type ChainDidPublicKey = DidDidDetailsDidPublicKey
-export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
-
-// ### RAW QUERYING (lowest layer)
+export type EncodedVerificationKey =
+  | { sr25519: Uint8Array }
+  | { ed25519: Uint8Array }
+  | { ecdsa: Uint8Array }
+export type EncodedEncryptionKey = { x25519: Uint8Array }
+export type EncodedDidKey = EncodedVerificationKey | EncodedEncryptionKey
+export type EncodedSignature = EncodedVerificationKey
 
 /**
  * Format a DID to be used as a parameter for the blockchain API functions.
@@ -63,18 +70,28 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
  * @param did The DID to format.
  * @returns The blockchain-formatted DID.
  */
-export function toChain(did: DidUri): KiltAddress {
+export function toChain(did: Did): ChainDidIdentifier {
   return parse(did).address
 }
 
 /**
- * Format a DID resource ID to be used as a parameter for the blockchain API functions.
+ * Extract a fragment from a DID URL to be used as a parameter for the blockchain API functions.
 
- * @param id The DID resource ID to format.
+ * @param id The DID URL or fragment to format.
  * @returns The blockchain-formatted ID.
  */
-export function resourceIdToChain(id: UriFragment): string {
-  return id.replace(/^#/, '')
+export function urlFragmentToChain(id: UriFragment | DidUrl): string {
+  return id.slice(id.indexOf('#') + 1)
+}
+
+/**
+ * Convert the DID data from blockchain format to the DID.
+ *
+ * @param encoded The chain-formatted DID.
+ * @returns The DID.
+ */
+export function fromChain(encoded: AccountId32): Did {
+  return getFullDid(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 /**
@@ -90,40 +107,55 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   }
 }
 
-// ### DECODED QUERYING types
+export type ChainDidBaseKey = {
+  id: UriFragment
+  publicKey: Uint8Array
+  includedAt?: BN
+  type: string
+}
+export type ChainDidVerificationKey = ChainDidBaseKey & {
+  type: DidSigningMethodType
+}
+export type ChainDidEncryptionKey = ChainDidBaseKey & {
+  type: DidEncryptionMethodType
+}
+export type ChainDidKey = ChainDidVerificationKey | ChainDidEncryptionKey
+export type ChainDidService = {
+  id: string
+  serviceTypes: string[]
+  urls: string[]
+}
+export type ChainDidDetails = {
+  authentication: [ChainDidVerificationKey]
+  assertionMethod?: [ChainDidVerificationKey]
+  capabilityDelegation?: [ChainDidVerificationKey]
+  keyAgreement?: ChainDidEncryptionKey[]
 
-type ChainDocument = Pick<
-  DidDocument,
-  'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
-> & {
+  service?: ChainDidService[]
+
   lastTxCounter: BN
   deposit: Deposit
 }
 
-// ### DECODED QUERYING (builds on top of raw querying)
-
-function didPublicKeyDetailsFromChain(
+/**
+ * Convert a DID public key from the blockchain format to a JS object.
+ *
+ * @param keyId The key ID.
+ * @param keyDetails The associated public key blockchain-formatted details.
+ * @returns The JS-formatted DID key.
+ */
+export function publicKeyFromChain(
   keyId: Hash,
-  keyDetails: ChainDidPublicKeyDetails
-): DidKey {
+  keyDetails: DidDidDetailsDidPublicKeyDetails
+): ChainDidKey {
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
     : keyDetails.key.asPublicVerificationKey
   return {
     id: `#${keyId.toHex()}`,
-    type: key.type.toLowerCase() as DidKey['type'],
     publicKey: key.value.toU8a(),
+    type: key.type.toLowerCase() as ChainDidKey['type'],
   }
-}
-
-/**
- * Convert the DID data from blockchain format to the DID URI.
- *
- * @param encoded The chain-formatted DID.
- * @returns The DID URI.
- */
-export function fromChain(encoded: AccountId32): DidUri {
-  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 /**
@@ -133,8 +165,8 @@ export function fromChain(encoded: AccountId32): DidUri {
  * @returns The DID Document.
  */
 export function documentFromChain(
-  encoded: Option<DidDidDetails>
-): ChainDocument {
+  encoded: Option<DidDidDetails> | DidDidDetails
+): ChainDidDetails {
   const {
     publicKeys,
     authenticationKey,
@@ -143,30 +175,30 @@ export function documentFromChain(
     keyAgreementKeys,
     lastTxCounter,
     deposit,
-  } = encoded.unwrap()
+  } = 'unwrap' in encoded ? encoded.unwrap() : encoded
 
-  const keys: Record<string, DidKey> = [...publicKeys.entries()]
-    .map(([keyId, keyDetails]) =>
-      didPublicKeyDetailsFromChain(keyId, keyDetails)
-    )
+  const keys: Record<string, ChainDidKey> = [...publicKeys.entries()]
+    .map(([keyId, keyDetails]) => publicKeyFromChain(keyId, keyDetails))
     .reduce((res, key) => {
-      res[resourceIdToChain(key.id)] = key
+      res[urlFragmentToChain(key.id)] = key
       return res
     }, {})
 
-  const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
+  const authentication = keys[
+    authenticationKey.toHex()
+  ] as ChainDidVerificationKey
 
-  const didRecord: ChainDocument = {
+  const didRecord: ChainDidDetails = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
     deposit: depositFromChain(deposit),
   }
   if (attestationKey.isSome) {
-    const key = keys[attestationKey.unwrap().toHex()] as DidVerificationKey
+    const key = keys[attestationKey.unwrap().toHex()] as ChainDidVerificationKey
     didRecord.assertionMethod = [key]
   }
   if (delegationKey.isSome) {
-    const key = keys[delegationKey.unwrap().toHex()] as DidVerificationKey
+    const key = keys[delegationKey.unwrap().toHex()] as ChainDidVerificationKey
     didRecord.capabilityDelegation = [key]
   }
 
@@ -175,25 +207,13 @@ export function documentFromChain(
   )
   if (keyAgreementKeyIds.length > 0) {
     didRecord.keyAgreement = keyAgreementKeyIds.map(
-      (id) => keys[id] as DidEncryptionKey
+      (id) => keys[id] as ChainDidEncryptionKey
     )
   }
 
   return didRecord
 }
 
-interface ChainEndpoint {
-  id: string
-  serviceTypes: DidServiceEndpoint['type']
-  urls: DidServiceEndpoint['serviceEndpoint']
-}
-
-/**
- * Checks if a string is a valid URI according to RFC#3986.
- *
- * @param str String to be checked.
- * @returns Whether `str` is a valid URI.
- */
 function isUri(str: string): boolean {
   try {
     const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
@@ -203,7 +223,7 @@ function isUri(str: string): boolean {
   }
 }
 
-const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+const uriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
 
 /**
  * Checks if a string is a valid URI fragment according to RFC#3986.
@@ -213,27 +233,27 @@ const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
  */
 function isUriFragment(str: string): boolean {
   try {
-    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
+    return uriFragmentRegex.test(str) && !!decodeURIComponent(str)
   } catch {
     return false
   }
 }
 
 /**
- * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
- *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ * Performs sanity checks on service data, making sure that the following conditions are met:
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URL.
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
- * @param endpoint A service endpoint object to check.
+ * @param endpoint A service object to check.
  */
-export function validateService(endpoint: DidServiceEndpoint): void {
+export function validateNewService(endpoint: NewService): void {
   const { id, serviceEndpoint } = endpoint
-  if (id.startsWith('did:kilt')) {
+  if ((id as string).startsWith('did:kilt')) {
     throw new SDKErrors.DidError(
-      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URL, which is violated by id "${id}"`
     )
   }
-  if (!isUriFragment(resourceIdToChain(id))) {
+  if (!isUriFragment(urlFragmentToChain(id))) {
     throw new SDKErrors.DidError(
       `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
     )
@@ -253,11 +273,12 @@ export function validateService(endpoint: DidServiceEndpoint): void {
  * @param service The DID service to format.
  * @returns The blockchain-formatted DID service.
  */
-export function serviceToChain(service: DidServiceEndpoint): ChainEndpoint {
-  validateService(service)
+export function serviceToChain(service: NewService | Service): ChainDidService {
   const { id, type, serviceEndpoint } = service
+  const chainId = urlFragmentToChain(id)
+  validateNewService({ ...service, id: `#${chainId}` })
   return {
-    id: resourceIdToChain(id),
+    id: chainId,
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -270,27 +291,18 @@ export function serviceToChain(service: DidServiceEndpoint): ChainEndpoint {
  * @returns The DID service.
  */
 export function serviceFromChain(
-  encoded: Option<DidServiceEndpointsDidEndpoint>
-): DidServiceEndpoint {
-  const { id, serviceTypes, urls } = encoded.unwrap()
+  encoded:
+    | Option<DidServiceEndpointsDidEndpoint>
+    | DidServiceEndpointsDidEndpoint
+): Service<UriFragment> {
+  const { id, serviceTypes, urls } =
+    'unwrap' in encoded ? encoded.unwrap() : encoded
   return {
     id: `#${id.toUtf8()}`,
     type: serviceTypes.map((type) => type.toUtf8()),
     serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
 }
-
-// ### EXTRINSICS types
-
-export type AuthorizeCallInput = {
-  did: DidUri
-  txCounter: AnyNumber
-  call: Extrinsic
-  submitter: KiltAddress
-  blockNumber?: AnyNumber
-}
-
-// ### EXTRINSICS
 
 export function publicKeyToChain(
   key: NewDidVerificationKey
@@ -305,9 +317,9 @@ export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
  */
 export function publicKeyToChain(
   key: NewDidVerificationKey | NewDidEncryptionKey
-): EncodedKey {
+): EncodedDidKey {
   // TypeScript can't infer type here, so we have to add a type assertion.
-  return { [key.type]: key.publicKey } as EncodedKey
+  return { [key.type]: key.publicKey } as EncodedDidKey
 }
 
 interface GetStoreTxInput {
@@ -316,34 +328,32 @@ interface GetStoreTxInput {
   capabilityDelegation?: [NewDidVerificationKey]
   keyAgreement?: NewDidEncryptionKey[]
 
-  service?: DidServiceEndpoint[]
+  service?: Array<NewService | Service>
 }
-
-export type GetStoreTxSignCallback = (
-  signData: Omit<SignRequestData, 'did'>
-) => Promise<Omit<SignResponseData, 'keyUri'>>
 
 /**
  * Create a DID creation operation which includes the information provided.
  *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys and service endpoints.
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys as verification methods and services.
  *
- * A DID creation operation can contain at most 25 new service endpoints.
- * Additionally, each service endpoint must respect the following conditions:
- * - The service endpoint ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
- * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
- * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ * A DID creation operation can contain at most 25 new services.
+ * Additionally, each service must respect the following conditions:
+ * - The service ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
  *
- * @param input The DID keys and services to store, also accepts DidDocument, so you can store a light DID for example.
+ * @param input The DID keys and services to store.
  * @param submitter The KILT address authorized to submit the creation operation.
- * @param sign The sign callback. The authentication key has to be used.
+ * @param signers An array of signer interfaces. A suitable signer will be selected if available.
+ * The signer has to use the authentication public key encoded as a Kilt Address or as a hex string as its id,
+ * or alternatively the authentication key id of the light DID to be upgraded.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function getStoreTx(
-  input: GetStoreTxInput | DidDocument,
+  input: GetStoreTxInput,
   submitter: KiltAddress,
-  sign: GetStoreTxSignCallback
+  signers: readonly SignerInterface[]
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
@@ -386,12 +396,14 @@ export async function getStoreTx(
     api.consts.did.maxNumberOfServicesPerDid.toNumber()
   if (service.length > maxNumberOfServicesPerDid) {
     throw new SDKErrors.DidError(
-      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID`
+      `Cannot store more than ${maxNumberOfServicesPerDid} services per DID`
     )
   }
 
   const [authenticationKey] = authentication
-  const did = getAddressByKey(authenticationKey)
+  const did = getAddressFromVerificationMethod(
+    Multikey.encodeMultibaseKeypair(authenticationKey)
+  )
 
   const newAttestationKey =
     assertionMethod &&
@@ -419,19 +431,98 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const signature = await sign({
+  // signers can identify using the authentication public key encoded as address or hex, or a light did authentication key
+  const matchesLightDid: Signers.SignerSelector = ({ id }) => {
+    try {
+      const { address, fragment } = parse(id as Did)
+      return address === did && fragment === '#authentication'
+    } catch {
+      return false
+    }
+  }
+  const matchesPublicKey = Signers.select.bySignerId([
+    did,
+    Crypto.u8aToHex(authenticationKey.publicKey),
+  ])
+  const signer = Signers.selectSigner(
+    signers,
+    Signers.select.verifiableOnChain(),
+    (sig) => matchesPublicKey(sig) || matchesLightDid(sig)
+  )
+
+  if (!signer) {
+    throw new SDKErrors.NoSuitableSignerError(
+      'Did creation requires an account signer where the address is equal to the Did identifier (did:kilt:{identifier}).',
+      {
+        availableSigners: signers,
+        signerRequirements: {
+          id: [
+            did,
+            Crypto.u8aToHex(authenticationKey.publicKey),
+            ...(authenticationKey.type !== 'ecdsa'
+              ? createLightDidDocument({
+                  authentication: [
+                    authenticationKey as NewLightDidVerificationKey,
+                  ],
+                }).authentication ?? []
+              : []),
+          ], // TODO: we could compute the key id and accept it too
+          algorithm: [Signers.DID_PALLET_SUPPORTED_ALGORITHMS],
+        },
+      }
+    )
+  }
+
+  const signature = await signer.sign({
     data: encoded,
-    keyRelationship: 'authentication',
   })
   const encodedSignature = {
-    [signature.keyType]: signature.signature,
+    [authenticationKey.type]: signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
 
-export interface SigningOptions {
-  sign: SignExtrinsicCallback
-  keyRelationship: VerificationKeyRelationship
+/**
+ * Compiles an enum-type key-value pair representation of a signature created with a signer associated with a full DID verification method. Required for creating full DID signed extrinsics.
+ *
+ * @param input Signature and algorithm.
+ * @param input.algorithm Descriptor of the signature algorithm used by the signer.
+ * @param input.signature The signature generated by the signer.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
+export function didSignatureToChain({
+  algorithm,
+  signature,
+}: {
+  algorithm: string
+  signature: Uint8Array
+}): EncodedSignature {
+  const lower = algorithm.toLowerCase()
+  const keyType =
+    lower === Signers.ALGORITHMS.ECRECOVER_SECP256K1_BLAKE2B.toLowerCase()
+      ? 'ecdsa'
+      : lower
+  if (!isValidVerificationMethodType(keyType)) {
+    throw new SDKErrors.DidError(
+      `encodedDidSignature requires a signature algorithm in ${Signers.DID_PALLET_SUPPORTED_ALGORITHMS}. A key of type "${algorithm}" was used instead`
+    )
+  }
+
+  return { [keyType]: signature } as EncodedSignature
+}
+
+export type DidPalletSigner = SignerInterface<
+  Signers.DidPalletSupportedAlgorithms,
+  DidUrl
+>
+
+export type AuthorizeCallInput = {
+  did: Did
+  txCounter: AnyNumber
+  call: Extrinsic
+  submitter: KiltAddress
+  blockNumber?: AnyNumber
+  signer: DidPalletSigner
 }
 
 /**
@@ -440,8 +531,7 @@ export interface SigningOptions {
  *
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
- * @param params.keyRelationship DID key relationship to be used for authorization.
- * @param params.sign The callback to interface with the key store managing the private key to be used.
+ * @param params.signer The signer interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
  * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
@@ -450,13 +540,12 @@ export interface SigningOptions {
  */
 export async function generateDidAuthenticatedTx({
   did,
-  keyRelationship,
-  sign,
+  signer,
   call,
   txCounter,
   submitter,
   blockNumber,
-}: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
+}: AuthorizeCallInput): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
   const signableCall =
     api.registry.createType<DidDidDetailsDidAuthorizedCallOperation>(
@@ -469,34 +558,12 @@ export async function generateDidAuthenticatedTx({
         blockNumber: blockNumber ?? (await api.query.system.number()),
       }
     )
-  const signature = await sign({
+  const signature = await signer.sign({
     data: signableCall.toU8a(),
-    keyRelationship,
-    did,
   })
-  const encodedSignature = {
-    [signature.keyType]: signature.signature,
-  } as EncodedSignature
+  const encodedSignature = didSignatureToChain({
+    signature,
+    algorithm: signer.algorithm,
+  })
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
-}
-
-// ### Chain utils
-/**
- * Compiles an enum-type key-value pair representation of a signature created with a full DID verification method. Required for creating full DID signed extrinsics.
- *
- * @param key Object describing data associated with a public key.
- * @param signature Object containing a signature generated with a full DID associated public key.
- * @returns Data restructured to allow SCALE encoding by polkadot api.
- */
-export function didSignatureToChain(
-  key: DidVerificationKey,
-  signature: Uint8Array
-): EncodedSignature {
-  if (!verificationKeyTypes.includes(key.type)) {
-    throw new SDKErrors.DidError(
-      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead`
-    )
-  }
-
-  return { [key.type]: signature } as EncodedSignature
 }

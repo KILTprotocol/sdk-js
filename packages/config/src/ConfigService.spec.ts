@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -31,6 +31,7 @@ describe('Log Configuration', () => {
       ConfigService.LoggingFactory.getLogger('test1').getLogLevel()
     ).toEqual(LogLevel.Info)
 
+    // @ts-ignore Only values 0-6 are valid. https://github.com/vauxite-org/typescript-logging/blob/cf0d3e7d52b1da0650b16308cc3f1a56bcb95b5b/core/src/typescript/main/core/api/LogLevel.ts#L5C1-L12C10
     ConfigService.modifyLogLevel(-100)
     expect(testLogger.getLogLevel()).toEqual(0)
     ConfigService.modifyLogLevel(initialLevel)

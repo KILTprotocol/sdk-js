@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,12 +10,13 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+import { randomAsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Blockchain, connect, init } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { CType, connect, init } from '@kiltprotocol/core'
+import { CType } from '@kiltprotocol/credentials'
 import type {
   ICType,
   KeyringPair,
@@ -23,6 +24,7 @@ import type {
   KiltKeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
+  TransactionSigner,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -109,7 +111,7 @@ export const devBob = Crypto.makeKeypairFromUri('//Bob')
 export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
-  return makeSigningKeyTool('ed25519').keypair.address
+  return encodeAddress(randomAsU8a(), 38)
 }
 
 export async function isCtypeOnChain(cType: ICType): Promise<boolean> {
@@ -154,7 +156,7 @@ export const nftNameCType = CType.fromProperties('NFT collection name', {
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(
   extrinsic: SubmittableExtrinsic,
-  submitter: KeyringPair,
+  submitter: KeyringPair | TransactionSigner,
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
@@ -163,7 +165,7 @@ export async function submitTx(
 }
 
 export async function endowAccounts(
-  faucet: KeyringPair,
+  faucet: KeyringPair | TransactionSigner,
   addresses: string[],
   resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
@@ -187,7 +189,7 @@ export async function fundAccount(
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
 ): Promise<KiltKeyringPair> {
-  const { keypair } = makeSigningKeyTool()
+  const { keypair } = await makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
 }

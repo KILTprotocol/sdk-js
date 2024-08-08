@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -23,13 +23,13 @@ export interface KiltKeyringPair extends KeyringPair {
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
 export type KiltAddress = KiltKeyringPair['address']
 
-declare module '@polkadot/keyring' {
+declare module '@polkadot/util-crypto' {
+  function encodeAddress(
+    key: HexString | Uint8Array | string,
+    ss58Format: 38
+  ): KiltAddress
   function encodeAddress(
     key: HexString | Uint8Array | string,
     ss58Format?: Prefix
   ): string
-  function encodeAddress(
-    key: HexString | Uint8Array | string,
-    ss58Format?: 38
-  ): KiltAddress
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,11 +9,11 @@ import type { HexString, BN } from './Imported'
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IClaimContents } from './Claim'
-import type { DidUri } from './DidDocument'
-import type { AssetDidUri } from './AssetDid'
+import type { Did } from './Did'
+import type { AssetDid } from './AssetDid'
 
 /*
- * The minimal information required to issue a public credential to a given [[AssetDidUri]].
+ * The minimal information required to issue a public credential to a given {@link AssetDid}.
  */
 export interface IPublicCredentialInput {
   /*
@@ -27,7 +27,7 @@ export interface IPublicCredentialInput {
   /*
    * The subject of the credential.
    */
-  subject: AssetDidUri
+  subject: AssetDid
   /*
    * The content of the credential. The structure must match what the CType specifies.
    */
@@ -41,13 +41,13 @@ export interface IPublicCredential extends IPublicCredentialInput {
   /*
    * The unique ID of the credential. It is cryptographically derived from the credential content.
    *
-   * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[DidUri]] and then Blake2b hashing the result.
+   * The ID is formed by first concatenating the SCALE-encoded {@link IPublicCredentialInput} with the SCALE-encoded {@link Did} and then Blake2b hashing the result.
    */
   id: HexString
   /*
-   * The KILT DID uri of the credential attester.
+   * The KILT DID of the credential attester.
    */
-  attester: DidUri
+  attester: Did
   /*
    * The block number at which the credential was issued.
    */
@@ -55,7 +55,7 @@ export interface IPublicCredential extends IPublicCredentialInput {
   /*
    * The revocation status of the credential.
    *
-   * This is not to be trusted if shared by another party. It is only to trust if the [[IPublicCredential]] object is retrieved via one of the querying methods that this SDK exposes.
+   * This is not to be trusted if shared by another party. It is only to trust if the {@link IPublicCredential} object is retrieved via one of the querying methods that this SDK exposes.
    */
   revoked: boolean
 }
@@ -63,12 +63,12 @@ export interface IPublicCredential extends IPublicCredentialInput {
 /*
  * A claim for a public credential.
  *
- * Like an [[IClaim]], but with a [[AssetDidUri]] `subject` instead of an [[IClaim]] `owner`.
+ * Like an {@link IClaim}, but with a {@link AssetDid} `subject` instead of an {@link IClaim} `owner`.
  */
 export interface IAssetClaim {
   cTypeHash: CTypeHash
   contents: IClaimContents
-  subject: AssetDidUri
+  subject: AssetDid
 }
 
 /**

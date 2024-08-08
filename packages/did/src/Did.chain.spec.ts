@@ -1,20 +1,54 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
 import { ConfigService } from '@kiltprotocol/config'
+import { Crypto, Signers } from '@kiltprotocol/utils'
 
 import { ApiMocks } from '../../../tests/testUtils'
-import { serviceToChain } from './Did.chain'
+import { getStoreTx, serviceToChain } from './Did.chain'
+import { createLightDidDocument } from './DidDetails'
 
 let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
   ConfigService.set({ api })
+})
+
+describe('did create', () => {
+  it('accepts light did signers', async () => {
+    const keypair = Crypto.makeKeypairFromUri(
+      Crypto.mnemonicGenerate(),
+      'ed25519'
+    )
+    const { authentication, id } = createLightDidDocument({
+      authentication: [keypair],
+      service: [
+        {
+          id: '#thing',
+          type: ['thang'],
+          serviceEndpoint: ['http://example.com'],
+        },
+      ],
+    })
+    const keyId = id + authentication?.[0]
+    const signer = await Signers.signerFromKeypair({
+      id: keyId,
+      algorithm: 'Ed25519',
+      keypair,
+    })
+    await expect(
+      getStoreTx(
+        { authentication: [keypair], assertionMethod: [keypair] },
+        keypair.address,
+        [signer]
+      )
+    ).resolves.toHaveProperty('method.method', 'create')
+  })
 })
 
 describe('services validation', () => {

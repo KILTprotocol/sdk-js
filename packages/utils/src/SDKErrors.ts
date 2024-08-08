@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2023, BOTLabs GmbH.
+ * Copyright (c) 2018-2024, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,6 +12,8 @@
  */
 
 /* eslint-disable max-classes-per-file */
+
+import type { SignerInterface } from '@kiltprotocol/types'
 
 export class SDKError extends Error {
   constructor(message?: string, options?: ErrorOptions) {
@@ -35,8 +37,6 @@ export class CTypeIdMismatchError extends SDKError {
   }
 }
 
-export class CTypeUnknownPropertiesError extends SDKError {}
-
 export class UnsupportedKeyError extends SDKError {
   constructor(keyType: string) {
     super(`The provided key type "${keyType}" is currently not supported`)
@@ -46,8 +46,6 @@ export class UnsupportedKeyError extends SDKError {
 export class EncryptionError extends SDKError {}
 
 export class DidError extends SDKError {}
-
-export class DidExporterError extends SDKError {}
 
 export class DidBatchError extends SDKError {}
 
@@ -103,8 +101,6 @@ export class ClaimContentsMalformedError extends SDKError {}
 
 export class ObjectUnverifiableError extends SDKError {}
 
-export class QuoteUnverifiableError extends SDKError {}
-
 export class ClaimNonceMapMalformedError extends SDKError {
   constructor(statement?: string) {
     if (statement) {
@@ -115,14 +111,40 @@ export class ClaimNonceMapMalformedError extends SDKError {
   }
 }
 
-export class UnknownMessageBodyTypeError extends SDKError {}
-
 export class SignatureMalformedError extends SDKError {}
+
+export class NoSuitableSignerError extends SDKError {
+  constructor(
+    message?: string,
+    options?: ErrorOptions & {
+      signerRequirements?: Record<string, unknown>
+      availableSigners?: readonly SignerInterface[]
+    }
+  ) {
+    const { signerRequirements, availableSigners } = options ?? {}
+    const msgs = [message ?? 'No suitable signers provided to this function.']
+    if (signerRequirements) {
+      msgs.push(
+        `Expected signer matching conditions ${JSON.stringify(
+          signerRequirements,
+          null,
+          2
+        )}.`
+      )
+    }
+    if (availableSigners) {
+      msgs.push(
+        `Signers available: ${JSON.stringify(availableSigners, null, 2)}.`
+      )
+    }
+    super(msgs.join('\n'), options)
+  }
+}
 
 export class DidSubjectMismatchError extends SDKError {
   constructor(actual: string, expected: string) {
     super(
-      `The DID "${actual}" doesn't match the DID Document's URI "${expected}"`
+      `The DID "${actual}" doesn't match the DID Document's id "${expected}"`
     )
   }
 }
@@ -159,18 +181,6 @@ export class CredentialUnverifiableError extends SDKError {}
 
 export class ClaimUnverifiableError extends SDKError {}
 
-export class IdentityMismatchError extends SDKError {
-  constructor(context?: string, type?: string) {
-    if (type && context) {
-      super(`${type} is not owner of the ${context}`)
-    } else if (context) {
-      super(`Identity is not owner of the ${context}`)
-    } else {
-      super('Addresses expected to be equal mismatched')
-    }
-  }
-}
-
 export class SubscriptionsNotSupportedError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(
@@ -181,8 +191,6 @@ export class SubscriptionsNotSupportedError extends SDKError {
 }
 
 export class RootHashUnverifiableError extends SDKError {}
-
-export class DecodingMessageError extends SDKError {}
 
 export class TimeoutError extends SDKError {}
 
@@ -201,3 +209,9 @@ export class NoProofForStatementError extends SDKError {
 export class CodecMismatchError extends SDKError {}
 
 export class PublicCredentialError extends SDKError {}
+
+export class CredentialMalformedError extends SDKError {}
+
+export class PresentationMalformedError extends SDKError {}
+
+export class ProofMalformedError extends SDKError {}

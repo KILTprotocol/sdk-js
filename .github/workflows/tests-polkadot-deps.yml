@@ -13,14 +13,14 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: master
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
@@ -35,7 +35,7 @@ jobs:
       - name: list dependencies
         run: echo "$(yarn info -A --name-only --json)" > locked_dependencies.txt
       - name: upload dependencies list
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deps-${{ matrix.node-version }}
           path: |
@@ -47,7 +47,7 @@ jobs:
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.node-version }}
           path: build.zip
@@ -58,16 +58,18 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [18.x, 20.x]
         required: ['required']
         include:
-          - node-version: 20.x
+          - node-version: 16.x
+            required: 'optional'
+          - node-version: 22.x
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build-${{ matrix.node-version }}
       - name: unzip
@@ -91,9 +93,9 @@ jobs:
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: build-16.x
+          name: build-20.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -106,9 +108,9 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: pull image
+      - name: pull node image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
@@ -135,9 +137,9 @@ jobs:
     needs: [test, integration_test]
     if: failure()
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: deps-16.x
+          name: deps-20.x
       - name: set dependencies env
         run: |
           echo 'DEPS<<EOF' >> $GITHUB_ENV
