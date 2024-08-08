@@ -2015,9 +2015,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@npm:rc":
-  version: 1.11300.0-rc.2
-  resolution: "@kiltprotocol/augment-api@npm:1.11300.0-rc.2"
+"@kiltprotocol/augment-api@npm:^1.11200.0":
+  version: 1.11300.0
+  resolution: "@kiltprotocol/augment-api@npm:1.11300.0"
   dependencies:
     "@typescript-eslint/eslint-plugin": "npm:^7.0.2"
     "@typescript-eslint/parser": "npm:^7.0.2"
@@ -2025,7 +2025,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-unused-imports: "npm:^3.1.0"
   peerDependencies:
-    "@kiltprotocol/type-definitions": ^1.11200.0-rc.1
+    "@kiltprotocol/type-definitions": ^1.11200.0
     "@polkadot/api": ~12.2.0
     "@polkadot/typegen": ~12.2.0
     "@polkadot/types": ^12.2.0
@@ -2051,7 +2051,7 @@ __metadata:
   bin:
     kilt_reaugment: augmentFromFile.mjs
     kilt_updateMetadata: updateMetadata.mjs
-  checksum: 10c0/86f038f393840f60b3593ada167e204fb0d6eac671192ef7047887e7aea2f74f1e609049a4a57a790789d97e40b621565b7f695df0b68048903b867761253942
+  checksum: 10c0/8d5625c1c0fa8969df1272092e7fdb00061c605ca631814b2a8fc47532b2b7a55320a30e91494617ae72604c62c7b60f2518f196e34c8c675a2e758979a30cef
   languageName: node
   linkType: hard
 
@@ -2106,10 +2106,10 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/eddsa-jcs-2022": "npm:0.1.0-rc.4"
-    "@kiltprotocol/es256k-jcs-2023": "npm:0.1.0-rc.4"
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:0.1.0-rc.4"
-    "@kiltprotocol/sr25519-jcs-2023": "npm:0.1.0-rc.4"
+    "@kiltprotocol/eddsa-jcs-2022": "npm:^0.1.0"
+    "@kiltprotocol/es256k-jcs-2023": "npm:^0.1.0"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
+    "@kiltprotocol/sr25519-jcs-2023": "npm:^0.1.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@scure/base": "npm:^1.1.0"
@@ -2161,38 +2161,38 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.4":
-  version: 0.1.0-rc.4
-  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0-rc.4"
+"@kiltprotocol/eddsa-jcs-2022@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@kiltprotocol/eddsa-jcs-2022@npm:0.1.0"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0-rc.4"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
     "@noble/curves": "npm:^1.0.0"
     "@scure/base": "npm:^1.1.1"
-  checksum: 10c0/a4a974e225cb90d17ca1902e6dc40bb0b71826d0d898ed4bad2c10be72938908fa480cfba040badf2754778a8e78843ce4262110c3360138d1f5aff1527f2a42
+  checksum: 10c0/8890976af80ac6d2b465524536fa74ad1e0bd6199ca26f199fd7461443a50da1611ae5eb40442c12e71e0b4f6afce9d39025e8adce7ddaa4409275cf28965c32
   languageName: node
   linkType: hard
 
-"@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.4":
-  version: 0.1.0-rc.4
-  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0-rc.4"
+"@kiltprotocol/es256k-jcs-2023@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@kiltprotocol/es256k-jcs-2023@npm:0.1.0"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0-rc.4"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
     "@noble/curves": "npm:^1.0.0"
     "@scure/base": "npm:^1.1.1"
-  checksum: 10c0/ff9f6a78494463d2be82e5a0df73be0df488f61bc560126b07332720772b6717944df744fb95a4bc99d08816ada23e21a540743de38f52c6c8b9b7213d7336f1
+  checksum: 10c0/4dbcfe50454085c624d7b34e85d1b51eccef9eefaeacd58e12862e5d1a523a274d38c23c089ea55d69d685b27451f4bb8a990d6a4b1f97e570b2d08be027e2b9
   languageName: node
   linkType: hard
 
-"@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.4, @kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0-rc.4":
-  version: 0.1.0-rc.4
-  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0-rc.4"
+"@kiltprotocol/jcs-data-integrity-proofs-common@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@kiltprotocol/jcs-data-integrity-proofs-common@npm:0.1.0"
   dependencies:
     "@noble/hashes": "npm:^1.3.0"
     canonicalize: "npm:^2.0.0"
     varint: "npm:^6.0.0"
   peerDependencies:
     "@scure/base": ^1.1.0
-  checksum: 10c0/fb9e2ab04bdd2d362ac33b1362231cdd74fb03d0f1a9700adc5bf60e938127906aede2290ce86c4681c53dd28e7e4951bbec82f9fc120c264e47d2f99f46d2f6
+  checksum: 10c0/20e7e6012fe16307d5d9f92ca253046ba086812b450fa754c68f5fbcd024cf6b6145bb1762eef91d5feaa2998c8149e39ca350e9c1cc496aa830377ccad20c8f
   languageName: node
   linkType: hard
 
@@ -2205,7 +2205,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": "npm:rc"
+    "@kiltprotocol/type-definitions": "npm:^1.11200.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": "npm:^13.0.0"
@@ -2245,12 +2245,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "npm:rc"
+    "@kiltprotocol/augment-api": "npm:^1.11200.0"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/credentials": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": "npm:rc"
+    "@kiltprotocol/type-definitions": "npm:^1.11200.0"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": "npm:^12.0.0"
     "@polkadot/keyring": "npm:^13.0.0"
@@ -2268,23 +2268,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.4":
-  version: 0.1.0-rc.4
-  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0-rc.4"
+"@kiltprotocol/sr25519-jcs-2023@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@kiltprotocol/sr25519-jcs-2023@npm:0.1.0"
   dependencies:
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0-rc.4"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
     "@polkadot/util-crypto": "npm:^13.0.2"
     "@scure/base": "npm:^1.1.1"
-  checksum: 10c0/07a6749813f9e45d14c19c2bfa1af7be8dc1bcff82c7b2d3b6c7e9d67ed3862be69372e51b6d1cbabcdb2ac2906b07c14cf8b492fad944aa1dec7cba2e3b0635
+  checksum: 10c0/e42d0b7a3f03f694629c161b0fc546ae53143e27fa15f1a6643fb8806694bc163564e2d3b1ac14cb0b72856b02c74b912c50abebee9cda16bb7efce221633d5c
   languageName: node
   linkType: hard
 
-"@kiltprotocol/type-definitions@npm:rc":
-  version: 1.11200.0-rc.1
-  resolution: "@kiltprotocol/type-definitions@npm:1.11200.0-rc.1"
+"@kiltprotocol/type-definitions@npm:^1.11200.0":
+  version: 1.11200.0
+  resolution: "@kiltprotocol/type-definitions@npm:1.11200.0"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: 10c0/adeb14ba8aea38074432b0326cff80c03e4c2b40b35e2705fdbc74305d3231841eb63955c4af4d8a8d712901be3bb1cabcab3be65b8cb8fc2f58f2ff1e6d107a
+  checksum: 10c0/a3954ea6f4ce0b2e0c3c1ce7592a428a5271d26715f9ab96fe67197a0c6c59e071a3af0598b5ceaaea02380358a0ec2d7a4af8e48d821d4fe88424748e743ed2
   languageName: node
   linkType: hard
 
@@ -2306,10 +2306,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
-    "@kiltprotocol/eddsa-jcs-2022": "npm:0.1.0-rc.4"
-    "@kiltprotocol/es256k-jcs-2023": "npm:0.1.0-rc.4"
-    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:0.1.0-rc.4"
-    "@kiltprotocol/sr25519-jcs-2023": "npm:0.1.0-rc.4"
+    "@kiltprotocol/eddsa-jcs-2022": "npm:^0.1.0"
+    "@kiltprotocol/es256k-jcs-2023": "npm:^0.1.0"
+    "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
+    "@kiltprotocol/sr25519-jcs-2023": "npm:^0.1.0"
     "@kiltprotocol/types": "workspace:*"
     "@scure/base": "npm:^1.1.0"
     "@types/uuid": "npm:^8.0.0"
