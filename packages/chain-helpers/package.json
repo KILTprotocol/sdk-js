@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.100.0-beta.2",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -58,6 +58,5 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*"
-  },
-  "stableVersion": "0.35.2"
+  }
 }

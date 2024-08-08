@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.100.0-beta.2",
+  "version": "0.100.0",
   "description": "",
   "type": "commonjs",
   "main": "./lib/index.js",
@@ -46,6 +46,5 @@
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
     "typescript-logging": "^1.0.0"
-  },
-  "stableVersion": "0.35.2"
+  }
 }

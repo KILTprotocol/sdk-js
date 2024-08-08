@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/did",
-  "version": "0.100.0-beta.2",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -58,6 +58,5 @@
     "@polkadot/types": {
       "optional": true
     }
-  },
-  "stableVersion": "0.35.2"
+  }
 }

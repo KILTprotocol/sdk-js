@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/jsonld-suites",
-  "version": "0.100.0-beta.2",
+  "version": "0.100.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -51,6 +51,5 @@
   "peerDependencies": {
     "jsonld": "^8.1.0",
     "jsonld-signatures": "^11.0.0"
-  },
-  "stableVersion": "0.35.2"
+  }
 }
