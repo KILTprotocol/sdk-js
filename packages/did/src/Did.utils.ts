@@ -13,10 +13,9 @@ import type {
   VerificationMethod,
 } from '@kiltprotocol/types'
 import { DataUtils, Multikey, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
+import { base58Decode, blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import type { DidVerificationMethodType } from './DidDetails/DidDetails.js'
-import { parseDocumentFromLightDid } from './DidDetails/LightDidDetails.js'
 
 // The latest version for KILT light DIDs.
 const LIGHT_DID_LATEST_VERSION = 1
@@ -107,6 +106,14 @@ export function parse(did: Did | DidUrl): IDidParsingResult {
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
     const queryParameters = exportQueryParamsFromDidUrl(did as DidUrl)
+    // checking if encodedDetails can be decoded
+    if (encodedDetails) {
+      try {
+        base58Decode(encodedDetails, true)
+      } catch {
+        throw new SDKErrors.InvalidDidFormatError(did)
+      }
+    }
     return {
       did: did.replace(fragment || '', '') as Did,
       version,
@@ -208,7 +215,7 @@ export function validateDid(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment, type } = parse(input as DidUrl)
+  const { address, fragment } = parse(input as DidUrl)
 
   if (
     fragment &&
@@ -228,17 +235,6 @@ export function validateDid(
   }
 
   DataUtils.verifyKiltAddress(address)
-
-  // Check if the encoded details represent something that can be decoded, or just random jargon, in which case the DID is not really a valid one.
-  if (type === 'light') {
-    try {
-      parseDocumentFromLightDid(input as Did, false)
-    } catch {
-      throw new SDKErrors.DidError(
-        `The provided light DID "${input}" contains incorrect base58-encoded details.`
-      )
-    }
-  }
 }
 
 /**
