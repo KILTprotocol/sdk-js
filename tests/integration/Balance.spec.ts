@@ -68,7 +68,10 @@ describe('when there is a dev chain with a faucet', () => {
     const spy = jest.fn<any>()
     api.query.system.account(address, spy)
     const balanceBefore = (await api.query.system.account(faucet.address)).data
-    const transferTx = api.tx.balances.transfer(address, EXISTENTIAL_DEPOSIT)
+    const transferTx = api.tx.balances.transferAllowDeath(
+      address,
+      EXISTENTIAL_DEPOSIT
+    )
     await submitTx(transferTx, faucet)
     const balanceAfter = (await api.query.system.account(faucet.address)).data
     const balanceIdent = (await api.query.system.account(address)).data
@@ -95,7 +98,7 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    const transferTx = api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transferAllowDeath(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -107,7 +110,7 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = (await api.query.system.account(stormyD.address))
       .data
-    const transferTx = api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transferAllowDeath(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -125,7 +128,7 @@ describe('When there are haves and have-nots', () => {
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = (await api.query.system.account(richieRich.address))
       .data
-    const transferTx = api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transferAllowDeath(
       bobbyBroke.address,
       RichieBalance.free
     )
@@ -142,12 +145,12 @@ describe('When there are haves and have-nots', () => {
     const spy = jest.fn<any>()
     api.query.system.account(faucet.address, spy)
 
-    const transferTx1 = api.tx.balances.transfer(
+    const transferTx1 = api.tx.balances.transferAllowDeath(
       richieRich.address,
       EXISTENTIAL_DEPOSIT
     )
     await submitTx(transferTx1, faucet)
-    const transferTx2 = api.tx.balances.transfer(
+    const transferTx2 = api.tx.balances.transferAllowDeath(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -161,8 +164,11 @@ describe('When there are haves and have-nots', () => {
     api.query.system.account(faucet.address, listener)
 
     const batch = api.tx.utility.batchAll([
-      api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
-      api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
+      api.tx.balances.transferAllowDeath(
+        richieRich.address,
+        EXISTENTIAL_DEPOSIT
+      ),
+      api.tx.balances.transferAllowDeath(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
     await submitTx(batch, faucet)
 
