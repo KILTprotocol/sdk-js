@@ -2212,7 +2212,7 @@ __metadata:
     "@polkadot/types": "npm:^12.0.0"
     "@polkadot/util": "npm:^13.0.0"
     "@polkadot/util-crypto": "npm:^13.0.0"
-    crypto-ld: "npm:^6.0.0"
+    crypto-ld: "npm:^7.0.0"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^4.8.3"
   peerDependencies:
@@ -4871,13 +4871,6 @@ __metadata:
     shebang-command: "npm:^2.0.0"
     which: "npm:^2.0.1"
   checksum: 10c0/5738c312387081c98d69c98e105b6327b069197f864a60593245d64c8089c8a0a744e16349281210d56835bb9274130d825a78b2ad6853ca13cfbeffc0c31750
-  languageName: node
-  linkType: hard
-
-"crypto-ld@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "crypto-ld@npm:6.0.0"
-  checksum: 10c0/af8bd8483bdf845d0b57e8e7ea30c7ba22f1b3a927dc683b267af663d9ec204ebc329525fd99ff212807e82140e89800c63e28ce56ed0e817a372507005af0a7
   languageName: node
   linkType: hard
 
