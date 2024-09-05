@@ -5,7 +5,7 @@ on:
     inputs:
       docker-image-tag-name:
         type: string
-        description: The tag of the kiltprotocol/prototype-chain Docker image to test against
+        description: The tag of the kiltprotocol/standalone-node Docker image to test against
         required: true
 
 env:
