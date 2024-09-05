@@ -42,8 +42,8 @@ export async function getStartedTestContainer(
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/standalone-node'
   console.log(`using testcontainer with image ${image}`)
   const strategies = [
-    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
     ['--dev', '--rpc-external', `--rpc-port=${WS_PORT}`],
+    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
   ]
   // eslint-disable-next-line no-restricted-syntax
   for (const args of strategies) {
