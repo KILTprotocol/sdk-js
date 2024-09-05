@@ -5,7 +5,7 @@ on:
     inputs:
       docker-image-tag-name:
         type: string
-        description: The tag of the kiltprotocol/prototype-chain Docker image to test against
+        description: The tag of the kiltprotocol/standalone-node Docker image to test against
         required: true
 
 env:
@@ -76,7 +76,7 @@ jobs:
       - name: pull image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: kilt/prototype-chain
+          ECR_REPOSITORY: standalone-node
           IMAGE_TAG: ${{ github.event.inputs.docker-image-tag-name }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -145,7 +145,7 @@ jobs:
       - name: pull node image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: kilt/prototype-chain
+          ECR_REPOSITORY: standalone-node
           IMAGE_TAG: ${{ github.event.inputs.docker-image-tag-name }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
