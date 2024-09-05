@@ -32,7 +32,7 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = (await makeSigningKeyTool()).keypair
     charlie = devCharlie
 
-    const transferTx = api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transferAllowDeath(
       testIdentity.address,
       BalanceUtils.toFemtoKilt(10000)
     )
@@ -40,11 +40,11 @@ describe('Chain returns specific errors, that we check for', () => {
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {
-    const tx = api.tx.balances.transfer(
+    const tx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000001')
     )
-    const errorTx = api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )
@@ -93,11 +93,11 @@ describe('Chain returns specific errors, that we check for', () => {
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
-    const tx = api.tx.balances.transfer(
+    const tx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )
-    const errorTx = api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )

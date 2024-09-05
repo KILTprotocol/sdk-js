@@ -34,7 +34,7 @@ describe('Blockchain', () => {
 
     it('allows waiting for finalization', async () => {
       api.__setDefaultResult({ isFinalized: true })
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(
         await signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
       ).toHaveProperty('isFinalized', true)
@@ -42,7 +42,7 @@ describe('Blockchain', () => {
 
     it('allows waiting for in block', async () => {
       api.__setDefaultResult({ isInBlock: true })
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(
         await signAndSubmitTx(tx, pair, { resolveOn: IS_IN_BLOCK })
       ).toHaveProperty('isInBlock', true)
@@ -50,7 +50,7 @@ describe('Blockchain', () => {
 
     it('allows waiting for ready', async () => {
       api.__setDefaultResult({ isReady: true })
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(
         await signAndSubmitTx(tx, pair, { resolveOn: IS_READY })
       ).toHaveProperty('status.isReady', true)
@@ -59,7 +59,7 @@ describe('Blockchain', () => {
     it('uses default resolution config', async () => {
       api.__setDefaultResult({ isReady: true })
       ConfigService.set({ submitTxResolveOn: IS_READY })
-      let tx = api.tx.balances.transfer('abcdef', 50)
+      let tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
         'status.isReady',
         true
@@ -67,12 +67,12 @@ describe('Blockchain', () => {
 
       api.__setDefaultResult({ isInBlock: true })
       ConfigService.set({ submitTxResolveOn: IS_IN_BLOCK })
-      tx = api.tx.balances.transfer('abcdef', 50)
+      tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(await signAndSubmitTx(tx, pair)).toHaveProperty('isInBlock', true)
 
       api.__setDefaultResult({ isFinalized: true })
       ConfigService.set({ submitTxResolveOn: IS_FINALIZED })
-      tx = api.tx.balances.transfer('abcdef', 50)
+      tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
         'isFinalized',
         true
@@ -81,7 +81,7 @@ describe('Blockchain', () => {
 
     it('rejects on error condition', async () => {
       api.__setDefaultResult({ isInvalid: true })
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       await expect(
         signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
       ).rejects.toHaveProperty('isError', true)
@@ -90,7 +90,7 @@ describe('Blockchain', () => {
     it('throws if subscriptions not supported', async () => {
       // @ts-ignore
       api.hasSubscriptions = false
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       await expect(
         signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
       ).rejects.toThrow(SDKErrors.SubscriptionsNotSupportedError)
@@ -102,7 +102,7 @@ describe('Blockchain', () => {
         // mock disconnect 500 ms after submission
         if (ev === 'disconnected') setTimeout(callback, 500)
       })
-      const tx = api.tx.balances.transfer('abcdef', 50)
+      const tx = api.tx.balances.transferAllowDeath('abcdef', 50)
       await expect(
         signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
       ).rejects.toHaveProperty('internalError', expect.any(Error))

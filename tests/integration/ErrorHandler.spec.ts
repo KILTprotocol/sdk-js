@@ -44,7 +44,7 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const transferTx = api.tx.balances.transfer(addressFromRandom(), 1)
+  const transferTx = api.tx.balances.transferAllowDeath(addressFromRandom(), 1)
   const promise = submitTx(transferTx, paymentAccount)
   if (api.runtimeVersion.specVersion.toBigInt() >= 11_200n) {
     await expect(promise).rejects.toMatchInlineSnapshot(`

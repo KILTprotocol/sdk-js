@@ -239,7 +239,8 @@ export function getMockedApi(): MockApiPromise {
         reclaimDeposit: jest.fn((claimHash: string) => getMockSubmittableTx()),
       },
       balances: {
-        transfer: jest.fn(() => getMockSubmittableTx()),
+        transferAllowDeath: jest.fn(() => getMockSubmittableTx()),
+        transferKeepAlive: jest.fn(() => getMockSubmittableTx()),
       },
       ctype: {
         add: jest.fn((hash, signature) => getMockSubmittableTx()),
