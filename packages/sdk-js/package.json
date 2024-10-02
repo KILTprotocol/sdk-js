@@ -33,7 +33,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "@kiltprotocol/augment-api": "^1.11200.0",
-    "@polkadot/typegen": "^12.0.0",
+    "@polkadot/typegen": "^14.0.0",
     "rimraf": "^3.0.2",
     "terser-webpack-plugin": "^5.1.1",
     "typescript": "^4.8.3",
@@ -47,9 +47,9 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/type-definitions": "^1.11200.0",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^12.0.0",
+    "@polkadot/api": "^14.0.0",
     "@polkadot/keyring": "^13.0.0",
-    "@polkadot/types": "^12.0.0",
+    "@polkadot/types": "^14.0.0",
     "@polkadot/util": "^13.0.0",
     "@polkadot/util-crypto": "^13.0.0"
   },
