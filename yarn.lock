@@ -1325,6 +1325,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cfworker/json-schema@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "@cfworker/json-schema@npm:4.0.2"
+  checksum: 10c0/672755c0eee6e9cff22dc2c20e85374c2b516a7c387f3acfbbdc1805046a4b30e260ce979b1da06c24309f8a87ed3548229268881c3f5347a3df8c8577833974
+  languageName: node
+  linkType: hard
+
 "@commitlint/cli@npm:^9.0.1":
   version: 9.1.2
   resolution: "@commitlint/cli@npm:9.1.2"
@@ -2306,6 +2313,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
+    "@cfworker/json-schema": "npm:^4.0.2"
     "@kiltprotocol/eddsa-jcs-2022": "npm:^0.1.0"
     "@kiltprotocol/es256k-jcs-2023": "npm:^0.1.0"
     "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
