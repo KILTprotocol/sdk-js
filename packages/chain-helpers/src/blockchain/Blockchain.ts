@@ -11,7 +11,11 @@ import type { SignerOptions } from '@polkadot/api-base/types'
 import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, IMethod } from '@polkadot/types/types'
-import { u8aToHex, type BN } from '@polkadot/util'
+import { type BN } from '@polkadot/util'
+import {
+  type ExtraInfo,
+  merkleizeMetadata,
+} from '@polkadot-api/merkleize-metadata'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
 import type * as _ from '@kiltprotocol/augment-api'
@@ -24,8 +28,6 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
-
-import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata'
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
 
@@ -194,7 +196,7 @@ export async function signTx(
     const api = ConfigService.get('api')
     const metadata = api.runtimeMetadata.asV15
     const { specName, specVersion } = api.runtimeVersion
-    const merkleInfo = {
+    const merkleInfo: ExtraInfo = {
       base58Prefix: api.consts.system.ss58Prefix.toNumber(),
       decimals: api.registry.chainDecimals[0],
       specName: specName.toString(),
@@ -202,11 +204,9 @@ export async function signTx(
       tokenSymbol: api.registry.chainTokens[0],
     }
     const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
-    const metadataHash = u8aToHex(merkleizedMetadata.digest())
+    const metadataHash = merkleizedMetadata.digest()
     return {
       tip,
-      mode: 1,
-      withSignedTransaction: true,
       metadataHash,
     }
   })()
@@ -217,6 +217,9 @@ export async function signTx(
 
   return tx.signAsync(signer.id, {
     ...signOptions,
+    // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
+    withSignedTransaction: true,
+    mode: 1,
     signer: Signers.getPolkadotSigner([signer]),
   })
 }
