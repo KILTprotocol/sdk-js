@@ -30,6 +30,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
+import { blake2AsHex } from '@polkadot/util-crypto'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -171,6 +172,34 @@ export async function submitSignedTx(
 
 export const dispatchTx = submitSignedTx
 
+// Returns the Merkle root of the metadata as stored in the `ConfigService` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
+async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
+  const metadata = api.runtimeMetadata.asV15
+  const { specName, specVersion } = api.runtimeVersion
+  const genesisHash = await api.genesisHash
+  const cacheKey = blake2AsHex(
+    Uint8Array.from([
+      ...specName.toU8a(),
+      ...specVersion.toU8a(),
+      ...genesisHash.toU8a(),
+    ])
+  )
+  if (ConfigService.isSet(cacheKey)) {
+    return ConfigService.get(cacheKey)
+  }
+  const merkleInfo: ExtraInfo = {
+    base58Prefix: api.consts.system.ss58Prefix.toNumber(),
+    decimals: api.registry.chainDecimals[0],
+    specName: specName.toString(),
+    specVersion: specVersion.toNumber(),
+    tokenSymbol: api.registry.chainTokens[0],
+  }
+  const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
+  const metadataHash = merkleizedMetadata.digest()
+  ConfigService.set({ cacheKey: metadataHash })
+  return metadataHash
+}
+
 /**
  * Signs a SubmittableExtrinsic.
  *
@@ -186,30 +215,9 @@ export async function signTx(
   signer: KeyringPair | TransactionSigner,
   { tip, checkMetadata }: { tip?: AnyNumber; checkMetadata?: boolean } = {}
 ): Promise<SubmittableExtrinsic> {
-  const signOptions = await (async (): Promise<Partial<SignerOptions>> => {
-    if (!checkMetadata) {
-      return {
-        tip,
-      }
-    }
-    // If `checkMetadata` is enabled, include that when signing the tx.
-    const api = ConfigService.get('api')
-    const metadata = api.runtimeMetadata.asV15
-    const { specName, specVersion } = api.runtimeVersion
-    const merkleInfo: ExtraInfo = {
-      base58Prefix: api.consts.system.ss58Prefix.toNumber(),
-      decimals: api.registry.chainDecimals[0],
-      specName: specName.toString(),
-      specVersion: specVersion.toNumber(),
-      tokenSymbol: api.registry.chainTokens[0],
-    }
-    const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
-    const metadataHash = merkleizedMetadata.digest()
-    return {
-      tip,
-      metadataHash,
-    }
-  })()
+  const signOptions: Partial<SignerOptions> = checkMetadata
+    ? { tip, metadataHash: await getMetadataHash(ConfigService.get('api')) }
+    : { tip }
 
   if ('address' in signer) {
     return tx.signAsync(signer, signOptions)
