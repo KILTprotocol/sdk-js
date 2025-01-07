@@ -192,7 +192,7 @@ export async function signTx(
     }
     // If `checkMetadata` is enabled, include that when signing the tx.
     const api = ConfigService.get('api')
-    const metadata = await api.call.metadata.metadataAtVersion(15)
+    const metadata = api.runtimeMetadata.asV15
     const { specName, specVersion } = api.runtimeVersion
     const merkleInfo = {
       base58Prefix: api.consts.system.ss58Prefix.toNumber(),
