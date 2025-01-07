@@ -7,10 +7,11 @@
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
+import type { SignerOptions } from '@polkadot/api-base/types'
 import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, IMethod } from '@polkadot/types/types'
-import type { BN } from '@polkadot/util'
+import { u8aToHex, type BN } from '@polkadot/util'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
 import type * as _ from '@kiltprotocol/augment-api'
@@ -24,6 +25,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
 
+import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata'
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
 
@@ -174,19 +176,47 @@ export const dispatchTx = submitSignedTx
  * @param signer The {@link KeyringPair} used to sign the tx.
  * @param opts Additional options.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
+ * @param opts.checkMetadata Boolean flag indicated whether to verify the metadata hash upon tx submission.
  * @returns A signed {@link SubmittableExtrinsic}.
  */
 export async function signTx(
   tx: SubmittableExtrinsic,
   signer: KeyringPair | TransactionSigner,
-  { tip }: { tip?: AnyNumber } = {}
+  { tip, checkMetadata }: { tip?: AnyNumber; checkMetadata?: boolean } = {}
 ): Promise<SubmittableExtrinsic> {
+  const signOptions = await (async (): Promise<Partial<SignerOptions>> => {
+    if (!checkMetadata) {
+      return {
+        tip,
+      }
+    }
+    // If `checkMetadata` is enabled, include that when signing the tx.
+    const api = ConfigService.get('api')
+    const metadata = await api.call.metadata.metadataAtVersion(15)
+    const { specName, specVersion } = api.runtimeVersion
+    const merkleInfo = {
+      base58Prefix: api.consts.system.ss58Prefix.toNumber(),
+      decimals: api.registry.chainDecimals[0],
+      specName: specName.toString(),
+      specVersion: specVersion.toNumber(),
+      tokenSymbol: api.registry.chainTokens[0],
+    }
+    const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
+    const metadataHash = u8aToHex(merkleizedMetadata.digest())
+    return {
+      tip,
+      mode: 1,
+      withSignedTransaction: true,
+      metadataHash,
+    }
+  })()
+
   if ('address' in signer) {
-    return tx.signAsync(signer, { tip })
+    return tx.signAsync(signer, signOptions)
   }
 
   return tx.signAsync(signer.id, {
-    tip,
+    ...signOptions,
     signer: Signers.getPolkadotSigner([signer]),
   })
 }
@@ -198,6 +228,7 @@ export async function signTx(
  * @param signer The {@link KeyringPair} used to sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
+ * @param opts.checkMetadata Boolean flag indicated whether to verify the metadata hash upon tx submission.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
  */
 export async function signAndSubmitTx(
@@ -205,10 +236,12 @@ export async function signAndSubmitTx(
   signer: KeyringPair | TransactionSigner,
   {
     tip,
+    checkMetadata,
     ...opts
-  }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
+  }: Partial<SubscriptionPromise.Options> &
+    Partial<{ tip: AnyNumber; checkMetadata: boolean }> = {}
 ): Promise<ISubmittableResult> {
-  const signedTx = await signTx(tx, signer, { tip })
+  const signedTx = await signTx(tx, signer, { tip, checkMetadata })
   return submitSignedTx(signedTx, opts)
 }
 
