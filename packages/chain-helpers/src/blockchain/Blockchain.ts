@@ -28,9 +28,9 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors, Signers } from '@kiltprotocol/utils'
+import { blake2AsHex } from '@polkadot/util-crypto'
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
-import { blake2AsHex } from '@polkadot/util-crypto'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -172,6 +172,8 @@ export async function submitSignedTx(
 
 export const dispatchTx = submitSignedTx
 
+const metadataHashes = new Map<string, Uint8Array>()
+
 // Returns the Merkle root of the metadata as stored in the `ConfigService` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
 async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
   const metadata = api.runtimeMetadata.asV15
@@ -184,8 +186,8 @@ async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
       ...genesisHash.toU8a(),
     ])
   )
-  if (ConfigService.isSet(cacheKey)) {
-    return ConfigService.get(cacheKey)
+  if (metadataHashes.has(cacheKey)) {
+    return metadataHashes.get(cacheKey) as Uint8Array
   }
   const merkleInfo: ExtraInfo = {
     base58Prefix: api.consts.system.ss58Prefix.toNumber(),
@@ -196,7 +198,7 @@ async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
   }
   const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
   const metadataHash = merkleizedMetadata.digest()
-  ConfigService.set({ cacheKey: metadataHash })
+  metadataHashes.set(cacheKey, metadataHash)
   return metadataHash
 }
 
