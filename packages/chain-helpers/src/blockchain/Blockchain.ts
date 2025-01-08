@@ -11,7 +11,7 @@ import type { SignerOptions } from '@polkadot/api-base/types'
 import type { Vec } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, IMethod } from '@polkadot/types/types'
-import { type BN } from '@polkadot/util'
+import { u8aToHex, type BN } from '@polkadot/util'
 import {
   type ExtraInfo,
   merkleizeMetadata,
@@ -20,6 +20,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- doing this instead of import '@kiltprotocol/augment-api' to avoid creating an import at runtime
 import type * as _ from '@kiltprotocol/augment-api'
 import type {
+  HexString,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
@@ -172,11 +173,13 @@ export async function submitSignedTx(
 
 export const dispatchTx = submitSignedTx
 
-const metadataHashes = new Map<string, Uint8Array>()
+const metadataHashes = new Map<string, HexString>()
 
 // Returns the Merkle root of the metadata as stored in the `ConfigService` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
-async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
-  const metadata = api.runtimeMetadata.asV15
+async function getMetadataHash(api: ApiPromise): Promise<HexString> {
+  const metadata = await api.call.metadata.metadataAtVersion(15)
+  // TODO: Find out why using this metadata here fails to decode when calculating the Merkle root.
+  // const metadata = api.runtimeMetadata.asV15
   const { specName, specVersion } = api.runtimeVersion
   const genesisHash = await api.genesisHash
   const cacheKey = blake2AsHex(
@@ -187,7 +190,7 @@ async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
     ])
   )
   if (metadataHashes.has(cacheKey)) {
-    return metadataHashes.get(cacheKey) as Uint8Array
+    return metadataHashes.get(cacheKey) as HexString
   }
   const merkleInfo: ExtraInfo = {
     base58Prefix: api.consts.system.ss58Prefix.toNumber(),
@@ -197,7 +200,7 @@ async function getMetadataHash(api: ApiPromise): Promise<Uint8Array> {
     tokenSymbol: api.registry.chainTokens[0],
   }
   const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
-  const metadataHash = merkleizedMetadata.digest()
+  const metadataHash = u8aToHex(merkleizedMetadata.digest())
   metadataHashes.set(cacheKey, metadataHash)
   return metadataHash
 }
@@ -218,7 +221,15 @@ export async function signTx(
   { tip, checkMetadata }: { tip?: AnyNumber; checkMetadata?: boolean } = {}
 ): Promise<SubmittableExtrinsic> {
   const signOptions: Partial<SignerOptions> = checkMetadata
-    ? { tip, metadataHash: await getMetadataHash(ConfigService.get('api')) }
+    ? {
+        tip,
+        // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
+        metadataHash: await getMetadataHash(ConfigService.get('api')),
+        // Used by external signers to to know there's additional data to be included in the payload (see link above).
+        withSignedTransaction: true,
+        // Forces the tx to fail of the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
+        mode: 1,
+      }
     : { tip }
 
   if ('address' in signer) {
@@ -227,9 +238,6 @@ export async function signTx(
 
   return tx.signAsync(signer.id, {
     ...signOptions,
-    // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
-    withSignedTransaction: true,
-    mode: 1,
     signer: Signers.getPolkadotSigner([signer]),
   })
 }
