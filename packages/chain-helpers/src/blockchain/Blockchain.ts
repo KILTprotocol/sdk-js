@@ -175,11 +175,11 @@ export const dispatchTx = submitSignedTx
 
 const metadataHashes = new Map<string, HexString>()
 
-// Returns the Merkle root of the metadata as stored in the `ConfigService` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
+// Returns the Merkle root of the metadata as stored in the local `metadataHashes` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
 async function getMetadataHash(api: ApiPromise): Promise<HexString> {
-  const metadata = await api.call.metadata.metadataAtVersion(15)
+  // const metadata = await api.call.metadata.metadataAtVersion(15)
   // TODO: Find out why using this metadata here fails to decode when calculating the Merkle root.
-  // const metadata = api.runtimeMetadata.asV15
+  const metadata = api.runtimeMetadata.asV15
   const { specName, specVersion } = api.runtimeVersion
   const genesisHash = await api.genesisHash
   const cacheKey = blake2AsHex(
@@ -222,14 +222,14 @@ export async function signTx(
 ): Promise<SubmittableExtrinsic> {
   const signOptions: Partial<SignerOptions> = checkMetadata
     ? {
-        tip,
-        // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
-        metadataHash: await getMetadataHash(ConfigService.get('api')),
-        // Used by external signers to to know there's additional data to be included in the payload (see link above).
-        withSignedTransaction: true,
-        // Forces the tx to fail of the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
-        mode: 1,
-      }
+      tip,
+      // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
+      metadataHash: await getMetadataHash(ConfigService.get('api')),
+      // Used by external signers to to know there's additional data to be included in the payload (see link above).
+      withSignedTransaction: true,
+      // Forces the tx to fail of the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
+      mode: 1,
+    }
     : { tip }
 
   if ('address' in signer) {
