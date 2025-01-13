@@ -177,9 +177,6 @@ const metadataHashes = new Map<string, HexString>()
 
 // Returns the Merkle root of the metadata as stored in the local `metadataHashes` cache. If not present, it computes it, stores it in the cache for future retrievals, and returns it.
 async function getMetadataHash(api: ApiPromise): Promise<HexString> {
-  // const metadata = await api.call.metadata.metadataAtVersion(15)
-  // TODO: Find out why using this metadata here fails to decode when calculating the Merkle root.
-  const metadata = api.runtimeMetadata.asV15
   const { specName, specVersion } = api.runtimeVersion
   const genesisHash = await api.genesisHash
   const cacheKey = blake2AsHex(
@@ -199,6 +196,7 @@ async function getMetadataHash(api: ApiPromise): Promise<HexString> {
     specVersion: specVersion.toNumber(),
     tokenSymbol: api.registry.chainTokens[0],
   }
+  const metadata = await api.call.metadata.metadataAtVersion(15)
   const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), merkleInfo)
   const metadataHash = u8aToHex(merkleizedMetadata.digest())
   metadataHashes.set(cacheKey, metadataHash)
