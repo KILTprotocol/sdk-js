@@ -220,14 +220,14 @@ export async function signTx(
 ): Promise<SubmittableExtrinsic> {
   const signOptions: Partial<SignerOptions> = checkMetadata
     ? {
-      tip,
-      // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
-      metadataHash: await getMetadataHash(ConfigService.get('api')),
-      // Used by external signers to to know there's additional data to be included in the payload (see link above).
-      withSignedTransaction: true,
-      // Forces the tx to fail if the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
-      mode: 1,
-    }
+        tip,
+        // Required as described in https://github.com/polkadot-js/api/blob/109d3b2201ea51f27180e34dfd883ec71d402f6b/packages/api-base/src/types/submittable.ts#L79.
+        metadataHash: await getMetadataHash(ConfigService.get('api')),
+        // Used by external signers to to know there's additional data to be included in the payload (see link above).
+        withSignedTransaction: true,
+        // Forces the tx to fail if the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
+        mode: 1,
+      }
     : { tip }
 
   if ('address' in signer) {
