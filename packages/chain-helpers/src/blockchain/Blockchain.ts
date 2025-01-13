@@ -225,7 +225,7 @@ export async function signTx(
       metadataHash: await getMetadataHash(ConfigService.get('api')),
       // Used by external signers to to know there's additional data to be included in the payload (see link above).
       withSignedTransaction: true,
-      // Forces the tx to fail of the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
+      // Forces the tx to fail if the metadata does not match (added for backward compatibility). See https://paritytech.github.io/polkadot-sdk/master/frame_metadata_hash_extension/struct.CheckMetadataHash.html.
       mode: 1,
     }
     : { tip }
