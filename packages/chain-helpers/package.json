@@ -57,6 +57,7 @@
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot-api/merkleize-metadata": "^1.0.0"
   }
 }
