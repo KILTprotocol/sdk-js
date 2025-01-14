@@ -137,16 +137,6 @@ export async function issue({
       )
   }
 }
-/**
- *
- * @param params Named parameters for the revocation process.
- * @param params.credential The Verifiable Credential to be revoked.
- * @param params.issuer Options for the issuer performing the revocation.
- * @param params.proofOptions Optional parameters for proof configuration.
- * @param params.proofOptions.proofType The type of proof to use for revocation. Currently only supports KiltAttestationProofV1.
- * @returns Promise<RevokeResult> containing the revocation result.
- * @throws {SDKError} When an unsupported proof type is provided.
- */
 
 /**
  * Revokes a Kilt credential on the blockchain, making it invalid.

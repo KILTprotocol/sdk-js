@@ -30,35 +30,6 @@ export type Interface = KiltRevocationStatusV1
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**
- * Revokes a Kilt credential on the blockchain, making it invalid.
- *
- * @param params Named parameters for the revocation process.
- * @param params.issuer Interfaces for interacting with the issuer identity.
- * @param params.issuer.didDocument The DID Document of the issuer revoking the credential.
- * @param params.issuer.signers Array of signer interfaces for credential authorization.
- * @param params.issuer.submitter The submitter can be one of:
- * - A MultibaseKeyPair for signing transactions
- * - A Ed25519 type keypair for blockchain interactions
- * The submitter will be used to cover transaction fees and blockchain operations.
- * @param params.credential The Verifiable Credential to be revoked. Must contain a valid credential ID.
- * @param issuer
- * @param credential
- * @param opts
- * @param opts.api
- * @returns An object containing:
- * - success: Boolean indicating if revocation was successful
- * - error?: Array of error messages if revocation failed
- * - info: Object containing blockchain transaction details:
- *   - blockNumber?: The block number where revocation was included
- *   - blockHash?: The hash of the finalized block
- *   - transactionHash?: The hash of the revocation transaction.
- * @throws Will return error response if:
- * - Credential ID is invalid or cannot be decoded
- * - DID authorization fails
- * - Transaction signing or submission fails.
- */
-
-/**
  * @param credentialStatus The credential status propoerty of the Verifiable credential.
  * @param opts Additional parameters.
  * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
