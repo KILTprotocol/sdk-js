@@ -280,6 +280,27 @@ async function runAll() {
 
   console.log('presentation verified')
 
+  // ┏━━━━━━━━━━━━━━━━━━━━━━━┓
+  // ┃ Revoke credential     ┃
+  // ┗━━━━━━━━━━━━━━━━━━━━━━━┛
+  // Before revocation, credential status is valid.
+  let credentialStatus = await Kilt.Verifier.checkStatus({ credential })
+  if (!credentialStatus.verified) {
+    throw new Error('credential already revoked')
+  }
+  // Revoke a previously issued credential on chain.
+  await Kilt.Issuer.revoke({
+    issuer: { didDocument, signers, submitter },
+    credential,
+  })
+  console.log('credential revoked')
+
+  // After revocation, credential status is invalid.
+  credentialStatus = await Kilt.Verifier.checkStatus({ credential })
+  if (credentialStatus.verified) {
+    throw new Error('credential did not get revoked')
+  }
+
   // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   // ┃ Remove a Verification Method ┃
   // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -369,24 +390,6 @@ async function runAll() {
   }
 
   console.log('Did deactivated')
-
-  // ┏━━━━━━━━━━━━━━━━━━┓
-  // ┃ Revoke credential┃
-  // ┗━━━━━━━━━━━━━━━━━━┛
-  //
-  // Revoke a previously issued credential on chain
-  const revokeCredentialResult = await Kilt.Issuer.revoke(
-    didDocument.id,
-    credential
-  )
-
-  if (!revokeCredentialResult.success) {
-    throw new Error(
-      `revoke credential failed: ${revokeCredentialResult.error?.join(', ')}`
-    )
-  }
-
-  console.log('credential revoked')
 
   // Release the connection to the blockchain.
   await api.disconnect()

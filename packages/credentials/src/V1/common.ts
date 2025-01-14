@@ -9,10 +9,19 @@ import type { ApiPromise } from '@polkadot/api'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
 
-import type { HexString } from '@kiltprotocol/types'
-import { Caip19, Caip2, SDKErrors } from '@kiltprotocol/utils'
+import type {
+  HexString,
+  KiltAddress,
+  SharedArguments,
+  SignerInterface,
+} from '@kiltprotocol/types'
+import { Caip19, Caip2, SDKErrors, Signers } from '@kiltprotocol/utils'
 
 import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
+import { Extrinsic } from '@polkadot/types/interfaces/types.js'
+import { SimplifiedTransactionResult } from '../interfaces.js'
+import { authorizeTx, signersForDid } from '@kiltprotocol/did'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
@@ -153,4 +162,54 @@ export function credentialIdFromRootHash(
 ): KiltCredentialV1['id'] {
   const bytes = typeof rootHash === 'string' ? hexToU8a(rootHash) : rootHash
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
+}
+
+export async function defaultTxSubmit({
+  didDocument,
+  call,
+  signers,
+  submitter,
+}: SharedArguments & {
+  call: Extrinsic
+}): Promise<SimplifiedTransactionResult> {
+  let submitterAddress: KiltAddress
+  let accountSigners: SignerInterface[] = []
+  if (typeof submitter === 'string') {
+    submitterAddress = submitter
+    accountSigners = (
+      await Promise.all(
+        signers.map((keypair) =>
+          'algorithm' in keypair
+            ? [keypair]
+            : Signers.getSignersForKeypair({ keypair })
+        )
+      )
+    ).flat()
+  } else if ('algorithm' in submitter) {
+    submitterAddress = submitter.id
+    accountSigners = [submitter]
+  } else {
+    accountSigners = await Signers.getSignersForKeypair({
+      keypair: submitter,
+    })
+    submitterAddress = accountSigners[0].id as KiltAddress
+  }
+
+  let extrinsic = await authorizeTx(
+    didDocument,
+    call,
+    await signersForDid(didDocument, ...signers),
+    submitterAddress
+  )
+
+  if (!extrinsic.isSigned) {
+    extrinsic = await extrinsic.signAsync(submitterAddress, {
+      signer: Signers.getPolkadotSigner(accountSigners),
+    })
+  }
+  const result = await Blockchain.submitSignedTx(extrinsic, {
+    resolveOn: Blockchain.IS_FINALIZED,
+  })
+  const blockHash = result.status.asFinalized
+  return { block: { hash: blockHash.toHex() } }
 }

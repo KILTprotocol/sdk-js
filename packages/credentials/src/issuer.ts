@@ -19,16 +19,6 @@ import {
 
 export type { IssuerOptions }
 
-interface RevokeResult {
-  success: boolean
-  error?: string[]
-  info: {
-    blockNumber?: string
-    blockHash?: string
-    transactionHash?: string
-  }
-}
-
 /**
  * Creates a new credential document as a basis for issuing a credential.
  * This document can be shown to users as a preview or be extended with additional properties before moving on to the second step of credential issuance:
@@ -148,7 +138,6 @@ export async function issue({
   }
 }
 /**
- * Revokes a Kilt credential on the blockchain, making it invalid.
  *
  * @param params Named parameters for the revocation process.
  * @param params.credential The Verifiable Credential to be revoked.
@@ -158,30 +147,42 @@ export async function issue({
  * @returns Promise<RevokeResult> containing the revocation result.
  * @throws {SDKError} When an unsupported proof type is provided.
  */
+
+/**
+ * Revokes a Kilt credential on the blockchain, making it invalid.
+ *
+ * @param params Holds all named parameters.
+ * @param params.credential A credential document.
+ * @param params.issuer Interfaces for interacting with the issuer identity for the purpose of revoking the credential.
+ * @param params.issuer.didDocument The DID Document of the issuer.
+ * @param params.issuer.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
+ * The function will select the first signer that matches requirements around signature algorithm and relationship of the key to the DID as given by the DID Document.
+ * @param params.issuer.submitter Some proof types require making transactions to effect state changes on the KILT blockchain.
+ * The blockchain account whose address is specified here will be used to cover all transaction fees and deposits due for this operation.
+ * As transactions to the blockchain need to be signed, `signers` is expected to contain a signer interface where the `id` matches this address.
+ *
+ * Alternatively, you can pass a {@link SubmitOverride} callback that takes care of Did-authorizing and submitting the transaction.
+ * If you are using a service that helps you submit and pay for transactions, this is your point of integration to it.
+ *
+ *  @throws if the credential format is invalid or the  revocation fails.
+ */
 export async function revoke({
   credential,
   issuer,
-  proofOptions = {},
 }: {
   credential: VerifiableCredential
   issuer: IssuerOptions
-  proofOptions?: {
-    proofType?: string
+}): Promise<VerifiableCredential> {
+  const status = credential.credentialStatus
+  if (!status || status.type !== KiltRevocationStatusV1.STATUS_TYPE) {
+    throw new SDKErrors.SDKError(
+      `Only credential status type ${KiltRevocationStatusV1.STATUS_TYPE} is currently supported.`
+    )
   }
-}): Promise<RevokeResult> {
-  const { proofType } = proofOptions
-  switch (proofType) {
-    case undefined:
-    case KiltAttestationProofV1.PROOF_TYPE: {
-      const result = await KiltRevocationStatusV1.revoke(
-        issuer as IssuerOptions,
-        credential as VerifiableCredential
-      )
-      return result
-    }
-    default:
-      throw new SDKErrors.SDKError(
-        `Only proof type ${KiltAttestationProofV1.PROOF_TYPE} is currently supported.`
-      )
-  }
+  await KiltRevocationStatusV1.revoke(
+    status as KiltRevocationStatusV1.Interface,
+    issuer,
+    {}
+  )
+  return credential
 }

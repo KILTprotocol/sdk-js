@@ -9,50 +9,25 @@ import { u8aEq, u8aToHex, u8aToU8a } from '@polkadot/util'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
-import { authorizeTx } from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
-import type {
-  Caip2ChainId,
-  KiltAddress,
-  SignerInterface,
-  MultibaseKeyPair,
-} from '@kiltprotocol/types'
-import { Caip2, SDKErrors, Signers } from '@kiltprotocol/utils'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import type { Caip2ChainId, SharedArguments } from '@kiltprotocol/types'
+import { Caip2, SDKErrors } from '@kiltprotocol/utils'
+import { Extrinsic } from '@polkadot/types/interfaces/types.js'
 import * as CType from '../ctype/index.js'
 import * as Attestation from '../attestation/index.js'
 import {
   assertMatchingConnection,
+  defaultTxSubmit,
   getDelegationNodeIdForCredential,
 } from './common.js'
 import type { IssuerOptions } from '../interfaces.js'
-import type {
-  KiltCredentialV1,
-  KiltRevocationStatusV1,
-  VerifiableCredential,
-} from './types.js'
+import type { KiltCredentialV1 } from './types.js'
+
+import { type KiltRevocationStatusV1 } from './types.js'
 
 export type Interface = KiltRevocationStatusV1
 
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
-
-interface RevokeResult {
-  success: boolean
-  error?: string[]
-  info: {
-    blockNumber?: string
-    blockHash?: string
-    transactionHash?: string
-  }
-}
-
-interface BlockchainResponse {
-  blockNumber: string
-  status: {
-    finalized: string
-  }
-  txHash: string
-}
 
 /**
  * Revokes a Kilt credential on the blockchain, making it invalid.
@@ -68,6 +43,8 @@ interface BlockchainResponse {
  * @param params.credential The Verifiable Credential to be revoked. Must contain a valid credential ID.
  * @param issuer
  * @param credential
+ * @param opts
+ * @param opts.api
  * @returns An object containing:
  * - success: Boolean indicating if revocation was successful
  * - error?: Array of error messages if revocation failed
@@ -80,59 +57,71 @@ interface BlockchainResponse {
  * - DID authorization fails
  * - Transaction signing or submission fails.
  */
+
+/**
+ * @param credentialStatus The credential status propoerty of the Verifiable credential.
+ * @param opts Additional parameters.
+ * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
+ * @param params.issuer Interfaces for interacting with the issuer identity.
+ * @param params.issuer.didDocument The DID Document of the issuer revoking the credential.
+ * @param params.issuer.signers Array of signer interfaces for credential authorization.
+ * @param params.issuer.submitter The submitter can be one of:
+ * - A MultibaseKeyPair for signing transactions
+ * - A Ed25519 type keypair for blockchain interactions
+ * The submitter will be used to cover transaction fees and blockchain operations.
+ */
 export async function revoke(
+  credentialStatus: KiltRevocationStatusV1,
   issuer: IssuerOptions,
-  credential: VerifiableCredential
-): Promise<RevokeResult> {
-  try {
-    if (!credential.id) {
-      throw new Error('Credential ID is required for revocation')
-    }
-
-    const rootHash = credential.id.split(':').pop()
-    if (!rootHash) {
-      throw new Error('Invalid credential ID format')
-    }
-
-    const decodedroothash = base58Decode(rootHash)
-    const { didDocument, signers, submitter } = issuer
-    const api = ConfigService.get('api')
-
-    const revokeTx = api.tx.attestation.revoke(decodedroothash, null) as any
-    const [Txsubmitter] = (await Signers.getSignersForKeypair({
-      keypair: submitter as MultibaseKeyPair,
-      type: 'Ed25519',
-    })) as Array<SignerInterface<'Ed25519', KiltAddress>>
-    const authorizedTx = await authorizeTx(
-      didDocument,
-      revokeTx,
-      signers as SignerInterface[],
-      Txsubmitter.id
+  opts: { api?: ApiPromise } = {}
+): Promise<void> {
+  if (credentialStatus?.type !== STATUS_TYPE)
+    throw new TypeError(
+      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
     )
+  const { api = ConfigService.get('api') } = opts
+  const { assetNamespace, assetReference, assetInstance } =
+    assertMatchingConnection(api, { credentialStatus })
+  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
+    throw new Error(
+      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
+    )
+  }
+  if (!assetInstance) {
+    throw new SDKErrors.CredentialMalformedError(
+      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
+    )
+  }
+  const rootHash = base58Decode(assetInstance)
 
-    const response = (await Blockchain.signAndSubmitTx(
-      authorizedTx,
-      Txsubmitter
-    )) as unknown as BlockchainResponse
+  const { didDocument, signers, submitter } = issuer
 
-    const responseObj = JSON.parse(JSON.stringify(response))
+  const call = api.tx.attestation.revoke(rootHash, null)
 
-    return {
-      success: true,
-      info: {
-        blockNumber: responseObj.blockNumber,
-        blockHash: responseObj.status.finalized,
-        transactionHash: responseObj.txHash,
-      },
+  const args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
+    call: Extrinsic
+  } = {
+    didDocument,
+    signers,
+    api,
+    call,
+  }
+  const transactionPromise =
+    typeof submitter === 'function'
+      ? submitter(args)
+      : defaultTxSubmit({
+          ...args,
+          submitter,
+        })
+
+  let result = await transactionPromise
+  if ('status' in result) {
+    if (result.status !== 'confirmed') {
+      throw new SDKErrors.SDKError(
+        `Unexpected transaction status ${result.status}; the transaction should be "confirmed" for issuance to continue`
+      )
     }
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-    return {
-      success: false,
-      error: [errorMessage],
-      info: {},
-    }
+    result = result.asConfirmed
   }
 }
 

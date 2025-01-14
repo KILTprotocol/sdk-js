@@ -30,30 +30,20 @@ import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import {
-  authorizeTx,
-  fromChain,
-  getFullDid,
-  signersForDid,
-  validateDid,
-} from '@kiltprotocol/did'
+import { fromChain, getFullDid, validateDid } from '@kiltprotocol/did'
 import type {
   Did,
   ICType,
   IDelegationNode,
-  KiltAddress,
   SharedArguments,
-  SignerInterface,
 } from '@kiltprotocol/types'
-import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
+import { Caip19, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
 import { CTypeLoader } from '../ctype/CTypeLoader.js'
 import * as CType from '../ctype/index.js'
 import {
   IssuerOptions,
-  SimplifiedTransactionResult,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   SubmitOverride,
 } from '../interfaces.js'
@@ -67,6 +57,7 @@ import {
   assertMatchingConnection,
   credentialIdFromRootHash,
   credentialIdToRootHash,
+  defaultTxSubmit,
   delegationIdFromAttesterDelegation,
   ExpandedContents,
   getDelegationNodeIdForCredential,
@@ -210,8 +201,7 @@ export function calculateRootHash(
         return delegationIdFromAttesterDelegation(entry)
       }
       throw new SDKErrors.CredentialMalformedError(
-        `unknown type ${
-          (entry as { type: string }).type
+        `unknown type ${(entry as { type: string }).type
         } in federatedTrustModel`
       )
     }),
@@ -267,9 +257,9 @@ async function verifyAttestedAt(
   const cTypeId = CType.hashToId(cTypeHash.toHex())
   const delegationId = authorization.isSome
     ? (
-        (authorization.unwrap() as RuntimeCommonAuthorizationAuthorizationId)
-          .value ?? authorization.unwrap()
-      ).toHex()
+      (authorization.unwrap() as RuntimeCommonAuthorizationAuthorizationId)
+        .value ?? authorization.unwrap()
+    ).toHex()
     : null
   return {
     verified: true,
@@ -472,8 +462,7 @@ export async function verify(
         }
         default: {
           throw new SDKErrors.CredentialMalformedError(
-            `unknown type ${
-              (i as { type: string }).type
+            `unknown type ${(i as { type: string }).type
             } in federatedTrustModel`
           )
         }
@@ -571,9 +560,9 @@ export type UnissuedCredential = Omit<
 export function initializeProof(
   credential: UnissuedCredential
 ): [
-  KiltAttestationProofV1,
-  Parameters<ApiPromise['tx']['attestation']['add']>
-] {
+    KiltAttestationProofV1,
+    Parameters<ApiPromise['tx']['attestation']['add']>
+  ] {
   const { credentialSubject, nonTransferable } = credential
 
   if (nonTransferable !== true) {
@@ -662,56 +651,6 @@ export function finalizeProof(
   }
 }
 
-async function defaultTxSubmit({
-  didDocument,
-  call,
-  signers,
-  submitter,
-}: SharedArguments & {
-  call: Extrinsic
-}): Promise<SimplifiedTransactionResult> {
-  let submitterAddress: KiltAddress
-  let accountSigners: SignerInterface[] = []
-  if (typeof submitter === 'string') {
-    submitterAddress = submitter
-    accountSigners = (
-      await Promise.all(
-        signers.map((keypair) =>
-          'algorithm' in keypair
-            ? [keypair]
-            : Signers.getSignersForKeypair({ keypair })
-        )
-      )
-    ).flat()
-  } else if ('algorithm' in submitter) {
-    submitterAddress = submitter.id
-    accountSigners = [submitter]
-  } else {
-    accountSigners = await Signers.getSignersForKeypair({
-      keypair: submitter,
-    })
-    submitterAddress = accountSigners[0].id as KiltAddress
-  }
-
-  let extrinsic = await authorizeTx(
-    didDocument,
-    call,
-    await signersForDid(didDocument, ...signers),
-    submitterAddress
-  )
-
-  if (!extrinsic.isSigned) {
-    extrinsic = await extrinsic.signAsync(submitterAddress, {
-      signer: Signers.getPolkadotSigner(accountSigners),
-    })
-  }
-  const result = await Blockchain.submitSignedTx(extrinsic, {
-    resolveOn: Blockchain.IS_FINALIZED,
-  })
-  const blockHash = result.status.asFinalized
-  return { block: { hash: blockHash.toHex() } }
-}
-
 /**
  *
  * Creates a complete {@link KiltAttestationProofV1} for issuing a new credential.
@@ -749,9 +688,9 @@ export async function issue(
     typeof submitter === 'function'
       ? submitter(args)
       : defaultTxSubmit({
-          ...args,
-          submitter,
-        })
+        ...args,
+        submitter,
+      })
 
   let result = await transactionPromise
   if ('status' in result) {
