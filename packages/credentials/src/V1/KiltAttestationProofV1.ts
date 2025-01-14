@@ -201,7 +201,8 @@ export function calculateRootHash(
         return delegationIdFromAttesterDelegation(entry)
       }
       throw new SDKErrors.CredentialMalformedError(
-        `unknown type ${(entry as { type: string }).type
+        `unknown type ${
+          (entry as { type: string }).type
         } in federatedTrustModel`
       )
     }),
@@ -257,9 +258,9 @@ async function verifyAttestedAt(
   const cTypeId = CType.hashToId(cTypeHash.toHex())
   const delegationId = authorization.isSome
     ? (
-      (authorization.unwrap() as RuntimeCommonAuthorizationAuthorizationId)
-        .value ?? authorization.unwrap()
-    ).toHex()
+        (authorization.unwrap() as RuntimeCommonAuthorizationAuthorizationId)
+          .value ?? authorization.unwrap()
+      ).toHex()
     : null
   return {
     verified: true,
@@ -462,7 +463,8 @@ export async function verify(
         }
         default: {
           throw new SDKErrors.CredentialMalformedError(
-            `unknown type ${(i as { type: string }).type
+            `unknown type ${
+              (i as { type: string }).type
             } in federatedTrustModel`
           )
         }
@@ -560,9 +562,9 @@ export type UnissuedCredential = Omit<
 export function initializeProof(
   credential: UnissuedCredential
 ): [
-    KiltAttestationProofV1,
-    Parameters<ApiPromise['tx']['attestation']['add']>
-  ] {
+  KiltAttestationProofV1,
+  Parameters<ApiPromise['tx']['attestation']['add']>
+] {
   const { credentialSubject, nonTransferable } = credential
 
   if (nonTransferable !== true) {
@@ -688,9 +690,9 @@ export async function issue(
     typeof submitter === 'function'
       ? submitter(args)
       : defaultTxSubmit({
-        ...args,
-        submitter,
-      })
+          ...args,
+          submitter,
+        })
 
   let result = await transactionPromise
   if ('status' in result) {

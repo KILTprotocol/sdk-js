@@ -17,11 +17,11 @@ import type {
 } from '@kiltprotocol/types'
 import { Caip19, Caip2, SDKErrors, Signers } from '@kiltprotocol/utils'
 
-import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
 import { Extrinsic } from '@polkadot/types/interfaces/types.js'
-import { SimplifiedTransactionResult } from '../interfaces.js'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { SimplifiedTransactionResult } from '../interfaces.js'
+import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
@@ -164,6 +164,13 @@ export function credentialIdFromRootHash(
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
 }
 
+/**
+ * @param root0
+ * @param root0.didDocument
+ * @param root0.call
+ * @param root0.signers
+ * @param root0.submitter
+ */
 export async function defaultTxSubmit({
   didDocument,
   call,

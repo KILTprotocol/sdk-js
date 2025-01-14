@@ -69,6 +69,7 @@ export const STATUS_TYPE = 'KiltRevocationStatusV1'
  * - A MultibaseKeyPair for signing transactions
  * - A Ed25519 type keypair for blockchain interactions
  * The submitter will be used to cover transaction fees and blockchain operations.
+ * @param issuer
  */
 export async function revoke(
   credentialStatus: KiltRevocationStatusV1,
