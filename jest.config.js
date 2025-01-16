@@ -38,7 +38,6 @@ const common = {
     'SDKErrors.ts',
     'Did.rpc.ts',
     // third party code copied to this repo
-    'packages/utils/src/json-schema/',
     'jsonabc.ts',
   ],
 }
