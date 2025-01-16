@@ -170,6 +170,14 @@ export function credentialIdFromRootHash(
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
 }
 
+/**
+ * @param root0
+ * @param root0.didDocument DID Document of the authorizing DID.
+ * @param root0.call Extrinsic to be submitted.
+ * @param root0.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
+ * @param root0.submitter Submitter to cover the transaction.
+ * @private
+ */
 export async function defaultTxSubmit({
   didDocument,
   call,
@@ -220,6 +228,11 @@ export async function defaultTxSubmit({
   return { block: { hash: blockHash.toHex() } }
 }
 
+/**
+ * @param credentialStatus Credential revocation status.
+ * @param opts
+ * @param opts.api Overrides the userd Kilt API.
+ */
 export function getRootHashFromStatusId(
   credentialStatus: KiltRevocationStatusV1,
   opts: { api?: ApiPromise } = {}
