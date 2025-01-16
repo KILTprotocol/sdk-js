@@ -19,6 +19,7 @@ on:
     branches:
       - develop
       - master
+      - v0-lts
 
 env:
   TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
