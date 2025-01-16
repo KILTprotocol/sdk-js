@@ -170,13 +170,6 @@ export function credentialIdFromRootHash(
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
 }
 
-/**
- * @param root0
- * @param root0.didDocument
- * @param root0.call
- * @param root0.signers
- * @param root0.submitter
- */
 export async function defaultTxSubmit({
   didDocument,
   call,
@@ -227,12 +220,6 @@ export async function defaultTxSubmit({
   return { block: { hash: blockHash.toHex() } }
 }
 
-/**
- * @param credentialStatus
- * @param issuer
- * @param opts
- * @param opts.api
- */
 export function getRootHashFromStatusId(
   credentialStatus: KiltRevocationStatusV1,
   opts: { api?: ApiPromise } = {}
