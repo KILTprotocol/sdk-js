@@ -8,6 +8,7 @@
 import type { ApiPromise } from '@polkadot/api'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
+import { ConfigService } from '@kiltprotocol/config'
 
 import type {
   HexString,
@@ -21,7 +22,12 @@ import { Extrinsic } from '@polkadot/types/interfaces/types.js'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { SimplifiedTransactionResult } from '../interfaces.js'
-import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
+import type {
+  KiltAttesterDelegationV1,
+  KiltCredentialV1,
+  KiltRevocationStatusV1,
+} from './types.js'
+import { STATUS_TYPE } from './KiltRevocationStatusV1.js'
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
@@ -219,4 +225,34 @@ export async function defaultTxSubmit({
   })
   const blockHash = result.status.asFinalized
   return { block: { hash: blockHash.toHex() } }
+}
+
+/**
+ * @param credentialStatus
+ * @param issuer
+ * @param opts
+ * @param opts.api
+ */
+export function getRootHash(
+  credentialStatus: KiltRevocationStatusV1,
+  opts: { api?: ApiPromise } = {}
+) {
+  if (credentialStatus?.type !== STATUS_TYPE)
+    throw new TypeError(
+      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
+    )
+  const { api = ConfigService.get('api') } = opts
+  const { assetNamespace, assetReference, assetInstance } =
+    assertMatchingConnection(api, { credentialStatus })
+  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
+    throw new Error(
+      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
+    )
+  }
+  if (!assetInstance) {
+    throw new SDKErrors.CredentialMalformedError(
+      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
+    )
+  }
+  return base58Decode(assetInstance)
 }

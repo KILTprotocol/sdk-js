@@ -6,7 +6,7 @@
  */
 
 import { u8aEq, u8aToHex, u8aToU8a } from '@polkadot/util'
-import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import { base58Encode } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
@@ -16,9 +16,9 @@ import { Extrinsic } from '@polkadot/types/interfaces/types.js'
 import * as CType from '../ctype/index.js'
 import * as Attestation from '../attestation/index.js'
 import {
-  assertMatchingConnection,
   defaultTxSubmit,
   getDelegationNodeIdForCredential,
+  getRootHash,
 } from './common.js'
 import type { IssuerOptions } from '../interfaces.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
@@ -28,42 +28,26 @@ export type Interface = KiltRevocationStatusV1
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**
+ * Revokes a Verifiable Credential containing a 'KiltRevocationStatusV1.
+ *
  * @param credentialStatus The `credentialStatus` property of the Verifiable Credential.
  * @param opts Additional parameters.
  * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
- * @param params.issuer Interfaces for interacting with the issuer identity.
- * @param params.issuer.didDocument The DID Document of the issuer revoking the credential.
- * @param params.issuer.signers Array of signer interfaces for credential authorization.
- * @param params.issuer.submitter The submitter can be one of:
- * - A MultibaseKeyPair for signing transactions
- * - A Ed25519 type keypair for blockchain interactions
- * The submitter will be used to cover transaction fees and blockchain operations.
  * @param issuer
+ * @param issuer.didDocument The DID Document of the issuer revoking the credential.
+ * @param issuer.signers Array of signer interfaces for credential authorization.
+ * @param issuer.submitter The submitter can be one of:
+ * - A MultibaseKeyPair for signing transactions.
+ * - A `KeyringPair` for blockchain interactions.
+ * The submitter will be used to cover transaction fees and blockchain operations.
  */
 export async function revoke(
   credentialStatus: KiltRevocationStatusV1,
   issuer: IssuerOptions,
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
-  if (credentialStatus?.type !== STATUS_TYPE)
-    throw new TypeError(
-      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
-    )
+  const rootHash = getRootHash(credentialStatus, opts)
   const { api = ConfigService.get('api') } = opts
-  const { assetNamespace, assetReference, assetInstance } =
-    assertMatchingConnection(api, { credentialStatus })
-  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
-    throw new Error(
-      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
-    )
-  }
-  if (!assetInstance) {
-    throw new SDKErrors.CredentialMalformedError(
-      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
-    )
-  }
-  const rootHash = base58Decode(assetInstance)
-
   const { didDocument, signers, submitter } = issuer
 
   const call = api.tx.attestation.revoke(rootHash, null)
@@ -84,7 +68,7 @@ export async function revoke(
           submitter,
         })
 
-  let result = await transactionPromise
+  const result = await transactionPromise
   if ('status' in result) {
     let error: Error | undefined
     switch (result.status) {
@@ -124,24 +108,8 @@ export async function check(
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   const { credentialStatus } = credential
-  if (credentialStatus?.type !== STATUS_TYPE)
-    throw new TypeError(
-      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
-    )
+  const rootHash = getRootHash(credentialStatus, opts)
   const { api = ConfigService.get('api') } = opts
-  const { assetNamespace, assetReference, assetInstance } =
-    assertMatchingConnection(api, credential)
-  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
-    throw new Error(
-      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
-    )
-  }
-  if (!assetInstance) {
-    throw new SDKErrors.CredentialMalformedError(
-      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
-    )
-  }
-  const rootHash = base58Decode(assetInstance)
   const encoded = await api.query.attestation.attestations(rootHash)
   if (encoded.isNone)
     throw new SDKErrors.CredentialUnverifiableError(

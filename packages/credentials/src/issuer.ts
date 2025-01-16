@@ -154,7 +154,7 @@ export async function issue({
  * Alternatively, you can pass a {@link SubmitOverride} callback that takes care of Did-authorizing and submitting the transaction.
  * If you are using a service that helps you submit and pay for transactions, this is your point of integration to it.
  *
- *  @throws If the credential format is invalid or the revocation fails.
+ * @throws If the credential format is invalid or the revocation fails.
  */
 export async function revoke({
   credential,
