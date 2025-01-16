@@ -1883,7 +1883,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
-    "@kiltprotocol/type-definitions": "workspace:*"
+    "@kiltprotocol/type-definitions": ^1.0.0
     "@polkadot/api": ^10.7.3
     "@polkadot/typegen": ^10.7.3
     glob: ^7.1.1
@@ -1930,7 +1930,7 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": "workspace:*"
+    "@kiltprotocol/type-definitions": ^1.0.0
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^10.7.3
@@ -1997,14 +1997,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
-  version: 0.0.0-use.local
-  resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
-  dependencies:
-    rimraf: ^3.0.2
-    typescript: ^4.8.3
-  languageName: unknown
-  linkType: soft
+"@kiltprotocol/type-definitions@npm:^1.0.0":
+  version: 1.11401.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11401.1"
+  peerDependencies:
+    "@polkadot/types": ^12.2.0
+  checksum: 6f7f8e837cd04d9d823e11879aee3c9986c2686567381548e860969c4b38757274c2b0adee2a01c661c07a86f6583ecc1a99ae1d506b71d7880f3c2f757cc15e
+  languageName: node
+  linkType: hard
 
 "@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
   version: 0.0.0-use.local
