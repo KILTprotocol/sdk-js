@@ -6,7 +6,6 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Did, ICType, IClaimContents } from '@kiltprotocol/types'
 import type { IssuerOptions } from './interfaces.js'
 import type { CTypeLoader } from './ctype/index.js'

@@ -12,13 +12,13 @@ import type { U8aLike } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import type { Caip2ChainId, SharedArguments } from '@kiltprotocol/types'
 import { Caip2, SDKErrors } from '@kiltprotocol/utils'
-import { Extrinsic } from '@polkadot/types/interfaces/types.js'
+import { Extrinsic } from '@polkadot/types/interfaces/'
 import * as CType from '../ctype/index.js'
 import * as Attestation from '../attestation/index.js'
 import {
   defaultTxSubmit,
   getDelegationNodeIdForCredential,
-  getRootHash,
+  getRootHashFromStatusId,
 } from './common.js'
 import type { IssuerOptions } from '../interfaces.js'
 import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
@@ -28,11 +28,9 @@ export type Interface = KiltRevocationStatusV1
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**
- * Revokes a Verifiable Credential containing a 'KiltRevocationStatusV1.
+ * Revokes a Verifiable Credential containing a KiltRevocationStatusV1.
  *
  * @param credentialStatus The `credentialStatus` property of the Verifiable Credential.
- * @param opts Additional parameters.
- * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @param issuer
  * @param issuer.didDocument The DID Document of the issuer revoking the credential.
  * @param issuer.signers Array of signer interfaces for credential authorization.
@@ -40,16 +38,20 @@ export const STATUS_TYPE = 'KiltRevocationStatusV1'
  * - A MultibaseKeyPair for signing transactions.
  * - A `KeyringPair` for blockchain interactions.
  * The submitter will be used to cover transaction fees and blockchain operations.
+ * @param opts Additional parameters.
+ * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  */
 export async function revoke(
   credentialStatus: KiltRevocationStatusV1,
   issuer: IssuerOptions,
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
-  const rootHash = getRootHash(credentialStatus, opts)
+  const rootHash = getRootHashFromStatusId(credentialStatus, opts)
   const { api = ConfigService.get('api') } = opts
   const { didDocument, signers, submitter } = issuer
 
+  // TODO: Support revocations through delegation.
+  // In this case, the second parameter in this function would needs to be populated.
   const call = api.tx.attestation.revoke(rootHash, null)
 
   const args: Pick<SharedArguments, 'didDocument' | 'api' | 'signers'> & {
@@ -108,7 +110,7 @@ export async function check(
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   const { credentialStatus } = credential
-  const rootHash = getRootHash(credentialStatus, opts)
+  const rootHash = getRootHashFromStatusId(credentialStatus, opts)
   const { api = ConfigService.get('api') } = opts
   const encoded = await api.query.attestation.attestations(rootHash)
   if (encoded.isNone)

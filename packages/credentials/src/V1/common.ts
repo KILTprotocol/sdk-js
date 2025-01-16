@@ -18,10 +18,10 @@ import type {
 } from '@kiltprotocol/types'
 import { Caip19, Caip2, SDKErrors, Signers } from '@kiltprotocol/utils'
 
-import { Extrinsic } from '@polkadot/types/interfaces/types.js'
 import { authorizeTx, signersForDid } from '@kiltprotocol/did'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { SimplifiedTransactionResult } from '../interfaces.js'
+import { Extrinsic } from '@polkadot/types/interfaces'
+import type { SimplifiedTransactionResult } from '../interfaces.js'
 import type {
   KiltAttesterDelegationV1,
   KiltCredentialV1,
@@ -233,7 +233,7 @@ export async function defaultTxSubmit({
  * @param opts
  * @param opts.api
  */
-export function getRootHash(
+export function getRootHashFromStatusId(
   credentialStatus: KiltRevocationStatusV1,
   opts: { api?: ApiPromise } = {}
 ) {
