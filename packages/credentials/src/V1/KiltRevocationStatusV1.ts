@@ -21,16 +21,14 @@ import {
   getDelegationNodeIdForCredential,
 } from './common.js'
 import type { IssuerOptions } from '../interfaces.js'
-import type { KiltCredentialV1 } from './types.js'
-
-import { type KiltRevocationStatusV1 } from './types.js'
+import type { KiltCredentialV1, KiltRevocationStatusV1 } from './types.js'
 
 export type Interface = KiltRevocationStatusV1
 
 export const STATUS_TYPE = 'KiltRevocationStatusV1'
 
 /**
- * @param credentialStatus The credential status propoerty of the Verifiable credential.
+ * @param credentialStatus The `credentialStatus` property of the Verifiable Credential.
  * @param opts Additional parameters.
  * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @param params.issuer Interfaces for interacting with the issuer identity.
@@ -88,12 +86,28 @@ export async function revoke(
 
   let result = await transactionPromise
   if ('status' in result) {
-    if (result.status !== 'confirmed') {
-      throw new SDKErrors.SDKError(
-        `Unexpected transaction status ${result.status}; the transaction should be "confirmed" for issuance to continue`
-      )
+    let error: Error | undefined
+    switch (result.status) {
+      case 'confirmed':
+        return
+      case 'failed':
+        error = result.asFailed.error
+        break
+      case 'rejected':
+        error = result.asRejected.error
+        break
+      case 'unknown':
+        error = result.asUnknown.error
+        break
+      default:
+        break
     }
-    result = result.asConfirmed
+    throw (
+      error ??
+      new SDKErrors.SDKError(
+        `Revocation failed with transaction status ${result?.status}`
+      )
+    )
   }
 }
 
