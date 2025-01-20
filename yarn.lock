@@ -2288,11 +2288,11 @@ __metadata:
   linkType: hard
 
 "@kiltprotocol/type-definitions@npm:^1.11200.0":
-  version: 1.11200.0
-  resolution: "@kiltprotocol/type-definitions@npm:1.11200.0"
+  version: 1.11500.0-rc.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11500.0-rc.1"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: 10c0/a3954ea6f4ce0b2e0c3c1ce7592a428a5271d26715f9ab96fe67197a0c6c59e071a3af0598b5ceaaea02380358a0ec2d7a4af8e48d821d4fe88424748e743ed2
+  checksum: 10c0/c067af14365069a28a825d5b2f3c17d989884324305902bec29921fb2d19e6c88767a99212db56b512c22eea1c88b03d4c74fba355a651317c63598465805c0a
   languageName: node
   linkType: hard
 
