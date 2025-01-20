@@ -1998,11 +1998,11 @@ __metadata:
   linkType: soft
 
 "@kiltprotocol/type-definitions@npm:^1.0.0":
-  version: 1.11401.1
-  resolution: "@kiltprotocol/type-definitions@npm:1.11401.1"
+  version: 1.11500.0-rc.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11500.0-rc.1"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: 6f7f8e837cd04d9d823e11879aee3c9986c2686567381548e860969c4b38757274c2b0adee2a01c661c07a86f6583ecc1a99ae1d506b71d7880f3c2f757cc15e
+  checksum: b60177b56ff590cbcd84cc0520432b9387f7e38ce26a72b1197c6fb391df1156cdcbffb5b548afdc9d86337fb6623e0087a462c34e96a9c30102a9a7f9b46dc4
   languageName: node
   linkType: hard
 
