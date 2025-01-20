@@ -44,9 +44,9 @@
     "@kiltprotocol/type-definitions": "^1.0.0",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^10.7.3",
+    "@polkadot/api": "^11.1.1",
     "@polkadot/keyring": "^12.0.0",
-    "@polkadot/types": "^10.7.3",
+    "@polkadot/types": "^11.1.1",
     "@polkadot/util": "^12.0.0",
     "@polkadot/util-crypto": "^12.0.0"
   }
