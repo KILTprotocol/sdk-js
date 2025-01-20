@@ -49,6 +49,6 @@
     "yargs": "^16.2.0"
   },
   "dependencies": {
-    "@kiltprotocol/type-definitions": "workspace:*"
+    "@kiltprotocol/type-definitions": "^1.0.0"
   }
 }
