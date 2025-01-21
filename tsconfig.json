@@ -16,8 +16,6 @@
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/asset-did": ["asset-did/src"],
       "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/augment-api": ["augment-api/src"],
-      "@kiltprotocol/augment-api/extraDefs": ["augment-api/src/interfaces/extraDefs"],
       }
   },
 }
