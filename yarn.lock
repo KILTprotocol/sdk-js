@@ -1928,8 +1928,8 @@ __metadata:
   linkType: soft
 
 "@kiltprotocol/augment-api@npm:^1.0.0":
-  version: 1.11300.0
-  resolution: "@kiltprotocol/augment-api@npm:1.11300.0"
+  version: 1.11405.1
+  resolution: "@kiltprotocol/augment-api@npm:1.11405.1"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.0.2
     "@typescript-eslint/parser": ^7.0.2
@@ -1937,7 +1937,7 @@ __metadata:
     eslint: ^8.57.0
     eslint-plugin-unused-imports: ^3.1.0
   peerDependencies:
-    "@kiltprotocol/type-definitions": ^1.11200.0
+    "@kiltprotocol/type-definitions": ^1.11401.1
     "@polkadot/api": ~12.2.0
     "@polkadot/typegen": ~12.2.0
     "@polkadot/types": ^12.2.0
@@ -1963,7 +1963,7 @@ __metadata:
   bin:
     kilt_reaugment: augmentFromFile.mjs
     kilt_updateMetadata: updateMetadata.mjs
-  checksum: 3c0a90e53170eb7df8b47e2d6b3085daf7317a43a823bdf3799730fffdcc2b3a02e784a5347b3d90b5b4ebc9253f58d2bc73d5fd4a11536cfd512f5275502726
+  checksum: bf7411c05ea11f9b72d49652e4167364efd1bbf764d4894953bd7dbe3139dc0f4f54decd63682bab42418b216f12eccc29ac5c0a2a799666acd1f8ee3e059fea
   languageName: node
   linkType: hard
 
