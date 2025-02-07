@@ -42,8 +42,8 @@ export async function getStartedTestContainer(
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/standalone-node'
   console.log(`using testcontainer with image ${image}`)
   const strategies = [
-    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
     ['--dev', '--rpc-external', `--rpc-port=${WS_PORT}`],
+    ['--dev', '--ws-external', `--ws-port=${WS_PORT}`],
   ]
   // eslint-disable-next-line no-restricted-syntax
   for (const args of strategies) {
@@ -171,7 +171,9 @@ export async function endowAccounts(
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transactions = await Promise.all(
-    addresses.map((address) => api.tx.balances.transfer(address, ENDOWMENT))
+    addresses.map((address) =>
+      api.tx.balances.transferKeepAlive(address, ENDOWMENT)
+    )
   )
   const batch = api.tx.utility.batchAll(transactions)
   await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
@@ -182,7 +184,7 @@ export async function fundAccount(
   amount: BN
 ): Promise<void> {
   const api = ConfigService.get('api')
-  const transferTx = api.tx.balances.transfer(address, amount)
+  const transferTx = api.tx.balances.transferKeepAlive(address, amount)
   await submitTx(transferTx, devFaucet)
 }
 

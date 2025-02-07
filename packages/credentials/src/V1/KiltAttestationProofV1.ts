@@ -30,30 +30,20 @@ import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
 } from '@kiltprotocol/augment-api'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import {
-  authorizeTx,
-  fromChain,
-  getFullDid,
-  signersForDid,
-  validateDid,
-} from '@kiltprotocol/did'
+import { fromChain, getFullDid, validateDid } from '@kiltprotocol/did'
 import type {
   Did,
   ICType,
   IDelegationNode,
-  KiltAddress,
   SharedArguments,
-  SignerInterface,
 } from '@kiltprotocol/types'
-import { Caip19, JsonSchema, SDKErrors, Signers } from '@kiltprotocol/utils'
+import { Caip19, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 
 import { CTypeLoader } from '../ctype/CTypeLoader.js'
 import * as CType from '../ctype/index.js'
 import {
   IssuerOptions,
-  SimplifiedTransactionResult,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   SubmitOverride,
 } from '../interfaces.js'
@@ -67,6 +57,7 @@ import {
   assertMatchingConnection,
   credentialIdFromRootHash,
   credentialIdToRootHash,
+  defaultTxSubmit,
   delegationIdFromAttesterDelegation,
   ExpandedContents,
   getDelegationNodeIdForCredential,
@@ -660,56 +651,6 @@ export function finalizeProof(
     issuanceDate: timestamp.toISOString(),
     proof: { ...proof, block: base58Encode(blockHash) },
   }
-}
-
-async function defaultTxSubmit({
-  didDocument,
-  call,
-  signers,
-  submitter,
-}: SharedArguments & {
-  call: Extrinsic
-}): Promise<SimplifiedTransactionResult> {
-  let submitterAddress: KiltAddress
-  let accountSigners: SignerInterface[] = []
-  if (typeof submitter === 'string') {
-    submitterAddress = submitter
-    accountSigners = (
-      await Promise.all(
-        signers.map((keypair) =>
-          'algorithm' in keypair
-            ? [keypair]
-            : Signers.getSignersForKeypair({ keypair })
-        )
-      )
-    ).flat()
-  } else if ('algorithm' in submitter) {
-    submitterAddress = submitter.id
-    accountSigners = [submitter]
-  } else {
-    accountSigners = await Signers.getSignersForKeypair({
-      keypair: submitter,
-    })
-    submitterAddress = accountSigners[0].id as KiltAddress
-  }
-
-  let extrinsic = await authorizeTx(
-    didDocument,
-    call,
-    await signersForDid(didDocument, ...signers),
-    submitterAddress
-  )
-
-  if (!extrinsic.isSigned) {
-    extrinsic = await extrinsic.signAsync(submitterAddress, {
-      signer: Signers.getPolkadotSigner(accountSigners),
-    })
-  }
-  const result = await Blockchain.submitSignedTx(extrinsic, {
-    resolveOn: Blockchain.IS_FINALIZED,
-  })
-  const blockHash = result.status.asFinalized
-  return { block: { hash: blockHash.toHex() } }
 }
 
 /**

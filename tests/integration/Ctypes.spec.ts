@@ -105,7 +105,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ).data.free.toBigInt() < minBalance
     ) {
       console.log('sending funds to assertion method key account...')
-      const fundsTx = api.tx.balances.transfer(assertionMethodKey, minBalance)
+      const fundsTx = api.tx.balances.transferAllowDeath(
+        assertionMethodKey,
+        minBalance
+      )
       await submitTx(fundsTx, paymentAccount)
       console.log('sending funds completed')
     }

@@ -284,7 +284,10 @@ describe('When there is an attester and ctype NFT name', () => {
       ).data.free.toBigInt() < minBalance
     ) {
       console.log('sending funds to assertion method key account...')
-      const fundsTx = api.tx.balances.transfer(assertionMethodKey, minBalance)
+      const fundsTx = api.tx.balances.transferAllowDeath(
+        assertionMethodKey,
+        minBalance
+      )
       await submitTx(fundsTx, tokenHolder)
       console.log('sending funds completed')
     }

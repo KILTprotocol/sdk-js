@@ -16,7 +16,13 @@ import {
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'
-import { devCharlie, devFaucet, initializeApi, submitTx } from './utils.js'
+import {
+  devAlice,
+  devCharlie,
+  devFaucet,
+  initializeApi,
+  submitTx,
+} from './utils.js'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -32,7 +38,7 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = (await makeSigningKeyTool()).keypair
     charlie = devCharlie
 
-    const transferTx = api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transferAllowDeath(
       testIdentity.address,
       BalanceUtils.toFemtoKilt(10000)
     )
@@ -40,11 +46,11 @@ describe('Chain returns specific errors, that we check for', () => {
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {
-    const tx = api.tx.balances.transfer(
+    const tx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000001')
     )
-    const errorTx = api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )
@@ -93,11 +99,11 @@ describe('Chain returns specific errors, that we check for', () => {
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
-    const tx = api.tx.balances.transfer(
+    const tx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )
-    const errorTx = api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transferAllowDeath(
       charlie.address,
       new BN('1000000000000000')
     )
@@ -151,6 +157,24 @@ describe('Chain returns specific errors, that we check for', () => {
       promiseToUsurp,
     ])
   }, 40000)
+})
+
+describe('The added `SignedExtension`s are valid', () => {
+  it(`'CheckMetadataHash' works`, async () => {
+    const systemRemarkTx = api.tx.system.remark('Test remark')
+    const submitPromise = Blockchain.signAndSubmitTx(systemRemarkTx, devAlice, {
+      checkMetadata: true,
+    })
+    await expect(submitPromise).resolves.not.toThrow()
+  })
+
+  it(`No 'CheckMetadataHash' works`, async () => {
+    const systemRemarkTx = api.tx.system.remark('Test remark')
+    const submitPromise = Blockchain.signAndSubmitTx(systemRemarkTx, devAlice, {
+      checkMetadata: false,
+    })
+    await expect(submitPromise).resolves.not.toThrow()
+  })
 })
 
 afterAll(async () => {
