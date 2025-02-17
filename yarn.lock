@@ -2022,9 +2022,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/augment-api@npm:^1.11200.0":
-  version: 1.11300.0
-  resolution: "@kiltprotocol/augment-api@npm:1.11300.0"
+"@kiltprotocol/augment-api@npm:1.11501.0-peregrine":
+  version: 1.11501.0-peregrine
+  resolution: "@kiltprotocol/augment-api@npm:1.11501.0-peregrine"
   dependencies:
     "@typescript-eslint/eslint-plugin": "npm:^7.0.2"
     "@typescript-eslint/parser": "npm:^7.0.2"
@@ -2032,7 +2032,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-unused-imports: "npm:^3.1.0"
   peerDependencies:
-    "@kiltprotocol/type-definitions": ^1.11200.0
+    "@kiltprotocol/type-definitions": ^1.11501.0-peregrine
     "@polkadot/api": ~12.2.0
     "@polkadot/typegen": ~12.2.0
     "@polkadot/types": ^12.2.0
@@ -2058,7 +2058,7 @@ __metadata:
   bin:
     kilt_reaugment: augmentFromFile.mjs
     kilt_updateMetadata: updateMetadata.mjs
-  checksum: 10c0/8d5625c1c0fa8969df1272092e7fdb00061c605ca631814b2a8fc47532b2b7a55320a30e91494617ae72604c62c7b60f2518f196e34c8c675a2e758979a30cef
+  checksum: 10c0/ed1c9a3da9025aadfa791620af99399d2cabdf2b81e66dd8de83811fb7d15841376f78aacbab2760a757fa30be4ece8baa221cefd8ce17dc271656679b46801e
   languageName: node
   linkType: hard
 
@@ -2287,12 +2287,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/type-definitions@npm:^1.11200.0":
-  version: 1.11200.0
-  resolution: "@kiltprotocol/type-definitions@npm:1.11200.0"
+"@kiltprotocol/type-definitions@npm:1.11501.0-peregrine":
+  version: 1.11501.0-peregrine
+  resolution: "@kiltprotocol/type-definitions@npm:1.11501.0-peregrine"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: 10c0/a3954ea6f4ce0b2e0c3c1ce7592a428a5271d26715f9ab96fe67197a0c6c59e071a3af0598b5ceaaea02380358a0ec2d7a4af8e48d821d4fe88424748e743ed2
+  checksum: 10c0/4e28d97ffef0a2f8de74f4abe01be2e72b4fb2209c6500307a830fb2d53a4eae29a33f30698a27dabbaa70e344921a830229f87246fc6f7d1a39d9686bb10769
   languageName: node
   linkType: hard
 
