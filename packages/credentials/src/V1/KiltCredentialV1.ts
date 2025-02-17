@@ -31,7 +31,10 @@ import {
   jsonLdExpandCredentialSubject,
   spiritnetGenesisHash,
 } from './common.js'
-import { CTypeLoader, newCachingCTypeLoader } from '../ctype/CTypeLoader.js'
+import {
+  type CTypeLoader,
+  newCachingCTypeLoader,
+} from '../ctype/CTypeLoader.js'
 
 export {
   credentialIdFromRootHash as idFromRootHash,
@@ -380,27 +383,20 @@ export async function validateSubject(
     }
   }, {})
 
-  const loaders: CTypeLoader[] = []
-  if (cTypes?.length > 0) {
-    loaders.push((async (id) =>
-      cTypes.find(({ $id }) => $id === id)) as CTypeLoader)
-  }
-  if (typeof loadCTypes === 'function') {
-    loaders.push(loadCTypes)
-  }
-
   // Turn CType loader & ctypes array into combined loader function
-  const combinedCTypeLoader = CType.combineCTypeLoaders(...loaders)
+  const combinedCTypeLoader = newCachingCTypeLoader(
+    cTypes,
+    typeof loadCTypes === 'function'
+      ? loadCTypes
+      : (id) =>
+          Promise.reject(
+            new Error(
+              `This credential is based on CType ${id} whose definition has not been passed to the validator, while automatic CType loading has been disabled.`
+            )
+          )
+  )
 
-  const cType = await combinedCTypeLoader(credentialsCTypeId).catch(() => {
-    throw new Error(
-      `The definition for this credential's CType ${credentialsCTypeId} has not been passed to the validator and could not be loaded either`
-    )
-  })
-
-  if (cType.$id !== credentialsCTypeId) {
-    throw new Error('failed to load correct CType')
-  }
+  const cType = await combinedCTypeLoader(credentialsCTypeId)
 
   // Load all nested CTypes
   const referencedCTypes = await CType.loadNestedCTypeDefinitions(
@@ -409,9 +405,5 @@ export async function validateSubject(
   )
 
   // validates against CType (also validates CType schema itself)
-  CType.verifyClaimAgainstNestedSchemas(
-    cType,
-    Array.from(referencedCTypes),
-    claims
-  )
+  CType.verifyClaimAgainstNestedSchemas(cType, referencedCTypes, claims)
 }

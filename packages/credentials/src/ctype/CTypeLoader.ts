@@ -5,14 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ICType } from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { fetchFromChain } from './CType.chain.js'
-import { idToHash, isICType } from './CType.js'
+import { isICType, verifyDataStructure } from './CType.js'
 
 export type CTypeLoader = (id: ICType['$id']) => Promise<ICType>
 
-const loadCType: CTypeLoader = async (id) => {
+const chainCTypeLoader: CTypeLoader = async (id) => {
   return (await fetchFromChain(id)).cType
 }
 
@@ -21,10 +22,13 @@ const loadCType: CTypeLoader = async (id) => {
  * Used in validating the credentialSubject of a {@link KiltCredentialV1} against the Claim Type referenced in its `type` field.
  *
  * @param initialCTypes An array of CTypes with which the cache is to be initialized.
- * @returns A function that takes a CType id and looks up a CType definition in an internal cache, and if not found, tries to fetch it from the KILT blochchain.
+ * @param cTypeLoader A basic {@link CTypeLoader} to augment with a caching layer.
+ * Defaults to loading CType definitions from the KILT blockchain.
+ * @returns A function that takes a CType id and looks up a CType definition in an internal cache, and if not found, tries to fetch it from an external source.
  */
 export function newCachingCTypeLoader(
-  initialCTypes: ICType[] = []
+  initialCTypes: ICType[] = [],
+  cTypeLoader = chainCTypeLoader
 ): CTypeLoader {
   const ctypes: Map<string, ICType> = new Map()
 
@@ -33,13 +37,24 @@ export function newCachingCTypeLoader(
   })
 
   async function getCType(id: ICType['$id']): Promise<ICType> {
-    const ctype: ICType = ctypes.get(id) ?? (await loadCType(id))
+    const ctype: ICType = ctypes.get(id) ?? (await cTypeLoader(id))
+    verifyDataStructure(ctype)
+    if (id !== ctype.$id) {
+      throw new SDKErrors.CTypeIdMismatchError(ctype.$id, id)
+    }
     ctypes.set(ctype.$id, ctype)
     return ctype
   }
   return getCType
 }
 
+/**
+ * Recursively traverses a (nested) CType's definition to load definitions of CTypes referenced within.
+ *
+ * @param cType A (nested) CType containg references to other CTypes.
+ * @param cTypeLoader A function with which to load CType definitions.
+ * @returns An array of CType definitions which were referenced in the original CType or in any of its composite CTypes.
+ */
 export async function loadNestedCTypeDefinitions(
   cType: ICType,
   cTypeLoader: CTypeLoader
@@ -83,30 +98,4 @@ export async function loadNestedCTypeDefinitions(
   await extractRefsFrom(cType.properties)
 
   return fetchedCTypeDefinitions
-}
-
-export function combineCTypeLoaders(...loaders: CTypeLoader[]): CTypeLoader {
-  const validLoaders = loaders.filter(
-    (l): l is CTypeLoader => typeof l === 'function'
-  )
-
-  return async (id) => {
-    // Ensure the ID is in the correct format
-    idToHash(id)
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const loadCTypes of validLoaders) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const cType = await loadCTypes(id)
-        if (isICType(cType)) {
-          return cType
-        }
-      } catch {
-        // noop
-      }
-    }
-
-    throw new Error(`Unable to load CType ${id}`)
-  }
 }
