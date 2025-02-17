@@ -37,7 +37,11 @@ export function newCachingCTypeLoader(
   })
 
   async function getCType(id: ICType['$id']): Promise<ICType> {
-    const ctype: ICType = ctypes.get(id) ?? (await cTypeLoader(id))
+    let ctype = ctypes.get(id)
+    if (ctype) {
+      return ctype
+    }
+    ctype = await cTypeLoader(id)
     verifyDataStructure(ctype)
     if (id !== ctype.$id) {
       throw new SDKErrors.CTypeIdMismatchError(ctype.$id, id)
