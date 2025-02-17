@@ -327,78 +327,6 @@ export function fromInput({
 
 const cachingCTypeLoader = newCachingCTypeLoader()
 
-async function loadNestedCTypeDefinitions(
-  cType: ICType,
-  cTypeLoader: CTypeLoader
-): Promise<Set<ICType>> {
-  const fetchedCTypeIds = new Set<string>()
-  const fetchedCTypeDefinitions = new Set<ICType>()
-
-  async function extractRefsFrom(value: unknown): Promise<void> {
-    if (typeof value !== 'object' || value === null) {
-      return
-    }
-
-    if ('$ref' in value) {
-      const ref = (value as { $ref: unknown }).$ref
-      if (typeof ref === 'string' && ref.startsWith('kilt:ctype:')) {
-        const cTypeId = ref.split('#/')[0] as ICType['$id']
-
-        if (!fetchedCTypeIds.has(cTypeId)) {
-          fetchedCTypeIds.add(cTypeId)
-          const referencedCType = await cTypeLoader(cTypeId)
-
-          CType.isICType(referencedCType)
-
-          if (CType.isICType(referencedCType)) {
-            fetchedCTypeDefinitions.add(referencedCType)
-          } else {
-            throw new Error(`Failed to load referenced CType: ${cTypeId}`)
-          }
-
-          await extractRefsFrom(referencedCType.properties)
-        }
-      }
-      return
-    }
-
-    // Process all values in the object. Also works for arrays
-    await Promise.all(Object.values(value).map(extractRefsFrom))
-  }
-
-  await extractRefsFrom(cType.properties)
-
-  return fetchedCTypeDefinitions
-}
-
-function combineCTypeLoaders(
-  ...loaders: Array<CTypeLoader | unknown>
-): CTypeLoader {
-  const validLoaders = loaders.filter(
-    (l): l is CTypeLoader => typeof l === 'function'
-  )
-
-  return async (id) => {
-    // Ensure the ID is in the correct format
-    CType.idToHash(id)
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const loadCTypes of validLoaders) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const cType = await loadCTypes(id)
-        if (CType.isICType(cType)) {
-          return cType
-        }
-      } catch {
-        // noop
-      }
-    }
-
-    throw new Error(`Unable to load CType ${id}`)
-  }
-}
-
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition.
  * Supports both nested and non-nested CType validation.
@@ -452,13 +380,17 @@ export async function validateSubject(
     }
   }, {})
 
-  const loaderFromCTypes: CTypeLoader | undefined =
-    cTypes?.length > 0
-      ? ((async (id) => cTypes.find(({ $id }) => $id === id)) as CTypeLoader)
-      : undefined
+  const loaders: CTypeLoader[] = []
+  if (cTypes?.length > 0) {
+    loaders.push((async (id) =>
+      cTypes.find(({ $id }) => $id === id)) as CTypeLoader)
+  }
+  if (typeof loadCTypes === 'function') {
+    loaders.push(loadCTypes)
+  }
 
   // Turn CType loader & ctypes array into combined loader function
-  const combinedCTypeLoader = combineCTypeLoaders(loaderFromCTypes, loadCTypes)
+  const combinedCTypeLoader = CType.combineCTypeLoaders(...loaders)
 
   const cType = await combinedCTypeLoader(credentialsCTypeId).catch(() => {
     throw new Error(
@@ -471,7 +403,7 @@ export async function validateSubject(
   }
 
   // Load all nested CTypes
-  const referencedCTypes = await loadNestedCTypeDefinitions(
+  const referencedCTypes = await CType.loadNestedCTypeDefinitions(
     cType,
     combinedCTypeLoader
   )
