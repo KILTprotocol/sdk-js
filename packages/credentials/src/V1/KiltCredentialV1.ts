@@ -329,55 +329,44 @@ const cachingCTypeLoader = newCachingCTypeLoader()
 
 async function loadNestedCTypeDefinitions(
   cType: ICType,
-  cTypeLoader: (id: string) => Promise<ICType | undefined>
+  cTypeLoader: CTypeLoader
 ): Promise<Set<ICType>> {
   const fetchedCTypeIds = new Set<string>()
   const fetchedCTypeDefinitions = new Set<ICType>()
 
-  async function processValue(value: unknown): Promise<void> {
+  async function extractRefsFrom(value: unknown): Promise<void> {
     if (typeof value !== 'object' || value === null) {
       return
     }
 
-    if (Array.isArray(value)) {
-      await Promise.all(value.map(processValue))
-      return
-    }
-
-    // Check if value is an object with $ref
-    const objValue = value as Record<string, unknown>
-    if ('$ref' in objValue) {
-      const ref = objValue.$ref
+    if ('$ref' in value) {
+      const ref = (value as { $ref: unknown }).$ref
       if (typeof ref === 'string' && ref.startsWith('kilt:ctype:')) {
-        const cTypeId = ref.split('#/')[0]
+        const cTypeId = ref.split('#/')[0] as ICType['$id']
 
         if (!fetchedCTypeIds.has(cTypeId)) {
           fetchedCTypeIds.add(cTypeId)
           const referencedCType = await cTypeLoader(cTypeId)
 
-          if (referencedCType === undefined || referencedCType === null) {
+          CType.isICType(referencedCType)
+
+          if (CType.isICType(referencedCType)) {
+            fetchedCTypeDefinitions.add(referencedCType)
+          } else {
             throw new Error(`Failed to load referenced CType: ${cTypeId}`)
           }
 
-          fetchedCTypeDefinitions.add(referencedCType)
-
-          const { properties } = referencedCType
-          if (properties !== undefined && properties !== null) {
-            await Promise.all(Object.values(properties).map(processValue))
-          }
+          await extractRefsFrom(referencedCType.properties)
         }
       }
       return
     }
 
-    // Process all values in the object
-    await Promise.all(Object.values(objValue).map(processValue))
+    // Process all values in the object. Also works for arrays
+    await Promise.all(Object.values(value).map(extractRefsFrom))
   }
 
-  const { properties } = cType
-  if (properties !== undefined && properties !== null) {
-    await Promise.all(Object.values(properties).map(processValue))
-  }
+  await extractRefsFrom(cType.properties)
 
   return fetchedCTypeDefinitions
 }
@@ -453,7 +442,7 @@ export async function validateSubject(
   }, {})
 
   // Create a type-safe loader function
-  const effectiveLoader = async (id: string): Promise<ICType | undefined> => {
+  const effectiveLoader: CTypeLoader = async (id) => {
     // Ensure the ID is in the correct format
     if (!id.startsWith('kilt:ctype:0x')) {
       throw new Error(`Invalid CType ID format: ${id}`)
