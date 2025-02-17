@@ -14,6 +14,7 @@ import {
 } from '../../../../tests/testUtils/testData.js'
 import {
   credentialSchema,
+  fromInput,
   validateStructure,
   validateSubject,
 } from './KiltCredentialV1.js'
@@ -30,6 +31,28 @@ it('exports to VC including ctype as schema', async () => {
 
 it('it verifies valid claim against schema', async () => {
   await expect(validateSubject(VC, { cTypes: [cType] })).resolves.not.toThrow()
+})
+
+it('it verifies valid claim against nested schema', async () => {
+  const nestedCType = CType.fromProperties('nested', {
+    prop: {
+      $ref: cType.$id,
+    },
+  })
+  const nestedVc = fromInput({
+    cType: nestedCType.$id,
+    claims: {
+      prop: {
+        name: 'Kurt',
+      },
+    },
+    subject: VC.credentialSubject.id,
+    issuer: VC.issuer,
+  })
+
+  await expect(
+    validateSubject(nestedVc, { cTypes: [nestedCType, cType] })
+  ).resolves.not.toThrow()
 })
 
 it('it detects schema violations', async () => {
