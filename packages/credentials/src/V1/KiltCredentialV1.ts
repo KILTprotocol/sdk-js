@@ -405,22 +405,16 @@ function combineCTypeLoaders(
  * For non-nested CTypes:
  * - Validates claims directly against the CType schema.
  * For nested CTypes:
- * - Automatically detects nested structure through $ref properties.
- * - Fetches referenced CTypes from the blockchain.
+ * - Automatically detects nested structure through `$ref` properties.
+ * - Fetches referenced CTypes via the `loadCTypes` funtion, if not included in `cTypes`.
  * - Performs validation against the main CType and all referenced CTypes.
  *
  * @param credential A {@link KiltCredentialV1} type verifiable credential.
  * @param credential.credentialSubject The credentialSubject to be validated.
  * @param credential.type The credential's types.
  * @param options Options map.
- * @param options.cTypes One or more CType definitions to be used for validation. If loadCTypes is set to false, validation will fail if the definition of the credential's CType is not given.
- * @param options.loadCTypes A function to load CType definitions that are not in cTypes. Defaults to using the {@link newCachingCTypeLoader | CachingCTypeLoader}. If set to false or undefined, no additional CTypes will be loaded.
- *
- * @throws {Error} If the credential type does not contain a valid CType id.
- * @throws {Error} If required CType definitions cannot be loaded.
- * @throws {Error} If claims do not follow the expected CType format.
- * @throws {Error} If referenced CTypes in nested structure cannot be fetched from the blockchain.
- * @throws {Error} If validation fails against the CType schema.
+ * @param options.cTypes One or more CType definitions to be used for validation. If `loadCTypes` is set to `false`, validation will fail if the definition of the credential's CType is not given.
+ * @param options.loadCTypes A function to load CType definitions that are not in `cTypes`. Defaults to using the {@link newCachingCTypeLoader | CachingCTypeLoader}. If set to `false` or `undefined`, no additional CTypes will be loaded.
  */
 export async function validateSubject(
   {
@@ -432,6 +426,7 @@ export async function validateSubject(
     loadCTypes = cachingCTypeLoader,
   }: { cTypes?: ICType[]; loadCTypes?: false | CTypeLoader } = {}
 ): Promise<void> {
+  // get CType id referenced in credential
   const credentialsCTypeId = type.find((str) =>
     str.startsWith('kilt:ctype:')
   ) as ICType['$id']
@@ -439,6 +434,7 @@ export async function validateSubject(
     throw new Error('credential type does not contain a valid CType id')
   }
 
+  // normalize credential subject to form expected by CType schema
   const expandedClaims: Record<string, unknown> =
     jsonLdExpandCredentialSubject(credentialSubject)
   delete expandedClaims['@id']
@@ -480,6 +476,7 @@ export async function validateSubject(
     combinedCTypeLoader
   )
 
+  // validates against CType (also validates CType schema itself)
   CType.verifyClaimAgainstNestedSchemas(
     cType,
     Array.from(referencedCTypes),
