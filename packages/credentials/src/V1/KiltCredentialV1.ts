@@ -371,6 +371,34 @@ async function loadNestedCTypeDefinitions(
   return fetchedCTypeDefinitions
 }
 
+function combineCTypeLoaders(
+  ...loaders: Array<CTypeLoader | unknown>
+): CTypeLoader {
+  const validLoaders = loaders.filter(
+    (l): l is CTypeLoader => typeof l === 'function'
+  )
+
+  return async (id) => {
+    // Ensure the ID is in the correct format
+    CType.idToHash(id)
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const loadCTypes of validLoaders) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const cType = await loadCTypes(id)
+        if (CType.isICType(cType)) {
+          return cType
+        }
+      } catch {
+        // noop
+      }
+    }
+
+    throw new Error(`Unable to load CType ${id}`)
+  }
+}
+
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition.
  * Supports both nested and non-nested CType validation.
@@ -411,24 +439,11 @@ export async function validateSubject(
     throw new Error('credential type does not contain a valid CType id')
   }
 
-  let cType = cTypes?.find(({ $id }) => $id === credentialsCTypeId)
-  if (!cType) {
-    if (typeof loadCTypes !== 'function') {
-      throw new Error(
-        `The definition for this credential's CType ${credentialsCTypeId} has not been passed to the validator and CType loading has been disabled`
-      )
-    }
-    cType = await loadCTypes(credentialsCTypeId)
-    if (cType.$id !== credentialsCTypeId) {
-      throw new Error('failed to load correct CType')
-    }
-  }
-
   const expandedClaims: Record<string, unknown> =
     jsonLdExpandCredentialSubject(credentialSubject)
   delete expandedClaims['@id']
 
-  const vocab = `${cType.$id}#`
+  const vocab = `${credentialsCTypeId}#`
   const claims = Object.entries(expandedClaims).reduce((obj, [key, value]) => {
     if (!key.startsWith(vocab)) {
       throw new Error(
@@ -441,41 +456,33 @@ export async function validateSubject(
     }
   }, {})
 
-  // Create a type-safe loader function
-  const effectiveLoader: CTypeLoader = async (id) => {
-    // Ensure the ID is in the correct format
-    if (!id.startsWith('kilt:ctype:0x')) {
-      throw new Error(`Invalid CType ID format: ${id}`)
-    }
+  const loaderFromCTypes: CTypeLoader | undefined =
+    cTypes?.length > 0
+      ? ((async (id) => cTypes.find(({ $id }) => $id === id)) as CTypeLoader)
+      : undefined
 
-    const typedId = id as `kilt:ctype:0x${string}`
+  // Turn CType loader & ctypes array into combined loader function
+  const combinedCTypeLoader = combineCTypeLoaders(loaderFromCTypes, loadCTypes)
 
-    if (typeof loadCTypes === 'function') {
-      return loadCTypes(typedId)
-    }
-    const found = cTypes.find((ct) => ct.$id === typedId)
-    if (found) {
-      return found
-    }
+  const cType = await combinedCTypeLoader(credentialsCTypeId).catch(() => {
     throw new Error(
-      `CType ${id} not found in provided cTypes array and CType loading is disabled`
+      `The definition for this credential's CType ${credentialsCTypeId} has not been passed to the validator and could not be loaded either`
     )
+  })
+
+  if (cType.$id !== credentialsCTypeId) {
+    throw new Error('failed to load correct CType')
   }
+
   // Load all nested CTypes
   const referencedCTypes = await loadNestedCTypeDefinitions(
     cType,
-    effectiveLoader
+    combinedCTypeLoader
   )
 
-  // Convert Set to Array and filter out any undefined or null values
-  const validCTypes = Array.from(referencedCTypes).filter(
-    (ctype): ctype is ICType => ctype !== undefined && ctype !== null
+  CType.verifyClaimAgainstNestedSchemas(
+    cType,
+    Array.from(referencedCTypes),
+    claims
   )
-
-  // Verify if all CTypes were fetched successfully
-  if (validCTypes.length === referencedCTypes.size) {
-    await CType.verifyClaimAgainstNestedSchemas(cType, validCTypes, claims)
-  } else {
-    throw new Error('Some referenced CTypes could not be fetched')
-  }
 }
