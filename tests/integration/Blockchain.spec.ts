@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2024, BOTLabs GmbH.
+ * Copyright (c) 2025, KILT Foundation.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -16,7 +16,13 @@ import {
 import type { KeyringPair } from '@kiltprotocol/types'
 
 import { makeSigningKeyTool } from '../testUtils/index.js'
-import { devCharlie, devFaucet, initializeApi, submitTx } from './utils.js'
+import {
+  devAlice,
+  devCharlie,
+  devFaucet,
+  initializeApi,
+  submitTx,
+} from './utils.js'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -151,6 +157,24 @@ describe('Chain returns specific errors, that we check for', () => {
       promiseToUsurp,
     ])
   }, 40000)
+})
+
+describe('The added `SignedExtension`s are valid', () => {
+  it(`'CheckMetadataHash' works`, async () => {
+    const systemRemarkTx = api.tx.system.remark('Test remark')
+    const submitPromise = Blockchain.signAndSubmitTx(systemRemarkTx, devAlice, {
+      checkMetadata: true,
+    })
+    await expect(submitPromise).resolves.not.toThrow()
+  })
+
+  it(`No 'CheckMetadataHash' works`, async () => {
+    const systemRemarkTx = api.tx.system.remark('Test remark')
+    const submitPromise = Blockchain.signAndSubmitTx(systemRemarkTx, devAlice, {
+      checkMetadata: false,
+    })
+    await expect(submitPromise).resolves.not.toThrow()
+  })
 })
 
 afterAll(async () => {

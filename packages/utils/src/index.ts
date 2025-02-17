@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2024, BOTLabs GmbH.
+ * Copyright (c) 2025, KILT Foundation.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -15,7 +15,7 @@ export * as Crypto from './Crypto.js'
 export * as UUID from './UUID.js'
 export * as DataUtils from './DataUtils.js'
 export * as SDKErrors from './SDKErrors.js'
-export * as JsonSchema from './json-schema/index.js'
+export * as JsonSchema from '@cfworker/json-schema'
 export * as Signers from './Signers.js'
 export * as Multikey from './Multikey.js'
 export { Caip19, Caip2 } from './CAIP/index.js'

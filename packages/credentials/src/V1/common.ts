@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2024, BOTLabs GmbH.
+ * Copyright (c) 2025, KILT Foundation.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,11 +8,26 @@
 import type { ApiPromise } from '@polkadot/api'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
+import { ConfigService } from '@kiltprotocol/config'
 
-import type { HexString } from '@kiltprotocol/types'
-import { Caip19, Caip2, SDKErrors } from '@kiltprotocol/utils'
+import type {
+  HexString,
+  KiltAddress,
+  SharedArguments,
+  SignerInterface,
+} from '@kiltprotocol/types'
+import { Caip19, Caip2, SDKErrors, Signers } from '@kiltprotocol/utils'
 
-import type { KiltAttesterDelegationV1, KiltCredentialV1 } from './types.js'
+import { authorizeTx, signersForDid } from '@kiltprotocol/did'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { Extrinsic } from '@polkadot/types/interfaces'
+import type { SimplifiedTransactionResult } from '../interfaces.js'
+import type {
+  KiltAttesterDelegationV1,
+  KiltCredentialV1,
+  KiltRevocationStatusV1,
+} from './types.js'
+import { STATUS_TYPE } from './KiltRevocationStatusV1.js'
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
@@ -153,4 +168,91 @@ export function credentialIdFromRootHash(
 ): KiltCredentialV1['id'] {
   const bytes = typeof rootHash === 'string' ? hexToU8a(rootHash) : rootHash
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(bytes, false)}`
+}
+
+/**
+ * @param root0
+ * @param root0.didDocument DID Document of the authorizing DID.
+ * @param root0.call Extrinsic to be submitted.
+ * @param root0.signers An array of signer interfaces, each allowing to request signatures made with a key associated with the issuer DID Document.
+ * @param root0.submitter Submitter to cover the transaction.
+ * @private
+ */
+export async function defaultTxSubmit({
+  didDocument,
+  call,
+  signers,
+  submitter,
+}: SharedArguments & {
+  call: Extrinsic
+}): Promise<SimplifiedTransactionResult> {
+  let submitterAddress: KiltAddress
+  let accountSigners: SignerInterface[] = []
+  if (typeof submitter === 'string') {
+    submitterAddress = submitter
+    accountSigners = (
+      await Promise.all(
+        signers.map((keypair) =>
+          'algorithm' in keypair
+            ? [keypair]
+            : Signers.getSignersForKeypair({ keypair })
+        )
+      )
+    ).flat()
+  } else if ('algorithm' in submitter) {
+    submitterAddress = submitter.id
+    accountSigners = [submitter]
+  } else {
+    accountSigners = await Signers.getSignersForKeypair({
+      keypair: submitter,
+    })
+    submitterAddress = accountSigners[0].id as KiltAddress
+  }
+
+  let extrinsic = await authorizeTx(
+    didDocument,
+    call,
+    await signersForDid(didDocument, ...signers),
+    submitterAddress
+  )
+
+  if (!extrinsic.isSigned) {
+    extrinsic = await extrinsic.signAsync(submitterAddress, {
+      signer: Signers.getPolkadotSigner(accountSigners),
+    })
+  }
+  const result = await Blockchain.submitSignedTx(extrinsic, {
+    resolveOn: Blockchain.IS_FINALIZED,
+  })
+  const blockHash = result.status.asFinalized
+  return { block: { hash: blockHash.toHex() } }
+}
+
+/**
+ * @param credentialStatus Credential revocation status.
+ * @param opts
+ * @param opts.api Overrides the userd Kilt API.
+ */
+export function getRootHashFromStatusId(
+  credentialStatus: KiltRevocationStatusV1,
+  opts: { api?: ApiPromise } = {}
+) {
+  if (credentialStatus?.type !== STATUS_TYPE)
+    throw new TypeError(
+      `The credential must have a credentialStatus of type ${STATUS_TYPE}`
+    )
+  const { api = ConfigService.get('api') } = opts
+  const { assetNamespace, assetReference, assetInstance } =
+    assertMatchingConnection(api, { credentialStatus })
+  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
+    throw new Error(
+      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
+    )
+  }
+  if (!assetInstance) {
+    throw new SDKErrors.CredentialMalformedError(
+      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
+    )
+  }
+  return base58Decode(assetInstance)
 }
