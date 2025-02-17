@@ -70,5 +70,9 @@
     "typescript": "^4.8.3"
   },
   "version": "1.0.0",
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.1.1",
+  "resolutions": {
+    "@kiltprotocol/type-definitions": "1.11501.0-peregrine",
+    "@kiltprotocol/augment-api": "1.11501.0-peregrine"
+  }
 }
