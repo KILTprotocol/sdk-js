@@ -5,9 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
-import type { SubmittableResultValue } from '@polkadot/api/types'
-import type { GenericEvent } from '@polkadot/types'
 import type {
   MultibaseKeyPair,
   MultibasePublicKey,
@@ -15,7 +12,13 @@ import type {
   TransactionSigner,
   TypedKeypair,
 } from './Signers'
-import { HexString, KeyringPair } from './Imported.js'
+import {
+  ApiPromise,
+  GenericEvent,
+  HexString,
+  KeyringPair,
+  SubmittableResultValue,
+} from './Imported.js'
 import { DidDocument } from './Did.js'
 import { KiltAddress } from './Address.js'
 

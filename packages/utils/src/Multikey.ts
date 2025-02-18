@@ -9,7 +9,7 @@ import { decodeBase58BtcMultikey } from '@kiltprotocol/jcs-data-integrity-proofs
 // @ts-expect-error Not a typescript module
 import * as varint from 'varint'
 
-import {
+import type {
   Base58BtcMultibaseString,
   KeyringPair,
   MultibaseKeyPair,

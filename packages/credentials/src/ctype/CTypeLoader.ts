@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ICType } from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
 
 import { fetchFromChain } from './CType.chain.js'
 
