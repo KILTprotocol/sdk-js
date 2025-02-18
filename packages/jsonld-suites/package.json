@@ -40,7 +40,6 @@
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/type-definitions": "^1.11200.0",
-    "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/keyring": "^13.0.0",
     "@polkadot/types": "^12.0.0",
@@ -49,7 +48,13 @@
     "crypto-ld": "^6.0.0"
   },
   "peerDependencies": {
+    "@kiltprotocol/types": "workspace:*",
     "jsonld": "^8.1.0",
     "jsonld-signatures": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@kiltprotocol/types": {
+      "optional": true
+    }
   }
 }
