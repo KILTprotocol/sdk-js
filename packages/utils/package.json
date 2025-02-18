@@ -40,6 +40,7 @@
     "@kiltprotocol/es256k-jcs-2023": "^0.1.0",
     "@kiltprotocol/jcs-data-integrity-proofs-common": "^0.1.0",
     "@kiltprotocol/sr25519-jcs-2023": "^0.1.0",
+    "@kiltprotocol/types": "workspace:*",
     "@scure/base": "^1.1.0",
     "cbor-web": "^9.0.0",
     "tweetnacl": "^1.0.3",
@@ -47,14 +48,8 @@
     "varint": "^6.0.0"
   },
   "peerDependencies": {
-    "@kiltprotocol/types": "workspace:*",
     "@polkadot/keyring": "^13.0.0",
     "@polkadot/util": "^13.0.0",
     "@polkadot/util-crypto": "^13.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@kiltprotocol/types": {
-      "optional": true
-    }
   }
 }

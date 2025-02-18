@@ -36,7 +36,6 @@
   "peerDependencies": {
     "@kiltprotocol/augment-api": "^1.0.0",
     "@kiltprotocol/type-definitions": "^1.0.0",
-    "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^12.0.0",
     "@polkadot/keyring": "^13.0.0",
     "@polkadot/types": "^12.0.0",
@@ -48,13 +47,11 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/credentials": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@kiltprotocol/augment-api": {
-      "optional": true
-    },
-    "@kiltprotocol/types": {
       "optional": true
     },
     "@polkadot/types": {
