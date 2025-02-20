@@ -2003,7 +2003,7 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
-    "@kiltprotocol/type-definitions": ^1.0.0
+    "@kiltprotocol/type-definitions": ^1.11401.0
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^15.6.1
@@ -2070,12 +2070,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@npm:^1.0.0":
-  version: 1.11500.0-rc.2
-  resolution: "@kiltprotocol/type-definitions@npm:1.11500.0-rc.2"
+"@kiltprotocol/type-definitions@npm:^1.11401.0":
+  version: 1.11401.1
+  resolution: "@kiltprotocol/type-definitions@npm:1.11401.1"
   peerDependencies:
     "@polkadot/types": ^12.2.0
-  checksum: da8217339e7df2ff2aa766f419bf227d928aff4cfe2d4541865379b4b1928a7b3c2b1247fb51093032c8a7372ef5e893ade94e6e789f332b55f56c9b060df18e
+  checksum: 6f7f8e837cd04d9d823e11879aee3c9986c2686567381548e860969c4b38757274c2b0adee2a01c661c07a86f6583ecc1a99ae1d506b71d7880f3c2f757cc15e
   languageName: node
   linkType: hard
 
