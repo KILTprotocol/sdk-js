@@ -45,6 +45,6 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "typescript-logging": "^1.0.0"
+    "typescript-logging": "^2.0.0"
   }
 }
