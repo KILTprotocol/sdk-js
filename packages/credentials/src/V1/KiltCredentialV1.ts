@@ -31,7 +31,10 @@ import {
   jsonLdExpandCredentialSubject,
   spiritnetGenesisHash,
 } from './common.js'
-import { CTypeLoader, newCachingCTypeLoader } from '../ctype/CTypeLoader.js'
+import {
+  type CTypeLoader,
+  newCachingCTypeLoader,
+} from '../ctype/CTypeLoader.js'
 
 export {
   credentialIdFromRootHash as idFromRootHash,
@@ -329,6 +332,13 @@ const cachingCTypeLoader = newCachingCTypeLoader()
 
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition.
+ * Supports both nested and non-nested CType validation.
+ * For non-nested CTypes:
+ * - Validates claims directly against the CType schema.
+ * For nested CTypes:
+ * - Automatically detects nested structure through `$ref` properties.
+ * - Fetches referenced CTypes via the `loadCTypes` funtion, if not included in `cTypes`.
+ * - Performs validation against the main CType and all referenced CTypes.
  *
  * @param credential A {@link KiltCredentialV1} type verifiable credential.
  * @param credential.credentialSubject The credentialSubject to be validated.
@@ -354,26 +364,13 @@ export async function validateSubject(
   if (!credentialsCTypeId) {
     throw new Error('credential type does not contain a valid CType id')
   }
-  // check that we have access to the right schema
-  let cType = cTypes?.find(({ $id }) => $id === credentialsCTypeId)
-  if (!cType) {
-    if (typeof loadCTypes !== 'function') {
-      throw new Error(
-        `The definition for this credential's CType ${credentialsCTypeId} has not been passed to the validator and CType loading has been disabled`
-      )
-    }
-    cType = await loadCTypes(credentialsCTypeId)
-    if (cType.$id !== credentialsCTypeId) {
-      throw new Error('failed to load correct CType')
-    }
-  }
 
   // normalize credential subject to form expected by CType schema
   const expandedClaims: Record<string, unknown> =
     jsonLdExpandCredentialSubject(credentialSubject)
   delete expandedClaims['@id']
 
-  const vocab = `${cType.$id}#`
+  const vocab = `${credentialsCTypeId}#`
   const claims = Object.entries(expandedClaims).reduce((obj, [key, value]) => {
     if (!key.startsWith(vocab)) {
       throw new Error(
@@ -385,6 +382,28 @@ export async function validateSubject(
       [key.substring(vocab.length)]: value,
     }
   }, {})
+
+  // Turn CType loader & ctypes array into combined loader function
+  const combinedCTypeLoader = newCachingCTypeLoader(
+    cTypes,
+    typeof loadCTypes === 'function'
+      ? loadCTypes
+      : (id) =>
+          Promise.reject(
+            new Error(
+              `This credential is based on CType ${id} whose definition has not been passed to the validator, while automatic CType loading has been disabled.`
+            )
+          )
+  )
+
+  const cType = await combinedCTypeLoader(credentialsCTypeId)
+
+  // Load all nested CTypes
+  const referencedCTypes = await CType.loadNestedCTypeDefinitions(
+    cType,
+    combinedCTypeLoader
+  )
+
   // validates against CType (also validates CType schema itself)
-  CType.verifyClaimAgainstSchema(claims, cType)
+  CType.verifyClaimAgainstNestedSchemas(cType, referencedCTypes, claims)
 }
