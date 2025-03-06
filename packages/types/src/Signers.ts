@@ -26,7 +26,8 @@ export type MultibasePublicKey = Pick<VerificationMethod, 'publicKeyMultibase'>
 export type MultibaseSecretKey = {
   secretKeyMultibase: Base58BtcMultibaseString
 }
-export type MultibaseKeyPair = MultibasePublicKey & MultibaseSecretKey
+export type MultibaseKeyPair = MultibasePublicKey &
+  MultibaseSecretKey & { publicKey: Uint8Array }
 
 export type TypedKeypair<KeyTypes extends string> = {
   publicKey: Uint8Array

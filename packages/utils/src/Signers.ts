@@ -497,5 +497,8 @@ export function generateKeypair({
   const keyRingPair = makeKeypairFromUri(seed.toLowerCase(), typeForKeyring)
 
   const { secretKey, publicKey } = extractPk(keyRingPair)
-  return encodeMultibaseKeypair({ publicKey, secretKey, type })
+  return {
+    ...encodeMultibaseKeypair({ publicKey, secretKey, type }),
+    publicKey,
+  }
 }
