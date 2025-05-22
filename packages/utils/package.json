@@ -48,8 +48,8 @@
     "varint": "^6.0.0"
   },
   "peerDependencies": {
-    "@polkadot/keyring": "^13.0.0",
-    "@polkadot/util": "^13.0.0",
-    "@polkadot/util-crypto": "^13.0.0"
+    "@polkadot/keyring": "^13.5.1",
+    "@polkadot/util": "^13.5.1",
+    "@polkadot/util-crypto": "^13.5.1"
   }
 }
