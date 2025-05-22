@@ -44,10 +44,10 @@
     "@kiltprotocol/type-definitions": "^1.11401.0",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^15.6.1",
-    "@polkadot/keyring": "^13.4.3",
-    "@polkadot/types": "^15.6.1",
-    "@polkadot/util": "^13.4.3",
-    "@polkadot/util-crypto": "^13.4.3"
+    "@polkadot/api": "^16.0.1",
+    "@polkadot/keyring": "^13.5.1",
+    "@polkadot/types": "^16.0.1",
+    "@polkadot/util": "^13.5.1",
+    "@polkadot/util-crypto": "^13.5.1"
   }
 }

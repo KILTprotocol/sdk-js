@@ -1,5 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Breaking Changes Light DID does not break the light did generation 2`] = `
+{
+  "authentication": [
+    "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw#authentication",
+  ],
+  "id": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw",
+  "keyAgreement": [
+    "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw#encryption",
+  ],
+  "service": [
+    {
+      "id": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw#1234",
+      "serviceEndpoint": [
+        "https://ipfs.io/ipfs/QmNUAwg7JPK9nnuZiUri5nDaqLHqUFtNoZYtfD22Q6w3c8",
+      ],
+      "type": [
+        "KiltPublishedCredentialCollectionV1",
+      ],
+    },
+  ],
+  "verificationMethod": [
+    {
+      "controller": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw",
+      "id": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw#authentication",
+      "publicKeyMultibase": "z6QNtvVoC9xbYQcTDxby93NukWRN9YoRoL4ciSKbGCENUFR8",
+      "type": "Multikey",
+    },
+    {
+      "controller": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw",
+      "id": "did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw#encryption",
+      "publicKeyMultibase": "z6LSokX2scG6ck929ttoXzoRcPJd3deLeG2Hh7EvmpQZrtvW",
+      "type": "Multikey",
+    },
+  ],
+}
+`;
+
 exports[`Breaking Changes Light DID does not break the light did uri generation 2`] = `
 {
   "authentication": [
