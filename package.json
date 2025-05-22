@@ -73,6 +73,9 @@
   "packageManager": "yarn@4.1.1",
   "resolutions": {
     "@kiltprotocol/type-definitions": "1.11501.0-peregrine",
-    "@kiltprotocol/augment-api": "1.11501.0-peregrine"
+    "@kiltprotocol/augment-api": "1.11501.0-peregrine",
+    "@polkadot/wasm-crypto-wasm": "7.4.1",
+    "@polkadot/wasm-utils": "7.4.1",
+    "@polkadot/util-crypto": "13.5.1"
   }
 }
