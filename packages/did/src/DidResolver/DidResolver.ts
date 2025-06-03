@@ -26,7 +26,11 @@ import { stringToU8a } from '@polkadot/util'
 import { ConfigService } from '@kiltprotocol/config'
 import { cbor } from '@kiltprotocol/utils'
 
-import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
+import {
+  KILT_DID_CONTEXT_URL,
+  W3C_DID_CONTEXT_URL,
+  W3C_MULTIKEY_CONTEXT_URL,
+} from './DidContexts.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 import { toChain } from '../Did.chain.js'
 import { getFullDid, parse, validateDid } from '../Did.utils.js'
@@ -184,7 +188,11 @@ export async function resolveRepresentation(
         return (didDoc: DidDocument) => {
           const jsonLdDoc: JsonLd<DidDocument> = {
             ...didDoc,
-            '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
+            '@context': [
+              W3C_DID_CONTEXT_URL,
+              W3C_MULTIKEY_CONTEXT_URL,
+              KILT_DID_CONTEXT_URL,
+            ],
           }
           return stringToU8a(JSON.stringify(jsonLdDoc))
         }

@@ -824,7 +824,11 @@ describe('DID Resolution compliance', () => {
                 }).publicKeyMultibase,
               },
             ],
-            '@context': [Did.W3C_DID_CONTEXT_URL, Did.KILT_DID_CONTEXT_URL],
+            '@context': [
+              Did.W3C_DID_CONTEXT_URL,
+              Did.W3C_MULTIKEY_CONTEXT_URL,
+              Did.KILT_DID_CONTEXT_URL,
+            ],
           })
         ),
       })
