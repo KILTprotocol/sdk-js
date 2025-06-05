@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.36.0-rc.1",
+  "version": "0.36.0-rc.4",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -40,10 +40,10 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^15.6.1",
-    "@polkadot/types": "^15.6.1",
-    "@polkadot/util": "^13.4.3",
-    "@polkadot/util-crypto": "^13.4.3",
+    "@polkadot/api": "^16.0.1",
+    "@polkadot/types": "^16.0.1",
+    "@polkadot/util": "^13.5.1",
+    "@polkadot/util-crypto": "^13.5.1",
     "jsonld": "^2.0.2",
     "jsonld-signatures": "^5.0.0",
     "vc-js": "^0.6.4"

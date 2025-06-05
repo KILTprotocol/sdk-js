@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.36.0-rc.1",
+  "version": "0.36.0-rc.4",
   "description": "",
   "type": "commonjs",
   "main": "./lib/index.js",
@@ -8,7 +8,10 @@
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/index.mjs",
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/index.mjs"
+      },
       "require": "./lib/index.js",
       "types": "./lib/index.d.ts"
     }
@@ -19,9 +22,10 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "yarn build:cjs && yarn build:esm",
+    "build:ts": "yarn build:cjs && yarn build:esm && yarn build:esm:types",
     "build:cjs": "tsc --declaration -p tsconfig.build.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && yarn exec cp -f ./lib/esm/index.js ./lib/index.mjs && rimraf ./lib/esm"
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && yarn exec cp -f ./lib/esm/index.js ./lib/index.mjs && rimraf ./lib/esm",
+    "build:esm:types": "tsc --declaration --emitDeclarationOnly -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -37,7 +41,7 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^15.6.1",
+    "@polkadot/api": "^16.0.1",
     "typescript-logging": "^1.0.0"
   }
 }
