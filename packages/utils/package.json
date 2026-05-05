@@ -44,7 +44,7 @@
     "@scure/base": "^1.1.0",
     "cbor-web": "^9.0.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^10.0.0",
+    "uuid": "^14.0.0",
     "varint": "^6.0.0"
   },
   "peerDependencies": {
