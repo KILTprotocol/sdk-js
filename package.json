@@ -72,6 +72,8 @@
   "version": "1.0.0",
   "packageManager": "yarn@4.1.1",
   "resolutions": {
+    "@polkadot-api/merkleize-metadata": "1.1.12",
+    "@types/node": "18.19.130",
     "@kiltprotocol/type-definitions": "1.11501.0-peregrine",
     "@kiltprotocol/augment-api": "1.11501.0-peregrine"
   }
