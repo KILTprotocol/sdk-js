@@ -2120,7 +2120,7 @@ __metadata:
     "@kiltprotocol/sr25519-jcs-2023": "npm:^0.1.0"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@scure/base": "npm:^1.1.0"
+    "@scure/base": "npm:^2.0.0"
     "@types/json-pointer": "npm:^1.0.34"
     json-pointer: "npm:^0.6.2"
     rimraf: "npm:^3.0.2"
@@ -2320,7 +2320,7 @@ __metadata:
     "@kiltprotocol/jcs-data-integrity-proofs-common": "npm:^0.1.0"
     "@kiltprotocol/sr25519-jcs-2023": "npm:^0.1.0"
     "@kiltprotocol/types": "workspace:*"
-    "@scure/base": "npm:^1.1.0"
+    "@scure/base": "npm:^2.0.0"
     "@types/uuid": "npm:^8.0.0"
     cbor-web: "npm:^9.0.0"
     rimraf: "npm:^3.0.2"
@@ -2966,10 +2966,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.0, @scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5, @scure/base@npm:^1.2.1":
+"@scure/base@npm:^1.1.1, @scure/base@npm:^1.1.5, @scure/base@npm:^1.2.1":
   version: 1.2.1
   resolution: "@scure/base@npm:1.2.1"
   checksum: 10c0/e61068854370855b89c50c28fa4092ea6780f1e0db64ea94075ab574ebcc964f719a3120dc708db324991f4b3e652d92ebda03fce2bf6a4900ceeacf9c0ff933
+  languageName: node
+  linkType: hard
+
+"@scure/base@npm:^2.0.0":
+  version: 2.4.0
+  resolution: "@scure/base@npm:2.4.0"
+  checksum: 10c0/985a4bdcafa4289e0cb8b6d53453347308d5ff6ffcbe84d8fac102374fb419b52db565e98fa3931b79a4be1cc3218583065bbca27dfaabca687aac0f3db3639d
   languageName: node
   linkType: hard
 
